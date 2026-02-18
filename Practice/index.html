@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sports Psychic</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <h1 class="brand">Sports Psychic</h1>
+      <nav class="main-nav">
+        <button data-target="login" class="nav-btn">Login / Create</button>
+        <button data-target="leagues" class="nav-btn">Leagues</button>
+        <button data-target="rules" class="nav-btn">Rules & Scoring</button>
+        <button data-target="settings" class="nav-btn">Settings</button>
+        <button data-target="dashboard" class="nav-btn">Dashboard</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="login" class="panel">
+      <h2>Sign in / Create Account</h2>
+      <form id="loginForm" class="card">
+        <label for="username">Display name</label>
+        <input id="username" name="username" placeholder="Your name" required />
+        <div class="row">
+          <button type="submit" class="btn primary">Continue</button>
+          <button type="button" id="logoutBtn" class="btn">Logout</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="leagues" class="panel hidden">
+      <h2>Leagues</h2>
+      <div class="row">
+        <form id="createLeagueForm" class="card small">
+          <label for="leagueName">Create League</label>
+          <input id="leagueName" placeholder="League name" />
+          <button type="button" id="createLeagueBtn" class="btn primary">Create</button>
+        </form>
+
+        <div class="card league-list">
+          <h3>Available Leagues</h3>
+          <ul id="leagueList"></ul>
+          <div class="row">
+            <input id="joinLeagueName" placeholder="League to join" />
+            <button id="joinLeagueBtn" class="btn">Join</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rules" class="panel hidden">
+      <h2>Rules & Scoring</h2>
+      <div class="card">
+        <h3>How to score</h3>
+        <ul>
+          <li>Correct winner: 10 points</li>
+          <li>Exact score (if enabled): bonus points</li>
+          <li>Weekly streaks and season bonuses</li>
+        </ul>
+        <h3>League rules</h3>
+        <p>Choose between season-long and week-to-week formats. Admins can set scoring tweaks.</p>
+      </div>
+    </section>
+
+    <section id="settings" class="panel hidden">
+      <h2>Settings</h2>
+      <div class="card">
+        <label>Notifications</label>
+        <select id="notifPref">
+          <option>All</option>
+          <option>Important</option>
+          <option>None</option>
+        </select>
+      </div>
+    </section>
+
+    <section id="dashboard" class="panel hidden">
+      <h2>Dashboard</h2>
+      <div class="grid">
+        <div class="card stat">
+          <h4>Current League Rank</h4>
+          <p id="leagueRank">—</p>
+        </div>
+        <div class="card stat">
+          <h4>Lifetime Accuracy</h4>
+          <p id="accuracy">—</p>
+        </div>
+        <div class="card stat">
+          <h4>Total Points</h4>
+          <p id="totalPoints">—</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent Activity</h3>
+        <ul id="recentActivity"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© Sports Psychic</small>
+    </div>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
