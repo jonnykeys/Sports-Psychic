@@ -41,4 +41,4 @@ For issues, feedback, or feature requests, please contact [support information c
 
 ---
 
-*Sports Psychic - Know the Game.*
+*Sports Psychic - Know the Game*
