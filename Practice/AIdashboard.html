@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sports Psychic - Home</title>
+  <title>Sports Psychic - Dashboard</title>
   <link rel="stylesheet" href="AIHomePage.css" />
 </head>
 <body>
@@ -11,24 +11,40 @@
     <div class="container header-inner">
       <h1 class="brand">Sports Psychic</h1>
       <nav class="main-nav">
-        <a href="AIHomePage.html" class="active">Home</a>
+        <a href="AIHomePage.html">Home</a>
         <a href="AIlogin.html">Login / Create</a>
         <a href="AIleagues.html">Leagues</a>
         <a href="AIrules.html">Rules & Scoring</a>
         <a href="AIsettings.html">Settings</a>
-        <a href="AIdashboard.html">Dashboard</a>
+        <a href="AIdashboard.html" class="active">Dashboard</a>
       </nav>
     </div>
   </header>
 
   <main class="container">
-    <section id="home" class="panel">
-      <div class="card">
-        <h2>Welcome to Sports Psychic</h2>
-        <p>Your one-stop destination for creating leagues, tracking scores, and competing with friends.</p>
-        <p>Use the navigation above to get started. If you already have an account, <a href="AIlogin.html">sign in</a>.</p>
+    <section class="panel">
+      <h2>Dashboard</h2>
+      <div class="grid">
+        <div class="card stat">
+          <h4>Current League Rank</h4>
+          <p id="leagueRank">—</p>
+        </div>
+        <div class="card stat">
+          <h4>Lifetime Accuracy</h4>
+          <p id="accuracy">—</p>
+        </div>
+        <div class="card stat">
+          <h4>Total Points</h4>
+          <p id="totalPoints">—</p>
+        </div>
       </div>
-    </section>  </main>
+
+      <div class="card">
+        <h3>Recent Activity</h3>
+        <ul id="recentActivity"></ul>
+      </div>
+    </section>
+  </main>
 
   <footer class="site-footer">
     <div class="container">

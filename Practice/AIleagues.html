@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sports Psychic - Leagues</title>
+  <link rel="stylesheet" href="AIHomePage.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <h1 class="brand">Sports Psychic</h1>
+      <nav class="main-nav">
+        <a href="AIHomePage.html">Home</a>
+        <a href="AIlogin.html">Login / Create</a>
+        <a href="AIleagues.html" class="active">Leagues</a>
+        <a href="AIrules.html">Rules & Scoring</a>
+        <a href="AIsettings.html">Settings</a>
+        <a href="AIdashboard.html">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <h2>Leagues</h2>
+      <div class="row">
+        <form id="createLeagueForm" class="card small">
+          <label for="leagueName">Create League</label>
+          <input id="leagueName" placeholder="League name" />
+          <button type="button" id="createLeagueBtn" class="btn primary">Create</button>
+        </form>
+
+        <div class="card league-list">
+          <h3>Available Leagues</h3>
+          <ul id="leagueList"></ul>
+          <div class="row">
+            <input id="joinLeagueName" placeholder="League to join" />
+            <button id="joinLeagueBtn" class="btn">Join</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© Sports Psychic</small>
+    </div>
+  </footer>
+
+  <script src="AIHomePage.js" defer></script>
+</body>
+</html>

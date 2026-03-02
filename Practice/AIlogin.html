@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sports Psychic - Home</title>
+  <title>Sports Psychic - Login</title>
   <link rel="stylesheet" href="AIHomePage.css" />
 </head>
 <body>
@@ -11,8 +11,8 @@
     <div class="container header-inner">
       <h1 class="brand">Sports Psychic</h1>
       <nav class="main-nav">
-        <a href="AIHomePage.html" class="active">Home</a>
-        <a href="AIlogin.html">Login / Create</a>
+        <a href="AIHomePage.html">Home</a>
+        <a href="AIlogin.html" class="active">Login / Create</a>
         <a href="AIleagues.html">Leagues</a>
         <a href="AIrules.html">Rules & Scoring</a>
         <a href="AIsettings.html">Settings</a>
@@ -22,13 +22,18 @@
   </header>
 
   <main class="container">
-    <section id="home" class="panel">
-      <div class="card">
-        <h2>Welcome to Sports Psychic</h2>
-        <p>Your one-stop destination for creating leagues, tracking scores, and competing with friends.</p>
-        <p>Use the navigation above to get started. If you already have an account, <a href="AIlogin.html">sign in</a>.</p>
-      </div>
-    </section>  </main>
+    <section class="panel">
+      <h2>Sign in / Create Account</h2>
+      <form id="loginForm" class="card">
+        <label for="username">Display name</label>
+        <input id="username" name="username" placeholder="Your name" required />
+        <div class="row">
+          <button type="submit" class="btn primary">Continue</button>
+          <button type="button" id="logoutBtn" class="btn">Logout</button>
+        </div>
+      </form>
+    </section>
+  </main>
 
   <footer class="site-footer">
     <div class="container">

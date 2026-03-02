@@ -33,6 +33,8 @@ Quick competition format lasting a single week. Perfect for casual players or th
 
 ## Getting Started
 
+A simple static prototype lives in the `Practice` folder. Open `AIHomePage.html` in your browser to see the redesigned home page; navigation links lead to separate pages (now prefixed with `AI`) for login, leagues, rules, settings, and dashboard.
+
 [Installation and setup instructions coming soon]
 
 ## Support
