@@ -28,7 +28,67 @@
         <p>Your one-stop destination for creating leagues, tracking scores, and competing with friends.</p>
         <p>Use the navigation above to get started. If you already have an account, <a href="AIlogin.html">sign in</a>.</p>
       </div>
-    </section>  </main>
+    </section>
+
+    <section class="panel" id="home-overview">
+      <div class="grid">
+        <div class="card">
+          <h3>Your Leagues <small id="homeLeagueCount"></small></h3>
+          <ul id="homeLeaguesList"></ul>
+        </div>
+
+        <div class="card">
+          <h3>Your Stats</h3>
+          <div class="row">
+            <div class="card small stat">
+              <h4>Rank</h4>
+              <p id="homeRank">—</p>
+            </div>
+            <div class="card small stat">
+              <h4>Accuracy</h4>
+              <p id="homeAccuracy">—</p>
+            </div>
+            <div class="card small stat">
+              <h4>Points</h4>
+              <p id="homePoints">—</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>NFL Team Updates</h3>
+          <ul id="nflUpdates"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="grid">
+        <div class="card">
+          <h3>New App Updates</h3>
+          <ul id="appUpdates"></ul>
+        </div>
+
+        <div class="card">
+          <h3>Social</h3>
+          <p>Follow us (placeholders):</p>
+          <ul id="socialLinks"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- sidebar with scores -->
+    <section id="home-sidebar" class="panel sidebar">
+      <div class="card">
+        <h3>Live NFL Scores</h3>
+        <ul id="liveScores"></ul>
+      </div>
+      <div class="card">
+        <h3>Week Scores</h3>
+        <ul id="weekScores"></ul>
+      </div>
+    </section>
+  </main>
 
   <footer class="site-footer">
     <div class="container">

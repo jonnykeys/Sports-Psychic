@@ -115,6 +115,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if(leagueRank) renderStats();
 
+  // home page dashboard logic
+  const homeLeaguesList = document.getElementById('homeLeaguesList');
+  const homeLeagueCount = document.getElementById('homeLeagueCount');
+  const homeRankEl = document.getElementById('homeRank');
+  const homeAccuracyEl = document.getElementById('homeAccuracy');
+  const homePointsEl = document.getElementById('homePoints');
+  const nflUpdatesEl = document.getElementById('nflUpdates');
+  const appUpdatesEl = document.getElementById('appUpdates');
+  const socialLinksEl = document.getElementById('socialLinks');
+
+  function renderHome(){
+    if(homeLeaguesList){
+      homeLeaguesList.innerHTML = '';
+      // show leagues the user is in, or sample leagues if none
+      const userLeagues = user.name ? leagues.filter(l => l.members.includes(user.name)) : [];
+      const display = (userLeagues.length ? userLeagues : leagues).slice(0,6);
+      display.forEach(l=>{
+        const li = document.createElement('li');
+        li.textContent = `${l.name} — ${l.members.length} member(s)`;
+        homeLeaguesList.appendChild(li);
+      });
+      if(homeLeagueCount) homeLeagueCount.textContent = `(${userLeagues.length || leagues.length})`;
+    }
+
+    if(homeRankEl) homeRankEl.textContent = stats.rank;
+    if(homeAccuracyEl) homeAccuracyEl.textContent = stats.accuracy;
+    if(homePointsEl) homePointsEl.textContent = stats.points;
+
+    if(nflUpdatesEl){
+      const nfl = [
+        {team:'Patriots', update:'Win 27-20 vs Jets'},
+        {team:'Cowboys', update:'Loss 21-24 at Eagles'},
+        {team:'Packers', update:'QB questionable for Sunday'}
+      ];
+      nflUpdatesEl.innerHTML = '';
+      nfl.forEach(u=>{ const li = document.createElement('li'); li.textContent = `${u.team}: ${u.update}`; nflUpdatesEl.appendChild(li); });
+    }
+
+    if(appUpdatesEl){
+      const updates = [
+        'Leaderboard redesign rolling out next week',
+        'Mobile push notifications (beta)',
+        'New weekly challenge feature coming soon'
+      ];
+      appUpdatesEl.innerHTML = '';
+      updates.forEach(u=>{ const li = document.createElement('li'); li.textContent = u; appUpdatesEl.appendChild(li); });
+    }
+
+    if(socialLinksEl){
+      const socials = [
+        {platform:'Twitter', handle:'@SportsPsychicOfficial'},
+        {platform:'Instagram', handle:'@SportsPsychicOfficial'},
+        {platform:'Facebook', handle:'SportsPsychicOfficial'}
+      ];
+      socialLinksEl.innerHTML = '';
+      socials.forEach(s=>{ const li = document.createElement('li'); li.innerHTML = `<strong>${s.platform}:</strong> ${s.handle}`; socialLinksEl.appendChild(li); });
+    }
++
++    // sidebar scores mock
++    const liveScoresEl = document.getElementById('liveScores');
++    const weekScoresEl = document.getElementById('weekScores');
++    if(liveScoresEl){
++      const live = [
++        'NE 14 - 7 NYJ  (2Q)',
++        'DAL 21 - 24 PHI (3Q)',
++        'GB 3 - 0 MIN  (1Q)'
++      ];
++      liveScoresEl.innerHTML = '';
++      live.forEach(s=>{ const li = document.createElement('li'); li.textContent = s; liveScoresEl.appendChild(li); });
++    }
++    if(weekScoresEl){
++      const week = [
++        'NE vs NYJ 14-7',
++        'DAL vs PHI 21-24',
++        'GB vs MIN 3-0'
++      ];
++      weekScoresEl.innerHTML = '';
++      week.forEach(s=>{ const li = document.createElement('li'); li.textContent = s; weekScoresEl.appendChild(li); });
++    }
+  }
+
+  // render home if any home elements exist
+  if(document.getElementById('home') || homeLeaguesList) renderHome();
+
   // seed some demo data if empty
   if(leagues.length === 0){
     leagues = [
