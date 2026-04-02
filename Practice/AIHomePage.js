@@ -172,28 +172,28 @@ document.addEventListener('DOMContentLoaded', () => {
       socialLinksEl.innerHTML = '';
       socials.forEach(s=>{ const li = document.createElement('li'); li.innerHTML = `<strong>${s.platform}:</strong> ${s.handle}`; socialLinksEl.appendChild(li); });
     }
-+
-+    // sidebar scores mock
-+    const liveScoresEl = document.getElementById('liveScores');
-+    const weekScoresEl = document.getElementById('weekScores');
-+    if(liveScoresEl){
-+      const live = [
-+        'NE 14 - 7 NYJ  (2Q)',
-+        'DAL 21 - 24 PHI (3Q)',
-+        'GB 3 - 0 MIN  (1Q)'
-+      ];
-+      liveScoresEl.innerHTML = '';
-+      live.forEach(s=>{ const li = document.createElement('li'); li.textContent = s; liveScoresEl.appendChild(li); });
-+    }
-+    if(weekScoresEl){
-+      const week = [
-+        'NE vs NYJ 14-7',
-+        'DAL vs PHI 21-24',
-+        'GB vs MIN 3-0'
-+      ];
-+      weekScoresEl.innerHTML = '';
-+      week.forEach(s=>{ const li = document.createElement('li'); li.textContent = s; weekScoresEl.appendChild(li); });
-+    }
+
+    // sidebar scores mock
+    const liveScoresEl = document.getElementById('liveScores');
+    const weekScoresEl = document.getElementById('weekScores');
+    if(liveScoresEl){
+      const live = [
+        'NE 14 - 7 NYJ  (2Q)',
+        'DAL 21 - 24 PHI (3Q)',
+        'GB 3 - 0 MIN  (1Q)'
+      ];
+      liveScoresEl.innerHTML = '';
+      live.forEach(s=>{ const li = document.createElement('li'); li.textContent = s; liveScoresEl.appendChild(li); });
+    }
+    if(weekScoresEl){
+      const week = [
+        'NE vs NYJ 14-7',
+        'DAL vs PHI 21-24',
+        'GB vs MIN 3-0'
+      ];
+      weekScoresEl.innerHTML = '';
+      week.forEach(s=>{ const li = document.createElement('li'); li.textContent = s; weekScoresEl.appendChild(li); });
+    }
   }
 
   // render home if any home elements exist
