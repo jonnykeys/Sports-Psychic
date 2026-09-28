@@ -1,11 +1,467 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sports Psychic</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#080c14" />
+  <title>Sports Psychic - Know The Game</title>
+  <link rel="stylesheet" href="SportsPsychic.css" />
 </head>
 <body>
-    
+
+  <!-- Sticky Top Header -->
+  <header class="app-header">
+    <div class="brand-wrapper" onclick="switchTab('home')">
+      <span class="brand-icon">🔮</span>
+      <div class="brand-title-group">
+        <span class="brand-title">Sports Psychic</span>
+        <span class="brand-subtitle">Know The Game</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Active Mode Pill -->
+      <div id="activeModeBadge" class="mode-badge solo" onclick="switchTab('leagues')">
+        <span id="modeIcon">🛡️</span>
+        <span id="modeLabel">Solo Play</span>
+      </div>
+
+      <!-- Auth Controls (Sign In or User Profile Chip) -->
+      <div id="headerAuthArea">
+        <button id="headerSignInBtn" class="auth-header-btn" onclick="openAuthModal('signin')">Sign In</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Views Container -->
+  <main>
+
+    <!-- ========================================================= -->
+    <!-- TAB 1: HOME PAGE -->
+    <!-- ========================================================= -->
+    <section id="tab-home" class="tab-content active">
+      <!-- Hero Banner -->
+      <div class="home-hero">
+        <div class="hero-pill">⚡ 2026 NFL Season Active</div>
+        <h1 class="hero-title">Predict The Outcome.<br>Earn The Glory.</h1>
+        <p class="hero-description">
+          Forecast upcoming games, dial in exact scores, and climb the ranks using an authentic points-based scoring system. Play solo to track your personal accuracy, or create a private league with friends for ultimate bragging rights.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-hero primary" onclick="handlePicksAction()">
+            🏈 Make Predictions
+          </button>
+          <button class="btn-hero secondary" onclick="switchTab('leagues')">
+            👥 Create or Join League
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Sport Hub (Future Expansion Showcase) -->
+      <div class="sports-hub-card">
+        <div class="sports-hub-header">
+          <span class="section-label">Sports Catalog</span>
+          <span style="font-size:0.75rem;color:var(--text-muted);">More sports launching soon</span>
+        </div>
+        <div class="sports-pill-list" id="sportsCatalogList">
+          <div class="sport-badge active">
+            <span>🏈</span>
+            <span>NFL Football</span>
+            <span class="sport-tag">2026 LIVE</span>
+          </div>
+          <div class="sport-badge coming-soon">
+            <span>🏀</span>
+            <span>NBA Basketball</span>
+            <span class="sport-tag">Upcoming</span>
+          </div>
+          <div class="sport-badge coming-soon">
+            <span>⚾</span>
+            <span>MLB Baseball</span>
+            <span class="sport-tag">Upcoming</span>
+          </div>
+          <div class="sport-badge coming-soon">
+            <span>🎓</span>
+            <span>College Football</span>
+            <span class="sport-tag">Upcoming</span>
+          </div>
+          <div class="sport-badge coming-soon">
+            <span>🏒</span>
+            <span>NHL Hockey</span>
+            <span class="sport-tag">Upcoming</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Home Grid: Personal Stats & 2026 Season Ticker -->
+      <div class="home-grid">
+        <!-- Personal Stats Card -->
+        <div class="home-card">
+          <div class="card-heading-row">
+            <span class="card-heading">Your Psychic Record</span>
+            <span id="userAccountStatusBadge" style="font-size:0.75rem;color:var(--accent-green);font-weight:700;">GUEST</span>
+          </div>
+          <div class="stats-summary-grid">
+            <div class="stat-box">
+              <div id="homeStatPoints" class="stat-val">0</div>
+              <div class="stat-lbl">Points</div>
+            </div>
+            <div class="stat-box">
+              <div id="homeStatAccuracy" class="stat-val">—</div>
+              <div class="stat-lbl">Accuracy</div>
+            </div>
+            <div class="stat-box">
+              <div id="homeStatPicked" class="stat-val">0</div>
+              <div class="stat-lbl">Picks Made</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.8rem;color:var(--text-muted);">Active Account: <strong id="homeUsernameDisplay" style="color:#fff;">Not Signed In</strong></span>
+            <button class="btn-sm" onclick="handlePicksAction()">Go to Picks &rarr;</button>
+          </div>
+        </div>
+
+        <!-- 2026 NFL Actuals / Recent Results Ticker -->
+        <div class="home-card">
+          <div class="card-heading-row">
+            <span class="card-heading">2026 NFL Results</span>
+            <span style="font-size:0.75rem;color:var(--accent-gold);font-weight:700;">OFFICIAL SCORES</span>
+          </div>
+          <div id="homeScoresTicker" class="ticker-list"></div>
+        </div>
+      </div>
+
+      <!-- How It Works Highlights -->
+      <div class="home-card" style="margin-bottom:20px;">
+        <div class="card-heading-row">
+          <span class="card-heading">How The Scoring Works</span>
+          <button class="btn-sm" onclick="switchTab('rules')">Full Rulebook &rarr;</button>
+        </div>
+        <div class="rules-step-list">
+          <div class="rule-step-item">
+            <div class="step-icon">🎯</div>
+            <div class="step-text">
+              <h4>10 Points for Correct Winners</h4>
+              <p>Predict the straight-up winning team for each of the 272 regular season NFL games.</p>
+            </div>
+          </div>
+          <div class="rule-step-item">
+            <div class="step-icon">📏</div>
+            <div class="step-text">
+              <h4>Score Proximity Tie-Breaker</h4>
+              <p>Scores act as tie-breakers. The closest score prediction among winning pickers earns a +10 bonus point.</p>
+            </div>
+          </div>
+          <div class="rule-step-item">
+            <div class="step-icon">💥</div>
+            <div class="step-text">
+              <h4>50 Points for Exact Scores</h4>
+              <p>Nail the exact final score of any game to trigger the massive 50-point jackpot bonus!</p>
+            </div>
+          </div>
+          <div class="rule-step-item">
+            <div class="step-icon">⭐</div>
+            <div class="step-text">
+              <h4>Weekly 3x Multiplier</h4>
+              <p>Choose ONE marquee matchup every week as your 3x multiplier for triple points (up to 150 points!).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 2: PREDICTIONS (2026 NFL Season Forecaster) -->
+    <!-- ========================================================= -->
+    <section id="tab-picks" class="tab-content">
+      <!-- Locked State (Shown when guest is not signed in) -->
+      <div id="picksLockedGate" class="locked-gate-card" style="display:none;">
+        <div class="locked-icon">🔒</div>
+        <h2 class="locked-title">Account Required</h2>
+        <p class="locked-desc">
+          You must create an account or sign in to save your 2026 NFL predictions and compete on the leaderboards.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <button class="btn-hero primary" onclick="openAuthModal('signup')">Create Account</button>
+          <button class="btn-hero secondary" onclick="openAuthModal('signin')">Sign In</button>
+        </div>
+      </div>
+
+      <!-- Authenticated Content (Shown when logged in) -->
+      <div id="picksUnlockedContent">
+        <!-- Horizontal Week Carousel (Weeks 1 to 18) -->
+        <div class="week-scroller-container">
+          <div id="weekScroller" class="week-scroller"></div>
+        </div>
+
+        <!-- Action & Counter Toolbar -->
+        <div class="week-toolbar">
+          <div class="picks-counter">
+            <span>Week Picks:</span>
+            <span id="picksCounter" class="counter-badge">0 / 16</span>
+          </div>
+          <div class="toolbar-buttons">
+            <button id="btnRandomize" class="btn-sm warning" title="Auto-fill unpicked games">⚡ Quick Randomizer</button>
+            <button id="btnClearWeek" class="btn-sm" title="Clear this week's picks">Clear</button>
+          </div>
+        </div>
+
+        <!-- Matchup Cards List -->
+        <div id="matchupsContainer" class="matchups-grid"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 3: STANDINGS & LIVE STATS -->
+    <!-- ========================================================= -->
+    <section id="tab-standings" class="tab-content">
+      <div style="margin-bottom:16px;">
+        <h2 style="font-size:1.2rem;font-weight:800;">Live Projected Standings</h2>
+        <p style="font-size:0.8rem;color:var(--text-muted);">As you pick games across Weeks 1–18, team records and division standings update dynamically!</p>
+      </div>
+
+      <!-- 8 Division Tables Grid -->
+      <div id="divisionsContainer" class="standings-grid"></div>
+
+      <!-- Playoff Seeding Picture -->
+      <div style="margin-top:24px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--border-radius);padding:16px;">
+        <h3 style="font-size:1rem;color:var(--accent-gold);margin-bottom:6px;">Projected Playoff Picture</h3>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px;">Top 7 seeds determined by conference standings and tie-breakers.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;">
+          <div>
+            <h4 style="font-size:0.85rem;margin-bottom:8px;color:var(--accent-cyan);">AFC Seeds (1-7)</h4>
+            <ul id="afcSeedsList" style="list-style:none;"></ul>
+          </div>
+          <div>
+            <h4 style="font-size:0.85rem;margin-bottom:8px;color:var(--accent-blue);">NFC Seeds (1-7)</h4>
+            <ul id="nfcSeedsList" style="list-style:none;"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 4: LEAGUES & SOLO MODE -->
+    <!-- ========================================================= -->
+    <section id="tab-leagues" class="tab-content">
+      <div style="margin-bottom:16px;">
+        <h2 style="font-size:1.2rem;font-weight:800;">Competition Hub</h2>
+        <p style="font-size:0.8rem;color:var(--text-muted);">Choose to play solo, create a fresh league, or join friends with no wagers or cash.</p>
+      </div>
+
+      <div class="home-grid">
+        <!-- Mode Switcher Card -->
+        <div class="home-card">
+          <div class="card-heading-row">
+            <span class="card-heading">Active Play Mode</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;">Switch between personal solo tracking and league competition at any time.</p>
+          <div style="display:flex;gap:8px;">
+            <button id="btnSetSolo" class="btn-sm primary" onclick="setPlayMode('solo')">🛡️ Solo Play</button>
+            <button id="btnSetLeague" class="btn-sm" onclick="setPlayMode('league')">👥 League Mode</button>
+          </div>
+        </div>
+
+        <!-- Create New League Card -->
+        <div class="home-card">
+          <div class="card-heading-row">
+            <span class="card-heading">➕ Create a Fresh League</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">League Name</label>
+            <input type="text" id="createLeagueNameInput" class="form-input" placeholder="e.g., Gridiron Gurus" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Add Initial Players (Any number! Comma-separated)</label>
+            <input type="text" id="createLeagueMembersInput" class="form-input" placeholder="e.g., Alex, Jordan, Sam, Taylor" />
+          </div>
+          <button class="btn-block" onclick="createNewLeague()">Create League</button>
+        </div>
+      </div>
+
+      <!-- League Leaderboard / Active League List -->
+      <div id="leagueLeaderboardContainer" class="home-card" style="margin-top:20px;">
+        <div class="card-heading-row">
+          <span id="leagueTitleDisplay" class="card-heading">League Standings</span>
+          <span style="font-size:0.75rem;color:var(--text-muted);">PURE POINTS & BRAGGING RIGHTS</span>
+        </div>
+        <div id="leagueRosterList" style="margin-bottom:12px;font-size:0.85rem;color:var(--text-muted);"></div>
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Correct Picks</th>
+              <th>Accuracy</th>
+              <th style="text-align:right;">Points</th>
+            </tr>
+          </thead>
+          <tbody id="leagueStandingsRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 5: RULES & SCORING -->
+    <!-- ========================================================= -->
+    <section id="tab-rules" class="tab-content">
+      <div style="margin-bottom:16px;">
+        <h2 style="font-size:1.2rem;font-weight:800;">Rules & Scoring System</h2>
+        <p style="font-size:0.8rem;color:var(--text-muted);">Detailed guide to how predictions, tie-breakers, multipliers, and bonuses are calculated.</p>
+      </div>
+
+      <div class="home-card" style="margin-bottom:16px;">
+        <h3 style="color:var(--accent-gold);font-size:1rem;margin-bottom:10px;">🏈 Regular Season Points</h3>
+        <ul style="font-size:0.85rem;color:var(--text-muted);padding-left:18px;line-height:1.7;">
+          <li><strong>10 Points:</strong> Awarded for every correct straight-up winning team picked across all 272 regular season games.</li>
+          <li><strong>Score Proximity Tie-Breaker (+10 Bonus):</strong> Scores act as tie-breakers. Among all players who picked the winner, the player whose score prediction is closest to the actual final score wins a +10 bonus point (split evenly if tied).</li>
+          <li><strong>50 Points for Exact Score:</strong> Predicting the exact score of a game awards 50 points.</li>
+          <li><strong>Weekly 3x Multiplier:</strong> You may select strictly ONE game per week for 3x points. This triples your win to 30 points, or a massive 150 points if you predict the exact score!</li>
+        </ul>
+      </div>
+
+      <div class="home-card" style="margin-bottom:16px;">
+        <h3 style="color:var(--accent-cyan);font-size:1rem;margin-bottom:10px;">🏁 End of Regular Season Points</h3>
+        <ul style="font-size:0.85rem;color:var(--text-muted);padding-left:18px;line-height:1.7;">
+          <li><strong>10 Points:</strong> For every NFL team whose final regular season win-loss record you projected correctly.</li>
+          <li><strong>10 Points:</strong> For every divisional record (e.g., 4-2) you projected correctly.</li>
+          <li><strong>50 Points:</strong> For correctly predicting the Regular Season NFL MVP.</li>
+        </ul>
+      </div>
+
+      <div class="home-card" style="margin-bottom:16px;">
+        <h3 style="color:var(--accent-green);font-size:1rem;margin-bottom:10px;">🏆 Playoff Points</h3>
+        <ul style="font-size:0.85rem;color:var(--text-muted);padding-left:18px;line-height:1.7;">
+          <li><strong>10 Points:</strong> For each playoff team picked correctly.</li>
+          <li><strong>30 Points:</strong> For every team that lands in the exact playoff seed you projected (Seeds 1–7).</li>
+          <li><strong>30 Points:</strong> For predicting a Super Bowl appearing team (60 points if both are correct).</li>
+          <li><strong>50 Points:</strong> For predicting the Super Bowl winner.</li>
+          <li><strong>250 Points:</strong> For predicting both Super Bowl teams AND the exact final score!</li>
+          <li><strong>50 Points:</strong> For predicting the Super Bowl MVP.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- AUTHENTICATION MODAL (Sign In & Sign Up) -->
+  <!-- ========================================================= -->
+  <div id="authModal" class="modal-overlay" onclick="closeAuthModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span id="authModalTitle" class="modal-title">Welcome to Sports Psychic</span>
+        <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+      </div>
+
+      <!-- Auth Tabs -->
+      <div class="auth-tabs">
+        <button id="authTabSignIn" class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
+        <button id="authTabSignUp" class="auth-tab" onclick="switchAuthTab('signup')">Create Account</button>
+      </div>
+
+      <div class="auth-body">
+        <div id="authErrorMessage" class="auth-error"></div>
+
+        <!-- Sign In Form -->
+        <form id="signInForm" onsubmit="handleSignInSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Username or Email</label>
+            <input type="text" id="signInUsername" class="form-input" required autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="signInPassword" class="form-input" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn-block">Sign In</button>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signUpForm" style="display:none;" onsubmit="handleSignUpSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Choose Username</label>
+            <input type="text" id="signUpUsername" class="form-input" required placeholder="e.g., GridironKing" autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="signUpEmail" class="form-input" required placeholder="name@example.com" autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="signUpPassword" class="form-input" required placeholder="At least 6 characters" autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Favorite NFL Team (Optional)</label>
+            <select id="signUpFavTeam" class="form-input">
+              <option value="">Select Team</option>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <button type="submit" class="btn-block">Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- USER PROFILE MODAL -->
+  <!-- ========================================================= -->
+  <div id="profileModal" class="modal-overlay" onclick="closeProfileModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">Player Profile</span>
+        <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+      </div>
+      <div class="auth-body">
+        <div style="text-align:center;margin-bottom:16px;">
+          <div id="profileAvatar" style="width:64px;height:64px;border-radius:50%;background:var(--accent-blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;margin-bottom:8px;"></div>
+          <h3 id="profileNameDisplay" style="color:#fff;font-size:1.2rem;">Player</h3>
+          <p id="profileEmailDisplay" style="color:var(--text-muted);font-size:0.8rem;"></p>
+        </div>
+
+        <div class="home-card" style="margin-bottom:16px;background:var(--bg-secondary);">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.85rem;">
+            <span style="color:var(--text-muted);">Favorite Team:</span>
+            <strong id="profileFavTeamDisplay" style="color:var(--text-main);">None</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+            <span style="color:var(--text-muted);">Member Since:</span>
+            <strong id="profileCreatedDisplay" style="color:var(--text-main);">2026</strong>
+          </div>
+        </div>
+
+        <button class="btn-block danger" onclick="handleSignOut()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="home" onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" data-tab="picks" onclick="handlePicksAction()">
+      <span class="nav-icon">🏈</span>
+      <span>Picks</span>
+    </button>
+    <button class="nav-item" data-tab="standings" onclick="switchTab('standings')">
+      <span class="nav-icon">📊</span>
+      <span>Standings</span>
+    </button>
+    <button class="nav-item" data-tab="leagues" onclick="switchTab('leagues')">
+      <span class="nav-icon">👥</span>
+      <span>Leagues</span>
+    </button>
+    <button class="nav-item" data-tab="rules" onclick="switchTab('rules')">
+      <span class="nav-icon">📖</span>
+      <span>Rules</span>
+    </button>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="nflData.js"></script>
+  <script src="SportsPsychic.js"></script>
 </body>
 </html>
