@@ -53,9 +53,15 @@ function initActuals() {
     baseList.forEach(baseGame => {
       const existingIdx = actuals[weekKey].findIndex(g => g.id === baseGame.id);
       if (existingIdx === -1) {
-        actuals[weekKey].push({ ...baseGame });
+        actuals[weekKey].push({
+          ...baseGame,
+          isLocked: baseGame.isLocked || baseGame.isFinal || false
+        });
       } else if (!actuals[weekKey][existingIdx].isFinal && baseGame.isFinal) {
-        actuals[weekKey][existingIdx] = { ...baseGame };
+        actuals[weekKey][existingIdx] = {
+          ...baseGame,
+          isLocked: true
+        };
       }
     });
 
@@ -69,6 +75,7 @@ function initActuals() {
           awayScore: null,
           homeScore: null,
           winner: '',
+          isLocked: false,
           isFinal: false
         });
       }
@@ -84,6 +91,21 @@ function isUserAdmin() {
   return uname === 'jonny' || uname === 'jon' || uname === 'admin' || AppState.currentUser.isAdmin === true;
 }
 
+// Helper to check if a game is locked from predictions (live kickoff lock OR finalized)
+function isGameLocked(gameId, weekNum = null) {
+  if (weekNum) {
+    const list = AppState.globalActuals[`Week ${weekNum}`] || [];
+    const found = list.find(g => g.id === gameId);
+    return found ? (found.isLocked === true || found.isFinal === true) : false;
+  }
+  for (let w = 1; w <= 18; w++) {
+    const list = AppState.globalActuals[`Week ${w}`] || [];
+    const found = list.find(g => g.id === gameId);
+    if (found && (found.isLocked === true || found.isFinal === true)) return true;
+  }
+  return false;
+}
+
 // Helper to check if an official game result has finalized
 function isGameFinalized(gameId, weekNum = null) {
   if (weekNum) {
@@ -94,7 +116,7 @@ function isGameFinalized(gameId, weekNum = null) {
   for (let w = 1; w <= 18; w++) {
     const list = AppState.globalActuals[`Week ${w}`] || [];
     const found = list.find(g => g.id === gameId);
-    if (found && found.isFinal) return true;
+    if (found && found.isFinal === true) return true;
   }
   return false;
 }
@@ -608,8 +630,9 @@ function renderPicksTab() {
 
     if (pick.winner) pickedCount++;
 
-    const actual = weekActuals.find(a => a.id === game.id) || { isFinal: false };
-    const isLocked = actual.isFinal === true;
+    const actual = weekActuals.find(a => a.id === game.id) || { isFinal: false, isLocked: false };
+    const isFinal = actual.isFinal === true;
+    const isLocked = isGameLocked(game.id, AppState.currentWeek);
     const awayTeam = NFL_TEAMS[game.awayTeam] || { name: game.awayTeam, color: '#2a3b50' };
     const homeTeam = NFL_TEAMS[game.homeTeam] || { name: game.homeTeam, color: '#2a3b50' };
 
@@ -623,11 +646,11 @@ function renderPicksTab() {
       <div class="card-top-bar">
         <div style="display:flex;align-items:center;gap:6px;">
           <span>${game.dateTime || `Game ${game.gameNum}`}</span>
-          ${isLocked ? '<span class="locked-pill">🔒 FINAL • LOCKED</span>' : ''}
+          ${isFinal ? '<span class="locked-pill">🔒 FINAL • LOCKED</span>' : (isLocked ? '<span class="locked-pill live">🔒 IN PROGRESS • LOCKED</span>' : '')}
         </div>
         <button class="mult-btn ${pick.multiplier ? 'active' : ''} ${isLocked ? 'disabled' : ''}" 
           data-game-id="${game.id}"
-          ${isLocked ? 'disabled title="Game is finalized - predictions locked"' : ''}>
+          ${isLocked ? 'disabled title="Game is locked - predictions closed"' : ''}>
           ★ 3x Multiplier
         </button>
       </div>
@@ -637,7 +660,7 @@ function renderPicksTab() {
         <button class="team-btn ${pick.winner === game.awayTeam ? 'selected' : ''} ${isLocked ? 'disabled' : ''}" 
           data-team="${game.awayTeam}" 
           data-game-id="${game.id}"
-          ${isLocked ? 'disabled title="Game is finalized - predictions locked"' : ''}>
+          ${isLocked ? 'disabled title="Game is locked - predictions closed"' : ''}>
           <div class="team-badge" style="background-color: ${awayTeam.color}">${game.awayTeam}</div>
           <div class="team-name">${game.awayTeam}</div>
           <div class="team-record-sub">${awayRecord ? `(${awayRecord})` : ''}</div>
@@ -649,7 +672,7 @@ function renderPicksTab() {
         <button class="team-btn ${pick.winner === game.homeTeam ? 'selected' : ''} ${isLocked ? 'disabled' : ''}" 
           data-team="${game.homeTeam}" 
           data-game-id="${game.id}"
-          ${isLocked ? 'disabled title="Game is finalized - predictions locked"' : ''}>
+          ${isLocked ? 'disabled title="Game is locked - predictions closed"' : ''}>
           <div class="team-badge" style="background-color: ${homeTeam.color}">${game.homeTeam}</div>
           <div class="team-name">${game.homeTeam}</div>
           <div class="team-record-sub">${homeRecord ? `(${homeRecord})` : ''}</div>
@@ -670,7 +693,7 @@ function renderPicksTab() {
         </div>
       </div>
 
-      ${actual.isFinal ? `
+      ${isFinal ? `
         <div class="actual-result-banner ${pick.winner ? (pick.winner === actual.winner ? 'win' : 'loss') : 'locked-unpicked'}">
           <span>Official: ${game.awayTeam} ${actual.awayScore} - ${actual.homeScore} ${game.homeTeam} (${actual.winner} Win)</span>
           <span style="font-weight:800;">${
@@ -683,7 +706,16 @@ function renderPicksTab() {
               : 'UNPICKED (0 PTS)'
           }</span>
         </div>
-      ` : ''}
+      ` : (isLocked ? `
+        <div class="actual-result-banner ${pick.winner ? 'in-progress' : 'locked-unpicked'}">
+          <span>🏈 Kickoff Started • Game In Progress</span>
+          <span style="font-weight:800;">${
+            pick.winner
+              ? `LOCKED PICK: ${pick.winner} (${pick.awayScore ?? 0} - ${pick.homeScore ?? 0})`
+              : 'LOCKED / UNPICKED (0 PTS)'
+          }</span>
+        </div>
+      ` : '')}
     `;
 
     container.appendChild(card);
@@ -700,7 +732,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.team-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const gameId = btn.dataset.gameId;
-      if (isGameFinalized(gameId)) return;
+      if (isGameLocked(gameId)) return;
       const team = btn.dataset.team;
       if (!AppState.userPicks[gameId]) {
         AppState.userPicks[gameId] = { winner: '', awayScore: 0, homeScore: 0, multiplier: false };
@@ -715,7 +747,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.mult-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const gameId = btn.dataset.gameId;
-      if (isGameFinalized(gameId)) return;
+      if (isGameLocked(gameId)) return;
       const currentVal = AppState.userPicks[gameId]?.multiplier || false;
 
       if (!currentVal) {
@@ -739,7 +771,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.stepper-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const gameId = btn.dataset.gameId;
-      if (isGameFinalized(gameId)) return;
+      if (isGameLocked(gameId)) return;
       const action = btn.dataset.action;
       if (!AppState.userPicks[gameId]) {
         AppState.userPicks[gameId] = { winner: '', awayScore: 0, homeScore: 0, multiplier: false };
@@ -756,7 +788,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.score-input').forEach(input => {
     input.addEventListener('change', () => {
       const gameId = input.dataset.gameId;
-      if (isGameFinalized(gameId)) return;
+      if (isGameLocked(gameId)) return;
       const field = input.dataset.field;
       const val = parseInt(input.value) || 0;
       if (!AppState.userPicks[gameId]) {
@@ -779,10 +811,10 @@ function attachPicksEvents() {
         if (AppState.userPicks[g.id]?.multiplier) multSet = true;
       });
 
-      const openGames = weekGames.filter(g => !isGameFinalized(g.id));
+      const openGames = weekGames.filter(g => !isGameLocked(g.id));
 
       if (openGames.length === 0) {
-        alert('All games for this week are already finalized and locked.');
+        alert('All games for this week are already finalized or locked for kickoff.');
         return;
       }
 
@@ -811,10 +843,10 @@ function attachPicksEvents() {
   const clearBtn = document.getElementById('btnClearWeek');
   if (clearBtn) {
     clearBtn.onclick = () => {
-      if (confirm(`Clear all open predictions for Week ${AppState.currentWeek}? (Finalized games will remain locked)`)) {
+      if (confirm(`Clear all open predictions for Week ${AppState.currentWeek}? (Locked and finalized games will remain untouched)`)) {
         const weekGames = NFL_2026_SCHEDULE?.schedule?.[`Week ${AppState.currentWeek}`] || [];
         weekGames.forEach(g => {
-          if (isGameFinalized(g.id)) return;
+          if (isGameLocked(g.id)) return;
           if (AppState.userPicks[g.id]) {
             AppState.userPicks[g.id].winner = '';
             AppState.userPicks[g.id].multiplier = false;
@@ -1191,10 +1223,12 @@ window.setScorekeeperFilter = function(filter) {
   AppState.scorekeeperFilter = filter;
   const allBtn = document.getElementById('filterAllGames');
   const pendBtn = document.getElementById('filterPendingGames');
+  const liveBtn = document.getElementById('filterLiveGames');
   const finBtn = document.getElementById('filterFinalGames');
 
   if (allBtn) allBtn.className = `btn-sm ${filter === 'all' ? 'primary' : ''}`;
   if (pendBtn) pendBtn.className = `btn-sm ${filter === 'pending' ? 'primary' : ''}`;
+  if (liveBtn) liveBtn.className = `btn-sm ${filter === 'live' ? 'primary' : ''}`;
   if (finBtn) finBtn.className = `btn-sm ${filter === 'final' ? 'primary' : ''}`;
 
   renderScorekeeperGames(AppState.scorekeeperWeek);
@@ -1212,8 +1246,9 @@ window.renderScorekeeperGames = function(weekVal) {
   const weekActuals = AppState.globalActuals[weekKey] || [];
 
   const filtered = schedGames.filter(g => {
-    const act = weekActuals.find(a => a.id === g.id) || { isFinal: false };
-    if (AppState.scorekeeperFilter === 'pending') return !act.isFinal;
+    const act = weekActuals.find(a => a.id === g.id) || { isFinal: false, isLocked: false };
+    if (AppState.scorekeeperFilter === 'pending') return !act.isFinal && !act.isLocked;
+    if (AppState.scorekeeperFilter === 'live') return act.isLocked && !act.isFinal;
     if (AppState.scorekeeperFilter === 'final') return act.isFinal;
     return true;
   });
@@ -1226,12 +1261,21 @@ window.renderScorekeeperGames = function(weekVal) {
   container.innerHTML = filtered.map(game => {
     let act = weekActuals.find(a => a.id === game.id);
     if (!act) {
-      act = { id: game.id, matchup: game.matchup, awayScore: null, homeScore: null, winner: '', isFinal: false };
+      act = { id: game.id, matchup: game.matchup, awayScore: null, homeScore: null, winner: '', isLocked: false, isFinal: false };
       weekActuals.push(act);
     }
 
     const awayTeam = NFL_TEAMS[game.awayTeam] || { name: game.awayTeam, color: '#2a3b50' };
     const homeTeam = NFL_TEAMS[game.homeTeam] || { name: game.homeTeam, color: '#2a3b50' };
+
+    let statusBadgeHtml = '';
+    if (act.isFinal) {
+      statusBadgeHtml = `<span id="status-badge-${game.id}" class="status-indicator final">FINAL</span>`;
+    } else if (act.isLocked) {
+      statusBadgeHtml = `<span id="status-badge-${game.id}" class="status-indicator live">🔒 LOCKED (LIVE)</span>`;
+    } else {
+      statusBadgeHtml = `<span id="status-badge-${game.id}" class="status-indicator pending">PENDING</span>`;
+    }
 
     return `
       <div class="scorekeeper-card" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;overflow:hidden;">
@@ -1240,9 +1284,7 @@ window.renderScorekeeperGames = function(weekVal) {
             <span style="font-weight:700;color:var(--text-main);">${game.matchup}</span>
             <span style="color:var(--text-muted);font-size:0.75rem;">${game.dateTime || `Game ${game.gameNum}`}</span>
           </div>
-          <span id="status-badge-${game.id}" class="status-indicator ${act.isFinal ? 'final' : 'pending'}">
-            ${act.isFinal ? 'FINAL' : 'PENDING'}
-          </span>
+          ${statusBadgeHtml}
         </div>
 
         <div class="scorekeeper-row" style="padding:12px;background:var(--bg-card);">
@@ -1275,7 +1317,7 @@ window.renderScorekeeperGames = function(weekVal) {
           </div>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-secondary);border-top:1px solid var(--border-color);flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-secondary);border-top:1px solid var(--border-color);flex-wrap:wrap;gap:12px;">
           <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;">
             <span style="color:var(--text-muted);font-weight:600;">Winner:</span>
             <select id="winner-select-${game.id}" class="form-input" style="width:auto;padding:4px 10px;font-size:0.82rem;" onchange="updateScorekeeperWinner(${weekNum}, '${game.id}', this.value)">
@@ -1286,16 +1328,95 @@ window.renderScorekeeperGames = function(weekVal) {
             </select>
           </div>
 
-          <label style="display:inline-flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;user-select:none;">
-            <input type="checkbox" id="final-checkbox-${game.id}" ${act.isFinal ? 'checked' : ''} onchange="toggleScorekeeperFinal(${weekNum}, '${game.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;" />
-            <span style="font-weight:700;color:${act.isFinal ? 'var(--accent-green)' : 'var(--text-muted)'};" id="final-label-${game.id}">
-              Mark as Official Final
-            </span>
-          </label>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;cursor:pointer;user-select:none;" title="Lock predictions for this game at kickoff">
+              <input type="checkbox" id="lock-checkbox-${game.id}" ${act.isLocked || act.isFinal ? 'checked' : ''} onchange="toggleScorekeeperLock(${weekNum}, '${game.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;" />
+              <span style="font-weight:700;color:${act.isLocked || act.isFinal ? 'var(--accent-gold)' : 'var(--text-muted)'};" id="lock-label-${game.id}">
+                🔒 Lock Picks (Kickoff)
+              </span>
+            </label>
+
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;cursor:pointer;user-select:none;" title="Mark this game result as official final and score points">
+              <input type="checkbox" id="final-checkbox-${game.id}" ${act.isFinal ? 'checked' : ''} onchange="toggleScorekeeperFinal(${weekNum}, '${game.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;" />
+              <span style="font-weight:700;color:${act.isFinal ? 'var(--accent-green)' : 'var(--text-muted)'};" id="final-label-${game.id}">
+                Mark as Official Final
+              </span>
+            </label>
+          </div>
         </div>
       </div>
     `;
   }).join('');
+};
+
+window.toggleScorekeeperLock = function(weekNum, gameId, isLocked) {
+  const weekKey = `Week ${weekNum}`;
+  let actual = AppState.globalActuals[weekKey]?.find(g => g.id === gameId);
+  if (!actual) return;
+
+  actual.isLocked = isLocked;
+
+  // If unlocking, and it was marked final, unmark final as well
+  if (!isLocked && actual.isFinal) {
+    actual.isFinal = false;
+    const finalBox = document.getElementById(`final-checkbox-${gameId}`);
+    const finalLbl = document.getElementById(`final-label-${gameId}`);
+    if (finalBox) finalBox.checked = false;
+    if (finalLbl) finalLbl.style.color = 'var(--text-muted)';
+  }
+
+  const badge = document.getElementById(`status-badge-${gameId}`);
+  const lockLabel = document.getElementById(`lock-label-${gameId}`);
+
+  if (badge) {
+    if (actual.isFinal) {
+      badge.className = 'status-indicator final';
+      badge.textContent = 'FINAL';
+    } else if (actual.isLocked) {
+      badge.className = 'status-indicator live';
+      badge.textContent = '🔒 LOCKED (LIVE)';
+    } else {
+      badge.className = 'status-indicator pending';
+      badge.textContent = 'PENDING';
+    }
+  }
+
+  if (lockLabel) {
+    lockLabel.style.color = (actual.isLocked || actual.isFinal) ? 'var(--accent-gold)' : 'var(--text-muted)';
+  }
+};
+
+window.batchToggleWeekLock = function(lockAll) {
+  const weekNum = AppState.scorekeeperWeek || 1;
+  const weekKey = `Week ${weekNum}`;
+  const weekActuals = AppState.globalActuals[weekKey] || [];
+  const schedGames = NFL_2026_SCHEDULE?.schedule?.[weekKey] || [];
+
+  let count = 0;
+  schedGames.forEach(game => {
+    let act = weekActuals.find(a => a.id === game.id);
+    if (!act) {
+      act = { id: game.id, matchup: game.matchup, awayScore: null, homeScore: null, winner: '', isLocked: false, isFinal: false };
+      weekActuals.push(act);
+    }
+    // Only alter games that are not already finalized
+    if (!act.isFinal) {
+      act.isLocked = lockAll;
+      count++;
+    }
+  });
+
+  renderScorekeeperGames(weekNum);
+
+  const toast = document.getElementById('scorekeeperStatusToast');
+  if (toast) {
+    toast.textContent = lockAll 
+      ? `🔒 Locked ${count} pending/live game(s) for Week ${weekNum}. Predictions are closed!` 
+      : `🔓 Unlocked ${count} non-final game(s) for Week ${weekNum}. Predictions reopened.`;
+    setTimeout(() => {
+      if (toast) toast.textContent = '';
+    }, 3500);
+  }
 };
 
 window.updateScorekeeperScore = function(weekNum, gameId, field, val) {
@@ -1312,6 +1433,7 @@ window.updateScorekeeperScore = function(weekNum, gameId, field, val) {
       awayScore: null,
       homeScore: null,
       winner: '',
+      isLocked: false,
       isFinal: false
     };
     AppState.globalActuals[weekKey].push(actual);
@@ -1349,6 +1471,9 @@ window.toggleScorekeeperFinal = function(weekNum, gameId, isFinal) {
   if (!actual) return;
 
   actual.isFinal = isFinal;
+  if (isFinal) {
+    actual.isLocked = true;
+  }
 
   if (isFinal && (!actual.winner || actual.winner === '') && sched && actual.awayScore !== null && actual.homeScore !== null) {
     if (actual.awayScore > actual.homeScore) actual.winner = sched.awayTeam;
@@ -1360,13 +1485,32 @@ window.toggleScorekeeperFinal = function(weekNum, gameId, isFinal) {
   }
 
   const badge = document.getElementById(`status-badge-${gameId}`);
-  const label = document.getElementById(`final-label-${gameId}`);
+  const finalLabel = document.getElementById(`final-label-${gameId}`);
+  const lockCheckbox = document.getElementById(`lock-checkbox-${gameId}`);
+  const lockLabel = document.getElementById(`lock-label-${gameId}`);
+
   if (badge) {
-    badge.className = `status-indicator ${isFinal ? 'final' : 'pending'}`;
-    badge.textContent = isFinal ? 'FINAL' : 'PENDING';
+    if (isFinal) {
+      badge.className = 'status-indicator final';
+      badge.textContent = 'FINAL';
+    } else if (actual.isLocked) {
+      badge.className = 'status-indicator live';
+      badge.textContent = '🔒 LOCKED (LIVE)';
+    } else {
+      badge.className = 'status-indicator pending';
+      badge.textContent = 'PENDING';
+    }
   }
-  if (label) {
-    label.style.color = isFinal ? 'var(--accent-green)' : 'var(--text-muted)';
+
+  if (finalLabel) {
+    finalLabel.style.color = isFinal ? 'var(--accent-green)' : 'var(--text-muted)';
+  }
+
+  if (lockCheckbox && isFinal) {
+    lockCheckbox.checked = true;
+  }
+  if (lockLabel) {
+    lockLabel.style.color = (actual.isLocked || isFinal) ? 'var(--accent-gold)' : 'var(--text-muted)';
   }
 };
 

@@ -468,10 +468,13 @@
             <!-- Populated dynamically with Weeks 1-18 -->
           </select>
         </div>
-        <div style="display:flex;gap:6px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
           <button id="filterAllGames" class="btn-sm primary" onclick="setScorekeeperFilter('all')">All Games</button>
-          <button id="filterPendingGames" class="btn-sm" onclick="setScorekeeperFilter('pending')">Pending</button>
+          <button id="filterPendingGames" class="btn-sm" onclick="setScorekeeperFilter('pending')">Open</button>
+          <button id="filterLiveGames" class="btn-sm" onclick="setScorekeeperFilter('live')">Live / Locked</button>
           <button id="filterFinalGames" class="btn-sm" onclick="setScorekeeperFilter('final')">Finalized</button>
+          <button class="btn-sm" style="background:rgba(255,179,0,0.18);border:1px solid rgba(255,179,0,0.4);color:var(--accent-gold);margin-left:4px;" onclick="batchToggleWeekLock(true)" title="Lock all pending games this week for kickoff">🔒 Lock Week Kickoffs</button>
+          <button class="btn-sm" style="background:rgba(255,255,255,0.06);color:var(--text-muted);" onclick="batchToggleWeekLock(false)" title="Unlock open games this week">🔓 Unlock Open</button>
         </div>
       </div>
 
