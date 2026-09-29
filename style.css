@@ -626,6 +626,64 @@ body {
 /* =========================================================
    TAB 3: PLAYER ROSTER CARDS
    ========================================================= */
+.player-top-nav {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-back {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-back:hover, .btn-back:active {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-blue);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-back .back-arrow {
+  color: var(--accent-gold);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.btn-back-bottom {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 12px;
+  border-radius: var(--border-radius);
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.btn-back-bottom:hover, .btn-back-bottom:active {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+  color: var(--accent-gold);
+}
+
 .player-scroller-pills {
   display: flex;
   gap: 8px;
