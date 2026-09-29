@@ -49,7 +49,7 @@ const PLAYER_COLORS = {
   "Dishman": "#00e5ff",
   "Ethan": "#125740", // New York Jets Green (NYJ)
   "Brett": "#d500f9",
-  "Wells": "#651fff",
+  "Wells": "#002C5F", // Indianapolis Colts Blue (IND)
   "Rob": "#f50057"
 };
 
@@ -63,7 +63,8 @@ const PLAYER_AVATARS = {
   "Mango": "avatars/mango.jpg",
   "Ross": "avatars/ross.jpg",
   "Caleb": "avatars/caleb.jpg",
-  "Ethan": "avatars/ethan.jpg"
+  "Ethan": "avatars/ethan.jpg",
+  "Wells": "avatars/wells.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
