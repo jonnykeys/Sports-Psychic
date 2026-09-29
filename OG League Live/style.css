@@ -745,6 +745,12 @@ body {
   box-shadow: 0 0 10px var(--accent-gold-glow);
 }
 
+.split-pick-chip.closest {
+  border-color: rgba(56, 189, 248, 0.6);
+  background: rgba(56, 189, 248, 0.12);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
 .split-pick-chip.wrong {
   border-color: rgba(244, 63, 94, 0.2);
   opacity: 0.72;
@@ -804,6 +810,12 @@ body {
   color: var(--accent-green);
   background: rgba(16, 185, 129, 0.18);
   border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.chip-pts-badge.pts-closest {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(56, 189, 248, 0.45);
 }
 
 .chip-pts-badge.pts-exact {
@@ -1284,6 +1296,12 @@ body {
   background: rgba(41, 121, 255, 0.2);
   color: var(--accent-blue);
   border: 1px solid rgba(41, 121, 255, 0.35);
+}
+
+.pts-closest {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
 }
 
 .pts-exact {

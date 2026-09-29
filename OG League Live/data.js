@@ -79,7 +79,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -87,7 +90,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  27,
                                                                               "points":  10,
-                                                                              "winner":  "ATL"
+                                                                              "winner":  "ATL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -95,7 +101,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  10,
-                                                                                "winner":  "ATL"
+                                                                                "winner":  "ATL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -103,7 +112,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -111,7 +123,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "GB"
+                                                                             "winner":  "GB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -119,7 +134,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "GB"
+                                                                             "winner":  "GB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -127,7 +145,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -135,7 +156,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -143,7 +167,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "GB"
+                                                                                "winner":  "GB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -151,15 +178,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  0,
-                                                                                 "winner":  "GB"
+                                                                                 "winner":  "GB",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
                                                                                "homeScore":  21,
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
-                                                                               "points":  10,
-                                                                               "winner":  "ATL"
+                                                                               "points":  20,
+                                                                               "winner":  "ATL",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -167,7 +200,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "GB"
+                                                                             "winner":  "GB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "ATL @ GB",
@@ -186,7 +222,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -194,7 +233,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  20,
                                                                               "points":  10,
-                                                                              "winner":  "BUF"
+                                                                              "winner":  "BUF",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -202,7 +244,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  0,
-                                                                                "winner":  "LAC"
+                                                                                "winner":  "LAC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -210,7 +255,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -218,7 +266,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -226,7 +277,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -234,15 +288,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
                                                                                "homeScore":  24,
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
-                                                                               "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "points":  20,
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -250,7 +310,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  0,
-                                                                                "winner":  "LAC"
+                                                                                "winner":  "LAC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -258,7 +321,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  10,
-                                                                                 "winner":  "BUF"
+                                                                                 "winner":  "BUF",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -266,7 +332,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -274,7 +343,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "LAC"
+                                                                             "winner":  "LAC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "LAC @ BUF",
@@ -293,7 +365,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "CAR"
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -301,7 +376,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  28,
                                                                               "points":  0,
-                                                                              "winner":  "CAR"
+                                                                              "winner":  "CAR",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -309,7 +387,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "CAR"
+                                                                                "winner":  "CAR",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -317,7 +398,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CAR"
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -325,7 +409,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "CAR"
+                                                                             "winner":  "CAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -333,7 +420,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "CAR"
+                                                                             "winner":  "CAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -341,7 +431,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "CLE"
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -349,15 +442,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "CAR"
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
                                                                                 "homeScore":  20,
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
-                                                                                "points":  10,
-                                                                                "winner":  "CLE"
+                                                                                "points":  15,
+                                                                                "winner":  "CLE",
+                                                                                "isClosest":  true,
+                                                                                "bonusPoints":  5,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -365,15 +464,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
                                                                                  "points":  0,
-                                                                                 "winner":  "CAR"
+                                                                                 "winner":  "CAR",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
                                                                                "homeScore":  20,
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
-                                                                               "points":  10,
-                                                                               "winner":  "CLE"
+                                                                               "points":  15,
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -381,7 +486,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "CAR"
+                                                                             "winner":  "CAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "CAR @ CLE",
@@ -400,7 +508,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -408,7 +519,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  10,
-                                                                              "winner":  "DET"
+                                                                              "winner":  "DET",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -416,7 +530,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "NYJ"
+                                                                                "winner":  "NYJ",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -424,15 +541,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  true,
                                                                              "homeScore":  31,
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
-                                                                             "points":  50,
-                                                                             "winner":  "DET"
+                                                                             "points":  60,
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  50,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -440,7 +563,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  10,
-                                                                             "winner":  "DET"
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -448,7 +574,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -456,7 +585,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -464,7 +596,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "DET"
+                                                                                "winner":  "DET",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -472,7 +607,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  10,
-                                                                                 "winner":  "DET"
+                                                                                 "winner":  "DET",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -480,7 +618,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -488,7 +629,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  7,
                                                                              "points":  10,
-                                                                             "winner":  "DET"
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "NYJ @ DET",
@@ -507,15 +651,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
                                                                               "homeScore":  23,
                                                                               "multiplier":  false,
                                                                               "awayScore":  20,
-                                                                              "points":  10,
-                                                                              "winner":  "IND"
+                                                                              "points":  20,
+                                                                              "winner":  "IND",
+                                                                              "isClosest":  true,
+                                                                              "bonusPoints":  10,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -523,7 +673,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  0,
-                                                                                "winner":  "HOU"
+                                                                                "winner":  "HOU",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -531,7 +684,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "IND"
+                                                                               "winner":  "IND",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -539,7 +695,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  0,
-                                                                             "winner":  "HOU"
+                                                                             "winner":  "HOU",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -547,7 +706,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  0,
-                                                                             "winner":  "HOU"
+                                                                             "winner":  "HOU",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -555,7 +717,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "IND"
+                                                                               "winner":  "IND",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -563,7 +728,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -571,7 +739,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "IND"
+                                                                                "winner":  "IND",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -579,7 +750,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  0,
-                                                                                 "winner":  "HOU"
+                                                                                 "winner":  "HOU",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -587,7 +761,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -595,7 +772,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "HOU"
+                                                                             "winner":  "HOU",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "HOU @ IND",
@@ -614,7 +794,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -622,7 +805,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  10,
-                                                                              "winner":  "KC"
+                                                                              "winner":  "KC",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -630,7 +816,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  20,
                                                                                 "points":  30,
-                                                                                "winner":  "KC"
+                                                                                "winner":  "KC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  30
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -638,7 +827,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  20,
                                                                                "points":  30,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -646,7 +838,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "MIA"
+                                                                             "winner":  "MIA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -654,7 +849,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  27,
                                                                              "points":  30,
-                                                                             "winner":  "KC"
+                                                                             "winner":  "KC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  30
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -662,15 +860,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  10,
                                                                                "points":  30,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
                                                                                "homeScore":  17,
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
-                                                                               "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "points":  20,
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -678,7 +882,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  10,
-                                                                                "winner":  "KC"
+                                                                                "winner":  "KC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -686,7 +893,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  27,
                                                                                  "points":  10,
-                                                                                 "winner":  "KC"
+                                                                                 "winner":  "KC",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -694,7 +904,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -702,7 +915,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "KC"
+                                                                             "winner":  "KC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "KC @ MIA",
@@ -721,7 +937,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -729,7 +948,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  10,
-                                                                              "winner":  "NYG"
+                                                                              "winner":  "NYG",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -737,7 +959,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  0,
-                                                                                "winner":  "TEN"
+                                                                                "winner":  "TEN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -745,7 +970,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -753,15 +981,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "TEN"
+                                                                             "winner":  "TEN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
                                                                              "homeScore":  20,
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
-                                                                             "points":  10,
-                                                                             "winner":  "NYG"
+                                                                             "points":  20,
+                                                                             "winner":  "NYG",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -769,7 +1003,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  0,
-                                                                               "winner":  "TEN"
+                                                                               "winner":  "TEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -777,7 +1014,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -785,7 +1025,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "NYG"
+                                                                                "winner":  "NYG",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -793,7 +1036,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  10,
-                                                                                 "winner":  "NYG"
+                                                                                 "winner":  "NYG",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -801,7 +1047,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -809,7 +1058,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "TEN"
+                                                                             "winner":  "TEN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "TEN @ NYG",
@@ -828,7 +1080,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -836,7 +1091,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  28,
                                                                               "points":  0,
-                                                                              "winner":  "CIN"
+                                                                              "winner":  "CIN",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -844,7 +1102,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "CIN"
+                                                                                "winner":  "CIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -852,7 +1113,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  35,
                                                                                "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -860,7 +1124,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -868,7 +1135,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  0,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -876,7 +1146,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -884,7 +1157,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -892,7 +1168,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "CIN"
+                                                                                "winner":  "CIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -900,15 +1179,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
                                                                                  "points":  10,
-                                                                                 "winner":  "PIT"
+                                                                                 "winner":  "PIT",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
                                                                                "homeScore":  24,
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
-                                                                               "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "points":  20,
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -916,7 +1201,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "CIN @ PIT",
@@ -935,7 +1223,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -943,7 +1234,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  23,
                                                                               "points":  0,
-                                                                              "winner":  "SEA"
+                                                                              "winner":  "SEA",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -951,7 +1245,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  0,
-                                                                                "winner":  "SEA"
+                                                                                "winner":  "SEA",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -959,7 +1256,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -967,7 +1267,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -975,7 +1278,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -983,7 +1289,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -991,7 +1300,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -999,7 +1311,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "SEA"
+                                                                                "winner":  "SEA",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1007,7 +1322,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  27,
                                                                                  "points":  0,
-                                                                                 "winner":  "SEA"
+                                                                                 "winner":  "SEA",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1015,15 +1333,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
                                                                              "homeScore":  23,
                                                                              "multiplier":  true,
                                                                              "awayScore":  20,
-                                                                             "points":  30,
-                                                                             "winner":  "WSH"
+                                                                             "points":  60,
+                                                                             "winner":  "WSH",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  30,
+                                                                             "basePoints":  30
                                                                          }
                                                              },
                                                    "matchup":  "SEA @ WSH",
@@ -1042,7 +1366,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1050,7 +1377,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "NE"
+                                                                              "winner":  "NE",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1058,7 +1388,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  10,
-                                                                                "winner":  "JAX"
+                                                                                "winner":  "JAX",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1066,7 +1399,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1074,7 +1410,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "NE"
+                                                                             "winner":  "NE",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -1082,7 +1421,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  0,
-                                                                             "winner":  "NE"
+                                                                             "winner":  "NE",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -1090,15 +1432,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "JAX"
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
                                                                                "homeScore":  24,
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
-                                                                               "points":  10,
-                                                                               "winner":  "JAX"
+                                                                               "points":  20,
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1106,7 +1454,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "NE"
+                                                                                "winner":  "NE",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1114,7 +1465,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  0,
-                                                                                 "winner":  "NE"
+                                                                                 "winner":  "NE",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1122,7 +1476,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "JAX"
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1130,7 +1487,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "NE"
+                                                                             "winner":  "NE",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "NE @ JAX",
@@ -1149,7 +1509,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1157,7 +1520,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  10,
-                                                                              "winner":  "SF"
+                                                                              "winner":  "SF",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1165,7 +1531,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  10,
-                                                                                "winner":  "SF"
+                                                                                "winner":  "SF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1173,7 +1542,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  13,
                                                                                "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1181,15 +1553,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "AZ"
+                                                                             "winner":  "AZ",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
                                                                              "homeScore":  27,
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
-                                                                             "points":  10,
-                                                                             "winner":  "SF"
+                                                                             "points":  20,
+                                                                             "winner":  "SF",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -1197,7 +1575,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "AZ"
+                                                                               "winner":  "AZ",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -1205,7 +1586,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1213,7 +1597,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  10,
-                                                                                "winner":  "SF"
+                                                                                "winner":  "SF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1221,7 +1608,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  true,
                                                                                  "awayScore":  13,
                                                                                  "points":  30,
-                                                                                 "winner":  "SF"
+                                                                                 "winner":  "SF",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  30
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1229,7 +1619,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1237,7 +1630,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  0,
-                                                                             "winner":  "AZ"
+                                                                             "winner":  "AZ",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "AZ @ SF",
@@ -1256,7 +1652,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1264,7 +1663,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  20,
                                                                               "points":  0,
-                                                                              "winner":  "TB"
+                                                                              "winner":  "TB",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1272,7 +1674,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  10,
-                                                                                "winner":  "MIN"
+                                                                                "winner":  "MIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1280,7 +1685,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1288,23 +1696,32 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "TB"
+                                                                             "winner":  "TB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
                                                                              "homeScore":  17,
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
-                                                                             "points":  10,
-                                                                             "winner":  "MIN"
+                                                                             "points":  15,
+                                                                             "winner":  "MIN",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  5,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  17,
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
-                                                                               "points":  10,
-                                                                               "winner":  "MIN"
+                                                                               "points":  15,
+                                                                               "winner":  "MIN",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -1312,7 +1729,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1320,7 +1740,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  10,
-                                                                                "winner":  "MIN"
+                                                                                "winner":  "MIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1328,7 +1751,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
                                                                                  "points":  0,
-                                                                                 "winner":  "TB"
+                                                                                 "winner":  "TB",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1336,7 +1762,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1344,7 +1773,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "TB"
+                                                                             "winner":  "TB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "MIN @ TB",
@@ -1363,7 +1795,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1371,7 +1806,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  true,
                                                                               "awayScore":  10,
                                                                               "points":  0,
-                                                                              "winner":  "DAL"
+                                                                              "winner":  "DAL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1379,7 +1817,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "DAL"
+                                                                                "winner":  "DAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1387,7 +1828,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
                                                                                "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1395,7 +1839,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  10,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -1403,7 +1850,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  13,
                                                                              "points":  0,
-                                                                             "winner":  "DAL"
+                                                                             "winner":  "DAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -1411,7 +1861,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -1419,7 +1872,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1427,15 +1883,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  0,
-                                                                                "winner":  "DAL"
+                                                                                "winner":  "DAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
                                                                                  "homeScore":  24,
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  30,
-                                                                                 "points":  10,
-                                                                                 "winner":  "BAL"
+                                                                                 "points":  20,
+                                                                                 "winner":  "BAL",
+                                                                                 "isClosest":  true,
+                                                                                 "bonusPoints":  10,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1443,7 +1905,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1451,7 +1916,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "DAL"
+                                                                             "winner":  "DAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "BAL @ DAL",
@@ -1470,7 +1938,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "NO"
+                                                                               "winner":  "NO",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1478,7 +1949,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  0,
-                                                                              "winner":  "NO"
+                                                                              "winner":  "NO",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1486,7 +1960,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  7,
                                                                                 "points":  0,
-                                                                                "winner":  "NO"
+                                                                                "winner":  "NO",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1494,7 +1971,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "LV"
+                                                                               "winner":  "LV",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1502,7 +1982,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "NO"
+                                                                             "winner":  "NO",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -1510,15 +1993,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "NO"
+                                                                             "winner":  "NO",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  21,
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
-                                                                               "points":  10,
-                                                                               "winner":  "LV"
+                                                                               "points":  20,
+                                                                               "winner":  "LV",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -1526,7 +2015,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "NO"
+                                                                               "winner":  "NO",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1534,7 +2026,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "NO"
+                                                                                "winner":  "NO",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1542,7 +2037,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  10,
-                                                                                 "winner":  "LV"
+                                                                                 "winner":  "LV",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1550,7 +2048,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "NO"
+                                                                               "winner":  "NO",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1558,7 +2059,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "NO"
+                                                                             "winner":  "NO",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "LV @ NO",
@@ -1577,7 +2081,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1585,7 +2092,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  14,
                                                                               "points":  10,
-                                                                              "winner":  "DEN"
+                                                                              "winner":  "DEN",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1593,7 +2103,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "LAR"
+                                                                                "winner":  "LAR",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1601,7 +2114,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1609,15 +2125,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
                                                                              "homeScore":  31,
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
-                                                                             "points":  10,
-                                                                             "winner":  "DEN"
+                                                                             "points":  20,
+                                                                             "winner":  "DEN",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -1625,7 +2147,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -1633,7 +2158,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  17,
                                                                                "points":  30,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1641,7 +2169,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "LAR"
+                                                                                "winner":  "LAR",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1649,7 +2180,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  0,
-                                                                                 "winner":  "LAR"
+                                                                                 "winner":  "LAR",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1657,7 +2191,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1665,7 +2202,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "LAR @ DEN",
@@ -1684,7 +2224,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1692,7 +2235,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  0,
-                                                                              "winner":  "PHI"
+                                                                              "winner":  "PHI",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1700,7 +2246,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  0,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1708,7 +2257,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1716,7 +2268,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  0,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -1724,7 +2279,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -1732,7 +2290,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -1740,7 +2301,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1748,7 +2312,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1756,7 +2323,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  0,
-                                                                                 "winner":  "PHI"
+                                                                                 "winner":  "PHI",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1764,7 +2334,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1772,7 +2345,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "PHI @ CHI",
@@ -1859,15 +2435,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
                                                                               "homeScore":  14,
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
-                                                                              "points":  10,
-                                                                              "winner":  "SEA"
+                                                                              "points":  20,
+                                                                              "winner":  "SEA",
+                                                                              "isClosest":  true,
+                                                                              "bonusPoints":  10,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1875,7 +2457,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "NE"
+                                                                                "winner":  "NE",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1883,7 +2468,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -1891,7 +2479,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -1899,7 +2490,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -1907,7 +2501,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -1915,7 +2512,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -1923,7 +2523,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  10,
-                                                                                "winner":  "SEA"
+                                                                                "winner":  "SEA",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -1931,7 +2534,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  10,
-                                                                                 "winner":  "SEA"
+                                                                                 "winner":  "SEA",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -1939,7 +2545,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -1947,7 +2556,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  10,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "NE @ SEA",
@@ -1966,7 +2578,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -1974,7 +2589,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  0,
-                                                                              "winner":  "LAR"
+                                                                              "winner":  "LAR",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -1982,7 +2600,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "LAR"
+                                                                                "winner":  "LAR",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -1990,15 +2611,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
                                                                              "homeScore":  14,
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
-                                                                             "points":  10,
-                                                                             "winner":  "SF"
+                                                                             "points":  20,
+                                                                             "winner":  "SF",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2006,7 +2633,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2014,7 +2644,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2022,7 +2655,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2030,7 +2666,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  27,
                                                                                 "points":  10,
-                                                                                "winner":  "SF"
+                                                                                "winner":  "SF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2038,7 +2677,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  0,
-                                                                                 "winner":  "LAR"
+                                                                                 "winner":  "LAR",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2046,7 +2688,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -2054,7 +2699,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  13,
                                                                              "points":  0,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "SF @ LAR",
@@ -2073,7 +2721,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -2081,7 +2732,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "TB"
+                                                                              "winner":  "TB",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2089,7 +2743,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  10,
-                                                                                "winner":  "CIN"
+                                                                                "winner":  "CIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -2097,7 +2754,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2105,7 +2765,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2113,7 +2776,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  10,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2121,7 +2787,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  16,
                                                                                "points":  10,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2129,7 +2798,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2137,7 +2809,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "TB"
+                                                                                "winner":  "TB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2145,7 +2820,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  27,
                                                                                  "points":  0,
-                                                                                 "winner":  "TB"
+                                                                                 "winner":  "TB",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2153,15 +2831,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
                                                                              "homeScore":  33,
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
-                                                                             "points":  10,
-                                                                             "winner":  "CIN"
+                                                                             "points":  20,
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "TB @ CIN",
@@ -2180,7 +2864,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -2188,7 +2875,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  10,
-                                                                              "winner":  "DET"
+                                                                              "winner":  "DET",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2196,15 +2886,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  7,
                                                                                 "points":  10,
-                                                                                "winner":  "DET"
+                                                                                "winner":  "DET",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
                                                                                "homeScore":  28,
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
-                                                                               "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "points":  15,
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2212,7 +2908,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "DET"
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2220,15 +2919,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "DET"
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  30,
                                                                                "multiplier":  false,
                                                                                "awayScore":  19,
-                                                                               "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "points":  15,
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2236,7 +2941,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2244,7 +2952,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  7,
                                                                                 "points":  10,
-                                                                                "winner":  "DET"
+                                                                                "winner":  "DET",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2252,7 +2963,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  10,
-                                                                                 "winner":  "DET"
+                                                                                 "winner":  "DET",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2260,7 +2974,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  10,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -2268,7 +2985,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  7,
                                                                              "points":  10,
-                                                                             "winner":  "DET"
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "NO @ DET",
@@ -2287,7 +3007,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "TEN"
+                                                                               "winner":  "TEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -2295,7 +3018,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "TEN"
+                                                                              "winner":  "TEN",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2303,7 +3029,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  28,
                                                                                 "points":  10,
-                                                                                "winner":  "NYJ"
+                                                                                "winner":  "NYJ",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -2311,7 +3040,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "NYJ"
+                                                                               "winner":  "NYJ",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2319,7 +3051,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "TEN"
+                                                                             "winner":  "TEN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2327,7 +3062,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "TEN"
+                                                                             "winner":  "TEN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2335,7 +3073,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "NYJ"
+                                                                               "winner":  "NYJ",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2343,15 +3084,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  6,
                                                                                "points":  0,
-                                                                               "winner":  "TEN"
+                                                                               "winner":  "TEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
                                                                                 "homeScore":  17,
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
-                                                                                "points":  10,
-                                                                                "winner":  "NYJ"
+                                                                                "points":  20,
+                                                                                "winner":  "NYJ",
+                                                                                "isClosest":  true,
+                                                                                "bonusPoints":  10,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2359,7 +3106,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
                                                                                  "points":  0,
-                                                                                 "winner":  "TEN"
+                                                                                 "winner":  "TEN",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2367,7 +3117,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "TEN"
+                                                                               "winner":  "TEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -2375,7 +3128,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  30,
                                                                              "points":  10,
-                                                                             "winner":  "NYJ"
+                                                                             "winner":  "NYJ",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "NYJ @ TEN",
@@ -2394,7 +3150,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -2402,7 +3161,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  10,
-                                                                              "winner":  "BAL"
+                                                                              "winner":  "BAL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2410,15 +3172,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  10,
-                                                                                "winner":  "BAL"
+                                                                                "winner":  "BAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
                                                                                "homeScore":  24,
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
-                                                                               "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "points":  15,
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2426,7 +3194,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  10,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2434,15 +3205,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  10,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  21,
                                                                                "multiplier":  true,
                                                                                "awayScore":  28,
-                                                                               "points":  30,
-                                                                               "winner":  "BAL"
+                                                                               "points":  45,
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  15,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2450,7 +3227,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2458,7 +3238,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  10,
-                                                                                "winner":  "BAL"
+                                                                                "winner":  "BAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2466,7 +3249,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  10,
-                                                                                 "winner":  "BAL"
+                                                                                 "winner":  "BAL",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2474,7 +3260,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -2482,7 +3271,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  10,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "BAL @ IND",
@@ -2501,7 +3293,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -2509,7 +3304,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  28,
                                                                               "points":  0,
-                                                                              "winner":  "ATL"
+                                                                              "winner":  "ATL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2517,7 +3315,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  10,
-                                                                                "winner":  "PIT"
+                                                                                "winner":  "PIT",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -2525,7 +3326,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2533,7 +3337,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  10,
-                                                                             "winner":  "PIT"
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2541,7 +3348,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "PIT"
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2549,7 +3359,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2557,7 +3370,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2565,7 +3381,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  7,
                                                                                 "points":  10,
-                                                                                "winner":  "PIT"
+                                                                                "winner":  "PIT",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2573,7 +3392,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  0,
-                                                                                 "winner":  "ATL"
+                                                                                 "winner":  "ATL",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2581,15 +3403,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  10,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
                                                                              "homeScore":  21,
                                                                              "multiplier":  false,
                                                                              "awayScore":  13,
-                                                                             "points":  10,
-                                                                             "winner":  "PIT"
+                                                                             "points":  20,
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "ATL @ PIT",
@@ -2608,15 +3436,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
                                                                               "homeScore":  24,
                                                                               "multiplier":  false,
                                                                               "awayScore":  27,
-                                                                              "points":  10,
-                                                                              "winner":  "CHI"
+                                                                              "points":  15,
+                                                                              "winner":  "CHI",
+                                                                              "isClosest":  true,
+                                                                              "bonusPoints":  5,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2624,7 +3458,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  17,
                                                                                 "points":  30,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  30
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -2632,7 +3469,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  26,
                                                                                "points":  30,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2640,7 +3480,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "CHI"
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2648,7 +3491,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  10,
-                                                                             "winner":  "CHI"
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2656,7 +3502,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  26,
                                                                                "points":  10,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2664,7 +3513,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  10,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2672,7 +3524,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  10,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2680,7 +3535,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  27,
                                                                                  "points":  10,
-                                                                                 "winner":  "CHI"
+                                                                                 "winner":  "CHI",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2688,15 +3546,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CAR"
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
                                                                              "homeScore":  20,
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
-                                                                             "points":  10,
-                                                                             "winner":  "CHI"
+                                                                             "points":  15,
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  5,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "CHI @ CAR",
@@ -2715,7 +3579,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "JAX"
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -2723,7 +3590,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  10,
-                                                                              "winner":  "JAX"
+                                                                              "winner":  "JAX",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2731,7 +3601,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  10,
-                                                                                "winner":  "JAX"
+                                                                                "winner":  "JAX",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -2739,7 +3612,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CLE"
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2747,7 +3623,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "JAX"
+                                                                             "winner":  "JAX",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2755,7 +3634,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "JAX"
+                                                                             "winner":  "JAX",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2763,7 +3645,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "JAX"
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2771,7 +3656,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "JAX"
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2779,15 +3667,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "JAX"
+                                                                                "winner":  "JAX",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
                                                                                  "homeScore":  24,
                                                                                  "multiplier":  true,
                                                                                  "awayScore":  13,
-                                                                                 "points":  30,
-                                                                                 "winner":  "JAX"
+                                                                                 "points":  60,
+                                                                                 "winner":  "JAX",
+                                                                                 "isClosest":  true,
+                                                                                 "bonusPoints":  30,
+                                                                                 "basePoints":  30
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2795,7 +3689,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CLE"
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -2803,7 +3700,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  12,
                                                                              "points":  10,
-                                                                             "winner":  "JAX"
+                                                                             "winner":  "JAX",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "CLE @ JAX",
@@ -2822,15 +3722,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
                                                                               "homeScore":  24,
                                                                               "multiplier":  false,
                                                                               "awayScore":  31,
-                                                                              "points":  10,
-                                                                              "winner":  "BUF"
+                                                                              "points":  20,
+                                                                              "winner":  "BUF",
+                                                                              "isClosest":  true,
+                                                                              "bonusPoints":  10,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2838,7 +3744,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  10,
-                                                                                "winner":  "BUF"
+                                                                                "winner":  "BUF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -2846,7 +3755,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2854,7 +3766,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -2862,7 +3777,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2870,7 +3788,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2878,7 +3799,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2886,7 +3810,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "BUF"
+                                                                                "winner":  "BUF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -2894,7 +3821,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  0,
-                                                                                 "winner":  "HOU"
+                                                                                 "winner":  "HOU",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -2902,7 +3832,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -2910,7 +3843,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "BUF @ HOU",
@@ -2929,7 +3865,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "MIA"
+                                                                               "winner":  "MIA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -2937,7 +3876,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  10,
-                                                                              "winner":  "LV"
+                                                                              "winner":  "LV",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -2945,7 +3887,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "MIA"
+                                                                                "winner":  "MIA",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -2953,7 +3898,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "LV"
+                                                                               "winner":  "LV",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -2961,15 +3909,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "MIA"
+                                                                             "winner":  "MIA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
                                                                              "homeScore":  21,
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
-                                                                             "points":  10,
-                                                                             "winner":  "LV"
+                                                                             "points":  20,
+                                                                             "winner":  "LV",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -2977,7 +3931,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "MIA"
+                                                                               "winner":  "MIA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -2985,7 +3942,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  9,
                                                                                "points":  10,
-                                                                               "winner":  "LV"
+                                                                               "winner":  "LV",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -2993,7 +3953,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "LV"
+                                                                                "winner":  "LV",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -3001,7 +3964,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
                                                                                  "points":  10,
-                                                                                 "winner":  "LV"
+                                                                                 "winner":  "LV",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3009,7 +3975,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "LV"
+                                                                               "winner":  "LV",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3017,7 +3986,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  6,
                                                                              "points":  10,
-                                                                             "winner":  "LV"
+                                                                             "winner":  "LV",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "MIA @ LV",
@@ -3036,7 +4008,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3044,7 +4019,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  0,
-                                                                              "winner":  "GB"
+                                                                              "winner":  "GB",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3052,7 +4030,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  0,
-                                                                                "winner":  "GB"
+                                                                                "winner":  "GB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3060,7 +4041,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "MIN"
+                                                                               "winner":  "MIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3068,7 +4052,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  10,
-                                                                             "winner":  "MIN"
+                                                                             "winner":  "MIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3076,7 +4063,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  10,
-                                                                             "winner":  "MIN"
+                                                                             "winner":  "MIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -3084,7 +4074,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -3092,7 +4085,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3100,15 +4096,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  27,
                                                                                 "points":  0,
-                                                                                "winner":  "GB"
+                                                                                "winner":  "GB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
                                                                                  "homeScore":  24,
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
-                                                                                 "points":  10,
-                                                                                 "winner":  "MIN"
+                                                                                 "points":  20,
+                                                                                 "winner":  "MIN",
+                                                                                 "isClosest":  true,
+                                                                                 "bonusPoints":  10,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3116,7 +4118,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3124,7 +4129,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  23,
                                                                              "points":  0,
-                                                                             "winner":  "GB"
+                                                                             "winner":  "GB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "GB @ MIN",
@@ -3143,7 +4151,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3151,7 +4162,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  10,
-                                                                              "winner":  "PHI"
+                                                                              "winner":  "PHI",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3159,7 +4173,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  10,
-                                                                                "winner":  "PHI"
+                                                                                "winner":  "PHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3167,7 +4184,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3175,7 +4195,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "WSH"
+                                                                             "winner":  "WSH",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3183,7 +4206,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  10,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -3191,15 +4217,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
                                                                                "homeScore":  24,
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
-                                                                               "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "points":  20,
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3207,7 +4239,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  10,
-                                                                                "winner":  "PHI"
+                                                                                "winner":  "PHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -3215,7 +4250,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  10,
-                                                                                 "winner":  "PHI"
+                                                                                 "winner":  "PHI",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3223,7 +4261,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3231,7 +4272,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  10,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "WSH @ PHI",
@@ -3250,7 +4294,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3258,15 +4305,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  0,
-                                                                              "winner":  "LAC"
+                                                                              "winner":  "LAC",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
                                                                                 "homeScore":  24,
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
-                                                                                "points":  10,
-                                                                                "winner":  "AZ"
+                                                                                "points":  20,
+                                                                                "winner":  "AZ",
+                                                                                "isClosest":  true,
+                                                                                "bonusPoints":  10,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3274,7 +4327,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3282,7 +4338,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "LAC"
+                                                                             "winner":  "LAC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3290,7 +4349,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "LAC"
+                                                                             "winner":  "LAC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -3298,7 +4360,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -3306,7 +4371,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3314,7 +4382,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  7,
                                                                                 "points":  0,
-                                                                                "winner":  "LAC"
+                                                                                "winner":  "LAC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -3322,7 +4393,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  0,
-                                                                                 "winner":  "LAC"
+                                                                                 "winner":  "LAC",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3330,7 +4404,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3338,7 +4415,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "LAC"
+                                                                             "winner":  "LAC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "AZ @ LAC",
@@ -3357,7 +4437,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3365,7 +4448,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  true,
                                                                               "awayScore":  34,
                                                                               "points":  0,
-                                                                              "winner":  "DAL"
+                                                                              "winner":  "DAL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3373,7 +4459,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "DAL"
+                                                                                "winner":  "DAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3381,7 +4470,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3389,7 +4481,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "DAL"
+                                                                             "winner":  "DAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3397,7 +4492,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "DAL"
+                                                                             "winner":  "DAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -3405,7 +4503,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  0,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -3413,7 +4514,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3421,15 +4525,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  10,
-                                                                                "winner":  "NYG"
+                                                                                "winner":  "NYG",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
                                                                                  "homeScore":  24,
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
-                                                                                 "points":  10,
-                                                                                 "winner":  "NYG"
+                                                                                 "points":  15,
+                                                                                 "winner":  "NYG",
+                                                                                 "isClosest":  true,
+                                                                                 "bonusPoints":  5,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3437,15 +4547,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  0,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
                                                                              "homeScore":  24,
                                                                              "multiplier":  false,
                                                                              "awayScore":  23,
-                                                                             "points":  10,
-                                                                             "winner":  "NYG"
+                                                                             "points":  15,
+                                                                             "winner":  "NYG",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  5,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "DAL @ NYG",
@@ -3464,7 +4580,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3472,7 +4591,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  0,
-                                                                              "winner":  "DEN"
+                                                                              "winner":  "DEN",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3480,7 +4602,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  10,
-                                                                                "winner":  "KC"
+                                                                                "winner":  "KC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3488,7 +4613,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
                                                                                "points":  0,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3496,7 +4624,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "KC"
+                                                                             "winner":  "KC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3504,15 +4635,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "DEN"
+                                                                             "winner":  "DEN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  34,
                                                                                "multiplier":  false,
                                                                                "awayScore":  16,
-                                                                               "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "points":  20,
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -3520,7 +4657,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  24,
                                                                                "points":  30,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3528,7 +4668,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "DEN"
+                                                                                "winner":  "DEN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -3536,7 +4679,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  0,
-                                                                                 "winner":  "DEN"
+                                                                                 "winner":  "DEN",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3544,7 +4690,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3552,7 +4701,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  10,
-                                                                             "winner":  "KC"
+                                                                             "winner":  "KC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "DEN @ KC",
@@ -3639,7 +4791,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3647,7 +4802,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  0,
-                                                                              "winner":  "CLE"
+                                                                              "winner":  "CLE",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3655,7 +4813,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "CLE"
+                                                                                "winner":  "CLE",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3663,7 +4824,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "CLE"
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3671,7 +4835,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "PIT"
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3679,7 +4846,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  0,
-                                                                             "winner":  "PIT"
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -3687,7 +4857,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  0,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -3695,7 +4868,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3703,7 +4879,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "PIT"
+                                                                                "winner":  "PIT",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -3711,7 +4890,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  0,
-                                                                                 "winner":  "CLE"
+                                                                                 "winner":  "CLE",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3719,7 +4901,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "CLE"
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3727,7 +4912,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "CLE"
+                                                                             "winner":  "CLE",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "PIT @ CLE",
@@ -3746,7 +4934,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "IND"
+                                                                               "winner":  "IND",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3754,7 +4945,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  0,
-                                                                              "winner":  "WSH"
+                                                                              "winner":  "WSH",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3762,7 +4956,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "IND"
+                                                                                "winner":  "IND",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3770,7 +4967,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "WSH"
+                                                                               "winner":  "WSH",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3778,7 +4978,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "IND"
+                                                                             "winner":  "IND",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3786,7 +4989,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "WSH"
+                                                                             "winner":  "WSH",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -3794,7 +5000,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "IND"
+                                                                               "winner":  "IND",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -3802,7 +5011,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "WSH"
+                                                                               "winner":  "WSH",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3810,7 +5022,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  0,
-                                                                                "winner":  "WSH"
+                                                                                "winner":  "WSH",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -3818,7 +5033,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  0,
-                                                                                 "winner":  "WSH"
+                                                                                 "winner":  "WSH",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3826,7 +5044,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "IND"
+                                                                               "winner":  "IND",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3834,7 +5055,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "IND"
+                                                                             "winner":  "IND",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "IND @ WSH",
@@ -3853,7 +5077,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3861,7 +5088,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  7,
                                                                               "points":  0,
-                                                                              "winner":  "BUF"
+                                                                              "winner":  "BUF",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3869,7 +5099,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  7,
                                                                                 "points":  0,
-                                                                                "winner":  "BUF"
+                                                                                "winner":  "BUF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3877,7 +5110,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3885,7 +5121,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -3893,7 +5132,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "NE"
+                                                                             "winner":  "NE",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -3901,7 +5143,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -3909,7 +5154,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -3917,7 +5165,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "BUF"
+                                                                                "winner":  "BUF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -3925,7 +5176,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  0,
-                                                                                 "winner":  "BUF"
+                                                                                 "winner":  "BUF",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -3933,7 +5187,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -3941,7 +5198,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "NE @ BUF",
@@ -3960,7 +5220,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -3968,7 +5231,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "LAR"
+                                                                              "winner":  "LAR",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -3976,7 +5242,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "PHI"
+                                                                                "winner":  "PHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -3984,7 +5253,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -3992,7 +5264,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  7,
                                                                              "points":  0,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4000,7 +5275,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4008,7 +5286,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4016,7 +5297,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4024,7 +5308,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  0,
-                                                                                "winner":  "LAR"
+                                                                                "winner":  "LAR",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4032,7 +5319,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  0,
-                                                                                 "winner":  "PHI"
+                                                                                 "winner":  "PHI",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4040,7 +5330,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4048,7 +5341,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  0,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "LAR @ PHI",
@@ -4067,7 +5363,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4075,7 +5374,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  0,
-                                                                              "winner":  "CHI"
+                                                                              "winner":  "CHI",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4083,7 +5385,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4091,7 +5396,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4099,7 +5407,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "CHI"
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4107,7 +5418,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "CHI"
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4115,7 +5429,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4123,7 +5440,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4131,7 +5451,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  7,
                                                                                 "points":  0,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4139,7 +5462,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  0,
-                                                                                 "winner":  "CHI"
+                                                                                 "winner":  "CHI",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4147,7 +5473,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4155,7 +5484,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  7,
                                                                              "points":  0,
-                                                                             "winner":  "CHI"
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "NYJ @ CHI",
@@ -4174,7 +5506,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4182,7 +5517,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  0,
-                                                                              "winner":  "JAX"
+                                                                              "winner":  "JAX",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4190,7 +5528,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "CIN"
+                                                                                "winner":  "CIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4198,7 +5539,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
                                                                                "points":  0,
-                                                                               "winner":  "JAX"
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4206,7 +5550,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "JAX"
+                                                                             "winner":  "JAX",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4214,7 +5561,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "JAX"
+                                                                             "winner":  "JAX",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4222,7 +5572,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "JAX"
+                                                                               "winner":  "JAX",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4230,7 +5583,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4238,7 +5594,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "JAX"
+                                                                                "winner":  "JAX",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4246,7 +5605,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  0,
-                                                                                 "winner":  "CIN"
+                                                                                 "winner":  "CIN",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4254,7 +5616,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4262,7 +5627,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "JAX @ CIN",
@@ -4281,7 +5649,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4289,7 +5660,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  31,
                                                                               "points":  0,
-                                                                              "winner":  "GB"
+                                                                              "winner":  "GB",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4297,7 +5671,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "TB"
+                                                                                "winner":  "TB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4305,7 +5682,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4313,7 +5693,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "GB"
+                                                                             "winner":  "GB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4321,7 +5704,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "TB"
+                                                                             "winner":  "TB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4329,7 +5715,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4337,7 +5726,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4345,7 +5737,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "GB"
+                                                                                "winner":  "GB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4353,7 +5748,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  0,
-                                                                                 "winner":  "TB"
+                                                                                 "winner":  "TB",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4361,7 +5759,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4369,7 +5770,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "TB"
+                                                                             "winner":  "TB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "GB @ TB",
@@ -4388,7 +5792,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4396,7 +5803,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "HOU"
+                                                                              "winner":  "HOU",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4404,7 +5814,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "HOU"
+                                                                                "winner":  "HOU",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4412,7 +5825,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4420,7 +5836,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "DAL"
+                                                                             "winner":  "DAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4428,7 +5847,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "HOU"
+                                                                             "winner":  "HOU",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4436,7 +5858,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4444,7 +5869,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4452,7 +5880,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  0,
-                                                                                "winner":  "DAL"
+                                                                                "winner":  "DAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4460,7 +5891,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
                                                                                  "points":  0,
-                                                                                 "winner":  "HOU"
+                                                                                 "winner":  "HOU",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4468,7 +5902,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4476,7 +5913,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "HOU"
+                                                                             "winner":  "HOU",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "DAL @ HOU",
@@ -4495,7 +5935,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4503,7 +5946,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  20,
                                                                               "points":  0,
-                                                                              "winner":  "BAL"
+                                                                              "winner":  "BAL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4511,7 +5957,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  0,
-                                                                                "winner":  "TEN"
+                                                                                "winner":  "TEN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4519,7 +5968,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4527,7 +5979,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "TEN"
+                                                                             "winner":  "TEN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4535,7 +5990,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  13,
                                                                              "points":  0,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4543,7 +6001,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  0,
-                                                                               "winner":  "TEN"
+                                                                               "winner":  "TEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4551,7 +6012,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4559,7 +6023,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "BAL"
+                                                                                "winner":  "BAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4567,7 +6034,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  14,
                                                                                  "points":  0,
-                                                                                 "winner":  "BAL"
+                                                                                 "winner":  "BAL",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4575,7 +6045,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4583,7 +6056,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "TEN @ BAL",
@@ -4602,7 +6078,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4610,7 +6089,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  14,
                                                                               "points":  0,
-                                                                              "winner":  "NYG"
+                                                                              "winner":  "NYG",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4618,7 +6100,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "NYG"
+                                                                                "winner":  "NYG",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4626,7 +6111,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4634,7 +6122,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "AZ"
+                                                                             "winner":  "AZ",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4642,7 +6133,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "NYG"
+                                                                             "winner":  "NYG",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4650,7 +6144,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
                                                                                "points":  0,
-                                                                               "winner":  "AZ"
+                                                                               "winner":  "AZ",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4658,7 +6155,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4666,7 +6166,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  0,
-                                                                                "winner":  "AZ"
+                                                                                "winner":  "AZ",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4674,7 +6177,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  0,
-                                                                                 "winner":  "AZ"
+                                                                                 "winner":  "AZ",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4682,7 +6188,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "NYG"
+                                                                               "winner":  "NYG",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4690,7 +6199,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "NYG"
+                                                                             "winner":  "NYG",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "AZ @ NYG",
@@ -4709,7 +6221,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "MIN"
+                                                                               "winner":  "MIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4717,7 +6232,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "MIN"
+                                                                              "winner":  "MIN",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4725,7 +6243,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "MIN"
+                                                                                "winner":  "MIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4733,7 +6254,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "MIN"
+                                                                               "winner":  "MIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4741,7 +6265,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "MIA"
+                                                                             "winner":  "MIA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4749,7 +6276,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "MIN"
+                                                                             "winner":  "MIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4757,7 +6287,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "MIA"
+                                                                               "winner":  "MIA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4765,7 +6298,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "MIA"
+                                                                               "winner":  "MIA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4773,7 +6309,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  0,
-                                                                                "winner":  "MIN"
+                                                                                "winner":  "MIN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4781,7 +6320,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  14,
                                                                                  "points":  0,
-                                                                                 "winner":  "MIN"
+                                                                                 "winner":  "MIN",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4789,7 +6331,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "MIA"
+                                                                               "winner":  "MIA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4797,7 +6342,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "MIN"
+                                                                             "winner":  "MIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "MIA @ MIN",
@@ -4816,7 +6364,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4824,7 +6375,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  7,
                                                                               "points":  0,
-                                                                              "winner":  "SEA"
+                                                                              "winner":  "SEA",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4832,7 +6386,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  27,
                                                                                 "points":  0,
-                                                                                "winner":  "LAC"
+                                                                                "winner":  "LAC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4840,7 +6397,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4848,7 +6408,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4856,7 +6419,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4864,7 +6430,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4872,7 +6441,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4880,7 +6452,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "LAC"
+                                                                                "winner":  "LAC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4888,7 +6463,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  0,
-                                                                                 "winner":  "LAC"
+                                                                                 "winner":  "LAC",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -4896,7 +6474,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -4904,7 +6485,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "LAC @ SEA",
@@ -4923,7 +6507,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -4931,7 +6518,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  14,
                                                                               "points":  0,
-                                                                              "winner":  "SF"
+                                                                              "winner":  "SF",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -4939,7 +6529,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  0,
-                                                                                "winner":  "SF"
+                                                                                "winner":  "SF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -4947,7 +6540,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -4955,7 +6551,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  0,
-                                                                             "winner":  "SF"
+                                                                             "winner":  "SF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -4963,7 +6562,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "SF"
+                                                                             "winner":  "SF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -4971,7 +6573,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -4979,7 +6584,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -4987,7 +6595,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  0,
-                                                                                "winner":  "DEN"
+                                                                                "winner":  "DEN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -4995,7 +6606,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  true,
                                                                                  "awayScore":  14,
                                                                                  "points":  0,
-                                                                                 "winner":  "SF"
+                                                                                 "winner":  "SF",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5003,7 +6617,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  0,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5011,7 +6628,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "SF"
+                                                                             "winner":  "SF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "DEN @ SF",
@@ -5030,7 +6650,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5038,7 +6661,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  true,
                                                                               "awayScore":  27,
                                                                               "points":  0,
-                                                                              "winner":  "KC"
+                                                                              "winner":  "KC",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5046,7 +6672,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  0,
-                                                                                "winner":  "KC"
+                                                                                "winner":  "KC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5054,7 +6683,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5062,7 +6694,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  0,
-                                                                             "winner":  "KC"
+                                                                             "winner":  "KC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5070,7 +6705,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "LV"
+                                                                             "winner":  "LV",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -5078,7 +6716,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -5086,7 +6727,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5094,7 +6738,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  28,
                                                                                 "points":  0,
-                                                                                "winner":  "KC"
+                                                                                "winner":  "KC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -5102,7 +6749,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  31,
                                                                                  "points":  0,
-                                                                                 "winner":  "KC"
+                                                                                 "winner":  "KC",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5110,7 +6760,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  27,
                                                                                "points":  0,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5118,7 +6771,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  28,
                                                                              "points":  0,
-                                                                             "winner":  "KC"
+                                                                             "winner":  "KC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "KC @ LV",
@@ -5137,7 +6793,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  0,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5145,7 +6804,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "DET"
+                                                                              "winner":  "DET",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5153,7 +6815,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "DET"
+                                                                                "winner":  "DET",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5161,7 +6826,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5169,7 +6837,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "CAR"
+                                                                             "winner":  "CAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5177,7 +6848,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "DET"
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -5185,7 +6859,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -5193,7 +6870,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5201,7 +6881,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  23,
                                                                                 "points":  0,
-                                                                                "winner":  "DET"
+                                                                                "winner":  "DET",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -5209,7 +6892,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  34,
                                                                                  "points":  0,
-                                                                                 "winner":  "DET"
+                                                                                 "winner":  "DET",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5217,7 +6903,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "DET"
+                                                                               "winner":  "DET",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5225,7 +6914,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  0,
-                                                                             "winner":  "DET"
+                                                                             "winner":  "DET",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "DET @ CAR",
@@ -5244,7 +6936,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "NO"
+                                                                               "winner":  "NO",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5252,7 +6947,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  24,
                                                                               "points":  0,
-                                                                              "winner":  "NO"
+                                                                              "winner":  "NO",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5260,7 +6958,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  0,
-                                                                                "winner":  "NO"
+                                                                                "winner":  "NO",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5268,7 +6969,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  0,
-                                                                               "winner":  "ATL"
+                                                                               "winner":  "ATL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5276,7 +6980,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  7,
                                                                              "points":  0,
-                                                                             "winner":  "NO"
+                                                                             "winner":  "NO",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5284,7 +6991,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  23,
                                                                              "points":  0,
-                                                                             "winner":  "ATL"
+                                                                             "winner":  "ATL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -5292,7 +7002,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "NO"
+                                                                               "winner":  "NO",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -5300,7 +7013,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "NO"
+                                                                               "winner":  "NO",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5308,7 +7024,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "ATL"
+                                                                                "winner":  "ATL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -5316,7 +7035,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  0,
-                                                                                 "winner":  "NO"
+                                                                                 "winner":  "NO",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5324,7 +7046,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "NO"
+                                                                               "winner":  "NO",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5332,7 +7057,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  23,
                                                                              "points":  0,
-                                                                             "winner":  "ATL"
+                                                                             "winner":  "ATL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "ATL @ NO",
@@ -5419,7 +7147,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5427,7 +7158,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  10,
-                                                                              "winner":  "BUF"
+                                                                              "winner":  "BUF",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5435,7 +7169,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  0,
-                                                                                "winner":  "DET"
+                                                                                "winner":  "DET",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5443,7 +7180,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5451,7 +7191,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5459,7 +7202,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -5467,7 +7213,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -5475,7 +7224,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5483,15 +7235,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  10,
-                                                                                "winner":  "BUF"
+                                                                                "winner":  "BUF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
                                                                                  "homeScore":  28,
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
-                                                                                 "points":  10,
-                                                                                 "winner":  "BUF"
+                                                                                 "points":  20,
+                                                                                 "winner":  "BUF",
+                                                                                 "isClosest":  true,
+                                                                                 "bonusPoints":  10,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5499,7 +7257,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  10,
-                                                                               "winner":  "BUF"
+                                                                               "winner":  "BUF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5507,7 +7268,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "BUF"
+                                                                             "winner":  "BUF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "DET @ BUF",
@@ -5526,7 +7290,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "CAR"
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5534,7 +7301,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  14,
                                                                               "points":  0,
-                                                                              "winner":  "ATL"
+                                                                              "winner":  "ATL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5542,7 +7312,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "ATL"
+                                                                                "winner":  "ATL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5550,7 +7323,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "CAR"
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5558,7 +7334,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "ATL"
+                                                                             "winner":  "ATL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5566,15 +7345,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "ATL"
+                                                                             "winner":  "ATL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  10,
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
-                                                                               "points":  10,
-                                                                               "winner":  "CAR"
+                                                                               "points":  20,
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -5582,7 +7367,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "CAR"
+                                                                               "winner":  "CAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5590,7 +7378,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "ATL"
+                                                                                "winner":  "ATL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -5598,7 +7389,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  13,
                                                                                  "points":  0,
-                                                                                 "winner":  "ATL"
+                                                                                 "winner":  "ATL",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5606,7 +7400,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "ATL"
+                                                                               "winner":  "ATL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5614,7 +7411,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  10,
-                                                                             "winner":  "CAR"
+                                                                             "winner":  "CAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "CAR @ ATL",
@@ -5633,7 +7433,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5641,7 +7444,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  20,
                                                                               "points":  0,
-                                                                              "winner":  "CHI"
+                                                                              "winner":  "CHI",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5649,7 +7455,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5657,15 +7466,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  10,
-                                                                               "winner":  "MIN"
+                                                                               "winner":  "MIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
                                                                              "homeScore":  10,
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
-                                                                             "points":  10,
-                                                                             "winner":  "MIN"
+                                                                             "points":  20,
+                                                                             "winner":  "MIN",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5673,7 +7488,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "CHI"
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -5681,7 +7499,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -5689,7 +7510,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "CHI"
+                                                                               "winner":  "CHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5697,7 +7521,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "CHI"
+                                                                                "winner":  "CHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -5705,7 +7532,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  0,
-                                                                                 "winner":  "CHI"
+                                                                                 "winner":  "CHI",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5713,7 +7543,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  10,
-                                                                               "winner":  "MIN"
+                                                                               "winner":  "MIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5721,7 +7554,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  0,
-                                                                             "winner":  "CHI"
+                                                                             "winner":  "CHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "MIN @ CHI",
@@ -5740,7 +7576,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5748,7 +7587,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  14,
                                                                               "points":  10,
-                                                                              "winner":  "PHI"
+                                                                              "winner":  "PHI",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5756,15 +7598,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  10,
-                                                                                "winner":  "PHI"
+                                                                                "winner":  "PHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  true,
                                                                                "homeScore":  20,
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
-                                                                               "points":  50,
-                                                                               "winner":  "PHI"
+                                                                               "points":  60,
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  50,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5772,7 +7620,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  10,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5780,7 +7631,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -5788,7 +7642,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "TEN"
+                                                                               "winner":  "TEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -5796,7 +7653,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5804,7 +7664,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  17,
                                                                                 "points":  30,
-                                                                                "winner":  "PHI"
+                                                                                "winner":  "PHI",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  30
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -5812,7 +7675,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  24,
                                                                                  "points":  10,
-                                                                                 "winner":  "PHI"
+                                                                                 "winner":  "PHI",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5820,7 +7686,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "PHI"
+                                                                               "winner":  "PHI",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5828,7 +7697,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  10,
-                                                                             "winner":  "PHI"
+                                                                             "winner":  "PHI",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "PHI @ TEN",
@@ -5847,7 +7719,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5855,7 +7730,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  10,
-                                                                              "winner":  "NE"
+                                                                              "winner":  "NE",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5863,7 +7741,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  27,
                                                                                 "points":  0,
-                                                                                "winner":  "PIT"
+                                                                                "winner":  "PIT",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5871,7 +7752,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5879,7 +7763,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "PIT"
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5887,7 +7774,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  23,
                                                                              "points":  0,
-                                                                             "winner":  "PIT"
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -5895,15 +7785,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "PIT"
+                                                                               "winner":  "PIT",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
                                                                                "homeScore":  17,
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
-                                                                               "points":  10,
-                                                                               "winner":  "NE"
+                                                                               "points":  20,
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -5911,7 +7807,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  0,
-                                                                                "winner":  "PIT"
+                                                                                "winner":  "PIT",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -5919,7 +7818,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  21,
                                                                                  "points":  10,
-                                                                                 "winner":  "NE"
+                                                                                 "winner":  "NE",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -5927,7 +7829,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "NE"
+                                                                               "winner":  "NE",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -5935,7 +7840,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "PIT"
+                                                                             "winner":  "PIT",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "PIT @ NE",
@@ -5954,7 +7862,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -5962,7 +7873,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  10,
-                                                                              "winner":  "GB"
+                                                                              "winner":  "GB",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -5970,7 +7884,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  10,
-                                                                                "winner":  "GB"
+                                                                                "winner":  "GB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -5978,7 +7895,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -5986,7 +7906,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  28,
                                                                              "points":  30,
-                                                                             "winner":  "GB"
+                                                                             "winner":  "GB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  30
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -5994,7 +7917,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "GB"
+                                                                             "winner":  "GB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6002,7 +7928,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "NYJ"
+                                                                               "winner":  "NYJ",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6010,7 +7939,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  31,
                                                                                "points":  10,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6018,15 +7950,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  10,
                                                                                 "points":  0,
-                                                                                "winner":  "NYJ"
+                                                                                "winner":  "NYJ",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  true,
                                                                                  "homeScore":  17,
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
-                                                                                 "points":  50,
-                                                                                 "winner":  "GB"
+                                                                                 "points":  60,
+                                                                                 "winner":  "GB",
+                                                                                 "isClosest":  true,
+                                                                                 "bonusPoints":  50,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6034,7 +7972,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "GB"
+                                                                               "winner":  "GB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6042,7 +7983,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "NYJ"
+                                                                             "winner":  "NYJ",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "GB @ NYJ",
@@ -6061,7 +8005,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6069,7 +8016,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  7,
                                                                               "points":  0,
-                                                                              "winner":  "TB"
+                                                                              "winner":  "TB",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6077,15 +8027,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "TB"
+                                                                                "winner":  "TB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
                                                                                "homeScore":  17,
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
-                                                                               "points":  10,
-                                                                               "winner":  "CLE"
+                                                                               "points":  15,
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6093,7 +8049,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  10,
                                                                              "points":  0,
-                                                                             "winner":  "TB"
+                                                                             "winner":  "TB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6101,15 +8060,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "TB"
+                                                                             "winner":  "TB",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  17,
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
-                                                                               "points":  10,
-                                                                               "winner":  "CLE"
+                                                                               "points":  15,
+                                                                               "winner":  "CLE",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6117,7 +8082,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6125,7 +8093,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  0,
-                                                                                "winner":  "TB"
+                                                                                "winner":  "TB",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6133,7 +8104,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  13,
                                                                                  "points":  0,
-                                                                                 "winner":  "TB"
+                                                                                 "winner":  "TB",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6141,7 +8115,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  7,
                                                                                "points":  0,
-                                                                               "winner":  "TB"
+                                                                               "winner":  "TB",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6149,7 +8126,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  10,
-                                                                             "winner":  "CLE"
+                                                                             "winner":  "CLE",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "CLE @ TB",
@@ -6168,7 +8148,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6176,7 +8159,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  17,
                                                                               "points":  0,
-                                                                              "winner":  "BAL"
+                                                                              "winner":  "BAL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6184,7 +8170,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  true,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "BAL"
+                                                                                "winner":  "BAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -6192,7 +8181,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6200,7 +8192,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6208,7 +8203,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6216,7 +8214,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6224,7 +8225,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6232,7 +8236,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  24,
                                                                                 "points":  0,
-                                                                                "winner":  "BAL"
+                                                                                "winner":  "BAL",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6240,7 +8247,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  0,
-                                                                                 "winner":  "BAL"
+                                                                                 "winner":  "BAL",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6248,7 +8258,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "BAL"
+                                                                               "winner":  "BAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6256,7 +8269,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "BAL"
+                                                                             "winner":  "BAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "NO @ BAL",
@@ -6275,15 +8291,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
                                                                               "homeScore":  10,
                                                                               "multiplier":  false,
                                                                               "awayScore":  14,
-                                                                              "points":  10,
-                                                                              "winner":  "CIN"
+                                                                              "points":  15,
+                                                                              "winner":  "CIN",
+                                                                              "isClosest":  true,
+                                                                              "bonusPoints":  5,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6291,7 +8313,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "HOU"
+                                                                                "winner":  "HOU",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -6299,7 +8324,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6307,7 +8335,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6315,7 +8346,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "HOU"
+                                                                             "winner":  "HOU",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6323,15 +8357,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "HOU"
+                                                                               "winner":  "HOU",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
                                                                                "homeScore":  10,
                                                                                "multiplier":  true,
                                                                                "awayScore":  14,
-                                                                               "points":  30,
-                                                                               "winner":  "CIN"
+                                                                               "points":  45,
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  15,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6339,7 +8379,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  0,
-                                                                                "winner":  "HOU"
+                                                                                "winner":  "HOU",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6347,7 +8390,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  23,
                                                                                  "points":  0,
-                                                                                 "winner":  "HOU"
+                                                                                 "winner":  "HOU",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6355,7 +8401,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "CIN"
+                                                                               "winner":  "CIN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6363,7 +8412,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  17,
                                                                              "points":  30,
-                                                                             "winner":  "CIN"
+                                                                             "winner":  "CIN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  30
                                                                          }
                                                              },
                                                    "matchup":  "CIN @ HOU",
@@ -6382,7 +8434,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6390,7 +8445,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  10,
-                                                                              "winner":  "DEN"
+                                                                              "winner":  "DEN",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6398,7 +8456,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  20,
                                                                                 "points":  10,
-                                                                                "winner":  "DEN"
+                                                                                "winner":  "DEN",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -6406,7 +8467,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6414,7 +8478,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "JAX"
+                                                                             "winner":  "JAX",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6422,7 +8489,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  20,
                                                                              "points":  10,
-                                                                             "winner":  "DEN"
+                                                                             "winner":  "DEN",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6430,7 +8500,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  17,
                                                                                "points":  30,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6438,7 +8511,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "DEN"
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6446,7 +8522,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  0,
-                                                                                "winner":  "JAX"
+                                                                                "winner":  "JAX",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6454,15 +8533,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  10,
-                                                                                 "winner":  "DEN"
+                                                                                 "winner":  "DEN",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
                                                                                "homeScore":  21,
                                                                                "multiplier":  true,
                                                                                "awayScore":  14,
-                                                                               "points":  30,
-                                                                               "winner":  "DEN"
+                                                                               "points":  60,
+                                                                               "winner":  "DEN",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  30,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6470,7 +8555,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "JAX"
+                                                                             "winner":  "JAX",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "JAX @ DEN",
@@ -6489,7 +8577,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6497,15 +8588,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  21,
                                                                               "points":  0,
-                                                                              "winner":  "LAC"
+                                                                              "winner":  "LAC",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  0
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
                                                                                 "homeScore":  24,
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
-                                                                                "points":  10,
-                                                                                "winner":  "LV"
+                                                                                "points":  20,
+                                                                                "winner":  "LV",
+                                                                                "isClosest":  true,
+                                                                                "bonusPoints":  10,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -6513,7 +8610,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6521,7 +8621,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "LAC"
+                                                                             "winner":  "LAC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6529,7 +8632,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  0,
-                                                                             "winner":  "LAC"
+                                                                             "winner":  "LAC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6537,7 +8643,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6545,7 +8654,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6553,7 +8665,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  0,
-                                                                                "winner":  "LAC"
+                                                                                "winner":  "LAC",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6561,7 +8676,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  0,
-                                                                                 "winner":  "LAC"
+                                                                                 "winner":  "LAC",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  0
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6569,7 +8687,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "LAC"
+                                                                               "winner":  "LAC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6577,7 +8698,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "LAC"
+                                                                             "winner":  "LAC",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          }
                                                              },
                                                    "matchup":  "LV @ LAC",
@@ -6596,7 +8720,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6604,7 +8731,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  true,
                                                                               "awayScore":  21,
                                                                               "points":  30,
-                                                                              "winner":  "DAL"
+                                                                              "winner":  "DAL",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  30
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6612,7 +8742,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  0,
-                                                                                "winner":  "WSH"
+                                                                                "winner":  "WSH",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -6620,7 +8753,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  17,
                                                                                "points":  30,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6628,7 +8764,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  24,
                                                                              "points":  0,
-                                                                             "winner":  "WSH"
+                                                                             "winner":  "WSH",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6636,15 +8775,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  10,
-                                                                             "winner":  "DAL"
+                                                                             "winner":  "DAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
                                                                                "homeScore":  31,
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
-                                                                               "points":  10,
-                                                                               "winner":  "DAL"
+                                                                               "points":  15,
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6652,7 +8797,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  17,
                                                                                "points":  10,
-                                                                               "winner":  "DAL"
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6660,7 +8808,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  27,
                                                                                 "points":  0,
-                                                                                "winner":  "WSH"
+                                                                                "winner":  "WSH",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6668,15 +8819,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  10,
-                                                                                 "winner":  "DAL"
+                                                                                 "winner":  "DAL",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
                                                                                "homeScore":  28,
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
-                                                                               "points":  10,
-                                                                               "winner":  "DAL"
+                                                                               "points":  15,
+                                                                               "winner":  "DAL",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6684,7 +8841,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "DAL"
+                                                                             "winner":  "DAL",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "WSH @ DAL",
@@ -6703,7 +8863,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  23,
                                                                                "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6711,7 +8874,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  20,
                                                                               "points":  10,
-                                                                              "winner":  "SEA"
+                                                                              "winner":  "SEA",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6719,15 +8885,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  10,
-                                                                                "winner":  "SEA"
+                                                                                "winner":  "SEA",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
                                                                                "homeScore":  7,
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
-                                                                               "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "points":  20,
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6735,7 +8907,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "AZ"
+                                                                             "winner":  "AZ",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6743,7 +8918,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6751,7 +8929,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6759,7 +8940,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6767,7 +8951,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  31,
                                                                                 "points":  10,
-                                                                                "winner":  "SEA"
+                                                                                "winner":  "SEA",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6775,7 +8962,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  31,
                                                                                  "points":  10,
-                                                                                 "winner":  "SEA"
+                                                                                 "winner":  "SEA",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6783,7 +8973,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "SEA"
+                                                                               "winner":  "SEA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6791,7 +8984,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  31,
                                                                              "points":  10,
-                                                                             "winner":  "SEA"
+                                                                             "winner":  "SEA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "SEA @ AZ",
@@ -6810,7 +9006,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6818,7 +9017,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  10,
-                                                                              "winner":  "SF"
+                                                                              "winner":  "SF",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6826,15 +9028,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "SF"
+                                                                                "winner":  "SF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
                                                                                "homeScore":  31,
                                                                                "multiplier":  false,
                                                                                "awayScore":  13,
-                                                                               "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "points":  20,
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  10,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6842,7 +9050,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  27,
                                                                              "points":  0,
-                                                                             "winner":  "MIA"
+                                                                             "winner":  "MIA",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6850,7 +9061,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  10,
-                                                                             "winner":  "SF"
+                                                                             "winner":  "SF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6858,7 +9072,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  0,
-                                                                               "winner":  "MIA"
+                                                                               "winner":  "MIA",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6866,7 +9083,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  24,
                                                                                "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6874,7 +9094,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  17,
                                                                                 "points":  10,
-                                                                                "winner":  "SF"
+                                                                                "winner":  "SF",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6882,7 +9105,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  17,
                                                                                  "points":  10,
-                                                                                 "winner":  "SF"
+                                                                                 "winner":  "SF",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6890,7 +9116,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "SF"
+                                                                               "winner":  "SF",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
@@ -6898,7 +9127,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
                                                                              "points":  10,
-                                                                             "winner":  "SF"
+                                                                             "winner":  "SF",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "MIA @ SF",
@@ -6917,7 +9149,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  20,
                                                                                "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -6925,7 +9160,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  20,
                                                                               "points":  10,
-                                                                              "winner":  "KC"
+                                                                              "winner":  "KC",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -6933,7 +9171,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  0,
-                                                                                "winner":  "IND"
+                                                                                "winner":  "IND",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
@@ -6941,7 +9182,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
                                                                                "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -6949,7 +9193,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  14,
                                                                              "points":  0,
-                                                                             "winner":  "IND"
+                                                                             "winner":  "IND",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -6957,7 +9204,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  0,
-                                                                             "winner":  "IND"
+                                                                             "winner":  "IND",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  0
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -6965,7 +9215,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  0,
-                                                                               "winner":  "IND"
+                                                                               "winner":  "IND",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
@@ -6973,7 +9226,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  10,
                                                                                "points":  10,
-                                                                               "winner":  "KC"
+                                                                               "winner":  "KC",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -6981,7 +9237,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  23,
                                                                                 "points":  0,
-                                                                                "winner":  "IND"
+                                                                                "winner":  "IND",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  0
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -6989,7 +9248,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  false,
                                                                                  "awayScore":  20,
                                                                                  "points":  10,
-                                                                                 "winner":  "KC"
+                                                                                 "winner":  "KC",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  10
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -6997,15 +9259,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  28,
                                                                                "points":  0,
-                                                                               "winner":  "IND"
+                                                                               "winner":  "IND",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  0
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
                                                                              "homeScore":  28,
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
-                                                                             "points":  10,
-                                                                             "winner":  "KC"
+                                                                             "points":  20,
+                                                                             "winner":  "KC",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  10,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "IND @ KC",
@@ -7024,7 +9292,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  true,
                                                                                "awayScore":  20,
                                                                                "points":  30,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  30
                                                                            },
                                                                  "Ross":  {
                                                                               "exact":  false,
@@ -7032,7 +9303,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                               "multiplier":  false,
                                                                               "awayScore":  10,
                                                                               "points":  10,
-                                                                              "winner":  "LAR"
+                                                                              "winner":  "LAR",
+                                                                              "isClosest":  false,
+                                                                              "bonusPoints":  0,
+                                                                              "basePoints":  10
                                                                           },
                                                                  "Carson":  {
                                                                                 "exact":  false,
@@ -7040,15 +9314,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  21,
                                                                                 "points":  10,
-                                                                                "winner":  "LAR"
+                                                                                "winner":  "LAR",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Caleb":  {
                                                                                "exact":  false,
                                                                                "homeScore":  28,
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
-                                                                               "points":  10,
-                                                                               "winner":  "LAR"
+                                                                               "points":  15,
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Rob":  {
                                                                              "exact":  false,
@@ -7056,7 +9336,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  false,
                                                                              "awayScore":  17,
                                                                              "points":  10,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  10
                                                                          },
                                                                  "Jon":  {
                                                                              "exact":  false,
@@ -7064,7 +9347,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                              "multiplier":  true,
                                                                              "awayScore":  21,
                                                                              "points":  30,
-                                                                             "winner":  "LAR"
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  false,
+                                                                             "bonusPoints":  0,
+                                                                             "basePoints":  30
                                                                          },
                                                                  "Wells":  {
                                                                                "exact":  false,
@@ -7072,15 +9358,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Mango":  {
                                                                                "exact":  false,
                                                                                "homeScore":  21,
                                                                                "multiplier":  false,
                                                                                "awayScore":  14,
-                                                                               "points":  10,
-                                                                               "winner":  "LAR"
+                                                                               "points":  15,
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  true,
+                                                                               "bonusPoints":  5,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Alisha":  {
                                                                                 "exact":  false,
@@ -7088,7 +9380,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                 "multiplier":  false,
                                                                                 "awayScore":  14,
                                                                                 "points":  10,
-                                                                                "winner":  "LAR"
+                                                                                "winner":  "LAR",
+                                                                                "isClosest":  false,
+                                                                                "bonusPoints":  0,
+                                                                                "basePoints":  10
                                                                             },
                                                                  "Dishman":  {
                                                                                  "exact":  false,
@@ -7096,7 +9391,10 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                  "multiplier":  true,
                                                                                  "awayScore":  20,
                                                                                  "points":  30,
-                                                                                 "winner":  "LAR"
+                                                                                 "winner":  "LAR",
+                                                                                 "isClosest":  false,
+                                                                                 "bonusPoints":  0,
+                                                                                 "basePoints":  30
                                                                              },
                                                                  "Ethan":  {
                                                                                "exact":  false,
@@ -7104,15 +9402,21 @@ const OG_LEAGUE_INITIAL_DATA = {
                                                                                "multiplier":  false,
                                                                                "awayScore":  21,
                                                                                "points":  10,
-                                                                               "winner":  "LAR"
+                                                                               "winner":  "LAR",
+                                                                               "isClosest":  false,
+                                                                               "bonusPoints":  0,
+                                                                               "basePoints":  10
                                                                            },
                                                                  "Nok":  {
                                                                              "exact":  false,
                                                                              "homeScore":  28,
                                                                              "multiplier":  false,
                                                                              "awayScore":  21,
-                                                                             "points":  10,
-                                                                             "winner":  "LAR"
+                                                                             "points":  15,
+                                                                             "winner":  "LAR",
+                                                                             "isClosest":  true,
+                                                                             "bonusPoints":  5,
+                                                                             "basePoints":  10
                                                                          }
                                                              },
                                                    "matchup":  "NYG @ LAR",

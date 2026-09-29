@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=3.5">
+  <link rel="stylesheet" href="style.css?v=3.6">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 </head>
@@ -128,8 +128,21 @@
             <span class="rule-badge-pts pts-winner">+10 PTS</span>
           </div>
           <p class="rule-desc">
-            Predict the winning team of any regular season game correctly. Ties do not award winner points unless specified.
+            Earn 10 base points for predicting the winning NFL team of each matchup correctly.
           </p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>🎯 Closest Score Bonus</span>
+            <span class="rule-badge-pts pts-closest">+10 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Contenders who pick the winning team compete for the Closest Score Bonus. The winning picker whose predicted score has the lowest absolute difference to the final score receives an additional <strong>+10 bonus points</strong> (or triples to <strong>+30 PTS</strong> if a 3X multiplier is used).
+          </p>
+          <div class="rule-tip">
+            💡 If contenders tie for the closest score, the bonus is split evenly (e.g. +5 PTS each).
+          </div>
         </div>
 
         <div class="rule-card">
@@ -138,7 +151,7 @@
             <span class="rule-badge-pts pts-exact">+50 PTS</span>
           </div>
           <p class="rule-desc">
-            Correctly predict both the exact home and away final scores of the game! Hits on exact score award a massive bonus.
+            Correctly predict both the exact home and away final scores of the game! Hits on exact score award a massive 50-point jackpot (or 25 PTS each if tied; triples to 150 PTS on 3X multiplier).
           </p>
         </div>
 
@@ -148,10 +161,10 @@
             <span class="rule-badge-pts pts-mult">3X MULTIPLIER</span>
           </div>
           <p class="rule-desc">
-            Each player designates one game per week as their confidence multiplier. If your pick wins, your points for that game are tripled!
+            Each player designates one game per week as their confidence multiplier. If your pick wins, your winner points and closest/exact bonuses for that game are tripled!
           </p>
           <div class="rule-tip">
-            💡 <strong>Max Payout:</strong> 10 pts &times; 3 = <strong>30 PTS</strong> for winner, or 50 pts &times; 3 = <strong>150 PTS</strong> for an exact score prediction!
+            💡 <strong>Max Payout:</strong> (10 base + 10 closest) &times; 3 = <strong>60 PTS</strong>, or (10 base + 50 exact) &times; 3 = <strong>180 PTS</strong>!
           </div>
         </div>
       </div>
@@ -187,7 +200,7 @@
   <div id="toast-notice" class="toast-notice" role="alert"></div>
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
-  <script src="data.js?v=3.5"></script>
-  <script src="app.js?v=3.5"></script>
+  <script src="data.js?v=3.6"></script>
+  <script src="app.js?v=3.6"></script>
 </body>
 </html>
