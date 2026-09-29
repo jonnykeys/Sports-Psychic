@@ -56,7 +56,8 @@ const PLAYER_COLORS = {
 // Player Avatars / Profile Pictures
 // Extensible mapping for all 12 league players. Fallbacks to initial avatar if image not set or fails to load.
 const PLAYER_AVATARS = {
-  "Jon": "avatars/jon.jpg"
+  "Jon": "avatars/jon.jpg",
+  "Alisha": "avatars/alisha.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
