@@ -50,7 +50,7 @@ const PLAYER_COLORS = {
   "Ethan": "#125740", // New York Jets Green (NYJ)
   "Brett": "#F9649B", // Headband Pink
   "Wells": "#002C5F", // Indianapolis Colts Blue (IND)
-  "Rob": "#f50057"
+  "Rob": "#000000" // Las Vegas Raiders Black (LV)
 };
 
 // Player Avatars / Profile Pictures
@@ -65,7 +65,8 @@ const PLAYER_AVATARS = {
   "Caleb": "avatars/caleb.jpg",
   "Ethan": "avatars/ethan.jpg",
   "Wells": "avatars/wells.jpg",
-  "Brett": "avatars/brett.jpg"
+  "Brett": "avatars/brett.jpg",
+  "Rob": "avatars/rob.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
