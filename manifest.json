@@ -1,6 +1,6 @@
 {
-  "name": "OG League Live",
-  "short_name": "OG League",
+  "name": "Sports Psychic - OG League",
+  "short_name": "Sports Psychic",
   "description": "Live view-only scores, player predictions, and season standings for the OG League",
   "start_url": "./index.html",
   "display": "standalone",

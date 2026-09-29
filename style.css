@@ -84,27 +84,29 @@ body {
 }
 
 .brand-text h1 {
-  font-size: 1.1rem;
+  font-size: 0.96rem;
   font-weight: 900;
-  letter-spacing: 0.5px;
-  line-height: 1.1;
+  letter-spacing: 0.2px;
+  line-height: 1.15;
   background: linear-gradient(90deg, #fff 0%, var(--accent-gold) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .brand-text .subtext {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--accent-blue);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .sync-status {
