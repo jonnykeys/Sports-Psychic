@@ -18,7 +18,7 @@
 
   <!-- APP STICKY HEADER -->
   <header class="app-header">
-    <div class="brand-row">
+    <div class="brand-row" onclick="switchTab('leaderboard')" style="cursor: pointer;" title="Back to Standings / Home">
       <div class="brand-icon">🔮</div>
       <div class="brand-text">
         <h1>OG LEAGUE LIVE</h1>
@@ -78,6 +78,14 @@
 
     <!-- TAB 3: PLAYERS ROSTER -->
     <section id="tab-players" class="tab-view" role="tabpanel">
+      <!-- Back to Standings navigation bar -->
+      <div class="player-top-nav">
+        <button class="btn-back" onclick="switchTab('leaderboard')" aria-label="Back to Standings">
+          <span class="back-arrow">←</span>
+          <span>Back to Standings</span>
+        </button>
+      </div>
+
       <!-- Player horizontal scroll selection -->
       <div id="player-scroller-pills" class="player-scroller-pills">
         <!-- Generated dynamically -->
