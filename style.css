@@ -94,15 +94,16 @@ body {
 .brand-logo {
   width: 32px;
   height: 32px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 6px var(--accent-gold-glow)) drop-shadow(0 0 4px var(--accent-blue-glow));
+  border-radius: 7px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 8px var(--accent-gold-glow);
   flex-shrink: 0;
   transition: var(--transition);
 }
 
 .brand-row:hover .brand-logo {
   transform: scale(1.06);
-  filter: drop-shadow(0 0 10px var(--accent-gold-glow)) drop-shadow(0 0 6px var(--accent-blue-glow));
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5), 0 0 12px var(--accent-gold-glow);
 }
 
 .brand-text {
