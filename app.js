@@ -45,7 +45,7 @@ const PLAYER_COLORS = {
   "Nok": "#A71930", // Atlanta Falcons Red (ATL)
   "Mango": "#AA0000", // San Francisco 49ers Red (SF)
   "Caleb": "#ffd600",
-  "Ross": "#00b0ff",
+  "Ross": "#FFD700", // Gold
   "Dishman": "#00e5ff",
   "Ethan": "#76ff03",
   "Brett": "#d500f9",
@@ -60,7 +60,8 @@ const PLAYER_AVATARS = {
   "Alisha": "avatars/alisha.jpg",
   "Carson": "avatars/carson.jpg?v=2",
   "Nok": "avatars/nok.jpg",
-  "Mango": "avatars/mango.jpg"
+  "Mango": "avatars/mango.jpg",
+  "Ross": "avatars/ross.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
