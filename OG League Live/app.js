@@ -39,7 +39,7 @@ const PLAYERS = [
 ];
 
 const PLAYER_COLORS = {
-  "Jon": "#2979ff",
+  "Jon": "#4169E1", // Royal Blue
   "Alisha": "#e91e63",
   "Carson": "#00e676",
   "Nok": "#ff9100",
@@ -66,7 +66,7 @@ function getPlayerAvatarHtml(playerName, size = 36) {
 
   if (avatarUrl) {
     return `
-      <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border-color:${color};">
+      <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border: 2.5px solid ${color}; box-shadow: 0 0 10px ${color}55, 0 2px 8px rgba(0, 0, 0, 0.45);">
         <img src="${avatarUrl}" alt="${playerName}" class="player-avatar-img" onerror="this.parentElement.classList.remove('has-photo'); this.remove();" />
         <span class="player-avatar-fallback" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(10, Math.round(size * 0.42))}px;">${initial}</span>
       </div>
