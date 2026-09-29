@@ -63,11 +63,12 @@ body {
   border-bottom: 1px solid var(--border-color);
   padding-top: max(12px, env(safe-area-inset-top, 0px));
   padding-bottom: 10px;
-  padding-left: max(14px, env(safe-area-inset-left, 0px));
-  padding-right: max(14px, env(safe-area-inset-right, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -75,31 +76,43 @@ body {
 .brand-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
+  min-width: 0;
+  flex: 1;
 }
 
 .brand-icon {
-  font-size: 1.5rem;
-  filter: drop-shadow(0 0 8px var(--accent-gold-glow));
+  font-size: 1.25rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px var(--accent-gold-glow));
+  flex-shrink: 0;
+}
+
+.brand-text {
+  min-width: 0;
 }
 
 .brand-text h1 {
-  font-size: 0.96rem;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   line-height: 1.15;
   background: linear-gradient(90deg, #fff 0%, var(--accent-gold) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-text .subtext {
-  font-size: 0.66rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: var(--accent-blue);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  margin-top: 1px;
 }
 
 .header-actions {
@@ -112,37 +125,43 @@ body {
 .sync-status {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.72rem;
+  gap: 4px;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--accent-green);
-  background: rgba(0, 230, 118, 0.12);
-  border: 1px solid rgba(0, 230, 118, 0.25);
-  padding: 4px 8px;
-  border-radius: 12px;
+  background: rgba(0, 230, 118, 0.1);
+  border: 1px solid rgba(0, 230, 118, 0.22);
+  padding: 3px 6px;
+  border-radius: 10px;
+  line-height: 1;
 }
 
 .sync-dot {
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--accent-green);
-  box-shadow: 0 0 6px var(--accent-green);
+  box-shadow: 0 0 5px var(--accent-green);
 }
 
 .btn-refresh {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 6px 10px;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.78rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  line-height: 1;
   transition: var(--transition);
+}
+
+.btn-refresh .refresh-icon {
+  font-size: 0.72rem;
 }
 
 .btn-refresh:hover {
