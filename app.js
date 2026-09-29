@@ -548,6 +548,47 @@ function renderTabContent() {
 // =========================================================
 // TAB 1: LEADERBOARD RENDERING
 // =========================================================
+
+/**
+ * Calculate total season Win-Loss record for a player across all finalized games
+ */
+function getPlayerSeasonRecord(playerName) {
+  let wins = 0;
+  let losses = 0;
+
+  if (state.data && state.data.weeks) {
+    Object.keys(state.data.weeks).forEach(weekKey => {
+      const week = state.data.weeks[weekKey];
+      if (!week || !week.games) return;
+      week.games.forEach(game => {
+        if (!game.isFinal || !game.winner) return;
+        const pick = game.picks ? game.picks[playerName] : null;
+        if (pick && pick.winner) {
+          if (pick.winner === game.winner) {
+            wins++;
+          } else {
+            losses++;
+          }
+        } else {
+          // Unsubmitted pick on a completed game counts as a loss
+          losses++;
+        }
+      });
+    });
+  }
+
+  const total = wins + losses;
+  const pct = total > 0 ? ((wins / total) * 100).toFixed(1) : "0.0";
+  return {
+    wins,
+    losses,
+    total,
+    pct,
+    display: `${wins}-${losses}`,
+    label: `${wins}-${losses} W-L`
+  };
+}
+
 function renderLeaderboard() {
   const podiumEl = document.getElementById("podium-container");
   const listEl = document.getElementById("leaderboard-list");
@@ -565,13 +606,17 @@ function renderLeaderboard() {
   const rank2 = sorted[1] || { name: "-", points: 0 };
   const rank3 = sorted[2] || { name: "-", points: 0 };
 
+  const rec1 = getPlayerSeasonRecord(rank1.name);
+  const rec2 = getPlayerSeasonRecord(rank2.name);
+  const rec3 = getPlayerSeasonRecord(rank3.name);
+
   podiumEl.innerHTML = `
     <!-- 2nd Place -->
     <div class="podium-card" onclick="openPlayer('${rank2.name}')">
       <div class="podium-medal">🥈</div>
       <div class="podium-name">${rank2.name}</div>
       <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub">Rank #2</div>
+      <div class="podium-sub">Rank #2 • <strong>${rec2.label}</strong></div>
     </div>
 
     <!-- 1st Place (Center Crown) -->
@@ -579,7 +624,7 @@ function renderLeaderboard() {
       <div class="podium-medal">👑</div>
       <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}</div>
       <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER</div>
+      <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER • ${rec1.label}</div>
     </div>
 
     <!-- 3rd Place -->
@@ -587,7 +632,7 @@ function renderLeaderboard() {
       <div class="podium-medal">🥉</div>
       <div class="podium-name">${rank3.name}</div>
       <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub">Rank #3</div>
+      <div class="podium-sub">Rank #3 • <strong>${rec3.label}</strong></div>
     </div>
   `;
 
@@ -600,6 +645,7 @@ function renderLeaderboard() {
 
     const initial = player.name.charAt(0);
     const color = PLAYER_COLORS[player.name] || "var(--accent-blue)";
+    const rec = getPlayerSeasonRecord(player.name);
 
     // Calculate weekly pts if available
     const weekKey = `Week ${state.currentWeek}`;
@@ -621,7 +667,10 @@ function renderLeaderboard() {
           </div>
           <div class="player-info-block">
             <div class="player-title">${player.name}</div>
-            <div class="player-sub">OG League Contender</div>
+            <div class="player-sub record">
+              <span>Record: <strong>${rec.wins}-${rec.losses} W-L</strong></span>
+              <span class="rec-pct">(${rec.pct}%)</span>
+            </div>
           </div>
         </div>
         <div class="leader-right">
@@ -862,6 +911,7 @@ function renderPlayers() {
   });
 
   const pColor = PLAYER_COLORS[state.selectedPlayer] || "var(--accent-blue)";
+  const seasonRec = getPlayerSeasonRecord(state.selectedPlayer);
 
   // Render Player Hero
   heroContainer.innerHTML = `
@@ -872,7 +922,9 @@ function renderPlayers() {
         </div>
         <div>
           <div class="player-hero-title">${state.selectedPlayer}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">OG League Season Tracker</div>
+          <div class="player-hero-sub" style="font-size:0.78rem; color:var(--accent-cyan); font-weight:700; margin-top:2px;">
+            Season Record: <span style="color:#fff; font-weight:900;">${seasonRec.wins}-${seasonRec.losses} W-L</span> <span style="color:var(--text-muted); font-size:0.72rem;">(${seasonRec.pct}%)</span>
+          </div>
         </div>
       </div>
       <div class="player-hero-rank">Rank #${playerRankObj.rank}</div>
@@ -889,7 +941,7 @@ function renderPlayers() {
       </div>
       <div class="pstat-box">
         <div class="pstat-val" style="color:var(--accent-blue);">${correctCount} / ${games.length}</div>
-        <div class="pstat-lbl">Correct Picks</div>
+        <div class="pstat-lbl">${weekKey} Picks</div>
       </div>
     </div>
   `;
