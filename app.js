@@ -58,7 +58,7 @@ const PLAYER_COLORS = {
 const PLAYER_AVATARS = {
   "Jon": "avatars/jon.jpg",
   "Alisha": "avatars/alisha.jpg",
-  "Carson": "avatars/carson.jpg"
+  "Carson": "avatars/carson.jpg?v=2"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
