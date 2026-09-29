@@ -1115,6 +1115,9 @@ function renderPlayers() {
           const winTeamInfo = NFL_TEAMS[pk.winner] || { color: '#2a3b50' };
           const winTeamText = getTeamContrastColor(winTeamInfo.color);
 
+          const actualWinnerInfo = NFL_TEAMS[g.winner] || { color: '#2a3b50' };
+          const actualWinnerText = getTeamContrastColor(actualWinnerInfo.color);
+
           return `
             <tr>
               <td>
@@ -1132,7 +1135,13 @@ function renderPlayers() {
               </td>
               <td>
                 <span style="font-size:0.75rem; font-weight:800; color:${ptsColor};">${resText}</span>
-                ${isFinal ? `<div style="font-size:0.68rem; color:var(--text-dim);">Actual: ${g.awayScore}-${g.homeScore}</div>` : ""}
+                ${isFinal ? `
+                  <div style="font-size:0.68rem; color:var(--text-dim); margin-top:3px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                    <span>Actual:</span>
+                    <span class="team-badge-sm" style="background-color: ${actualWinnerInfo.color}; color: ${actualWinnerText}; font-size:0.62rem; padding:1px 5px; border-radius:4px; font-weight:800;">${g.winner}</span>
+                    <span style="font-weight:700; color:var(--text-muted);">${g.awayScore}-${g.homeScore}</span>
+                  </div>
+                ` : ""}
               </td>
               <td style="text-align:right; font-weight:900; font-size:1rem; color:${ptsColor};">
                 ${pk.points > 0 ? `+${pk.points}` : "0"}
