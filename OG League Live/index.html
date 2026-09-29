@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0e17">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OG League">
+  <meta name="description" content="Live view-only scores, player predictions, and season standings for the OG League">
+  <title>OG League Live 🏈</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔮%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+  <!-- APP STICKY HEADER -->
+  <header class="app-header">
+    <div class="brand-row">
+      <div class="brand-icon">🔮</div>
+      <div class="brand-text">
+        <h1>OG LEAGUE LIVE</h1>
+        <div class="subtext">Official Season Tracker</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="sync-status" class="sync-status">
+        <span class="sync-dot"></span>
+        <span id="sync-label">Live</span>
+      </div>
+      <button id="btn-refresh" class="btn-refresh" title="Sync live spreadsheet data">
+        <span class="refresh-icon">⚡</span>
+        <span>Sync</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="main-content">
+    
+    <!-- WEEK SELECTOR STRIP -->
+    <section class="week-strip-container" aria-label="Week Selector">
+      <button id="week-prev-btn" class="strip-nav-btn" aria-label="Previous week">◀</button>
+      <div id="week-strip-scroll" class="week-strip-scroll">
+        <!-- Week pills 1-18 generated dynamically -->
+      </div>
+      <button id="week-next-btn" class="strip-nav-btn" aria-label="Next week">▶</button>
+    </section>
+
+    <!-- TAB 1: LEADERBOARD -->
+    <section id="tab-leaderboard" class="tab-view active" role="tabpanel">
+      <!-- Top 3 Podium (Rank 2, 1, 3) -->
+      <div id="podium-container" class="podium-container">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <!-- Complete Rankings (4-12) -->
+      <div class="leaderboard-section-title" style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
+        League Standings
+      </div>
+      <div id="leaderboard-list" class="leaderboard-list">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 2: MATCHUPS & PICKS -->
+    <section id="tab-matchups" class="tab-view" role="tabpanel">
+      <div id="matchups-week-banner" class="week-summary-banner">
+        <span id="matchup-banner-title" class="week-summary-title">Week 3 Matchups</span>
+        <span id="matchup-banner-stat" class="week-summary-stat">16 Games</span>
+      </div>
+      <div id="matchups-list">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 3: PLAYERS ROSTER -->
+    <section id="tab-players" class="tab-view" role="tabpanel">
+      <!-- Player horizontal scroll selection -->
+      <div id="player-scroller-pills" class="player-scroller-pills">
+        <!-- Generated dynamically -->
+      </div>
+
+      <!-- Selected Player Card -->
+      <div id="player-hero-card" class="player-hero-card">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <!-- Player picks for selected week -->
+      <div style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
+        <span id="player-week-title">Week 3 Predictions</span>
+      </div>
+      <div id="player-picks-container">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 4: NFL STANDINGS -->
+    <section id="tab-nfl" class="tab-view" role="tabpanel">
+      <div class="nfl-section-header">🏈 Playoff Picture</div>
+      <div id="nfl-playoff-container" class="playoff-picture-container">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <div class="nfl-section-header">📊 Division Standings</div>
+      <div id="nfl-divisions-container" class="divisions-grid">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 5: RULES & SCORING -->
+    <section id="tab-rules" class="tab-view" role="tabpanel">
+      <div class="rules-container">
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>🏈 Correct Winner</span>
+            <span class="rule-badge-pts pts-winner">+10 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Predict the winning team of any regular season game correctly. Ties do not award winner points unless specified.
+          </p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>🎯 Exact Score Prediction</span>
+            <span class="rule-badge-pts pts-exact">+50 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Correctly predict both the exact home and away final scores of the game! Hits on exact score award a massive bonus.
+          </p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>⚡ Weekly Multiplier (3x)</span>
+            <span class="rule-badge-pts pts-mult">3X MULTIPLIER</span>
+          </div>
+          <p class="rule-desc">
+            Each player designates one game per week as their confidence multiplier. If your pick wins, your points for that game are tripled!
+          </p>
+          <div class="rule-tip">
+            💡 <strong>Max Payout:</strong> 10 pts &times; 3 = <strong>30 PTS</strong> for winner, or 50 pts &times; 3 = <strong>150 PTS</strong> for an exact score prediction!
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>⏱️ Game Locks</span>
+          </div>
+          <p class="rule-desc">
+            Picks lock individually at kickoff of each scheduled game. Official scoring updates automatically as scores are finalized in the league tracker.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FIXED MOBILE BOTTOM NAVIGATION -->
+  <nav class="bottom-nav" aria-label="Bottom Navigation">
+    <button class="nav-item active" data-tab="leaderboard">
+      <span class="nav-icon">🏆</span>
+      <span>Standings</span>
+    </button>
+    <button class="nav-item" data-tab="matchups">
+      <span class="nav-icon">🏈</span>
+      <span>Matchups</span>
+    </button>
+    <button class="nav-item" data-tab="players">
+      <span class="nav-icon">👤</span>
+      <span>Players</span>
+    </button>
+    <button class="nav-item" data-tab="nfl">
+      <span class="nav-icon">📊</span>
+      <span>NFL</span>
+    </button>
+    <button class="nav-item" data-tab="rules">
+      <span class="nav-icon">📜</span>
+      <span>Rules</span>
+    </button>
+  </nav>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notice" class="toast-notice" role="alert"></div>
+
+  <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
