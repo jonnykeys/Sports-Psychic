@@ -48,7 +48,7 @@ const PLAYER_COLORS = {
   "Ross": "#FFD700", // Gold
   "Dishman": "#00e5ff",
   "Ethan": "#125740", // New York Jets Green (NYJ)
-  "Brett": "#d500f9",
+  "Brett": "#F9649B", // Headband Pink
   "Wells": "#002C5F", // Indianapolis Colts Blue (IND)
   "Rob": "#f50057"
 };
@@ -64,7 +64,8 @@ const PLAYER_AVATARS = {
   "Ross": "avatars/ross.jpg",
   "Caleb": "avatars/caleb.jpg",
   "Ethan": "avatars/ethan.jpg",
-  "Wells": "avatars/wells.jpg"
+  "Wells": "avatars/wells.jpg",
+  "Brett": "avatars/brett.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
