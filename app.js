@@ -53,6 +53,56 @@ const PLAYER_COLORS = {
   "Rob": "#f50057"
 };
 
+// Official NFL Team Colors and Metadata (matching Main Project & Spreadsheet)
+const NFL_TEAMS = {
+  KC:  { code: 'KC',  name: 'Kansas City Chiefs',     city: 'Kansas City', conf: 'AFC', div: 'West',  color: '#E31837', alt: '#FFB81C' },
+  LV:  { code: 'LV',  name: 'Las Vegas Raiders',      city: 'Las Vegas',   conf: 'AFC', div: 'West',  color: '#000000', alt: '#A5ACAF' },
+  DEN: { code: 'DEN', name: 'Denver Broncos',         city: 'Denver',      conf: 'AFC', div: 'West',  color: '#FB4F14', alt: '#002244' },
+  LAC: { code: 'LAC', name: 'Los Angeles Chargers',   city: 'Los Angeles', conf: 'AFC', div: 'West',  color: '#0080C6', alt: '#FFC20E' },
+  BUF: { code: 'BUF', name: 'Buffalo Bills',          city: 'Buffalo',     conf: 'AFC', div: 'East',  color: '#00338D', alt: '#C60C30' },
+  MIA: { code: 'MIA', name: 'Miami Dolphins',         city: 'Miami',       conf: 'AFC', div: 'East',  color: '#008E97', alt: '#FC4C02' },
+  NYJ: { code: 'NYJ', name: 'New York Jets',          city: 'New York',    conf: 'AFC', div: 'East',  color: '#125740', alt: '#000000' },
+  NE:  { code: 'NE',  name: 'New England Patriots',    city: 'New England', conf: 'AFC', div: 'East',  color: '#002244', alt: '#C60C30' },
+  BAL: { code: 'BAL', name: 'Baltimore Ravens',       city: 'Baltimore',   conf: 'AFC', div: 'North', color: '#241773', alt: '#000000' },
+  CLE: { code: 'CLE', name: 'Cleveland Browns',       city: 'Cleveland',   conf: 'AFC', div: 'North', color: '#311D00', alt: '#FF3C00' },
+  PIT: { code: 'PIT', name: 'Pittsburgh Steelers',    city: 'Pittsburgh',  conf: 'AFC', div: 'North', color: '#FFB612', alt: '#101820' },
+  CIN: { code: 'CIN', name: 'Cincinnati Bengals',     city: 'Cincinnati',  conf: 'AFC', div: 'North', color: '#FB4F14', alt: '#000000' },
+  HOU: { code: 'HOU', name: 'Houston Texans',         city: 'Houston',     conf: 'AFC', div: 'South', color: '#03202F', alt: '#A71930' },
+  JAX: { code: 'JAX', name: 'Jacksonville Jaguars',   city: 'Jacksonville',conf: 'AFC', div: 'South', color: '#006778', alt: '#D7A22A' },
+  IND: { code: 'IND', name: 'Indianapolis Colts',     city: 'Indianapolis',conf: 'AFC', div: 'South', color: '#002C5F', alt: '#A2AAAD' },
+  TEN: { code: 'TEN', name: 'Tennessee Titans',       city: 'Tennessee',   conf: 'AFC', div: 'South', color: '#0C2340', alt: '#4B92DB' },
+  SF:  { code: 'SF',  name: 'San Francisco 49ers',    city: 'San Francisco',conf: 'NFC', div: 'West', color: '#AA0000', alt: '#B3995D' },
+  LAR: { code: 'LAR', name: 'Los Angeles Rams',       city: 'Los Angeles', conf: 'NFC', div: 'West',  color: '#003594', alt: '#FFA300' },
+  SEA: { code: 'SEA', name: 'Seattle Seahawks',       city: 'Seattle',     conf: 'NFC', div: 'West',  color: '#002244', alt: '#69BE28' },
+  AZ:  { code: 'AZ',  name: 'Arizona Cardinals',      city: 'Arizona',     conf: 'NFC', div: 'West',  color: '#97233F', alt: '#000000' },
+  DAL: { code: 'DAL', name: 'Dallas Cowboys',         city: 'Dallas',      conf: 'NFC', div: 'East',  color: '#041E42', alt: '#869397' },
+  PHI: { code: 'PHI', name: 'Philadelphia Eagles',    city: 'Philadelphia',conf: 'NFC', div: 'East',  color: '#004C54', alt: '#A5ACAF' },
+  NYG: { code: 'NYG', name: 'New York Giants',        city: 'New York',    conf: 'NFC', div: 'East',  color: '#0B2265', alt: '#A71930' },
+  WSH: { code: 'WSH', name: 'Washington Commanders',  city: 'Washington',  conf: 'NFC', div: 'East',  color: '#5A1414', alt: '#FFB612' },
+  DET: { code: 'DET', name: 'Detroit Lions',          city: 'Detroit',     conf: 'NFC', div: 'North', color: '#0076B6', alt: '#B0B7BC' },
+  GB:  { code: 'GB',  name: 'Green Bay Packers',      city: 'Green Bay',   conf: 'NFC', div: 'North', color: '#203731', alt: '#FFB612' },
+  MIN: { code: 'MIN', name: 'Minnesota Vikings',      city: 'Minnesota',   conf: 'NFC', div: 'North', color: '#4F2683', alt: '#FFC62F' },
+  CHI: { code: 'CHI', name: 'Chicago Bears',          city: 'Chicago',     conf: 'NFC', div: 'North', color: '#0B162A', alt: '#C83803' },
+  TB:  { code: 'TB',  name: 'Tampa Bay Buccaneers',   city: 'Tampa Bay',   conf: 'NFC', div: 'South', color: '#D50A0A', alt: '#0A0A08' },
+  NO:  { code: 'NO',  name: 'New Orleans Saints',     city: 'New Orleans', conf: 'NFC', div: 'South', color: '#D3BC8D', alt: '#101820' },
+  ATL: { code: 'ATL', name: 'Atlanta Falcons',        city: 'Atlanta',     conf: 'NFC', div: 'South', color: '#A71930', alt: '#000000' },
+  CAR: { code: 'CAR', name: 'Carolina Panthers',      city: 'Carolina',    conf: 'NFC', div: 'South', color: '#0085CA', alt: '#101820' },
+  // Aliases
+  ARI: { code: 'AZ',  name: 'Arizona Cardinals',      city: 'Arizona',     conf: 'NFC', div: 'West',  color: '#97233F', alt: '#000000' },
+  WAS: { code: 'WSH', name: 'Washington Commanders',  city: 'Washington',  conf: 'NFC', div: 'East',  color: '#5A1414', alt: '#FFB612' },
+  LA:  { code: 'LAR', name: 'Los Angeles Rams',       city: 'Los Angeles', conf: 'NFC', div: 'West',  color: '#003594', alt: '#FFA300' },
+  JAC: { code: 'JAX', name: 'Jacksonville Jaguars',   city: 'Jacksonville',conf: 'AFC', div: 'South', color: '#006778', alt: '#D7A22A' }
+};
+
+function getTeamContrastColor(hexColor) {
+  if (!hexColor || hexColor.charAt(0) !== '#') return '#ffffff';
+  const r = parseInt(hexColor.substr(1, 2), 16);
+  const g = parseInt(hexColor.substr(3, 2), 16);
+  const b = parseInt(hexColor.substr(5, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return (yiq >= 150) ? '#0a0e17' : '#ffffff';
+}
+
 // =========================================================
 // APPLICATION STATE
 // =========================================================
@@ -617,6 +667,12 @@ function renderMatchups() {
     const awayTeam = parts[0] || "AWAY";
     const homeTeam = parts[1] || "HOME";
 
+    const awayInfo = NFL_TEAMS[awayTeam] || { code: awayTeam, name: awayTeam, city: awayTeam, color: '#2a3b50' };
+    const homeInfo = NFL_TEAMS[homeTeam] || { code: homeTeam, name: homeTeam, city: homeTeam, color: '#2a3b50' };
+
+    const awayTextColor = getTeamContrastColor(awayInfo.color);
+    const homeTextColor = getTeamContrastColor(homeInfo.color);
+
     const isFinal = game.isFinal;
     const badgeText = isFinal ? "FINAL" : (game.awayScore !== null ? "LIVE" : "SCHEDULED");
     const badgeClass = isFinal ? "final" : (game.awayScore !== null ? "live" : "scheduled");
@@ -624,46 +680,67 @@ function renderMatchups() {
     const awayWinning = isFinal && game.winner === awayTeam;
     const homeWinning = isFinal && game.winner === homeTeam;
 
-    // Build Picks Chips
-    const chipsHtml = PLAYERS.map(pName => {
+    // Group picks by team: Away, Home, and Unpicked
+    const awayPicks = [];
+    const homePicks = [];
+    const unpicked = [];
+
+    PLAYERS.forEach(pName => {
       const pick = game.picks ? game.picks[pName] : null;
       if (!pick || !pick.winner) {
-        return `
-          <div class="pick-chip wrong">
-            <div class="chip-top">
-              <span class="chip-player">${pName}</span>
-            </div>
-            <div class="chip-pick-line">
-              <span>No Pick</span>
-            </div>
-          </div>
-        `;
+        unpicked.push({ name: pName });
+        return;
       }
 
-      let chipStatusClass = "";
+      let chipClass = "";
+      let ptsBadge = "";
+
       if (isFinal) {
-        if (pick.exact) chipStatusClass = "exact";
-        else if (pick.points > 0) chipStatusClass = "correct";
-        else chipStatusClass = "wrong";
+        if (pick.exact) {
+          chipClass = "exact";
+          ptsBadge = `<span class="chip-pts-badge pts-exact">+${pick.points}</span>`;
+        } else if (pick.points > 0) {
+          chipClass = "correct";
+          ptsBadge = `<span class="chip-pts-badge pts-win">+${pick.points}</span>`;
+        } else {
+          chipClass = "wrong";
+          ptsBadge = `<span class="chip-pts-badge pts-zero">0</span>`;
+        }
       }
 
       const scoreDisplay = (pick.awayScore !== null && pick.homeScore !== null)
         ? `${pick.awayScore}-${pick.homeScore}`
         : "";
 
-      return `
-        <div class="pick-chip ${chipStatusClass}">
-          <div class="chip-top">
-            <span class="chip-player">${pName}</span>
-            ${pick.multiplier ? `<span class="chip-mult">⭐ 3X</span>` : ""}
-          </div>
-          <div class="chip-pick-line">
-            <span style="font-weight:700; color:#fff;">${pick.winner} ${scoreDisplay}</span>
-            ${isFinal ? `<span class="chip-points ${pick.points === 0 ? "zero" : ""}">${pick.points > 0 ? `+${pick.points}` : "0"}</span>` : ""}
-          </div>
+      const pData = {
+        name: pName,
+        multiplier: pick.multiplier,
+        scoreDisplay,
+        chipClass,
+        ptsBadge
+      };
+
+      if (pick.winner === awayTeam) {
+        awayPicks.push(pData);
+      } else if (pick.winner === homeTeam) {
+        homePicks.push(pData);
+      } else {
+        unpicked.push({ name: pName, winner: pick.winner });
+      }
+    });
+
+    const renderChip = (p) => `
+      <div class="split-pick-chip ${p.chipClass}" onclick="openPlayer('${p.name}')" title="View ${p.name}'s predictions">
+        <div class="chip-row-top">
+          <span class="chip-player-name">${p.name}</span>
+          ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
         </div>
-      `;
-    }).join("");
+        <div class="chip-row-bottom">
+          <span class="chip-predicted-score">${p.scoreDisplay}</span>
+          ${p.ptsBadge}
+        </div>
+      </div>
+    `;
 
     return `
       <article class="matchup-card" id="${game.id}">
@@ -673,11 +750,12 @@ function renderMatchups() {
         </div>
 
         <div class="matchup-teams-display">
-          <!-- Away Team -->
+          <!-- Away Team (Left) -->
           <div class="team-box away">
-            <span class="team-pill">${awayTeam}</span>
+            <div class="team-badge" style="background-color: ${awayInfo.color}; color: ${awayTextColor};">${awayTeam}</div>
             <div class="team-details">
               <div class="team-code">${awayTeam}</div>
+              <div class="team-name-sub">${awayInfo.city || awayInfo.name || ""}</div>
             </div>
             <div class="team-score ${awayWinning ? "winning" : ""}">${game.awayScore !== null ? game.awayScore : "-"}</div>
           </div>
@@ -687,26 +765,54 @@ function renderMatchups() {
             <span class="vs-tag">@</span>
           </div>
 
-          <!-- Home Team -->
+          <!-- Home Team (Right) -->
           <div class="team-box home">
-            <span class="team-pill">${homeTeam}</span>
+            <div class="team-badge" style="background-color: ${homeInfo.color}; color: ${homeTextColor};">${homeTeam}</div>
             <div class="team-details">
               <div class="team-code">${homeTeam}</div>
+              <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
             </div>
             <div class="team-score ${homeWinning ? "winning" : ""}">${game.homeScore !== null ? game.homeScore : "-"}</div>
           </div>
         </div>
 
-        <!-- Picks Breakdown -->
-        <div class="picks-breakdown-section">
-          <div class="picks-breakdown-title">
-            <span>League Picks (${PLAYERS.length})</span>
-            <span style="font-size:0.68rem; color:var(--accent-gold);">⭐ = Multiplier</span>
+        <!-- Split Picks Breakdown (Away on Left, Home on Right) -->
+        <div class="matchup-split-picks">
+          <!-- Left Side: Away Team Picks -->
+          <div class="picks-column away-picks">
+            <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
+              <div class="column-team-label">
+                <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
+                <span>${awayTeam} Picks</span>
+              </div>
+              <span class="column-count-badge">${awayPicks.length}</span>
+            </div>
+            <div class="picks-list">
+              ${awayPicks.length > 0 ? awayPicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+            </div>
           </div>
-          <div class="picks-chips-grid">
-            ${chipsHtml}
+
+          <!-- Right Side: Home Team Picks -->
+          <div class="picks-column home-picks">
+            <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
+              <span class="column-count-badge">${homePicks.length}</span>
+              <div class="column-team-label">
+                <span>${homeTeam} Picks</span>
+                <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+              </div>
+            </div>
+            <div class="picks-list">
+              ${homePicks.length > 0 ? homePicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+            </div>
           </div>
         </div>
+
+        ${unpicked.length > 0 ? `
+          <div class="unpicked-footer">
+            <span class="unpicked-label">No Pick (${unpicked.length}):</span>
+            <span class="unpicked-names">${unpicked.map(u => u.name).join(", ")}</span>
+          </div>
+        ` : ""}
       </article>
     `;
   }).join("");
@@ -837,6 +943,9 @@ function renderPlayers() {
             }
           }
 
+          const winTeamInfo = NFL_TEAMS[pk.winner] || { color: '#2a3b50' };
+          const winTeamText = getTeamContrastColor(winTeamInfo.color);
+
           return `
             <tr>
               <td>
@@ -844,8 +953,10 @@ function renderPlayers() {
                 <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime}</div>
               </td>
               <td>
-                <div style="font-weight:900; color:#fff;">${pk.winner}</div>
-                ${pk.multiplier ? `<span class="chip-mult" style="font-size:0.62rem;">⭐ 3X</span>` : ""}
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span class="team-badge-sm" style="background-color: ${winTeamInfo.color}; color: ${winTeamText};">${pk.winner}</span>
+                  ${pk.multiplier ? `<span class="chip-mult" style="font-size:0.62rem;">⭐ 3X</span>` : ""}
+                </div>
               </td>
               <td style="color:var(--text-muted); font-weight:700;">
                 ${pk.awayScore !== null ? `${pk.awayScore}-${pk.homeScore}` : "-"}
