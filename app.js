@@ -47,7 +47,7 @@ const PLAYER_COLORS = {
   "Caleb": "#007AC1",
   "Ross": "#FFD700", // Gold
   "Dishman": "#00e5ff",
-  "Ethan": "#76ff03",
+  "Ethan": "#125740", // New York Jets Green (NYJ)
   "Brett": "#d500f9",
   "Wells": "#651fff",
   "Rob": "#f50057"
@@ -62,7 +62,8 @@ const PLAYER_AVATARS = {
   "Nok": "avatars/nok.jpg",
   "Mango": "avatars/mango.jpg",
   "Ross": "avatars/ross.jpg",
-  "Caleb": "avatars/caleb.jpg"
+  "Caleb": "avatars/caleb.jpg",
+  "Ethan": "avatars/ethan.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
