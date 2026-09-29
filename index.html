@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=3.9">
+  <link rel="stylesheet" href="style.css?v=4.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 </head>
@@ -165,23 +165,59 @@
   <!-- FIXED MOBILE BOTTOM NAVIGATION -->
   <nav class="bottom-nav" aria-label="Bottom Navigation">
     <button class="nav-item active" data-tab="leaderboard">
-      <span class="nav-icon">🏆</span>
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+          <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+          <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
+          <path d="M12 17v4" />
+          <path d="M8 21h8" />
+        </svg>
+      </span>
       <span>Standings</span>
     </button>
     <button class="nav-item" data-tab="matchups">
-      <span class="nav-icon">🏈</span>
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 9l-6 6" />
+          <path d="M10 12l2 2" />
+          <path d="M12 10l2 2" />
+          <path d="M8 21a5 5 0 0 0 -5 -5" />
+          <path d="M16 3c-7.18 0 -13 5.82 -13 13a5 5 0 0 0 5 5c7.18 0 13 -5.82 13 -13a5 5 0 0 0 -5 -5" />
+          <path d="M16 3a5 5 0 0 0 5 5" />
+        </svg>
+      </span>
       <span>Matchups</span>
     </button>
     <button class="nav-item" data-tab="players">
-      <span class="nav-icon">👤</span>
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </span>
       <span>Players</span>
     </button>
     <button class="nav-item" data-tab="nfl">
-      <span class="nav-icon">📊</span>
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L4 5v6c0 5.5 3.5 10.5 8 11 4.5-.5 8-5.5 8-11V5l-8-3z" />
+          <path d="M12 7v10" />
+          <path d="M9 10h6" />
+          <path d="M9 13h6" />
+        </svg>
+      </span>
       <span>NFL</span>
     </button>
     <button class="nav-item" data-tab="rules">
-      <span class="nav-icon">📜</span>
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      </span>
       <span>Rules</span>
     </button>
   </nav>
@@ -190,7 +226,7 @@
   <div id="toast-notice" class="toast-notice" role="alert"></div>
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
-  <script src="data.js?v=3.9"></script>
-  <script src="app.js?v=3.9"></script>
+  <script src="data.js?v=4.0"></script>
+  <script src="app.js?v=4.0"></script>
 </body>
 </html>

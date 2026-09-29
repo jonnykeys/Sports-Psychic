@@ -1049,48 +1049,105 @@ body {
   right: 0;
   height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: rgba(7, 12, 30, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border-color);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.45);
+  background: rgba(7, 12, 30, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(245, 184, 0, 0.16);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.55), 0 -1px 0 rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-around;
   align-items: flex-start;
-  padding-top: 6px;
+  padding-top: 4px;
   z-index: 100;
   max-width: 800px;
   margin: 0 auto;
 }
 
 .nav-item {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  padding: 6px 4px;
+  padding: 4px 2px;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.nav-item::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-gold-bright));
+  box-shadow: 0 0 10px var(--accent-gold), 0 0 16px var(--accent-gold-glow);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item.active::before {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.nav-item:active {
+  transform: scale(0.92);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 28px;
+  border-radius: 14px;
+  position: relative;
   transition: var(--transition);
 }
 
-.nav-item .nav-icon {
-  font-size: 1.3rem;
-  line-height: 1;
+.nav-svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--text-muted);
+  stroke-width: 2;
+  fill: none;
+  display: block;
+  transition: var(--transition);
 }
 
 .nav-item.active {
-  color: var(--accent-gold);
+  color: var(--accent-gold-bright);
+  font-weight: 700;
 }
 
 .nav-item.active .nav-icon {
+  background: rgba(245, 184, 0, 0.12);
+  box-shadow: 0 0 12px rgba(245, 184, 0, 0.18);
+}
+
+.nav-item.active .nav-svg {
+  stroke: var(--accent-gold);
   filter: drop-shadow(0 0 6px var(--accent-gold-glow));
+}
+
+@media (hover: hover) {
+  .nav-item:hover:not(.active) {
+    color: var(--text-main);
+  }
+  .nav-item:hover:not(.active) .nav-svg {
+    stroke: var(--text-main);
+  }
 }
 
 /* Toast Message */
