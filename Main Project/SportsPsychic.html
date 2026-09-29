@@ -193,18 +193,31 @@
 
       <!-- Authenticated Content (Shown when logged in) -->
       <div id="picksUnlockedContent">
-        <!-- Horizontal Week Carousel (Weeks 1 to 18) -->
+        <!-- Horizontal Week Carousel (Weeks 1 to 18) with Left/Right Arrows -->
         <div class="week-scroller-container">
+          <button class="week-nav-btn prev" id="weekScrollPrev" onclick="scrollWeekCarousel(-1)" title="Scroll left to earlier weeks" aria-label="Scroll left">◀</button>
           <div id="weekScroller" class="week-scroller"></div>
+          <button class="week-nav-btn next" id="weekScrollNext" onclick="scrollWeekCarousel(1)" title="Scroll right to later weeks" aria-label="Scroll right">▶</button>
         </div>
 
-        <!-- Action & Counter Toolbar -->
+        <!-- Action & Counter Toolbar with Jump Selector & Prev/Next Buttons -->
         <div class="week-toolbar">
-          <div class="picks-counter">
-            <span>Week Picks:</span>
-            <span id="picksCounter" class="counter-badge">0 / 16</span>
+          <div class="week-toolbar-left">
+            <div class="picks-counter">
+              <span>Week Picks:</span>
+              <span id="picksCounter" class="counter-badge">0 / 16</span>
+            </div>
+            <!-- Quick jump dropdown for instant navigation to any week 1-18 -->
+            <div class="week-jump-box">
+              <label for="weekSelectDropdown" class="week-jump-label">Jump to:</label>
+              <select id="weekSelectDropdown" class="form-input week-jump-select" onchange="selectWeek(this.value)">
+                <!-- Weeks 1 to 18 populated dynamically -->
+              </select>
+            </div>
           </div>
           <div class="toolbar-buttons">
+            <button id="btnPrevWeek" class="btn-sm" onclick="stepWeek(-1)" title="Go to previous week">◀ Prev Week</button>
+            <button id="btnNextWeek" class="btn-sm" onclick="stepWeek(1)" title="Go to next week">Next Week ▶</button>
             <button id="btnRandomize" class="btn-sm warning" title="Auto-fill unpicked games">⚡ Quick Randomizer</button>
             <button id="btnClearWeek" class="btn-sm" title="Clear this week's picks">Clear</button>
           </div>

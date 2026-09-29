@@ -457,7 +457,16 @@ function setupNavigation() {
     });
 
     if (tabName === 'home') renderHomeTab();
-    if (tabName === 'picks') renderPicksTab();
+    if (tabName === 'picks') {
+      renderPicksTab();
+      setTimeout(() => {
+        const activePill = document.getElementById(`week-pill-${AppState.currentWeek}`);
+        if (activePill) {
+          activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+        if (window.updateWeekNavButtons) window.updateWeekNavButtons();
+      }, 80);
+    }
     if (tabName === 'standings') renderStandingsTab();
     if (tabName === 'leagues') renderLeaguesTab();
 
@@ -574,26 +583,162 @@ function renderScoresTicker() {
 }
 
 // -------------------------------------------------------------
-// TAB 2: PREDICTIONS (Weeks 1 to 18) - WITH AUTHENTICATION GATE
+// TAB 2: PREDICTIONS (Weeks 1 to 18) - WITH SEAMLESS SCROLLER & CONTROLS
 // -------------------------------------------------------------
-function setupWeekScroller() {
+window.selectWeek = function(weekNum, shouldScrollPill = true) {
+  const w = Math.max(1, Math.min(18, parseInt(weekNum) || 1));
+  AppState.currentWeek = w;
+
+  // 1. Update week pills active class
+  document.querySelectorAll('.week-pill').forEach(p => {
+    const pWeek = parseInt(p.dataset.week);
+    p.classList.toggle('active', pWeek === w);
+  });
+
+  // 2. Synchronize jump dropdown
+  const dropdown = document.getElementById('weekSelectDropdown');
+  if (dropdown && dropdown.value !== String(w)) {
+    dropdown.value = String(w);
+  }
+
+  // 3. Update Prev / Next buttons disabled states
+  const prevBtn = document.getElementById('btnPrevWeek');
+  const nextBtn = document.getElementById('btnNextWeek');
+  if (prevBtn) prevBtn.disabled = (w <= 1);
+  if (nextBtn) nextBtn.disabled = (w >= 18);
+
+  // 4. Smoothly center active pill in view
+  if (shouldScrollPill) {
+    const activePill = document.getElementById(`week-pill-${w}`);
+    if (activePill) {
+      activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  updateWeekNavButtons();
+  renderPicksTab();
+};
+
+window.stepWeek = function(delta) {
+  const current = AppState.currentWeek || 1;
+  const target = Math.max(1, Math.min(18, current + delta));
+  selectWeek(target, true);
+};
+
+window.scrollWeekCarousel = function(direction) {
   const scroller = document.getElementById('weekScroller');
   if (!scroller) return;
+  const scrollAmount = 260;
+  scroller.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+  setTimeout(updateWeekNavButtons, 350);
+};
+
+window.updateWeekNavButtons = function() {
+  const scroller = document.getElementById('weekScroller');
+  const prevBtn = document.getElementById('weekScrollPrev');
+  const nextBtn = document.getElementById('weekScrollNext');
+  if (!scroller) return;
+
+  if (prevBtn) {
+    prevBtn.disabled = scroller.scrollLeft <= 6;
+  }
+  if (nextBtn) {
+    nextBtn.disabled = (scroller.scrollLeft + scroller.clientWidth) >= (scroller.scrollWidth - 6);
+  }
+};
+
+function setupWeekScroller() {
+  const scroller = document.getElementById('weekScroller');
+  const dropdown = document.getElementById('weekSelectDropdown');
+  if (!scroller) return;
+
   scroller.innerHTML = '';
+
+  // Setup dropdown options (Weeks 1 to 18)
+  if (dropdown) {
+    dropdown.innerHTML = '';
+    for (let w = 1; w <= 18; w++) {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = `Week ${w}`;
+      if (w === AppState.currentWeek) opt.selected = true;
+      dropdown.appendChild(opt);
+    }
+  }
+
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let hasDragged = false;
 
   for (let w = 1; w <= 18; w++) {
     const pill = document.createElement('button');
     pill.className = `week-pill ${w === AppState.currentWeek ? 'active' : ''}`;
     pill.id = `week-pill-${w}`;
+    pill.dataset.week = w;
     pill.innerHTML = `<span>Week ${w}</span>`;
-    pill.addEventListener('click', () => {
-      AppState.currentWeek = w;
-      document.querySelectorAll('.week-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      renderPicksTab();
+
+    pill.addEventListener('click', (e) => {
+      if (hasDragged) {
+        e.stopPropagation();
+        return;
+      }
+      selectWeek(w, true);
     });
+
     scroller.appendChild(pill);
   }
+
+  // 1. Mouse wheel horizontal scrolling (translates wheel down/up to carousel scroll right/left)
+  scroller.addEventListener('wheel', (e) => {
+    if (e.deltaY !== 0) {
+      e.preventDefault();
+      scroller.scrollLeft += e.deltaY * 1.4;
+      updateWeekNavButtons();
+    }
+  }, { passive: false });
+
+  // 2. Click & drag mouse dragging (Grab & Drag)
+  scroller.addEventListener('mousedown', (e) => {
+    isDown = true;
+    hasDragged = false;
+    scroller.classList.add('dragging');
+    startX = e.pageX - scroller.offsetLeft;
+    scrollLeft = scroller.scrollLeft;
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isDown) {
+      isDown = false;
+      scroller.classList.remove('dragging');
+      setTimeout(() => { hasDragged = false; }, 60);
+      updateWeekNavButtons();
+    }
+  });
+
+  scroller.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - scroller.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    if (Math.abs(walk) > 4) hasDragged = true;
+    scroller.scrollLeft = scrollLeft - walk;
+    updateWeekNavButtons();
+  });
+
+  // 3. Scroll event to update left/right button states
+  scroller.addEventListener('scroll', () => {
+    updateWeekNavButtons();
+  }, { passive: true });
+
+  // Initial update
+  setTimeout(() => {
+    updateWeekNavButtons();
+    const activePill = document.getElementById(`week-pill-${AppState.currentWeek}`);
+    if (activePill) {
+      activePill.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+    }
+  }, 100);
 }
 
 function renderPicksTab() {
@@ -609,6 +754,16 @@ function renderPicksTab() {
 
   if (lockedGate) lockedGate.style.display = 'none';
   if (unlockedContent) unlockedContent.style.display = 'block';
+
+  // Synchronize jump dropdown & step buttons with current week
+  const dropdown = document.getElementById('weekSelectDropdown');
+  if (dropdown && dropdown.value !== String(AppState.currentWeek)) {
+    dropdown.value = String(AppState.currentWeek);
+  }
+  const prevBtn = document.getElementById('btnPrevWeek');
+  const nextBtn = document.getElementById('btnNextWeek');
+  if (prevBtn) prevBtn.disabled = (AppState.currentWeek <= 1);
+  if (nextBtn) nextBtn.disabled = (AppState.currentWeek >= 18);
 
   const container = document.getElementById('matchupsContainer');
   const counterEl = document.getElementById('picksCounter');
