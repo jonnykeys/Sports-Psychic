@@ -1,4 +1,4 @@
-// Sports Psychic - NFL 2026 Schedule & Team Data (Clean baseline without user data)
+﻿// Sports Psychic - NFL 2026 Schedule & Team Data (Clean baseline without user data)
 
 const NFL_TEAMS = {
   // AFC West
@@ -63,11 +63,11 @@ const DIVISIONS = {
 
 // Sports supported (with future expansion planned)
 const SPORTS_CATALOG = [
-  { id: 'nfl', name: 'NFL Football', season: '2026 Season', active: true, icon: '🏈' },
-  { id: 'nba', name: 'NBA Basketball', season: 'Upcoming', active: false, icon: '🏀' },
-  { id: 'mlb', name: 'MLB Baseball', season: 'Upcoming', active: false, icon: '⚾' },
-  { id: 'cfb', name: 'College Football', season: 'Upcoming', active: false, icon: '🎓' },
-  { id: 'nhl', name: 'NHL Hockey', season: 'Upcoming', active: false, icon: '🏒' }
+  { id: 'nfl', name: 'NFL Football', season: '2026 Season', active: true, icon: 'ðŸˆ' },
+  { id: 'nba', name: 'NBA Basketball', season: 'Upcoming', active: false, icon: 'ðŸ€' },
+  { id: 'mlb', name: 'MLB Baseball', season: 'Upcoming', active: false, icon: 'âš¾' },
+  { id: 'cfb', name: 'College Football', season: 'Upcoming', active: false, icon: 'ðŸŽ“' },
+  { id: 'nhl', name: 'NHL Hockey', season: 'Upcoming', active: false, icon: 'ðŸ’' }
 ];
 
 const NFL_2026_SCHEDULE = {
@@ -408,10 +408,10 @@ const NFL_2026_SCHEDULE = {
                                    {
                                        "id":  "w3_g17",
                                        "matchup":  "LAR @ DEN",
-                                       "homeScore":  null,
-                                       "isFinal":  false,
-                                       "awayScore":  null,
-                                       "winner":  ""
+                                       "homeScore":   30 ,
+                                       "isFinal":   true ,
+                                       "awayScore":   26 ,
+                                       "winner":   "DEN"
                                    },
                                    {
                                        "id":  "w3_g18",
@@ -4774,4 +4774,5 @@ const NFL_2026_SCHEDULE = {
                                  ]
                  }
 };
+
 

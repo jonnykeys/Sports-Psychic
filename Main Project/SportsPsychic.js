@@ -13,11 +13,15 @@ const AppState = {
   activeLeagueId: localStorage.getItem('sp_active_league') || null,
   leagues: JSON.parse(localStorage.getItem('sp_leagues') || '[]'),
   userPicks: {}, // Active picks for the logged-in user
-  projectedStandings: {}
+  projectedStandings: {},
+  globalActuals: {}, // Unified official game outcomes
+  scorekeeperWeek: 1,
+  scorekeeperFilter: 'all'
 };
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
+  initActuals();
   initAccounts();
   populateFavoriteTeamsDropdown();
   setupNavigation();
@@ -25,6 +29,75 @@ document.addEventListener('DOMContentLoaded', () => {
   updateAuthUI();
   renderHomeTab();
 });
+
+// Load and unify global actual results
+function initActuals() {
+  const saved = localStorage.getItem('sp_global_actuals');
+  let actuals = {};
+  if (saved) {
+    try { actuals = JSON.parse(saved); } catch (e) { actuals = {}; }
+  }
+
+  // Merge baseline from NFL_2026_SCHEDULE
+  const baseline = NFL_2026_SCHEDULE?.actuals || {};
+  const schedule = NFL_2026_SCHEDULE?.schedule || {};
+
+  for (let w = 1; w <= 18; w++) {
+    const weekKey = `Week ${w}`;
+    const baseList = baseline[weekKey] || [];
+    const schedList = schedule[weekKey] || [];
+
+    if (!actuals[weekKey]) actuals[weekKey] = [];
+
+    // First ensure baseline actuals are present or upgraded
+    baseList.forEach(baseGame => {
+      const existingIdx = actuals[weekKey].findIndex(g => g.id === baseGame.id);
+      if (existingIdx === -1) {
+        actuals[weekKey].push({ ...baseGame });
+      } else if (!actuals[weekKey][existingIdx].isFinal && baseGame.isFinal) {
+        actuals[weekKey][existingIdx] = { ...baseGame };
+      }
+    });
+
+    // Also ensure every scheduled game has a record in actuals[weekKey]
+    schedList.forEach(sGame => {
+      const existing = actuals[weekKey].find(g => g.id === sGame.id);
+      if (!existing) {
+        actuals[weekKey].push({
+          id: sGame.id,
+          matchup: sGame.matchup,
+          awayScore: null,
+          homeScore: null,
+          winner: '',
+          isFinal: false
+        });
+      }
+    });
+  }
+  AppState.globalActuals = actuals;
+}
+
+function isUserAdmin() {
+  if (!AppState.currentUser) return false;
+  if (localStorage.getItem('sp_admin_unlocked') === 'true') return true;
+  const uname = (AppState.currentUser.username || '').toLowerCase();
+  return uname === 'jonny' || uname === 'jon' || uname === 'admin' || AppState.currentUser.isAdmin === true;
+}
+
+// Helper to check if an official game result has finalized
+function isGameFinalized(gameId, weekNum = null) {
+  if (weekNum) {
+    const list = AppState.globalActuals[`Week ${weekNum}`] || [];
+    const found = list.find(g => g.id === gameId);
+    return found ? found.isFinal === true : false;
+  }
+  for (let w = 1; w <= 18; w++) {
+    const list = AppState.globalActuals[`Week ${w}`] || [];
+    const found = list.find(g => g.id === gameId);
+    if (found && found.isFinal) return true;
+  }
+  return false;
+}
 
 // Load active session from localStorage
 function initAccounts() {
@@ -225,6 +298,8 @@ window.openProfileModal = function() {
   if (fav) fav.textContent = AppState.currentUser.favoriteTeam !== 'None' ? (NFL_TEAMS[AppState.currentUser.favoriteTeam]?.name || AppState.currentUser.favoriteTeam) : 'None';
   if (created) created.textContent = AppState.currentUser.createdAt;
 
+  updateAuthUI();
+
   if (modal) modal.classList.add('open');
 };
 
@@ -248,11 +323,59 @@ window.handleSignOut = function() {
   }
 };
 
+window.promptAdminUnlock = function() {
+  const code = prompt('Enter Commissioner Passcode to unlock admin controls:');
+  if (code === null) return;
+  if (code.trim() === 'psychic2026') {
+    localStorage.setItem('sp_admin_unlocked', 'true');
+    if (AppState.currentUser) {
+      AppState.currentUser.isAdmin = true;
+      saveState();
+    }
+    updateAuthUI();
+    alert('Commissioner access granted! The Scorekeeper tool is now available in the top header.');
+  } else {
+    alert('Incorrect passcode. Access denied.');
+  }
+};
+
 // Update Header & Home UI based on Auth State
 function updateAuthUI() {
   const authArea = document.getElementById('headerAuthArea');
   const homeUsernameDisplay = document.getElementById('homeUsernameDisplay');
   const homeStatusBadge = document.getElementById('userAccountStatusBadge');
+  const adminBtn = document.getElementById('headerAdminBtn');
+  const adminStatusDisplay = document.getElementById('profileAdminStatusDisplay');
+  const adminPasscodeBox = document.getElementById('adminPasscodeBox');
+
+  const isAdmin = isUserAdmin();
+
+  // Admin button in header
+  if (adminBtn) {
+    if (isAdmin) {
+      adminBtn.classList.add('visible');
+    } else {
+      adminBtn.classList.remove('visible');
+    }
+  }
+
+  // Profile modal admin status
+  if (adminStatusDisplay) {
+    if (isAdmin) {
+      adminStatusDisplay.innerHTML = '<span style="color:var(--accent-gold);font-weight:800;">🛡️ Commissioner (Admin)</span>';
+    } else {
+      adminStatusDisplay.innerHTML = '<span style="color:var(--text-muted);font-weight:700;">Player</span>';
+    }
+  }
+
+  // Admin passcode box inside profile modal
+  if (adminPasscodeBox) {
+    if (isAdmin) {
+      adminPasscodeBox.innerHTML = '<div style="font-size:0.75rem;color:var(--accent-gold);font-weight:700;padding:6px 12px;background:rgba(255,179,0,0.1);border-radius:6px;border:1px solid rgba(255,179,0,0.25);">🛡️ Commissioner Access Active</div>';
+    } else {
+      adminPasscodeBox.innerHTML = '<button id="btnUnlockAdminPrompt" class="btn-sm" style="font-size:0.75rem;" onclick="promptAdminUnlock()">🛡️ Unlock Commissioner / Admin Access</button>';
+    }
+  }
 
   if (AppState.currentUser) {
     // Authenticated
@@ -261,13 +384,14 @@ function updateAuthUI() {
         <button class="user-profile-chip" onclick="openProfileModal()">
           <span>👤</span>
           <span>${AppState.currentUser.username}</span>
+          ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
         </button>
       `;
     }
     if (homeUsernameDisplay) homeUsernameDisplay.textContent = AppState.currentUser.username;
     if (homeStatusBadge) {
-      homeStatusBadge.textContent = 'MEMBER';
-      homeStatusBadge.style.color = 'var(--accent-green)';
+      homeStatusBadge.textContent = isAdmin ? 'COMMISSIONER' : 'MEMBER';
+      homeStatusBadge.style.color = isAdmin ? 'var(--accent-gold)' : 'var(--accent-green)';
     }
   } else {
     // Guest
@@ -356,7 +480,7 @@ function renderHomeTab() {
   let finalGamesPicked = 0;
   let totalPicksMade = 0;
 
-  const actuals = NFL_2026_SCHEDULE?.actuals || {};
+  const actuals = AppState.globalActuals || {};
 
   for (let w = 1; w <= 18; w++) {
     const games = NFL_2026_SCHEDULE?.schedule?.[`Week ${w}`] || [];
@@ -401,7 +525,7 @@ function renderScoresTicker() {
   const tickerContainer = document.getElementById('homeScoresTicker');
   if (!tickerContainer) return;
 
-  const actuals = NFL_2026_SCHEDULE?.actuals || {};
+  const actuals = AppState.globalActuals || {};
   const completedGames = [];
 
   for (let w = 1; w <= 18; w++) {
@@ -469,7 +593,7 @@ function renderPicksTab() {
   if (!container) return;
 
   const weekGames = NFL_2026_SCHEDULE?.schedule?.[`Week ${AppState.currentWeek}`] || [];
-  const weekActuals = NFL_2026_SCHEDULE?.actuals?.[`Week ${AppState.currentWeek}`] || [];
+  const weekActuals = AppState.globalActuals?.[`Week ${AppState.currentWeek}`] || [];
   let pickedCount = 0;
 
   container.innerHTML = '';
@@ -485,6 +609,7 @@ function renderPicksTab() {
     if (pick.winner) pickedCount++;
 
     const actual = weekActuals.find(a => a.id === game.id) || { isFinal: false };
+    const isLocked = actual.isFinal === true;
     const awayTeam = NFL_TEAMS[game.awayTeam] || { name: game.awayTeam, color: '#2a3b50' };
     const homeTeam = NFL_TEAMS[game.homeTeam] || { name: game.homeTeam, color: '#2a3b50' };
 
@@ -492,19 +617,27 @@ function renderPicksTab() {
     const homeRecord = AppState.projectedStandings[game.homeTeam] ? `${AppState.projectedStandings[game.homeTeam].w}-${AppState.projectedStandings[game.homeTeam].l}` : '';
 
     const card = document.createElement('div');
-    card.className = `matchup-card ${pick.multiplier ? 'has-mult' : ''}`;
+    card.className = `matchup-card ${pick.multiplier ? 'has-mult' : ''} ${isLocked ? 'game-locked' : ''}`;
 
     card.innerHTML = `
       <div class="card-top-bar">
-        <span>${game.dateTime || `Game ${game.gameNum}`}</span>
-        <button class="mult-btn ${pick.multiplier ? 'active' : ''}" data-game-id="${game.id}">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span>${game.dateTime || `Game ${game.gameNum}`}</span>
+          ${isLocked ? '<span class="locked-pill">🔒 FINAL • LOCKED</span>' : ''}
+        </div>
+        <button class="mult-btn ${pick.multiplier ? 'active' : ''} ${isLocked ? 'disabled' : ''}" 
+          data-game-id="${game.id}"
+          ${isLocked ? 'disabled title="Game is finalized - predictions locked"' : ''}>
           ★ 3x Multiplier
         </button>
       </div>
 
       <div class="teams-row">
         <!-- Away Team -->
-        <button class="team-btn ${pick.winner === game.awayTeam ? 'selected' : ''}" data-team="${game.awayTeam}" data-game-id="${game.id}">
+        <button class="team-btn ${pick.winner === game.awayTeam ? 'selected' : ''} ${isLocked ? 'disabled' : ''}" 
+          data-team="${game.awayTeam}" 
+          data-game-id="${game.id}"
+          ${isLocked ? 'disabled title="Game is finalized - predictions locked"' : ''}>
           <div class="team-badge" style="background-color: ${awayTeam.color}">${game.awayTeam}</div>
           <div class="team-name">${game.awayTeam}</div>
           <div class="team-record-sub">${awayRecord ? `(${awayRecord})` : ''}</div>
@@ -513,31 +646,42 @@ function renderPicksTab() {
         <div class="vs-divider">@</div>
 
         <!-- Home Team -->
-        <button class="team-btn ${pick.winner === game.homeTeam ? 'selected' : ''}" data-team="${game.homeTeam}" data-game-id="${game.id}">
+        <button class="team-btn ${pick.winner === game.homeTeam ? 'selected' : ''} ${isLocked ? 'disabled' : ''}" 
+          data-team="${game.homeTeam}" 
+          data-game-id="${game.id}"
+          ${isLocked ? 'disabled title="Game is finalized - predictions locked"' : ''}>
           <div class="team-badge" style="background-color: ${homeTeam.color}">${game.homeTeam}</div>
           <div class="team-name">${game.homeTeam}</div>
           <div class="team-record-sub">${homeRecord ? `(${homeRecord})` : ''}</div>
         </button>
       </div>
 
-      <div class="scores-row">
+      <div class="scores-row ${isLocked ? 'disabled' : ''}">
         <div class="score-control">
-          <button class="stepper-btn" data-action="dec-away" data-game-id="${game.id}">−</button>
-          <input type="number" class="score-input" data-field="away" data-game-id="${game.id}" value="${pick.awayScore ?? 0}" min="0" max="99" />
-          <button class="stepper-btn" data-action="inc-away" data-game-id="${game.id}">+</button>
+          <button class="stepper-btn ${isLocked ? 'disabled' : ''}" data-action="dec-away" data-game-id="${game.id}" ${isLocked ? 'disabled' : ''}>−</button>
+          <input type="number" class="score-input ${isLocked ? 'disabled' : ''}" data-field="away" data-game-id="${game.id}" value="${pick.awayScore ?? 0}" min="0" max="99" ${isLocked ? 'disabled readonly' : ''} />
+          <button class="stepper-btn ${isLocked ? 'disabled' : ''}" data-action="inc-away" data-game-id="${game.id}" ${isLocked ? 'disabled' : ''}>+</button>
         </div>
-        <div class="scores-label">PREDICTED<br>SCORE</div>
+        <div class="scores-label">${isLocked ? 'LOCKED<br>PICK' : 'PREDICTED<br>SCORE'}</div>
         <div class="score-control">
-          <button class="stepper-btn" data-action="dec-home" data-game-id="${game.id}">−</button>
-          <input type="number" class="score-input" data-field="home" data-game-id="${game.id}" value="${pick.homeScore ?? 0}" min="0" max="99" />
-          <button class="stepper-btn" data-action="inc-home" data-game-id="${game.id}">+</button>
+          <button class="stepper-btn ${isLocked ? 'disabled' : ''}" data-action="dec-home" data-game-id="${game.id}" ${isLocked ? 'disabled' : ''}>−</button>
+          <input type="number" class="score-input ${isLocked ? 'disabled' : ''}" data-field="home" data-game-id="${game.id}" value="${pick.homeScore ?? 0}" min="0" max="99" ${isLocked ? 'disabled readonly' : ''} />
+          <button class="stepper-btn ${isLocked ? 'disabled' : ''}" data-action="inc-home" data-game-id="${game.id}" ${isLocked ? 'disabled' : ''}>+</button>
         </div>
       </div>
 
       ${actual.isFinal ? `
-        <div class="actual-result-banner ${pick.winner === actual.winner ? 'win' : 'loss'}">
-          <span>Actual: ${game.awayTeam} ${actual.awayScore} - ${actual.homeScore} ${game.homeTeam} (${actual.winner} Win)</span>
-          <span style="font-weight:800;">${pick.winner === actual.winner ? `+10 PTS ${pick.multiplier ? '(3x = 30)' : ''}` : '0 PTS'}</span>
+        <div class="actual-result-banner ${pick.winner ? (pick.winner === actual.winner ? 'win' : 'loss') : 'locked-unpicked'}">
+          <span>Official: ${game.awayTeam} ${actual.awayScore} - ${actual.homeScore} ${game.homeTeam} (${actual.winner} Win)</span>
+          <span style="font-weight:800;">${
+            pick.winner
+              ? (pick.winner === actual.winner
+                  ? (Math.abs((pick.awayScore ?? 0) - actual.awayScore) + Math.abs((pick.homeScore ?? 0) - actual.homeScore) === 0
+                      ? `★ EXACT SCORE (+${50 * (pick.multiplier ? 3 : 1)} PTS)`
+                      : `+${10 * (pick.multiplier ? 3 : 1)} PTS`)
+                  : '0 PTS')
+              : 'UNPICKED (0 PTS)'
+          }</span>
         </div>
       ` : ''}
     `;
@@ -556,6 +700,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.team-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const gameId = btn.dataset.gameId;
+      if (isGameFinalized(gameId)) return;
       const team = btn.dataset.team;
       if (!AppState.userPicks[gameId]) {
         AppState.userPicks[gameId] = { winner: '', awayScore: 0, homeScore: 0, multiplier: false };
@@ -570,6 +715,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.mult-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const gameId = btn.dataset.gameId;
+      if (isGameFinalized(gameId)) return;
       const currentVal = AppState.userPicks[gameId]?.multiplier || false;
 
       if (!currentVal) {
@@ -593,6 +739,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.stepper-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const gameId = btn.dataset.gameId;
+      if (isGameFinalized(gameId)) return;
       const action = btn.dataset.action;
       if (!AppState.userPicks[gameId]) {
         AppState.userPicks[gameId] = { winner: '', awayScore: 0, homeScore: 0, multiplier: false };
@@ -609,6 +756,7 @@ function attachPicksEvents() {
   document.querySelectorAll('.score-input').forEach(input => {
     input.addEventListener('change', () => {
       const gameId = input.dataset.gameId;
+      if (isGameFinalized(gameId)) return;
       const field = input.dataset.field;
       const val = parseInt(input.value) || 0;
       if (!AppState.userPicks[gameId]) {
@@ -628,6 +776,17 @@ function attachPicksEvents() {
       let multSet = false;
 
       weekGames.forEach(g => {
+        if (AppState.userPicks[g.id]?.multiplier) multSet = true;
+      });
+
+      const openGames = weekGames.filter(g => !isGameFinalized(g.id));
+
+      if (openGames.length === 0) {
+        alert('All games for this week are already finalized and locked.');
+        return;
+      }
+
+      openGames.forEach(g => {
         if (!AppState.userPicks[g.id]) {
           AppState.userPicks[g.id] = { winner: '', awayScore: 0, homeScore: 0, multiplier: false };
         }
@@ -636,12 +795,11 @@ function attachPicksEvents() {
           AppState.userPicks[g.id].awayScore = commonScores[Math.floor(Math.random() * commonScores.length)];
           AppState.userPicks[g.id].homeScore = commonScores[Math.floor(Math.random() * commonScores.length)];
         }
-        if (AppState.userPicks[g.id].multiplier) multSet = true;
       });
 
-      if (!multSet && weekGames.length > 0) {
-        const randIdx = Math.floor(Math.random() * weekGames.length);
-        AppState.userPicks[weekGames[randIdx].id].multiplier = true;
+      if (!multSet && openGames.length > 0) {
+        const randIdx = Math.floor(Math.random() * openGames.length);
+        AppState.userPicks[openGames[randIdx].id].multiplier = true;
       }
 
       saveState();
@@ -653,9 +811,10 @@ function attachPicksEvents() {
   const clearBtn = document.getElementById('btnClearWeek');
   if (clearBtn) {
     clearBtn.onclick = () => {
-      if (confirm(`Clear all predictions for Week ${AppState.currentWeek}?`)) {
+      if (confirm(`Clear all open predictions for Week ${AppState.currentWeek}? (Finalized games will remain locked)`)) {
         const weekGames = NFL_2026_SCHEDULE?.schedule?.[`Week ${AppState.currentWeek}`] || [];
         weekGames.forEach(g => {
+          if (isGameFinalized(g.id)) return;
           if (AppState.userPicks[g.id]) {
             AppState.userPicks[g.id].winner = '';
             AppState.userPicks[g.id].multiplier = false;
@@ -685,25 +844,44 @@ function calculateProjectedStandings() {
     };
   });
 
+  const actuals = AppState.globalActuals || {};
+
   for (let w = 1; w <= 18; w++) {
     const games = NFL_2026_SCHEDULE?.schedule?.[`Week ${w}`] || [];
+    const weekActuals = actuals[`Week ${w}`] || [];
+
     games.forEach(g => {
-      const pick = AppState.userPicks[g.id];
-      if (pick && pick.winner) {
+      const act = weekActuals.find(a => a.id === g.id);
+      let winner = '';
+      let aScore = 0;
+      let hScore = 0;
+
+      if (act && act.isFinal && act.winner) {
+        winner = act.winner;
+        aScore = act.awayScore || 0;
+        hScore = act.homeScore || 0;
+      } else {
+        const pick = AppState.userPicks[g.id];
+        if (pick && pick.winner) {
+          winner = pick.winner;
+          aScore = pick.awayScore || 0;
+          hScore = pick.homeScore || 0;
+        }
+      }
+
+      if (winner) {
         const away = standings[g.awayTeam];
         const home = standings[g.homeTeam];
         const isDiv = away.conf === home.conf && away.div === home.div;
 
-        if (pick.winner === g.awayTeam) {
+        if (winner === g.awayTeam) {
           away.w++; home.l++;
           if (isDiv) { away.divW++; home.divL++; }
-        } else if (pick.winner === g.homeTeam) {
+        } else if (winner === g.homeTeam) {
           home.w++; away.l++;
           if (isDiv) { home.divW++; away.divL++; }
         }
 
-        const aScore = pick.awayScore || 0;
-        const hScore = pick.homeScore || 0;
         away.pf += aScore; away.pa += hScore;
         home.pf += hScore; home.pa += aScore;
       }
@@ -837,7 +1015,7 @@ function renderLeaguesTab() {
     let points = 0;
     let wins = 0;
     let total = 0;
-    const actuals = NFL_2026_SCHEDULE?.actuals || {};
+    const actuals = AppState.globalActuals || {};
 
     for (let w = 1; w <= 18; w++) {
       const list = actuals[`Week ${w}`] || [];
@@ -850,6 +1028,10 @@ function renderLeaguesTab() {
               wins++;
               const mult = p.multiplier ? 3 : 1;
               points += (10 * mult);
+              const err = Math.abs((p.awayScore ?? 0) - a.awayScore) + Math.abs((p.homeScore ?? 0) - a.homeScore);
+              if (err === 0) {
+                points += (40 * mult);
+              }
             }
           }
         }
@@ -879,14 +1061,51 @@ function renderLeaguesTab() {
     if (titleDisplay) titleDisplay.textContent = `League: ${activeLeague.name}`;
     if (rosterList) rosterList.textContent = `Members (${activeLeague.members.length}): ${activeLeague.members.join(', ')}`;
 
+    const memberStats = activeLeague.members.map(m => {
+      const mPicks = (AppState.currentUser && m === AppState.currentUser.username)
+        ? AppState.userPicks
+        : (AppState.accounts[m]?.picks || {});
+      let pts = 0, mWins = 0, mTotal = 0;
+
+      for (let w = 1; w <= 18; w++) {
+        const list = actuals[`Week ${w}`] || [];
+        list.forEach(a => {
+          if (a.isFinal && a.winner) {
+            const p = mPicks[a.id];
+            if (p && p.winner) {
+              mTotal++;
+              if (p.winner === a.winner) {
+                mWins++;
+                const mult = p.multiplier ? 3 : 1;
+                pts += (10 * mult);
+                const err = Math.abs((p.awayScore ?? 0) - a.awayScore) + Math.abs((p.homeScore ?? 0) - a.homeScore);
+                if (err === 0) pts += (40 * mult);
+              }
+            }
+          }
+        });
+      }
+
+      return {
+        username: m,
+        wins: mWins,
+        total: mTotal,
+        losses: mTotal - mWins,
+        pctDisplay: mTotal > 0 ? `${Math.round((mWins / mTotal) * 100)}%` : '—',
+        points: pts
+      };
+    });
+
+    memberStats.sort((a, b) => b.points - a.points || b.wins - a.wins);
+
     if (container) {
-      container.innerHTML = activeLeague.members.map((m, idx) => `
+      container.innerHTML = memberStats.map((st, idx) => `
         <tr>
           <td>#${idx + 1}</td>
-          <td style="font-weight:700;">${m} ${m === currentDisplayName ? '(You)' : ''}</td>
-          <td>0 - 0</td>
-          <td>—</td>
-          <td style="text-align:right;font-weight:900;color:var(--accent-green);">0</td>
+          <td style="font-weight:700;">${st.username} ${st.username === currentDisplayName ? '(You)' : ''}</td>
+          <td>${st.wins} - ${st.losses}</td>
+          <td>${st.pctDisplay}</td>
+          <td style="text-align:right;font-weight:900;color:var(--accent-green);">${st.points}</td>
         </tr>
       `).join('');
     }
@@ -929,4 +1148,245 @@ window.createNewLeague = function() {
   updateModeBadge();
   renderLeaguesTab();
   alert(`League "${name}" created with ${members.length} players!`);
+};
+
+// =========================================================
+// ADMIN OFFICIAL SCOREKEEPER TOOL
+// =========================================================
+
+window.openAdminScorekeeperModal = function() {
+  if (!isUserAdmin()) {
+    alert('Access Denied: The Official Scorekeeper portal is restricted to the Commissioner / Admin.');
+    return;
+  }
+
+  const modal = document.getElementById('adminScorekeeperModal');
+  const select = document.getElementById('scorekeeperWeekSelect');
+  if (select) {
+    select.innerHTML = '';
+    for (let w = 1; w <= 18; w++) {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = `Week ${w}`;
+      if (w === (AppState.scorekeeperWeek || AppState.currentWeek || 1)) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    }
+  }
+
+  AppState.scorekeeperWeek = parseInt(select?.value) || AppState.currentWeek || 1;
+  renderScorekeeperGames(AppState.scorekeeperWeek);
+
+  if (modal) modal.classList.add('open');
+};
+
+window.closeAdminScorekeeperModal = function(e) {
+  if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('close-btn')) return;
+  const modal = document.getElementById('adminScorekeeperModal');
+  if (modal) modal.classList.remove('open');
+};
+
+window.setScorekeeperFilter = function(filter) {
+  AppState.scorekeeperFilter = filter;
+  const allBtn = document.getElementById('filterAllGames');
+  const pendBtn = document.getElementById('filterPendingGames');
+  const finBtn = document.getElementById('filterFinalGames');
+
+  if (allBtn) allBtn.className = `btn-sm ${filter === 'all' ? 'primary' : ''}`;
+  if (pendBtn) pendBtn.className = `btn-sm ${filter === 'pending' ? 'primary' : ''}`;
+  if (finBtn) finBtn.className = `btn-sm ${filter === 'final' ? 'primary' : ''}`;
+
+  renderScorekeeperGames(AppState.scorekeeperWeek);
+};
+
+window.renderScorekeeperGames = function(weekVal) {
+  const weekNum = parseInt(weekVal) || AppState.scorekeeperWeek || 1;
+  AppState.scorekeeperWeek = weekNum;
+
+  const container = document.getElementById('scorekeeperGamesList');
+  if (!container) return;
+
+  const weekKey = `Week ${weekNum}`;
+  const schedGames = NFL_2026_SCHEDULE?.schedule?.[weekKey] || [];
+  const weekActuals = AppState.globalActuals[weekKey] || [];
+
+  const filtered = schedGames.filter(g => {
+    const act = weekActuals.find(a => a.id === g.id) || { isFinal: false };
+    if (AppState.scorekeeperFilter === 'pending') return !act.isFinal;
+    if (AppState.scorekeeperFilter === 'final') return act.isFinal;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem;">No games found matching "${AppState.scorekeeperFilter}" for Week ${weekNum}.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(game => {
+    let act = weekActuals.find(a => a.id === game.id);
+    if (!act) {
+      act = { id: game.id, matchup: game.matchup, awayScore: null, homeScore: null, winner: '', isFinal: false };
+      weekActuals.push(act);
+    }
+
+    const awayTeam = NFL_TEAMS[game.awayTeam] || { name: game.awayTeam, color: '#2a3b50' };
+    const homeTeam = NFL_TEAMS[game.homeTeam] || { name: game.homeTeam, color: '#2a3b50' };
+
+    return `
+      <div class="scorekeeper-card" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;overflow:hidden;">
+        <div class="admin-card-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-weight:700;color:var(--text-main);">${game.matchup}</span>
+            <span style="color:var(--text-muted);font-size:0.75rem;">${game.dateTime || `Game ${game.gameNum}`}</span>
+          </div>
+          <span id="status-badge-${game.id}" class="status-indicator ${act.isFinal ? 'final' : 'pending'}">
+            ${act.isFinal ? 'FINAL' : 'PENDING'}
+          </span>
+        </div>
+
+        <div class="scorekeeper-row" style="padding:12px;background:var(--bg-card);">
+          <div class="scorekeeper-team away" style="display:flex;align-items:center;gap:10px;">
+            <div class="team-badge" style="background-color:${awayTeam.color};font-weight:800;padding:4px 8px;border-radius:6px;font-size:0.85rem;">${game.awayTeam}</div>
+            <div style="flex:1;">
+              <div style="font-size:0.85rem;font-weight:700;">${awayTeam.name}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">Away</div>
+            </div>
+            <input type="number" min="0" max="99" class="scorekeeper-input" id="away-score-${game.id}" 
+              value="${act.awayScore !== null && act.awayScore !== undefined ? act.awayScore : ''}" 
+              placeholder="0"
+              oninput="updateScorekeeperScore(${weekNum}, '${game.id}', 'away', this.value)"
+              onchange="updateScorekeeperScore(${weekNum}, '${game.id}', 'away', this.value)" />
+          </div>
+
+          <div style="font-weight:800;color:var(--text-muted);font-size:0.9rem;padding:0 8px;">@</div>
+
+          <div class="scorekeeper-team home" style="display:flex;align-items:center;gap:10px;flex-direction:row-reverse;text-align:right;">
+            <div class="team-badge" style="background-color:${homeTeam.color};font-weight:800;padding:4px 8px;border-radius:6px;font-size:0.85rem;">${game.homeTeam}</div>
+            <div style="flex:1;">
+              <div style="font-size:0.85rem;font-weight:700;">${homeTeam.name}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">Home</div>
+            </div>
+            <input type="number" min="0" max="99" class="scorekeeper-input" id="home-score-${game.id}" 
+              value="${act.homeScore !== null && act.homeScore !== undefined ? act.homeScore : ''}" 
+              placeholder="0"
+              oninput="updateScorekeeperScore(${weekNum}, '${game.id}', 'home', this.value)"
+              onchange="updateScorekeeperScore(${weekNum}, '${game.id}', 'home', this.value)" />
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-secondary);border-top:1px solid var(--border-color);flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;">
+            <span style="color:var(--text-muted);font-weight:600;">Winner:</span>
+            <select id="winner-select-${game.id}" class="form-input" style="width:auto;padding:4px 10px;font-size:0.82rem;" onchange="updateScorekeeperWinner(${weekNum}, '${game.id}', this.value)">
+              <option value="" ${!act.winner ? 'selected' : ''}>-- Auto / Unset --</option>
+              <option value="${game.awayTeam}" ${act.winner === game.awayTeam ? 'selected' : ''}>${game.awayTeam} (${awayTeam.name})</option>
+              <option value="${game.homeTeam}" ${act.winner === game.homeTeam ? 'selected' : ''}>${game.homeTeam} (${homeTeam.name})</option>
+              <option value="TIE" ${act.winner === 'TIE' ? 'selected' : ''}>TIE</option>
+            </select>
+          </div>
+
+          <label style="display:inline-flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;user-select:none;">
+            <input type="checkbox" id="final-checkbox-${game.id}" ${act.isFinal ? 'checked' : ''} onchange="toggleScorekeeperFinal(${weekNum}, '${game.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;" />
+            <span style="font-weight:700;color:${act.isFinal ? 'var(--accent-green)' : 'var(--text-muted)'};" id="final-label-${game.id}">
+              Mark as Official Final
+            </span>
+          </label>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+window.updateScorekeeperScore = function(weekNum, gameId, field, val) {
+  const weekKey = `Week ${weekNum}`;
+  if (!AppState.globalActuals[weekKey]) AppState.globalActuals[weekKey] = [];
+  
+  let actual = AppState.globalActuals[weekKey].find(g => g.id === gameId);
+  const sched = (NFL_2026_SCHEDULE?.schedule?.[weekKey] || []).find(g => g.id === gameId);
+
+  if (!actual) {
+    actual = {
+      id: gameId,
+      matchup: sched?.matchup || '',
+      awayScore: null,
+      homeScore: null,
+      winner: '',
+      isFinal: false
+    };
+    AppState.globalActuals[weekKey].push(actual);
+  }
+
+  const scoreVal = val === '' ? null : parseInt(val);
+  if (field === 'away') actual.awayScore = isNaN(scoreVal) ? null : scoreVal;
+  if (field === 'home') actual.homeScore = isNaN(scoreVal) ? null : scoreVal;
+
+  const winnerSelect = document.getElementById(`winner-select-${gameId}`);
+  if (actual.awayScore !== null && actual.homeScore !== null && sched) {
+    if (actual.awayScore > actual.homeScore) {
+      actual.winner = sched.awayTeam;
+    } else if (actual.homeScore > actual.awayScore) {
+      actual.winner = sched.homeTeam;
+    } else {
+      actual.winner = 'TIE';
+    }
+    if (winnerSelect) winnerSelect.value = actual.winner;
+  }
+};
+
+window.updateScorekeeperWinner = function(weekNum, gameId, winnerVal) {
+  const weekKey = `Week ${weekNum}`;
+  let actual = AppState.globalActuals[weekKey]?.find(g => g.id === gameId);
+  if (actual) {
+    actual.winner = winnerVal;
+  }
+};
+
+window.toggleScorekeeperFinal = function(weekNum, gameId, isFinal) {
+  const weekKey = `Week ${weekNum}`;
+  let actual = AppState.globalActuals[weekKey]?.find(g => g.id === gameId);
+  const sched = (NFL_2026_SCHEDULE?.schedule?.[weekKey] || []).find(g => g.id === gameId);
+  if (!actual) return;
+
+  actual.isFinal = isFinal;
+
+  if (isFinal && (!actual.winner || actual.winner === '') && sched && actual.awayScore !== null && actual.homeScore !== null) {
+    if (actual.awayScore > actual.homeScore) actual.winner = sched.awayTeam;
+    else if (actual.homeScore > actual.awayScore) actual.winner = sched.homeTeam;
+    else actual.winner = 'TIE';
+
+    const winnerSelect = document.getElementById(`winner-select-${gameId}`);
+    if (winnerSelect) winnerSelect.value = actual.winner;
+  }
+
+  const badge = document.getElementById(`status-badge-${gameId}`);
+  const label = document.getElementById(`final-label-${gameId}`);
+  if (badge) {
+    badge.className = `status-indicator ${isFinal ? 'final' : 'pending'}`;
+    badge.textContent = isFinal ? 'FINAL' : 'PENDING';
+  }
+  if (label) {
+    label.style.color = isFinal ? 'var(--accent-green)' : 'var(--text-muted)';
+  }
+};
+
+window.publishAllScorekeeperChanges = function() {
+  localStorage.setItem('sp_global_actuals', JSON.stringify(AppState.globalActuals));
+
+  // Re-calculate projected standings and all views
+  calculateProjectedStandings();
+  renderHomeTab();
+  if (AppState.currentTab === 'picks') renderPicksTab();
+  if (AppState.currentTab === 'standings') renderStandingsTab();
+  if (AppState.currentTab === 'leagues') renderLeaguesTab();
+
+  const toast = document.getElementById('scorekeeperStatusToast');
+  if (toast) {
+    toast.textContent = '✅ Scores published globally! All leaderboards & tickers updated.';
+    setTimeout(() => {
+      if (toast) toast.textContent = '';
+    }, 3500);
+  }
+
+  renderScorekeeperGames(AppState.scorekeeperWeek);
 };

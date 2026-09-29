@@ -28,6 +28,9 @@
         <span id="modeLabel">Solo Play</span>
       </div>
 
+      <!-- Admin Portal Button (Restricted to Admin only) -->
+      <button id="headerAdminBtn" class="admin-nav-btn" onclick="openAdminScorekeeperModal()">🛡️ Scorekeeper</button>
+
       <!-- Auth Controls (Sign In or User Profile Chip) -->
       <div id="headerAuthArea">
         <button id="headerSignInBtn" class="auth-header-btn" onclick="openAuthModal('signin')">Sign In</button>
@@ -425,13 +428,65 @@
             <span style="color:var(--text-muted);">Favorite Team:</span>
             <strong id="profileFavTeamDisplay" style="color:var(--text-main);">None</strong>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;">
             <span style="color:var(--text-muted);">Member Since:</span>
             <strong id="profileCreatedDisplay" style="color:var(--text-main);">2026</strong>
           </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;">
+            <span style="color:var(--text-muted);">Admin Status:</span>
+            <span id="profileAdminStatusDisplay" style="color:var(--text-muted);font-weight:700;">Player</span>
+          </div>
+        </div>
+
+        <!-- Admin Passcode Unlock (Allows Jonny to claim admin rights) -->
+        <div id="adminPasscodeBox" style="margin-bottom:12px;text-align:center;">
+          <button id="btnUnlockAdminPrompt" class="btn-sm" style="font-size:0.75rem;" onclick="promptAdminUnlock()">🛡️ Unlock Commissioner / Admin Access</button>
         </div>
 
         <button class="btn-block danger" onclick="handleSignOut()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- ADMIN OFFICIAL SCOREKEEPER MODAL -->
+  <!-- ========================================================= -->
+  <div id="adminScorekeeperModal" class="modal-overlay" onclick="closeAdminScorekeeperModal(event)">
+    <div class="modal-box large" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <span class="modal-title">🛡️ Official Scorekeeper Portal</span>
+          <div style="font-size:0.72rem;color:var(--accent-gold);margin-top:2px;">RESTRICTED TO COMMISSIONER ONLY</div>
+        </div>
+        <button class="close-btn" onclick="closeAdminScorekeeperModal()">&times;</button>
+      </div>
+
+      <div style="padding:12px 16px;background:var(--bg-secondary);border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <label class="form-label" style="margin:0;">Select Week:</label>
+          <select id="scorekeeperWeekSelect" class="form-input" style="width:auto;padding:6px 12px;font-size:0.85rem;" onchange="renderScorekeeperGames(this.value)">
+            <!-- Populated dynamically with Weeks 1-18 -->
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button id="filterAllGames" class="btn-sm primary" onclick="setScorekeeperFilter('all')">All Games</button>
+          <button id="filterPendingGames" class="btn-sm" onclick="setScorekeeperFilter('pending')">Pending</button>
+          <button id="filterFinalGames" class="btn-sm" onclick="setScorekeeperFilter('final')">Finalized</button>
+        </div>
+      </div>
+
+      <div class="auth-body" style="overflow-y:auto;flex:1;padding:16px;">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;">
+          Entering and saving scores here publishes <strong>globally</strong> to all players, all leagues, and updates the official 2026 standings and home results ticker.
+        </p>
+        <div id="scorekeeperGamesList" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+
+      <div class="scorekeeper-controls" style="padding:14px 16px;background:var(--bg-card);border-top:1px solid var(--border-color);">
+        <span id="scorekeeperStatusToast" style="font-size:0.8rem;color:var(--accent-green);font-weight:700;"></span>
+        <button class="btn-publish-all" onclick="publishAllScorekeeperChanges()">
+          <span>💾 Save & Publish Scores Globally</span>
+        </button>
       </div>
     </div>
   </div>

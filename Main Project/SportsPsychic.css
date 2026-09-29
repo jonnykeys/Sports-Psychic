@@ -127,6 +127,26 @@ body {
   color: var(--accent-green);
 }
 
+.admin-nav-btn {
+  background: linear-gradient(135deg, #ff9100 0%, #ff6d00 100%);
+  color: #000;
+  border: none;
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: none; /* Shown only when user is admin */
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(255, 109, 0, 0.4);
+  transition: var(--transition);
+}
+
+.admin-nav-btn.visible {
+  display: inline-flex;
+}
+
 .auth-header-btn {
   background: var(--accent-blue);
   color: #fff;
@@ -599,6 +619,25 @@ body {
   box-shadow: 0 0 12px var(--accent-gold-glow);
 }
 
+.matchup-card.game-locked {
+  border-color: rgba(139, 155, 180, 0.3);
+  background: rgba(15, 23, 36, 0.85);
+}
+
+.locked-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 82, 82, 0.14);
+  color: var(--accent-red);
+  border: 1px solid rgba(255, 82, 82, 0.3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
 .card-top-bar {
   display: flex;
   justify-content: space-between;
@@ -761,6 +800,48 @@ body {
   border: 1px solid rgba(255, 82, 82, 0.3);
 }
 
+.actual-result-banner.locked-unpicked {
+  background: rgba(139, 155, 180, 0.1);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+/* Disabled Prediction Controls for Locked / Finalized Games */
+.team-btn.disabled,
+.team-btn[disabled] {
+  cursor: not-allowed !important;
+  opacity: 0.72;
+}
+
+.team-btn.disabled:hover,
+.team-btn[disabled]:hover {
+  transform: none !important;
+}
+
+.stepper-btn.disabled,
+.stepper-btn[disabled] {
+  cursor: not-allowed !important;
+  opacity: 0.3 !important;
+}
+
+.score-input.disabled,
+.score-input[disabled] {
+  cursor: not-allowed !important;
+  background: rgba(0, 0, 0, 0.28) !important;
+  color: var(--text-muted) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.mult-btn.disabled,
+.mult-btn[disabled] {
+  cursor: not-allowed !important;
+  opacity: 0.4 !important;
+}
+
+.scores-row.disabled {
+  opacity: 0.78;
+}
+
 /* Standings Tables */
 .standings-grid {
   display: grid;
@@ -871,6 +952,13 @@ body {
   overflow: hidden;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   animation: zoomIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-box.large {
+  max-width: 720px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes zoomIn {
@@ -984,19 +1072,110 @@ body {
 }
 .btn-block.danger:hover { background: rgba(255, 82, 82, 0.25); }
 
-.btn-sm {
-  background: var(--bg-card);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  padding: 6px 12px;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+/* ========================================================= */
+/* ADMIN SCOREKEEPER TOOL STYLES */
+/* ========================================================= */
+.admin-badge {
+  background: #ff9100;
+  color: #000;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  margin-left: 6px;
 }
 
-.btn-sm.primary { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
-.btn-sm.warning { border-color: rgba(255, 179, 0, 0.4); color: var(--accent-gold); }
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-secondary);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.8rem;
+}
+
+.status-indicator {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.status-indicator.final {
+  background: rgba(0, 230, 118, 0.2);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 230, 118, 0.4);
+}
+
+.status-indicator.pending {
+  background: rgba(255, 179, 0, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(255, 179, 0, 0.3);
+}
+
+.scorekeeper-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 12px;
+  gap: 12px;
+}
+
+.scorekeeper-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scorekeeper-team.home {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.scorekeeper-input {
+  width: 52px;
+  height: 38px;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  color: #fff;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 900;
+  outline: none;
+}
+
+.scorekeeper-input:focus {
+  border-color: var(--accent-green);
+}
+
+.scorekeeper-controls {
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-publish-all {
+  background: linear-gradient(135deg, var(--accent-green) 0%, #00c853 100%);
+  color: #000;
+  font-weight: 900;
+  font-size: 0.95rem;
+  padding: 12px 20px;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px var(--accent-green-glow);
+}
+
+.btn-publish-all:hover {
+  transform: translateY(-1px);
+}
