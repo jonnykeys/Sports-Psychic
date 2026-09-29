@@ -40,7 +40,7 @@ const PLAYERS = [
 
 const PLAYER_COLORS = {
   "Jon": "#00338D", // Buffalo Bills Blue (BUF)
-  "Alisha": "#e91e63",
+  "Alisha": "#c084fc", // Lilac Purple
   "Carson": "#00e676",
   "Nok": "#ff9100",
   "Mango": "#ffab00",
