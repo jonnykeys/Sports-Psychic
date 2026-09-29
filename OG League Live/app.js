@@ -42,7 +42,7 @@ const PLAYER_COLORS = {
   "Jon": "#00338D", // Buffalo Bills Blue (BUF)
   "Alisha": "#c084fc", // Lilac Purple
   "Carson": "#E31837", // Kansas City Chiefs Red (KC)
-  "Nok": "#ff9100",
+  "Nok": "#A71930", // Atlanta Falcons Red (ATL)
   "Mango": "#ffab00",
   "Caleb": "#ffd600",
   "Ross": "#00b0ff",
@@ -58,7 +58,8 @@ const PLAYER_COLORS = {
 const PLAYER_AVATARS = {
   "Jon": "avatars/jon.jpg",
   "Alisha": "avatars/alisha.jpg",
-  "Carson": "avatars/carson.jpg?v=2"
+  "Carson": "avatars/carson.jpg?v=2",
+  "Nok": "avatars/nok.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
