@@ -53,6 +53,33 @@ const PLAYER_COLORS = {
   "Rob": "#f50057"
 };
 
+// Player Avatars / Profile Pictures
+// Extensible mapping for all 12 league players. Fallbacks to initial avatar if image not set or fails to load.
+const PLAYER_AVATARS = {
+  "Jon": "avatars/jon.jpg"
+};
+
+function getPlayerAvatarHtml(playerName, size = 36) {
+  const avatarUrl = PLAYER_AVATARS[playerName];
+  const color = PLAYER_COLORS[playerName] || "var(--accent-blue)";
+  const initial = playerName ? playerName.charAt(0).toUpperCase() : "?";
+
+  if (avatarUrl) {
+    return `
+      <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border-color:${color};">
+        <img src="${avatarUrl}" alt="${playerName}" class="player-avatar-img" onerror="this.parentElement.classList.remove('has-photo'); this.remove();" />
+        <span class="player-avatar-fallback" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(10, Math.round(size * 0.42))}px;">${initial}</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="player-avatar" style="width:${size}px; height:${size}px; min-width:${size}px; background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(10, Math.round(size * 0.42))}px; border-color:${color}55;">
+      ${initial}
+    </div>
+  `;
+}
+
 // Official NFL Team Colors and Metadata (matching Main Project & Spreadsheet)
 const NFL_TEAMS = {
   KC:  { code: 'KC',  name: 'Kansas City Chiefs',     city: 'Kansas City', conf: 'AFC', div: 'West',  color: '#E31837', alt: '#FFB81C' },
@@ -770,9 +797,7 @@ function renderLeaderboard() {
       <div class="leader-row" onclick="openPlayer('${player.name}')">
         <div class="leader-left">
           <div class="rank-badge ${rankBadgeClass}">${player.rank}</div>
-          <div class="player-avatar" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%);">
-            ${initial}
-          </div>
+          ${getPlayerAvatarHtml(player.name, 36)}
           <div class="player-info-block">
             <div class="player-title">${player.name}</div>
             <div class="player-sub record">
@@ -999,7 +1024,8 @@ function renderPlayers() {
     const isActive = pName === state.selectedPlayer;
     return `
       <button class="player-filter-pill ${isActive ? "active" : ""}" onclick="openPlayer('${pName}')">
-        ${pName}
+        ${getPlayerAvatarHtml(pName, 20)}
+        <span>${pName}</span>
       </button>
     `;
   }).join("");
@@ -1034,9 +1060,7 @@ function renderPlayers() {
   heroContainer.innerHTML = `
     <div class="player-hero-header">
       <div style="display:flex; align-items:center; gap:12px;">
-        <div class="player-avatar" style="width:44px; height:44px; font-size:1.1rem; background:linear-gradient(135deg, ${pColor} 0%, #131b2a 100%);">
-          ${state.selectedPlayer.charAt(0)}
-        </div>
+        ${getPlayerAvatarHtml(state.selectedPlayer, 48)}
         <div>
           <div class="player-hero-title">${state.selectedPlayer}</div>
           <div class="player-hero-sub" style="font-size:0.78rem; color:var(--accent-cyan); font-weight:700; margin-top:2px;">
