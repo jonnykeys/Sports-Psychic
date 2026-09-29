@@ -42,7 +42,7 @@ const PLAYER_COLORS = {
   "Jon": "#00338D", // Buffalo Bills Blue (BUF)
   "Alisha": "#c084fc", // Lilac Purple
   "Carson": "#E31837", // Kansas City Chiefs Red (KC)
-  "Nok": "#A71930", // Atlanta Falcons Red (ATL)
+  "Nok": "#004C54", // Philadelphia Eagles Midnight Green (PHI)
   "Mango": "#AA0000", // San Francisco 49ers Red (SF)
   "Caleb": "#ffd600",
   "Ross": "#FFD700", // Gold
