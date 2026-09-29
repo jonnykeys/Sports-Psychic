@@ -44,7 +44,7 @@ const PLAYER_COLORS = {
   "Carson": "#E31837", // Kansas City Chiefs Red (KC)
   "Nok": "#004C54", // Philadelphia Eagles Midnight Green (PHI)
   "Mango": "#AA0000", // San Francisco 49ers Red (SF)
-  "Caleb": "#ffd600",
+  "Caleb": "#007AC1",
   "Ross": "#FFD700", // Gold
   "Dishman": "#00e5ff",
   "Ethan": "#76ff03",
@@ -61,7 +61,8 @@ const PLAYER_AVATARS = {
   "Carson": "avatars/carson.jpg?v=2",
   "Nok": "avatars/nok.jpg",
   "Mango": "avatars/mango.jpg",
-  "Ross": "avatars/ross.jpg"
+  "Ross": "avatars/ross.jpg",
+  "Caleb": "avatars/caleb.jpg"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
