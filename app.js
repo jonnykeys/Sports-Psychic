@@ -1,7 +1,7 @@
 /**
  * OG LEAGUE LIVE - Standalone View-Only Mobile Engine
  * Real-time sync with Google Sheets, mobile navigation, week switching,
- * player scorecards, and live standings.
+ * player scorecards, live standings, split matchups, and closest score bonus calculations.
  */
 
 // =========================================================
@@ -53,6 +53,56 @@ const PLAYER_COLORS = {
   "Rob": "#f50057"
 };
 
+// Official NFL Team Colors and Metadata (matching Main Project & Spreadsheet)
+const NFL_TEAMS = {
+  KC:  { code: 'KC',  name: 'Kansas City Chiefs',     city: 'Kansas City', conf: 'AFC', div: 'West',  color: '#E31837', alt: '#FFB81C' },
+  LV:  { code: 'LV',  name: 'Las Vegas Raiders',      city: 'Las Vegas',   conf: 'AFC', div: 'West',  color: '#000000', alt: '#A5ACAF' },
+  DEN: { code: 'DEN', name: 'Denver Broncos',         city: 'Denver',      conf: 'AFC', div: 'West',  color: '#FB4F14', alt: '#002244' },
+  LAC: { code: 'LAC', name: 'Los Angeles Chargers',   city: 'Los Angeles', conf: 'AFC', div: 'West',  color: '#0080C6', alt: '#FFC20E' },
+  BUF: { code: 'BUF', name: 'Buffalo Bills',          city: 'Buffalo',     conf: 'AFC', div: 'East',  color: '#00338D', alt: '#C60C30' },
+  MIA: { code: 'MIA', name: 'Miami Dolphins',         city: 'Miami',       conf: 'AFC', div: 'East',  color: '#008E97', alt: '#FC4C02' },
+  NYJ: { code: 'NYJ', name: 'New York Jets',          city: 'New York',    conf: 'AFC', div: 'East',  color: '#125740', alt: '#000000' },
+  NE:  { code: 'NE',  name: 'New England Patriots',    city: 'New England', conf: 'AFC', div: 'East',  color: '#002244', alt: '#C60C30' },
+  BAL: { code: 'BAL', name: 'Baltimore Ravens',       city: 'Baltimore',   conf: 'AFC', div: 'North', color: '#241773', alt: '#000000' },
+  CLE: { code: 'CLE', name: 'Cleveland Browns',       city: 'Cleveland',   conf: 'AFC', div: 'North', color: '#311D00', alt: '#FF3C00' },
+  PIT: { code: 'PIT', name: 'Pittsburgh Steelers',    city: 'Pittsburgh',  conf: 'AFC', div: 'North', color: '#FFB612', alt: '#101820' },
+  CIN: { code: 'CIN', name: 'Cincinnati Bengals',     city: 'Cincinnati',  conf: 'AFC', div: 'North', color: '#FB4F14', alt: '#000000' },
+  HOU: { code: 'HOU', name: 'Houston Texans',         city: 'Houston',     conf: 'AFC', div: 'South', color: '#03202F', alt: '#A71930' },
+  JAX: { code: 'JAX', name: 'Jacksonville Jaguars',   city: 'Jacksonville',conf: 'AFC', div: 'South', color: '#006778', alt: '#D7A22A' },
+  IND: { code: 'IND', name: 'Indianapolis Colts',     city: 'Indianapolis',conf: 'AFC', div: 'South', color: '#002C5F', alt: '#A2AAAD' },
+  TEN: { code: 'TEN', name: 'Tennessee Titans',       city: 'Tennessee',   conf: 'AFC', div: 'South', color: '#0C2340', alt: '#4B92DB' },
+  SF:  { code: 'SF',  name: 'San Francisco 49ers',    city: 'San Francisco',conf: 'NFC', div: 'West', color: '#AA0000', alt: '#B3995D' },
+  LAR: { code: 'LAR', name: 'Los Angeles Rams',       city: 'Los Angeles', conf: 'NFC', div: 'West',  color: '#003594', alt: '#FFA300' },
+  SEA: { code: 'SEA', name: 'Seattle Seahawks',       city: 'Seattle',     conf: 'NFC', div: 'West',  color: '#002244', alt: '#69BE28' },
+  AZ:  { code: 'AZ',  name: 'Arizona Cardinals',      city: 'Arizona',     conf: 'NFC', div: 'West',  color: '#97233F', alt: '#000000' },
+  DAL: { code: 'DAL', name: 'Dallas Cowboys',         city: 'Dallas',      conf: 'NFC', div: 'East',  color: '#041E42', alt: '#869397' },
+  PHI: { code: 'PHI', name: 'Philadelphia Eagles',    city: 'Philadelphia',conf: 'NFC', div: 'East',  color: '#004C54', alt: '#A5ACAF' },
+  NYG: { code: 'NYG', name: 'New York Giants',        city: 'New York',    conf: 'NFC', div: 'East',  color: '#0B2265', alt: '#A71930' },
+  WSH: { code: 'WSH', name: 'Washington Commanders',  city: 'Washington',  conf: 'NFC', div: 'East',  color: '#5A1414', alt: '#FFB612' },
+  DET: { code: 'DET', name: 'Detroit Lions',          city: 'Detroit',     conf: 'NFC', div: 'North', color: '#0076B6', alt: '#B0B7BC' },
+  GB:  { code: 'GB',  name: 'Green Bay Packers',      city: 'Green Bay',   conf: 'NFC', div: 'North', color: '#203731', alt: '#FFB612' },
+  MIN: { code: 'MIN', name: 'Minnesota Vikings',      city: 'Minnesota',   conf: 'NFC', div: 'North', color: '#4F2683', alt: '#FFC62F' },
+  CHI: { code: 'CHI', name: 'Chicago Bears',          city: 'Chicago',     conf: 'NFC', div: 'North', color: '#0B162A', alt: '#C83803' },
+  TB:  { code: 'TB',  name: 'Tampa Bay Buccaneers',   city: 'Tampa Bay',   conf: 'NFC', div: 'South', color: '#D50A0A', alt: '#0A0A08' },
+  NO:  { code: 'NO',  name: 'New Orleans Saints',     city: 'New Orleans', conf: 'NFC', div: 'South', color: '#D3BC8D', alt: '#101820' },
+  ATL: { code: 'ATL', name: 'Atlanta Falcons',        city: 'Atlanta',     conf: 'NFC', div: 'South', color: '#A71930', alt: '#000000' },
+  CAR: { code: 'CAR', name: 'Carolina Panthers',      city: 'Carolina',    conf: 'NFC', div: 'South', color: '#0085CA', alt: '#101820' },
+  // Aliases
+  ARI: { code: 'AZ',  name: 'Arizona Cardinals',      city: 'Arizona',     conf: 'NFC', div: 'West',  color: '#97233F', alt: '#000000' },
+  WAS: { code: 'WSH', name: 'Washington Commanders',  city: 'Washington',  conf: 'NFC', div: 'East',  color: '#5A1414', alt: '#FFB612' },
+  LA:  { code: 'LAR', name: 'Los Angeles Rams',       city: 'Los Angeles', conf: 'NFC', div: 'West',  color: '#003594', alt: '#FFA300' },
+  JAC: { code: 'JAX', name: 'Jacksonville Jaguars',   city: 'Jacksonville',conf: 'AFC', div: 'South', color: '#006778', alt: '#D7A22A' }
+};
+
+function getTeamContrastColor(hexColor) {
+  if (!hexColor || hexColor.charAt(0) !== '#') return '#ffffff';
+  const r = parseInt(hexColor.substr(1, 2), 16);
+  const g = parseInt(hexColor.substr(3, 2), 16);
+  const b = parseInt(hexColor.substr(5, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return (yiq >= 150) ? '#0a0e17' : '#ffffff';
+}
+
 // =========================================================
 // APPLICATION STATE
 // =========================================================
@@ -65,6 +115,170 @@ let state = {
   data: null,
   nflStandings: null
 };
+
+// =========================================================
+// CORE SCORING & CLOSEST BONUS ENGINE
+// =========================================================
+
+/**
+ * Calculates pick points, closest score bonus, and exact score bonus for a single game.
+ * Exact formula from Master.xlsx:
+ * - Base points: 10 PTS for picking winner (30 PTS if 3X multiplier).
+ * - Closest bonus: Only players who picked the winner are eligible.
+ *   diff = |pAway - actualAway| + |pHome - actualHome|
+ *   minDiff = min(diffs of winner pickers).
+ *   If minDiff === 0 (Exact Score): +50 bonus pts (or 25 pts each if tied; tripled on 3X).
+ *   If minDiff > 0 (Closest Score): +10 bonus pts (or 5 pts each if tied; tripled on 3X).
+ *   Total pick points = basePoints + bonusPoints.
+ */
+function calculateGamePicksPoints(game) {
+  if (!game || !game.picks) return;
+
+  const isFinal = !!game.isFinal;
+  const winner = (game.winner || "").toUpperCase().trim();
+  const awayScore = (game.awayScore !== null && game.awayScore !== "" && !isNaN(game.awayScore)) ? Number(game.awayScore) : null;
+  const homeScore = (game.homeScore !== null && game.homeScore !== "" && !isNaN(game.homeScore)) ? Number(game.homeScore) : null;
+
+  // Reset defaults for all players
+  PLAYERS.forEach(pName => {
+    const pk = game.picks[pName];
+    if (!pk) return;
+    pk.points = 0;
+    pk.basePoints = 0;
+    pk.bonusPoints = 0;
+    pk.isClosest = false;
+    pk.exact = false;
+    pk.diff = null;
+  });
+
+  if (!isFinal || !winner || awayScore === null || homeScore === null) {
+    return;
+  }
+
+  // 1. Identify all players who picked the winning team and compute error diff
+  const winningPickers = [];
+  PLAYERS.forEach(pName => {
+    const pk = game.picks[pName];
+    if (!pk || !pk.winner) return;
+
+    if (pk.winner.toUpperCase().trim() === winner) {
+      const pAway = (pk.awayScore !== null && pk.awayScore !== "" && !isNaN(pk.awayScore)) ? Number(pk.awayScore) : null;
+      const pHome = (pk.homeScore !== null && pk.homeScore !== "" && !isNaN(pk.homeScore)) ? Number(pk.homeScore) : null;
+
+      if (pAway !== null && pHome !== null) {
+        const diff = Math.abs(pAway - awayScore) + Math.abs(pHome - homeScore);
+        pk.diff = diff;
+        winningPickers.push({ name: pName, diff });
+      } else {
+        winningPickers.push({ name: pName, diff: Infinity });
+      }
+    }
+  });
+
+  if (winningPickers.length === 0) return;
+
+  // 2. Find minDiff among winning pickers
+  let minDiff = Infinity;
+  let closestPickers = [];
+
+  winningPickers.forEach(wp => {
+    if (wp.diff < minDiff) {
+      minDiff = wp.diff;
+      closestPickers = [wp.name];
+    } else if (wp.diff === minDiff && minDiff !== Infinity) {
+      closestPickers.push(wp.name);
+    }
+  });
+
+  const tieCount = closestPickers.length;
+  const isExact = (minDiff === 0);
+
+  // 3. Award base points + closest / exact bonus points
+  PLAYERS.forEach(pName => {
+    const pk = game.picks[pName];
+    if (!pk || !pk.winner) return;
+
+    if (pk.winner.toUpperCase().trim() === winner) {
+      const mult = pk.multiplier ? 3 : 1;
+      const basePoints = 10 * mult;
+      let bonusPoints = 0;
+
+      if (closestPickers.includes(pName)) {
+        pk.isClosest = true;
+        if (isExact) {
+          pk.exact = true;
+          const bonusPool = (tieCount > 1) ? 25 : 50;
+          bonusPoints = bonusPool * mult;
+        } else {
+          pk.exact = false;
+          const bonusPool = (tieCount > 1) ? 5 : 10;
+          bonusPoints = bonusPool * mult;
+        }
+      }
+
+      pk.basePoints = basePoints;
+      pk.bonusPoints = bonusPoints;
+      pk.points = basePoints + bonusPoints;
+    } else {
+      pk.points = 0;
+      pk.basePoints = 0;
+      pk.bonusPoints = 0;
+      pk.isClosest = false;
+      pk.exact = false;
+    }
+  });
+}
+
+/**
+ * Recalculates all game picks points across all weeks in data.
+ */
+function recalculateAllWeeksPoints(dataObj) {
+  if (!dataObj || !dataObj.weeks) return;
+  Object.keys(dataObj.weeks).forEach(wKey => {
+    const w = dataObj.weeks[wKey];
+    if (w && w.games && Array.isArray(w.games)) {
+      w.games.forEach(g => calculateGamePicksPoints(g));
+    }
+  });
+}
+
+/**
+ * Calculates season-long Win-Loss record for a player across all finalized games.
+ */
+function getPlayerSeasonRecord(playerName) {
+  let wins = 0;
+  let losses = 0;
+
+  if (state.data && state.data.weeks) {
+    Object.keys(state.data.weeks).forEach(weekKey => {
+      const week = state.data.weeks[weekKey];
+      if (!week || !week.games) return;
+      week.games.forEach(game => {
+        if (!game.isFinal || !game.winner) return;
+        const pick = game.picks ? game.picks[playerName] : null;
+        if (pick && pick.winner) {
+          if (pick.winner.toUpperCase().trim() === game.winner.toUpperCase().trim()) {
+            wins++;
+          } else {
+            losses++;
+          }
+        } else {
+          losses++;
+        }
+      });
+    });
+  }
+
+  const total = wins + losses;
+  const pct = total > 0 ? ((wins / total) * 100).toFixed(1) : "0.0";
+  return {
+    wins,
+    losses,
+    total,
+    pct,
+    label: `${wins}-${losses} W-L`
+  };
+}
 
 // =========================================================
 // INITIALIZATION
@@ -103,6 +317,11 @@ function initData() {
 
   if (!state.data && typeof OG_LEAGUE_INITIAL_DATA !== "undefined") {
     state.data = OG_LEAGUE_INITIAL_DATA;
+  }
+
+  // Recalculate bonus & game points across all weeks
+  if (state.data) {
+    recalculateAllWeeksPoints(state.data);
   }
 
   if (state.data && state.data.activeWeek) {
@@ -355,35 +574,20 @@ function parseWeekCSV(weekNum, csvText) {
       const pickHome = row[colBase + 3] !== "" && !isNaN(row[colBase + 3]) ? parseInt(row[colBase + 3], 10) : null;
       const multiplier = (row[colBase + 4] || "").trim().toUpperCase() === "TRUE";
 
-      let points = 0;
-      let exact = false;
-
-      if (isFinal && pickWinner) {
-        if (pickWinner === winner) {
-          if (pickAway !== null && pickHome !== null && pickAway === awayScore && pickHome === homeScore) {
-            exact = true;
-            points = 50;
-          } else {
-            points = 10;
-          }
-
-          if (multiplier) {
-            points *= 3;
-          }
-        }
-      }
-
       picks[pName] = {
         winner: pickWinner,
         awayScore: pickAway,
         homeScore: pickHome,
         multiplier,
-        points,
-        exact
+        points: 0,
+        basePoints: 0,
+        bonusPoints: 0,
+        isClosest: false,
+        exact: false
       };
     }
 
-    games.push({
+    const gameObj = {
       id: `${weekKey}_g${r}`,
       dateTime,
       matchup,
@@ -392,7 +596,11 @@ function parseWeekCSV(weekNum, csvText) {
       homeScore,
       isFinal,
       picks
-    });
+    };
+
+    // Dynamically calculate accurate pick points & closest bonus
+    calculateGamePicksPoints(gameObj);
+    games.push(gameObj);
   }
 
   // Parse season leaderboard from rows 23-34
@@ -422,7 +630,6 @@ function parseWeekCSV(weekNum, csvText) {
 
     for (let p = 0; p < PLAYERS.length; p++) {
       const pName = PLAYERS[p];
-      // Search matching column for this player in row 17
       const pIdx = rows[17] ? rows[17].indexOf(pName) : -1;
       const colIdx = pIdx !== -1 ? pIdx : (2 + p);
 
@@ -450,29 +657,18 @@ function parseNFLStandingsCSV(csvText) {
   for (let r = 1; r <= 7; r++) {
     const row = rows[r];
     if (!row) continue;
-    if (row[0] && row[1]) {
-      afcPlayoffs.push({ seed: row[0].trim(), team: row[1].trim() });
-    }
-    if (row[5] && row[6]) {
-      nfcPlayoffs.push({ seed: row[5].trim(), team: row[6].trim() });
-    }
+    if (row[0] && row[1]) afcPlayoffs.push({ seed: row[0].trim(), team: row[1].trim() });
+    if (row[3] && row[4]) nfcPlayoffs.push({ seed: row[3].trim(), team: row[4].trim() });
   }
 
-  state.nflStandings = {
-    afcPlayoffs,
-    nfcPlayoffs,
-    rawText: rows[0] ? rows[0][1] : ""
-  };
+  state.nflStandings = { afcPlayoffs, nfcPlayoffs };
 }
 
 // =========================================================
-// RENDERING MAIN APP
+// UI RENDERING - APP MASTER
 // =========================================================
 function renderApp() {
-  renderLeaderboard();
-  renderMatchups();
-  renderPlayers();
-  renderNFLStandings();
+  renderTabContent();
 }
 
 function renderTabContent() {
@@ -490,7 +686,7 @@ function renderTabContent() {
       renderNFLStandings();
       break;
     case "rules":
-      // Static rules
+      // Static rules in HTML
       break;
   }
 }
@@ -515,13 +711,17 @@ function renderLeaderboard() {
   const rank2 = sorted[1] || { name: "-", points: 0 };
   const rank3 = sorted[2] || { name: "-", points: 0 };
 
+  const rec1 = getPlayerSeasonRecord(rank1.name);
+  const rec2 = getPlayerSeasonRecord(rank2.name);
+  const rec3 = getPlayerSeasonRecord(rank3.name);
+
   podiumEl.innerHTML = `
     <!-- 2nd Place -->
     <div class="podium-card" onclick="openPlayer('${rank2.name}')">
       <div class="podium-medal">🥈</div>
       <div class="podium-name">${rank2.name}</div>
       <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub">Rank #2</div>
+      <div class="podium-sub">Rank #2 • <strong>${rec2.label}</strong></div>
     </div>
 
     <!-- 1st Place (Center Crown) -->
@@ -529,7 +729,7 @@ function renderLeaderboard() {
       <div class="podium-medal">👑</div>
       <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}</div>
       <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER</div>
+      <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER • ${rec1.label}</div>
     </div>
 
     <!-- 3rd Place -->
@@ -537,7 +737,7 @@ function renderLeaderboard() {
       <div class="podium-medal">🥉</div>
       <div class="podium-name">${rank3.name}</div>
       <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub">Rank #3</div>
+      <div class="podium-sub">Rank #3 • <strong>${rec3.label}</strong></div>
     </div>
   `;
 
@@ -550,8 +750,9 @@ function renderLeaderboard() {
 
     const initial = player.name.charAt(0);
     const color = PLAYER_COLORS[player.name] || "var(--accent-blue)";
+    const rec = getPlayerSeasonRecord(player.name);
 
-    // Calculate weekly pts if available
+    // Calculate weekly pts if available (including closest score bonuses)
     const weekKey = `Week ${state.currentWeek}`;
     let weekPts = null;
     if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
@@ -571,7 +772,10 @@ function renderLeaderboard() {
           </div>
           <div class="player-info-block">
             <div class="player-title">${player.name}</div>
-            <div class="player-sub">OG League Contender</div>
+            <div class="player-sub record">
+              <span>Record: <strong>${rec.wins}-${rec.losses} W-L</strong></span>
+              <span class="rec-pct">(${rec.pct}%)</span>
+            </div>
           </div>
         </div>
         <div class="leader-right">
@@ -584,7 +788,7 @@ function renderLeaderboard() {
 }
 
 // =========================================================
-// TAB 2: MATCHUPS & PICKS RENDERING
+// TAB 2: MATCHUPS & SPLIT PICKS RENDERING
 // =========================================================
 function renderMatchups() {
   const container = document.getElementById("matchups-list");
@@ -609,6 +813,9 @@ function renderMatchups() {
     return;
   }
 
+  // Ensure points and closest bonuses are fully calculated for every game
+  games.forEach(g => calculateGamePicksPoints(g));
+
   const finalsCount = games.filter(g => g.isFinal).length;
   bannerStat.textContent = `${games.length} Games • ${finalsCount} Final`;
 
@@ -617,6 +824,12 @@ function renderMatchups() {
     const awayTeam = parts[0] || "AWAY";
     const homeTeam = parts[1] || "HOME";
 
+    const awayInfo = NFL_TEAMS[awayTeam] || { code: awayTeam, name: awayTeam, city: awayTeam, color: '#2a3b50' };
+    const homeInfo = NFL_TEAMS[homeTeam] || { code: homeTeam, name: homeTeam, city: homeTeam, color: '#2a3b50' };
+
+    const awayTextColor = getTeamContrastColor(awayInfo.color);
+    const homeTextColor = getTeamContrastColor(homeInfo.color);
+
     const isFinal = game.isFinal;
     const badgeText = isFinal ? "FINAL" : (game.awayScore !== null ? "LIVE" : "SCHEDULED");
     const badgeClass = isFinal ? "final" : (game.awayScore !== null ? "live" : "scheduled");
@@ -624,46 +837,70 @@ function renderMatchups() {
     const awayWinning = isFinal && game.winner === awayTeam;
     const homeWinning = isFinal && game.winner === homeTeam;
 
-    // Build Picks Chips
-    const chipsHtml = PLAYERS.map(pName => {
+    // Group picks by team: Away, Home, and Unpicked
+    const awayPicks = [];
+    const homePicks = [];
+    const unpicked = [];
+
+    PLAYERS.forEach(pName => {
       const pick = game.picks ? game.picks[pName] : null;
       if (!pick || !pick.winner) {
-        return `
-          <div class="pick-chip wrong">
-            <div class="chip-top">
-              <span class="chip-player">${pName}</span>
-            </div>
-            <div class="chip-pick-line">
-              <span>No Pick</span>
-            </div>
-          </div>
-        `;
+        unpicked.push({ name: pName });
+        return;
       }
 
-      let chipStatusClass = "";
+      let chipClass = "";
+      let ptsBadge = "";
+
       if (isFinal) {
-        if (pick.exact) chipStatusClass = "exact";
-        else if (pick.points > 0) chipStatusClass = "correct";
-        else chipStatusClass = "wrong";
+        if (pick.exact) {
+          chipClass = "exact";
+          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
+        } else if (pick.isClosest) {
+          chipClass = "closest";
+          ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
+        } else if (pick.points > 0) {
+          chipClass = "correct";
+          ptsBadge = `<span class="chip-pts-badge pts-win">+${pick.points}</span>`;
+        } else {
+          chipClass = "wrong";
+          ptsBadge = `<span class="chip-pts-badge pts-zero">0</span>`;
+        }
       }
 
       const scoreDisplay = (pick.awayScore !== null && pick.homeScore !== null)
         ? `${pick.awayScore}-${pick.homeScore}`
         : "";
 
-      return `
-        <div class="pick-chip ${chipStatusClass}">
-          <div class="chip-top">
-            <span class="chip-player">${pName}</span>
-            ${pick.multiplier ? `<span class="chip-mult">⭐ 3X</span>` : ""}
-          </div>
-          <div class="chip-pick-line">
-            <span style="font-weight:700; color:#fff;">${pick.winner} ${scoreDisplay}</span>
-            ${isFinal ? `<span class="chip-points ${pick.points === 0 ? "zero" : ""}">${pick.points > 0 ? `+${pick.points}` : "0"}</span>` : ""}
-          </div>
+      const pData = {
+        name: pName,
+        multiplier: pick.multiplier,
+        scoreDisplay,
+        chipClass,
+        ptsBadge
+      };
+
+      if (pick.winner === awayTeam) {
+        awayPicks.push(pData);
+      } else if (pick.winner === homeTeam) {
+        homePicks.push(pData);
+      } else {
+        unpicked.push({ name: pName, winner: pick.winner });
+      }
+    });
+
+    const renderChip = (p) => `
+      <div class="split-pick-chip ${p.chipClass}" onclick="openPlayer('${p.name}')" title="View ${p.name}'s predictions">
+        <div class="chip-row-top">
+          <span class="chip-player-name">${p.name}</span>
+          ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
         </div>
-      `;
-    }).join("");
+        <div class="chip-row-bottom">
+          <span class="chip-predicted-score">${p.scoreDisplay}</span>
+          ${p.ptsBadge}
+        </div>
+      </div>
+    `;
 
     return `
       <article class="matchup-card" id="${game.id}">
@@ -673,11 +910,12 @@ function renderMatchups() {
         </div>
 
         <div class="matchup-teams-display">
-          <!-- Away Team -->
+          <!-- Away Team (Left) -->
           <div class="team-box away">
-            <span class="team-pill">${awayTeam}</span>
+            <div class="team-badge" style="background-color: ${awayInfo.color}; color: ${awayTextColor};">${awayTeam}</div>
             <div class="team-details">
               <div class="team-code">${awayTeam}</div>
+              <div class="team-name-sub">${awayInfo.city || awayInfo.name || ""}</div>
             </div>
             <div class="team-score ${awayWinning ? "winning" : ""}">${game.awayScore !== null ? game.awayScore : "-"}</div>
           </div>
@@ -687,26 +925,54 @@ function renderMatchups() {
             <span class="vs-tag">@</span>
           </div>
 
-          <!-- Home Team -->
+          <!-- Home Team (Right) -->
           <div class="team-box home">
-            <span class="team-pill">${homeTeam}</span>
+            <div class="team-badge" style="background-color: ${homeInfo.color}; color: ${homeTextColor};">${homeTeam}</div>
             <div class="team-details">
               <div class="team-code">${homeTeam}</div>
+              <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
             </div>
             <div class="team-score ${homeWinning ? "winning" : ""}">${game.homeScore !== null ? game.homeScore : "-"}</div>
           </div>
         </div>
 
-        <!-- Picks Breakdown -->
-        <div class="picks-breakdown-section">
-          <div class="picks-breakdown-title">
-            <span>League Picks (${PLAYERS.length})</span>
-            <span style="font-size:0.68rem; color:var(--accent-gold);">⭐ = Multiplier</span>
+        <!-- Split Picks Breakdown (Away on Left, Home on Right) -->
+        <div class="matchup-split-picks">
+          <!-- Left Side: Away Team Picks -->
+          <div class="picks-column away-picks">
+            <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
+              <div class="column-team-label">
+                <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
+                <span>${awayTeam} Picks</span>
+              </div>
+              <span class="column-count-badge">${awayPicks.length}</span>
+            </div>
+            <div class="picks-list">
+              ${awayPicks.length > 0 ? awayPicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+            </div>
           </div>
-          <div class="picks-chips-grid">
-            ${chipsHtml}
+
+          <!-- Right Side: Home Team Picks -->
+          <div class="picks-column home-picks">
+            <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
+              <span class="column-count-badge">${homePicks.length}</span>
+              <div class="column-team-label">
+                <span>${homeTeam} Picks</span>
+                <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+              </div>
+            </div>
+            <div class="picks-list">
+              ${homePicks.length > 0 ? homePicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+            </div>
           </div>
         </div>
+
+        ${unpicked.length > 0 ? `
+          <div class="unpicked-footer">
+            <span class="unpicked-label">No Pick (${unpicked.length}):</span>
+            <span class="unpicked-names">${unpicked.map(u => u.name).join(", ")}</span>
+          </div>
+        ` : ""}
       </article>
     `;
   }).join("");
@@ -742,6 +1008,9 @@ function renderPlayers() {
   const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
   const games = weekData && weekData.games ? weekData.games : [];
 
+  // Ensure game pick points and closest bonuses are up-to-date
+  games.forEach(g => calculateGamePicksPoints(g));
+
   let weekPts = 0;
   let correctCount = 0;
   let multiplierGame = null;
@@ -756,6 +1025,7 @@ function renderPlayers() {
   });
 
   const pColor = PLAYER_COLORS[state.selectedPlayer] || "var(--accent-blue)";
+  const seasonRec = getPlayerSeasonRecord(state.selectedPlayer);
 
   // Render Player Hero
   heroContainer.innerHTML = `
@@ -766,7 +1036,9 @@ function renderPlayers() {
         </div>
         <div>
           <div class="player-hero-title">${state.selectedPlayer}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">OG League Season Tracker</div>
+          <div class="player-hero-sub" style="font-size:0.78rem; color:var(--accent-cyan); font-weight:700; margin-top:2px;">
+            Season Record: <span style="color:#fff; font-weight:900;">${seasonRec.wins}-${seasonRec.losses} W-L</span> <span style="color:var(--text-muted); font-size:0.72rem;">(${seasonRec.pct}%)</span>
+          </div>
         </div>
       </div>
       <div class="player-hero-rank">Rank #${playerRankObj.rank}</div>
@@ -826,8 +1098,11 @@ function renderPlayers() {
 
           if (isFinal) {
             if (pk.exact) {
-              resText = "🎯 EXACT";
+              resText = `🎯 EXACT (+${pk.bonusPoints})`;
               ptsColor = "var(--accent-gold)";
+            } else if (pk.isClosest) {
+              resText = `🎯 CLOSEST (+${pk.bonusPoints})`;
+              ptsColor = "#38bdf8";
             } else if (pk.points > 0) {
               resText = "✅ WON";
               ptsColor = "var(--accent-green)";
@@ -837,6 +1112,9 @@ function renderPlayers() {
             }
           }
 
+          const winTeamInfo = NFL_TEAMS[pk.winner] || { color: '#2a3b50' };
+          const winTeamText = getTeamContrastColor(winTeamInfo.color);
+
           return `
             <tr>
               <td>
@@ -844,14 +1122,16 @@ function renderPlayers() {
                 <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime}</div>
               </td>
               <td>
-                <div style="font-weight:900; color:#fff;">${pk.winner}</div>
-                ${pk.multiplier ? `<span class="chip-mult" style="font-size:0.62rem;">⭐ 3X</span>` : ""}
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span class="team-badge-sm" style="background-color: ${winTeamInfo.color}; color: ${winTeamText};">${pk.winner}</span>
+                  ${pk.multiplier ? `<span class="chip-mult" style="font-size:0.62rem;">⭐ 3X</span>` : ""}
+                </div>
               </td>
               <td style="color:var(--text-muted); font-weight:700;">
                 ${pk.awayScore !== null ? `${pk.awayScore}-${pk.homeScore}` : "-"}
               </td>
               <td>
-                <span style="font-size:0.75rem; font-weight:800;">${resText}</span>
+                <span style="font-size:0.75rem; font-weight:800; color:${ptsColor};">${resText}</span>
                 ${isFinal ? `<div style="font-size:0.68rem; color:var(--text-dim);">Actual: ${g.awayScore}-${g.homeScore}</div>` : ""}
               </td>
               <td style="text-align:right; font-weight:900; font-size:1rem; color:${ptsColor};">
