@@ -43,7 +43,7 @@ const PLAYER_COLORS = {
   "Alisha": "#c084fc", // Lilac Purple
   "Carson": "#E31837", // Kansas City Chiefs Red (KC)
   "Nok": "#A71930", // Atlanta Falcons Red (ATL)
-  "Mango": "#ffab00",
+  "Mango": "#AA0000", // San Francisco 49ers Red (SF)
   "Caleb": "#ffd600",
   "Ross": "#00b0ff",
   "Dishman": "#00e5ff",
