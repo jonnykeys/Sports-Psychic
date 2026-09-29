@@ -657,8 +657,11 @@ function parseNFLStandingsCSV(csvText) {
   for (let r = 1; r <= 7; r++) {
     const row = rows[r];
     if (!row) continue;
+    // AFC: columns 0 (seed) and 1 (team)
     if (row[0] && row[1]) afcPlayoffs.push({ seed: row[0].trim(), team: row[1].trim() });
-    if (row[3] && row[4]) nfcPlayoffs.push({ seed: row[3].trim(), team: row[4].trim() });
+    // NFC: columns 5 (seed) and 6 (team) in the spreadsheet, with fallback to 3 & 4
+    if (row[5] && row[6]) nfcPlayoffs.push({ seed: row[5].trim(), team: row[6].trim() });
+    else if (row[3] && row[4]) nfcPlayoffs.push({ seed: row[3].trim(), team: row[4].trim() });
   }
 
   state.nflStandings = { afcPlayoffs, nfcPlayoffs };
@@ -1181,26 +1184,33 @@ function renderNFLStandings() {
   const divisionsContainer = document.getElementById("nfl-divisions-container");
   if (!playoffContainer || !divisionsContainer) return;
 
-  const data = state.nflStandings || {
-    afcPlayoffs: [
-      { seed: "1", team: "KC" },
-      { seed: "2", team: "BUF" },
-      { seed: "3", team: "PIT" },
-      { seed: "4", team: "JAX" },
-      { seed: "5", team: "LV" },
-      { seed: "6", team: "BAL" },
-      { seed: "7", team: "CIN" }
-    ],
-    nfcPlayoffs: [
-      { seed: "1", team: "SF" },
-      { seed: "2", team: "MIN" },
-      { seed: "3", team: "PHI" },
-      { seed: "4", team: "CAR" },
-      { seed: "5", team: "DET" },
-      { seed: "6", team: "SEA" },
-      { seed: "7", team: "NYG" }
-    ]
-  };
+  const fallbackAFC = [
+    { seed: "1", team: "KC" },
+    { seed: "2", team: "BUF" },
+    { seed: "3", team: "PIT" },
+    { seed: "4", team: "JAX" },
+    { seed: "5", team: "LV" },
+    { seed: "6", team: "BAL" },
+    { seed: "7", team: "CIN" }
+  ];
+
+  const fallbackNFC = [
+    { seed: "1", team: "SF" },
+    { seed: "2", team: "MIN" },
+    { seed: "3", team: "NYG" },
+    { seed: "4", team: "CAR" },
+    { seed: "5", team: "DET" },
+    { seed: "6", team: "CHI" },
+    { seed: "7", team: "SEA" }
+  ];
+
+  const afcPlayoffs = (state.nflStandings && state.nflStandings.afcPlayoffs && state.nflStandings.afcPlayoffs.length > 0)
+    ? state.nflStandings.afcPlayoffs
+    : fallbackAFC;
+
+  const nfcPlayoffs = (state.nflStandings && state.nflStandings.nfcPlayoffs && state.nflStandings.nfcPlayoffs.length > 0)
+    ? state.nflStandings.nfcPlayoffs
+    : fallbackNFC;
 
   playoffContainer.innerHTML = `
     <!-- AFC Conference -->
@@ -1210,15 +1220,19 @@ function renderNFLStandings() {
         <span style="font-size:0.7rem;">7 In</span>
       </div>
       <div class="playoff-seed-list">
-        ${data.afcPlayoffs.map(s => `
-          <div class="seed-row">
-            <div class="seed-left">
-              <span class="seed-num">#${s.seed}</span>
-              <span class="seed-team">${s.team}</span>
+        ${afcPlayoffs.map(s => {
+          const tmInfo = NFL_TEAMS[s.team] || { color: '#2a3b50' };
+          const tmText = getTeamContrastColor(tmInfo.color);
+          return `
+            <div class="seed-row">
+              <div class="seed-left">
+                <span class="seed-num">#${s.seed}</span>
+                <span class="team-badge-sm" style="background-color: ${tmInfo.color}; color: ${tmText}; font-size:0.65rem; padding: 1px 5px; border-radius:4px;">${s.team}</span>
+              </div>
+              <span class="seed-tag ${s.seed === "1" ? "bye" : ""}">${s.seed === "1" ? "BYE" : "WILD CARD"}</span>
             </div>
-            <span class="seed-tag ${s.seed === "1" ? "bye" : ""}">${s.seed === "1" ? "BYE" : "WILD CARD"}</span>
-          </div>
-        `).join("")}
+          `;
+        }).join("")}
       </div>
     </div>
 
@@ -1229,15 +1243,19 @@ function renderNFLStandings() {
         <span style="font-size:0.7rem;">7 In</span>
       </div>
       <div class="playoff-seed-list">
-        ${data.nfcPlayoffs.map(s => `
-          <div class="seed-row">
-            <div class="seed-left">
-              <span class="seed-num">#${s.seed}</span>
-              <span class="seed-team">${s.team}</span>
+        ${nfcPlayoffs.map(s => {
+          const tmInfo = NFL_TEAMS[s.team] || { color: '#2a3b50' };
+          const tmText = getTeamContrastColor(tmInfo.color);
+          return `
+            <div class="seed-row">
+              <div class="seed-left">
+                <span class="seed-num">#${s.seed}</span>
+                <span class="team-badge-sm" style="background-color: ${tmInfo.color}; color: ${tmText}; font-size:0.65rem; padding: 1px 5px; border-radius:4px;">${s.team}</span>
+              </div>
+              <span class="seed-tag ${s.seed === "1" ? "bye" : ""}">${s.seed === "1" ? "BYE" : "WILD CARD"}</span>
             </div>
-            <span class="seed-tag ${s.seed === "1" ? "bye" : ""}">${s.seed === "1" ? "BYE" : "WILD CARD"}</span>
-          </div>
-        `).join("")}
+          `;
+        }).join("")}
       </div>
     </div>
   `;
