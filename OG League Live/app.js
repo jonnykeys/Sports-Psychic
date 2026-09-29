@@ -759,6 +759,7 @@ function renderLeaderboard() {
     <!-- 2nd Place -->
     <div class="podium-card" onclick="openPlayer('${rank2.name}')">
       <div class="podium-medal">🥈</div>
+      ${rank2.name && rank2.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank2.name, 42)}</div>` : ""}
       <div class="podium-name">${rank2.name}</div>
       <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub">Rank #2 • <strong>${rec2.label}</strong></div>
@@ -767,6 +768,7 @@ function renderLeaderboard() {
     <!-- 1st Place (Center Crown) -->
     <div class="podium-card first" onclick="openPlayer('${rank1.name}')">
       <div class="podium-medal">👑</div>
+      ${rank1.name && rank1.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank1.name, 50)}</div>` : ""}
       <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}</div>
       <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER • ${rec1.label}</div>
@@ -775,6 +777,7 @@ function renderLeaderboard() {
     <!-- 3rd Place -->
     <div class="podium-card" onclick="openPlayer('${rank3.name}')">
       <div class="podium-medal">🥉</div>
+      ${rank3.name && rank3.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank3.name, 42)}</div>` : ""}
       <div class="podium-name">${rank3.name}</div>
       <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub">Rank #3 • <strong>${rec3.label}</strong></div>
