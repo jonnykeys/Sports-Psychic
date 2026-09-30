@@ -1087,21 +1087,21 @@ function renderMatchups() {
         return;
       }
 
-      let chipClass = "";
+      let chipClass = pick.multiplier ? "has-multiplier" : "";
       let ptsBadge = "";
 
       if (isFinal) {
         if (pick.exact) {
-          chipClass = "exact";
+          chipClass += " exact";
           ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
         } else if (pick.isClosest) {
-          chipClass = "closest";
+          chipClass += " closest";
           ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
         } else if (pick.points > 0) {
-          chipClass = "correct";
+          chipClass += " correct";
           ptsBadge = `<span class="chip-pts-badge pts-win">+${pick.points}</span>`;
         } else {
-          chipClass = "wrong";
+          chipClass += " wrong";
           ptsBadge = `<span class="chip-pts-badge pts-zero">0</span>`;
         }
       }
@@ -1114,7 +1114,7 @@ function renderMatchups() {
         name: pName,
         multiplier: pick.multiplier,
         scoreDisplay,
-        chipClass,
+        chipClass: chipClass.trim(),
         ptsBadge
       };
 
@@ -1126,6 +1126,26 @@ function renderMatchups() {
         unpicked.push({ name: pName, winner: pick.winner });
       }
     });
+
+    // Calculate pick consensus
+    const totalPicks = awayPicks.length + homePicks.length;
+    const awayColor = (awayInfo.color === '#000000') ? (awayInfo.alt || '#A5ACAF') : (awayInfo.color || '#2a3b50');
+    const homeColor = (homeInfo.color === '#000000') ? (homeInfo.alt || '#A5ACAF') : (homeInfo.color || '#2a3b50');
+
+    let awayPct = 50;
+    let homePct = 50;
+    let isUnanimous = false;
+    let isDeadHeat = false;
+
+    if (totalPicks > 0) {
+      awayPct = Math.round((awayPicks.length / totalPicks) * 100);
+      homePct = 100 - awayPct;
+      if (awayPicks.length === 0 || homePicks.length === 0) {
+        isUnanimous = true;
+      } else if (awayPicks.length === homePicks.length) {
+        isDeadHeat = true;
+      }
+    }
 
     const renderChip = (p) => `
       <div class="split-pick-chip ${p.chipClass}" onclick="openPlayer('${p.name}')" title="View ${p.name}'s predictions">
@@ -1189,6 +1209,35 @@ function renderMatchups() {
             <div class="team-score ${homeWinning ? "winning" : ""}">${game.homeScore !== null ? game.homeScore : "-"}</div>
           </div>
         </div>
+
+        <!-- League Pick Consensus Bar -->
+        ${totalPicks > 0 ? `
+          <div class="matchup-consensus-container" aria-label="League pick consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
+            <div class="consensus-header-row">
+              <div class="consensus-side away">
+                <span class="consensus-dot" style="background-color: ${awayColor};"></span>
+                <span class="consensus-team-code">${awayTeam}</span>
+                <span class="consensus-pct" style="color: ${awayColor};">${awayPct}%</span>
+                <span class="consensus-count">(${awayPicks.length})</span>
+              </div>
+
+              ${isUnanimous ? `<span class="consensus-badge unanimous">🔥 Unanimous</span>` :
+                isDeadHeat ? `<span class="consensus-badge split">⚡ 50/50 Split</span>` : ""}
+
+              <div class="consensus-side home">
+                <span class="consensus-dot" style="background-color: ${homeColor};"></span>
+                <span class="consensus-team-code">${homeTeam}</span>
+                <span class="consensus-pct" style="color: ${homeColor};">${homePct}%</span>
+                <span class="consensus-count">(${homePicks.length})</span>
+              </div>
+            </div>
+
+            <div class="consensus-bar-track">
+              <div class="consensus-bar-fill away" style="width: ${awayPct}%; background-color: ${awayColor};"></div>
+              <div class="consensus-bar-fill home" style="width: ${homePct}%; background-color: ${homeColor};"></div>
+            </div>
+          </div>
+        ` : ""}
 
         <!-- Split Picks Breakdown (Away on Left, Home on Right) -->
         <div class="matchup-split-picks">

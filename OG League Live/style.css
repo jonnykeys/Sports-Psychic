@@ -602,6 +602,7 @@ body {
 }
 
 .matchup-card.collapsed .matchup-split-picks,
+.matchup-card.collapsed .matchup-consensus-container,
 .matchup-card.collapsed .unpicked-footer {
   display: none !important;
 }
@@ -765,6 +766,109 @@ body {
 }
 
 /* =========================================================
+   MATCHUP PICK CONSENSUS BAR
+   ========================================================= */
+.matchup-consensus-container {
+  padding: 8px 12px 10px 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.consensus-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 0.72rem;
+}
+
+.consensus-side {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.consensus-side.home {
+  flex-direction: row-reverse;
+}
+
+.consensus-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+}
+
+.consensus-team-code {
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+
+.consensus-pct {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+}
+
+.consensus-count {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.consensus-badge {
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.consensus-badge.unanimous {
+  background: rgba(245, 184, 0, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(245, 184, 0, 0.35);
+  box-shadow: 0 0 8px rgba(245, 184, 0, 0.15);
+}
+
+.consensus-badge.split {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.consensus-bar-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.consensus-bar-fill {
+  height: 100%;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.consensus-bar-fill.away {
+  border-radius: 4px 0 0 4px;
+}
+
+.consensus-bar-fill.home {
+  border-radius: 0 4px 4px 0;
+}
+
+.consensus-bar-fill[style*="width: 100%"] {
+  border-radius: 4px;
+}
+
+/* =========================================================
    SPLIT PICKS BREAKDOWN (Left vs Right per Team)
    ========================================================= */
 .matchup-split-picks {
@@ -874,26 +978,46 @@ body {
   transform: translateY(-1px);
 }
 
+/* Base chip highlight for 3X Confidence Multiplier (Electric Purple) */
+.split-pick-chip.has-multiplier {
+  border-color: rgba(168, 85, 247, 0.65);
+  background: rgba(168, 85, 247, 0.08);
+  box-shadow: 0 0 9px rgba(168, 85, 247, 0.25);
+}
+
 .split-pick-chip.correct {
-  border-color: rgba(16, 185, 129, 0.45);
+  border-color: rgba(16, 185, 129, 0.5);
   background: rgba(16, 185, 129, 0.08);
 }
 
-.split-pick-chip.exact {
-  border-color: var(--accent-gold);
-  background: rgba(245, 184, 0, 0.12);
-  box-shadow: 0 0 10px var(--accent-gold-glow);
+.split-pick-chip.has-multiplier.correct {
+  border-color: rgba(16, 185, 129, 0.65);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
 }
 
+/* Perfect Exact Score Jackpot: Pure Gold takes top prestige */
+.split-pick-chip.exact {
+  border-color: var(--accent-gold) !important;
+  background: rgba(245, 184, 0, 0.14) !important;
+  box-shadow: 0 0 12px var(--accent-gold-glow) !important;
+}
+
+/* Closest Score Bonus: Electric Sky Blue */
 .split-pick-chip.closest {
-  border-color: rgba(56, 189, 248, 0.6);
-  background: rgba(56, 189, 248, 0.12);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.75) !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3) !important;
 }
 
 .split-pick-chip.wrong {
-  border-color: rgba(244, 63, 94, 0.2);
-  opacity: 0.72;
+  border-color: rgba(244, 63, 94, 0.25);
+  opacity: 0.7;
+}
+
+.split-pick-chip.has-multiplier.wrong {
+  border-color: rgba(168, 85, 247, 0.35);
+  opacity: 0.7;
+  box-shadow: none;
 }
 
 .chip-row-top {
@@ -912,16 +1036,22 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Electric Violet 3X Confidence Multiplier Badge */
 .chip-mult-tag {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 900;
-  color: var(--accent-gold);
-  background: rgba(245, 184, 0, 0.2);
-  border: 1px solid rgba(245, 184, 0, 0.4);
-  padding: 1px 4px;
+  color: #f3e8ff;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(126, 34, 206, 0.6));
+  border: 1px solid rgba(192, 132, 252, 0.7);
+  padding: 1px 5px;
   border-radius: 4px;
   line-height: 1.1;
   flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.4);
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .chip-row-bottom {
