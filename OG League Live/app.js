@@ -32,6 +32,59 @@ const WEEK_GIDS = {
 
 const NFL_STANDINGS_GID = "497949847";
 
+/**
+ * Official 2026 NFL Regular Season Week Start Dates.
+ * Every week begins on Wednesday (the day before Thursday Night Football) at 00:00:00 local time:
+ * - Week 1: Wed Sep 9, 2026
+ * - Week 2: Wed Sep 16, 2026
+ * - Week 3: Wed Sep 23, 2026
+ * - Week 4: Wed Sep 30, 2026 (Today)
+ * - Week 5: Wed Oct 7, 2026
+ * ...
+ * - Week 18: Wed Jan 6, 2027
+ */
+const NFL_2026_WEEK_STARTS = [
+  "2026-09-09", // Week 1 (Wed)
+  "2026-09-16", // Week 2 (Wed)
+  "2026-09-23", // Week 3 (Wed)
+  "2026-09-30", // Week 4 (Wed)
+  "2026-10-07", // Week 5 (Wed)
+  "2026-10-14", // Week 6 (Wed)
+  "2026-10-21", // Week 7 (Wed)
+  "2026-10-28", // Week 8 (Wed)
+  "2026-11-04", // Week 9 (Wed)
+  "2026-11-11", // Week 10 (Wed)
+  "2026-11-18", // Week 11 (Wed)
+  "2026-11-25", // Week 12 (Wed)
+  "2026-12-02", // Week 13 (Wed)
+  "2026-12-09", // Week 14 (Wed)
+  "2026-12-16", // Week 15 (Wed)
+  "2026-12-23", // Week 16 (Wed)
+  "2026-12-30", // Week 17 (Wed)
+  "2027-01-06"  // Week 18 (Wed)
+];
+
+/**
+ * Returns the current NFL week number (1 to 18) based on today's local date.
+ * Switches to the upcoming week every Wednesday at midnight.
+ */
+function getCurrentNFLWeek(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const todayStr = `${y}-${m}-${day}`;
+
+  let week = 1;
+  for (let i = 0; i < NFL_2026_WEEK_STARTS.length; i++) {
+    if (todayStr >= NFL_2026_WEEK_STARTS[i]) {
+      week = i + 1;
+    } else {
+      break;
+    }
+  }
+  return Math.min(18, Math.max(1, week));
+}
+
 // 12 Players in exact spreadsheet column sequence (Jon at Col 6 / 0-indexed)
 const PLAYERS = [
   "Jon", "Alisha", "Carson", "Nok", "Mango", "Caleb",
@@ -144,7 +197,7 @@ function getTeamContrastColor(hexColor) {
 // APPLICATION STATE
 // =========================================================
 let state = {
-  currentWeek: 3,
+  currentWeek: getCurrentNFLWeek(),
   selectedPlayer: "Caleb",
   activeTab: "leaderboard",
   isSyncing: false,
@@ -361,11 +414,11 @@ function initData() {
     recalculateAllWeeksPoints(state.data);
   }
 
-  if (state.data && state.data.activeWeek) {
-    const num = parseInt(state.data.activeWeek.replace(/[^0-9]/g, ""), 10);
-    if (num && num >= 1 && num <= 18) {
-      state.currentWeek = num;
-    }
+  // Default to current NFL week based on Wednesday rollover schedule
+  state.currentWeek = getCurrentNFLWeek();
+
+  if (state.data) {
+    state.data.activeWeek = `Week ${state.currentWeek}`;
   }
 
   // Pre-seed default top player
@@ -441,6 +494,7 @@ function setupWeekStrip() {
   }
 
   updateStripButtons();
+  setTimeout(() => updateStripButtons(), 60);
 }
 
 function updateStripButtons() {
@@ -759,6 +813,7 @@ function renderLeaderboard() {
     <!-- 2nd Place -->
     <div class="podium-card" onclick="openPlayer('${rank2.name}')">
       <div class="podium-medal">🥈</div>
+      ${rank2.name && rank2.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank2.name, 42)}</div>` : ""}
       <div class="podium-name">${rank2.name}</div>
       <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub">Rank #2 • <strong>${rec2.label}</strong></div>
@@ -767,6 +822,7 @@ function renderLeaderboard() {
     <!-- 1st Place (Center Crown) -->
     <div class="podium-card first" onclick="openPlayer('${rank1.name}')">
       <div class="podium-medal">👑</div>
+      ${rank1.name && rank1.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank1.name, 50)}</div>` : ""}
       <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}</div>
       <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER • ${rec1.label}</div>
@@ -775,6 +831,7 @@ function renderLeaderboard() {
     <!-- 3rd Place -->
     <div class="podium-card" onclick="openPlayer('${rank3.name}')">
       <div class="podium-medal">🥉</div>
+      ${rank3.name && rank3.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank3.name, 42)}</div>` : ""}
       <div class="podium-name">${rank3.name}</div>
       <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub">Rank #3 • <strong>${rec3.label}</strong></div>
