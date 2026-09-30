@@ -1,6 +1,6 @@
-﻿// OG League - Embedded Baseline Data
+// OG League - Embedded Baseline Data
 const OG_LEAGUE_INITIAL_DATA = {
-    "activeWeek":  "Week 3",
+    "activeWeek":  "Week 4",
     "leaderboard":  [
                         {
                             "rank":  1,
