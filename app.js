@@ -127,18 +127,22 @@ function getPlayerAvatarHtml(playerName, size = 36) {
   const avatarUrl = PLAYER_AVATARS[playerName];
   const color = PLAYER_COLORS[playerName] || "var(--accent-blue)";
   const initial = playerName ? playerName.charAt(0).toUpperCase() : "?";
+  const borderWidth = size <= 28 ? 1.5 : 2.5;
+  const shadow = size <= 28
+    ? `0 1px 4px rgba(0, 0, 0, 0.4)`
+    : `0 0 10px ${color}55, 0 2px 8px rgba(0, 0, 0, 0.45)`;
 
   if (avatarUrl) {
     return `
-      <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border: 2.5px solid ${color}; box-shadow: 0 0 10px ${color}55, 0 2px 8px rgba(0, 0, 0, 0.45);">
+      <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border: ${borderWidth}px solid ${color}; box-shadow: ${shadow};">
         <img src="${avatarUrl}" alt="${playerName}" class="player-avatar-img" onerror="this.parentElement.classList.remove('has-photo'); this.remove();" />
-        <span class="player-avatar-fallback" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(10, Math.round(size * 0.42))}px;">${initial}</span>
+        <span class="player-avatar-fallback" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(9, Math.round(size * 0.42))}px;">${initial}</span>
       </div>
     `;
   }
 
   return `
-    <div class="player-avatar" style="width:${size}px; height:${size}px; min-width:${size}px; background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(10, Math.round(size * 0.42))}px; border-color:${color}55;">
+    <div class="player-avatar" style="width:${size}px; height:${size}px; min-width:${size}px; background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(9, Math.round(size * 0.42))}px; border:${borderWidth}px solid ${color};">
       ${initial}
     </div>
   `;
@@ -1070,13 +1074,18 @@ function renderMatchups() {
 
     const renderChip = (p) => `
       <div class="split-pick-chip ${p.chipClass}" onclick="openPlayer('${p.name}')" title="View ${p.name}'s predictions">
-        <div class="chip-row-top">
-          <span class="chip-player-name">${p.name}</span>
-          ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+        <div class="chip-avatar-col">
+          ${getPlayerAvatarHtml(p.name, 26)}
         </div>
-        <div class="chip-row-bottom">
-          <span class="chip-predicted-score">${p.scoreDisplay}</span>
-          ${p.ptsBadge}
+        <div class="chip-body">
+          <div class="chip-row-top">
+            <span class="chip-player-name">${p.name}</span>
+            ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+          </div>
+          <div class="chip-row-bottom">
+            <span class="chip-predicted-score">${p.scoreDisplay}</span>
+            ${p.ptsBadge}
+          </div>
         </div>
       </div>
     `;
