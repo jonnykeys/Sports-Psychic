@@ -349,35 +349,8 @@ body {
 }
 
 .podium-medal {
-  font-size: 1.35rem;
-  line-height: 1.1;
-  margin-bottom: 3px;
-}
-
-.podium-card.first .podium-medal {
-  font-size: 1.65rem;
-  margin-bottom: 2px;
-  filter: drop-shadow(0 2px 6px rgba(245, 184, 0, 0.5));
-}
-
-.podium-avatar {
-  margin: 3px 0 6px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.podium-card.first .podium-avatar {
-  margin: 4px 0 8px 0;
-}
-
-.podium-card.first .podium-avatar .player-avatar {
-  box-shadow: 0 0 14px var(--accent-gold-glow), 0 3px 10px rgba(0, 0, 0, 0.5);
-}
-
-.podium-card:hover .podium-avatar .player-avatar {
-  transform: scale(1.05);
-  transition: transform 0.2s ease;
+  font-size: 1.5rem;
+  margin-bottom: 4px;
 }
 
 .podium-name {
@@ -389,10 +362,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 90px;
-}
-
-.podium-card.first .podium-name {
-  max-width: 110px;
 }
 
 .podium-points {
