@@ -228,7 +228,12 @@ let state = {
  *   Total pick points = basePoints + bonusPoints.
  */
 function calculateGamePicksPoints(game) {
-  if (!game || !game.picks) return;
+  if (!game || !game.picks || !game.matchup || !game.matchup.includes("@")) return;
+
+  const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
+  if (parts.length !== 2) return;
+  const awayTeam = parts[0];
+  const homeTeam = parts[1];
 
   const awayScore = (game.awayScore !== null && game.awayScore !== "" && !isNaN(game.awayScore)) ? Number(game.awayScore) : null;
   const homeScore = (game.homeScore !== null && game.homeScore !== "" && !isNaN(game.homeScore)) ? Number(game.homeScore) : null;
@@ -236,18 +241,19 @@ function calculateGamePicksPoints(game) {
 
   // If winner is missing but scores exist, determine winner from matchup
   if (!winner && awayScore !== null && homeScore !== null) {
-    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
-    if (parts.length === 2) {
-      if (awayScore > homeScore) winner = parts[0];
-      else if (homeScore > awayScore) winner = parts[1];
-      else if (awayScore === homeScore) winner = "TIE";
-      game.winner = winner;
-    }
+    if (awayScore > homeScore) winner = awayTeam;
+    else if (homeScore > awayScore) winner = homeTeam;
+    else if (awayScore === homeScore) winner = "TIE";
+    game.winner = winner;
   }
 
-  // If both scores and winner are present, mark as final
-  if (awayScore !== null && homeScore !== null && winner.length > 0) {
+  const isValidWinner = (winner === awayTeam || winner === homeTeam || winner === "TIE");
+
+  // If both scores and valid winner are present, mark as final
+  if (awayScore !== null && homeScore !== null && isValidWinner) {
     game.isFinal = true;
+  } else {
+    game.isFinal = false;
   }
 
   const isFinal = !!game.isFinal;
@@ -367,10 +373,15 @@ function getPlayerSeasonRecord(playerName) {
       const week = state.data.weeks[weekKey];
       if (!week || !week.games) return;
       week.games.forEach(game => {
-        if (!game.isFinal || !game.winner) return;
+        if (!game || !game.matchup || !game.matchup.includes("@") || !game.isFinal || !game.winner) return;
+        const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
+        if (parts.length !== 2) return;
+        const winner = game.winner.toUpperCase().trim();
+        if (winner !== parts[0] && winner !== parts[1] && winner !== "TIE") return;
+
         const pick = game.picks ? game.picks[playerName] : null;
         if (pick && pick.winner) {
-          if (pick.winner.toUpperCase().trim() === game.winner.toUpperCase().trim()) {
+          if (pick.winner.toUpperCase().trim() === winner) {
             wins++;
           } else {
             losses++;
@@ -463,11 +474,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 90000);
 });
 
+function sanitizeData(dataObj) {
+  if (!dataObj || !dataObj.weeks) return;
+  Object.keys(dataObj.weeks).forEach(wKey => {
+    const w = dataObj.weeks[wKey];
+    if (w && w.games && Array.isArray(w.games)) {
+      // Filter out any non-NFL matchup rows (bye week summary rows, etc.)
+      w.games = w.games.filter(g => g && g.matchup && g.matchup.includes("@"));
+
+      // Validate that final games have valid teams and scores
+      w.games.forEach(g => {
+        const parts = g.matchup.split("@").map(s => s.trim().toUpperCase());
+        const winner = (g.winner || "").toUpperCase().trim();
+        const isValidWinner = parts.length === 2 && (winner === parts[0] || winner === parts[1] || winner === "TIE");
+        const hasScores = (g.awayScore !== null && g.awayScore !== "" && !isNaN(g.awayScore) &&
+                           g.homeScore !== null && g.homeScore !== "" && !isNaN(g.homeScore));
+
+        if (!isValidWinner || !hasScores) {
+          g.isFinal = false;
+          if (!hasScores) {
+            g.awayScore = null;
+            g.homeScore = null;
+            g.winner = "";
+          }
+        }
+      });
+    }
+  });
+}
+
 /**
  * Initialize data from local storage or baseline data.js
  */
 function initData() {
-  const cached = localStorage.getItem("og_league_cache");
+  // Purge legacy un-sanitized cache
+  try {
+    localStorage.removeItem("og_league_cache");
+  } catch (e) {}
+
+  const cached = localStorage.getItem("og_league_cache_v7");
   if (cached) {
     try {
       state.data = JSON.parse(cached);
@@ -477,12 +522,16 @@ function initData() {
   }
 
   if (!state.data && typeof OG_LEAGUE_INITIAL_DATA !== "undefined") {
-    state.data = OG_LEAGUE_INITIAL_DATA;
+    state.data = JSON.parse(JSON.stringify(OG_LEAGUE_INITIAL_DATA));
   }
 
-  // Recalculate bonus & game points across all weeks
+  // Sanitize any phantom rows or invalid finals and recalculate
   if (state.data) {
+    sanitizeData(state.data);
     recalculateAllWeeksPoints(state.data);
+    try {
+      localStorage.setItem("og_league_cache_v7", JSON.stringify(state.data));
+    } catch (e) {}
   }
 
   // Default to current NFL week based on Wednesday rollover schedule
@@ -633,7 +682,9 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     if (syncLabel) syncLabel.textContent = "Live";
     
     // Save state cache
-    localStorage.setItem("og_league_cache", JSON.stringify(state.data));
+    try {
+      localStorage.setItem("og_league_cache_v7", JSON.stringify(state.data));
+    } catch (e) {}
 
     renderTabContent();
 
@@ -717,7 +768,12 @@ function parseWeekCSV(weekNum, csvText) {
 
     const dateTime = (row[0] || "").trim();
     const matchup = (row[1] || "").trim();
-    if (!matchup) continue;
+    if (!matchup || !matchup.includes("@")) continue;
+
+    const parts = matchup.split("@").map(s => s.trim().toUpperCase());
+    if (parts.length !== 2) continue;
+    const awayTeam = parts[0];
+    const homeTeam = parts[1];
 
     let winner = (row[2] || "").trim().toUpperCase();
     const awayScore = row[4] !== "" && !isNaN(row[4]) ? parseInt(row[4], 10) : null;
@@ -725,19 +781,17 @@ function parseWeekCSV(weekNum, csvText) {
 
     // Automatically derive winner from scores if not explicitly provided in the spreadsheet
     if (!winner && awayScore !== null && homeScore !== null) {
-      const parts = matchup.split("@").map(s => s.trim().toUpperCase());
-      if (parts.length === 2) {
-        if (awayScore > homeScore) {
-          winner = parts[0];
-        } else if (homeScore > awayScore) {
-          winner = parts[1];
-        } else if (awayScore === homeScore) {
-          winner = "TIE";
-        }
+      if (awayScore > homeScore) {
+        winner = awayTeam;
+      } else if (homeScore > awayScore) {
+        winner = homeTeam;
+      } else if (awayScore === homeScore) {
+        winner = "TIE";
       }
     }
 
-    const isFinal = (awayScore !== null && homeScore !== null && winner.length > 0);
+    const isValidWinner = (winner === awayTeam || winner === homeTeam || winner === "TIE");
+    const isFinal = (awayScore !== null && homeScore !== null && isValidWinner);
 
     const picks = {};
 
