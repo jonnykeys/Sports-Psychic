@@ -1384,36 +1384,46 @@ function renderNFLStandings() {
     </div>
   `;
 
-  // Standard NFL Divisions
+  // Standard NFL Divisions - Paired AFC (left) / NFC (right)
   const divisions = [
     { name: "AFC West", teams: [ { t: "KC", w: 3, l: 0 }, { t: "LV", w: 3, l: 0 }, { t: "DEN", w: 2, l: 1 }, { t: "LAC", w: 0, l: 3 } ] },
-    { name: "AFC East", teams: [ { t: "BUF", w: 3, l: 0 }, { t: "NYJ", w: 1, l: 2 }, { t: "NE", w: 1, l: 2 }, { t: "MIA", w: 0, l: 3 } ] },
-    { name: "AFC North", teams: [ { t: "BAL", w: 2, l: 1 }, { t: "CLE", w: 2, l: 1 }, { t: "PIT", w: 2, l: 1 }, { t: "CIN", w: 2, l: 1 } ] },
-    { name: "AFC South", teams: [ { t: "JAX", w: 2, l: 1 }, { t: "IND", w: 1, l: 2 }, { t: "HOU", w: 0, l: 3 }, { t: "TEN", w: 0, l: 3 } ] },
     { name: "NFC West", teams: [ { t: "SF", w: 3, l: 0 }, { t: "SEA", w: 2, l: 1 }, { t: "LAR", w: 1, l: 2 }, { t: "AZ", w: 1, l: 2 } ] },
+    { name: "AFC East", teams: [ { t: "BUF", w: 3, l: 0 }, { t: "NYJ", w: 1, l: 2 }, { t: "NE", w: 1, l: 2 }, { t: "MIA", w: 0, l: 3 } ] },
     { name: "NFC East", teams: [ { t: "PHI", w: 2, l: 0 }, { t: "NYG", w: 2, l: 1 }, { t: "DAL", w: 1, l: 2 }, { t: "WSH", w: 1, l: 2 } ] },
+    { name: "AFC North", teams: [ { t: "BAL", w: 2, l: 1 }, { t: "CLE", w: 2, l: 1 }, { t: "PIT", w: 2, l: 1 }, { t: "CIN", w: 2, l: 1 } ] },
     { name: "NFC North", teams: [ { t: "MIN", w: 3, l: 0 }, { t: "DET", w: 2, l: 1 }, { t: "CHI", w: 1, l: 1 }, { t: "GB", w: 1, l: 2 } ] },
+    { name: "AFC South", teams: [ { t: "JAX", w: 2, l: 1 }, { t: "IND", w: 1, l: 2 }, { t: "HOU", w: 0, l: 3 }, { t: "TEN", w: 0, l: 3 } ] },
     { name: "NFC South", teams: [ { t: "NO", w: 1, l: 2 }, { t: "ATL", w: 1, l: 2 }, { t: "CAR", w: 1, l: 2 }, { t: "TB", w: 0, l: 3 } ] }
   ];
 
-  divisionsContainer.innerHTML = divisions.map(div => `
-    <div class="division-card">
-      <div class="division-header">
-        <span>${div.name}</span>
-        <span style="font-size:0.7rem; color:var(--text-muted);">W-L</span>
+  divisionsContainer.innerHTML = divisions.map(div => {
+    const isAfc = div.name.startsWith("AFC");
+    const confClass = isAfc ? "afc" : "nfc";
+    return `
+      <div class="division-card">
+        <div class="division-header">
+          <span class="division-title ${confClass}">${div.name}</span>
+          <span class="division-wl-header">W-L</span>
+        </div>
+        <table class="division-table">
+          <tbody>
+            ${div.teams.map(tm => {
+              const tmInfo = NFL_TEAMS[tm.t] || { color: '#2a3b50' };
+              const tmText = getTeamContrastColor(tmInfo.color);
+              return `
+                <tr>
+                  <td>
+                    <span class="team-badge-sm" style="background-color: ${tmInfo.color}; color: ${tmText}; font-size: 0.65rem; padding: 1.5px 6px; border-radius: 4px; min-width: 32px; text-align: center;">${tm.t}</span>
+                  </td>
+                  <td class="division-record">${tm.w} - ${tm.l}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
       </div>
-      <table class="division-table">
-        <tbody>
-          ${div.teams.map(tm => `
-            <tr>
-              <td><strong style="color:#fff;">${tm.t}</strong></td>
-              <td style="text-align:right; font-weight:800; color:var(--accent-green);">${tm.w} - ${tm.l}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 // =========================================================
