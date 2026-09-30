@@ -32,6 +32,59 @@ const WEEK_GIDS = {
 
 const NFL_STANDINGS_GID = "497949847";
 
+/**
+ * Official 2026 NFL Regular Season Week Start Dates.
+ * Every week begins on Wednesday (the day before Thursday Night Football) at 00:00:00 local time:
+ * - Week 1: Wed Sep 9, 2026
+ * - Week 2: Wed Sep 16, 2026
+ * - Week 3: Wed Sep 23, 2026
+ * - Week 4: Wed Sep 30, 2026 (Today)
+ * - Week 5: Wed Oct 7, 2026
+ * ...
+ * - Week 18: Wed Jan 6, 2027
+ */
+const NFL_2026_WEEK_STARTS = [
+  "2026-09-09", // Week 1 (Wed)
+  "2026-09-16", // Week 2 (Wed)
+  "2026-09-23", // Week 3 (Wed)
+  "2026-09-30", // Week 4 (Wed)
+  "2026-10-07", // Week 5 (Wed)
+  "2026-10-14", // Week 6 (Wed)
+  "2026-10-21", // Week 7 (Wed)
+  "2026-10-28", // Week 8 (Wed)
+  "2026-11-04", // Week 9 (Wed)
+  "2026-11-11", // Week 10 (Wed)
+  "2026-11-18", // Week 11 (Wed)
+  "2026-11-25", // Week 12 (Wed)
+  "2026-12-02", // Week 13 (Wed)
+  "2026-12-09", // Week 14 (Wed)
+  "2026-12-16", // Week 15 (Wed)
+  "2026-12-23", // Week 16 (Wed)
+  "2026-12-30", // Week 17 (Wed)
+  "2027-01-06"  // Week 18 (Wed)
+];
+
+/**
+ * Returns the current NFL week number (1 to 18) based on today's local date.
+ * Switches to the upcoming week every Wednesday at midnight.
+ */
+function getCurrentNFLWeek(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const todayStr = `${y}-${m}-${day}`;
+
+  let week = 1;
+  for (let i = 0; i < NFL_2026_WEEK_STARTS.length; i++) {
+    if (todayStr >= NFL_2026_WEEK_STARTS[i]) {
+      week = i + 1;
+    } else {
+      break;
+    }
+  }
+  return Math.min(18, Math.max(1, week));
+}
+
 // 12 Players in exact spreadsheet column sequence (Jon at Col 6 / 0-indexed)
 const PLAYERS = [
   "Jon", "Alisha", "Carson", "Nok", "Mango", "Caleb",
@@ -144,7 +197,7 @@ function getTeamContrastColor(hexColor) {
 // APPLICATION STATE
 // =========================================================
 let state = {
-  currentWeek: 3,
+  currentWeek: getCurrentNFLWeek(),
   selectedPlayer: "Caleb",
   activeTab: "leaderboard",
   isSyncing: false,
@@ -361,11 +414,11 @@ function initData() {
     recalculateAllWeeksPoints(state.data);
   }
 
-  if (state.data && state.data.activeWeek) {
-    const num = parseInt(state.data.activeWeek.replace(/[^0-9]/g, ""), 10);
-    if (num && num >= 1 && num <= 18) {
-      state.currentWeek = num;
-    }
+  // Default to current NFL week based on Wednesday rollover schedule
+  state.currentWeek = getCurrentNFLWeek();
+
+  if (state.data) {
+    state.data.activeWeek = `Week ${state.currentWeek}`;
   }
 
   // Pre-seed default top player
@@ -441,6 +494,7 @@ function setupWeekStrip() {
   }
 
   updateStripButtons();
+  setTimeout(() => updateStripButtons(), 60);
 }
 
 function updateStripButtons() {
