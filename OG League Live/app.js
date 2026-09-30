@@ -95,7 +95,7 @@ const PLAYER_COLORS = {
   "Jon": "#00338D", // Buffalo Bills Blue (BUF)
   "Alisha": "#c084fc", // Lilac Purple
   "Carson": "#E31837", // Kansas City Chiefs Red (KC)
-  "Nok": "#004C54", // Philadelphia Eagles Midnight Green (PHI)
+  "Nok": "#241773", // Baltimore Ravens Purple (BAL)
   "Mango": "#AA0000", // San Francisco 49ers Red (SF)
   "Caleb": "#007AC1",
   "Ross": "#FFD700", // Gold
@@ -112,7 +112,7 @@ const PLAYER_AVATARS = {
   "Jon": "avatars/jon.jpg",
   "Alisha": "avatars/alisha.jpg",
   "Carson": "avatars/carson.jpg?v=2",
-  "Nok": "avatars/nok.jpg",
+  "Nok": "avatars/nok.jpg?v=2",
   "Mango": "avatars/mango.jpg",
   "Ross": "avatars/ross.jpg",
   "Caleb": "avatars/caleb.jpg",
