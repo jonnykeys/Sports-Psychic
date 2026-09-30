@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=7.0">
+  <link rel="stylesheet" href="style.css?v=7.1">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 </head>
@@ -25,6 +25,12 @@
         <h1>Sports Psychic - OG League</h1>
         <div class="subtext">Official Season Tracker</div>
       </div>
+    </div>
+    <div class="header-right-actions">
+      <button id="btn-header-profile" class="header-profile-btn not-set" onclick="openProfileModal()" aria-label="Personalize profile" title="Personalize / Remember Me">
+        <span class="header-profile-icon">👤</span>
+        <span class="header-profile-text">Set Me</span>
+      </button>
     </div>
   </header>
 
@@ -225,11 +231,34 @@
     </button>
   </nav>
 
+  <!-- PROFILE PERSONALIZATION MODAL -->
+  <div id="profile-modal" class="profile-modal-backdrop" onclick="closeProfileModal(event)">
+    <div class="profile-modal-dialog" onclick="event.stopPropagation()">
+      <div class="profile-modal-header">
+        <div class="profile-modal-title-row">
+          <span class="profile-modal-icon">👤</span>
+          <h3>Personalize Your Profile</h3>
+        </div>
+        <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Close">&times;</button>
+      </div>
+      <p class="profile-modal-desc">
+        Select who you are on this device to highlight your picks across all 16 games and jump straight to your scorecard.
+      </p>
+      <div id="profile-modal-grid" class="profile-modal-grid">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="profile-modal-footer">
+        <button id="btn-clear-profile" class="btn-clear-profile" onclick="setMyPlayer(null)">Clear Profile (Guest Mode)</button>
+        <button class="btn-modal-done" onclick="closeProfileModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div id="toast-notice" class="toast-notice" role="alert"></div>
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
-  <script src="data.js?v=7.0"></script>
-  <script src="app.js?v=7.0"></script>
+  <script src="data.js?v=7.1"></script>
+  <script src="app.js?v=7.1"></script>
 </body>
 </html>
