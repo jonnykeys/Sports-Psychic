@@ -224,10 +224,27 @@ let state = {
 function calculateGamePicksPoints(game) {
   if (!game || !game.picks) return;
 
-  const isFinal = !!game.isFinal;
-  const winner = (game.winner || "").toUpperCase().trim();
   const awayScore = (game.awayScore !== null && game.awayScore !== "" && !isNaN(game.awayScore)) ? Number(game.awayScore) : null;
   const homeScore = (game.homeScore !== null && game.homeScore !== "" && !isNaN(game.homeScore)) ? Number(game.homeScore) : null;
+  let winner = (game.winner || "").toUpperCase().trim();
+
+  // If winner is missing but scores exist, determine winner from matchup
+  if (!winner && awayScore !== null && homeScore !== null) {
+    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+    if (parts.length === 2) {
+      if (awayScore > homeScore) winner = parts[0];
+      else if (homeScore > awayScore) winner = parts[1];
+      else if (awayScore === homeScore) winner = "TIE";
+      game.winner = winner;
+    }
+  }
+
+  // If both scores and winner are present, mark as final
+  if (awayScore !== null && homeScore !== null && winner.length > 0) {
+    game.isFinal = true;
+  }
+
+  const isFinal = !!game.isFinal;
 
   // Reset defaults for all players
   PLAYERS.forEach(pName => {
@@ -648,10 +665,25 @@ function parseWeekCSV(weekNum, csvText) {
     const matchup = (row[1] || "").trim();
     if (!matchup) continue;
 
-    const winner = (row[2] || "").trim().toUpperCase();
+    let winner = (row[2] || "").trim().toUpperCase();
     const awayScore = row[4] !== "" && !isNaN(row[4]) ? parseInt(row[4], 10) : null;
     const homeScore = row[5] !== "" && !isNaN(row[5]) ? parseInt(row[5], 10) : null;
-    const isFinal = (winner.length > 0 && awayScore !== null && homeScore !== null);
+
+    // Automatically derive winner from scores if not explicitly provided in the spreadsheet
+    if (!winner && awayScore !== null && homeScore !== null) {
+      const parts = matchup.split("@").map(s => s.trim().toUpperCase());
+      if (parts.length === 2) {
+        if (awayScore > homeScore) {
+          winner = parts[0];
+        } else if (homeScore > awayScore) {
+          winner = parts[1];
+        } else if (awayScore === homeScore) {
+          winner = "TIE";
+        }
+      }
+    }
+
+    const isFinal = (awayScore !== null && homeScore !== null && winner.length > 0);
 
     const picks = {};
 
