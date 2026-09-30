@@ -978,46 +978,47 @@ body {
   transform: translateY(-1px);
 }
 
-/* Base chip highlight for 3X Confidence Multiplier (Electric Purple) */
+/* Base chip highlight for 3X Confidence Multiplier (Pure Gold) */
 .split-pick-chip.has-multiplier {
-  border-color: rgba(168, 85, 247, 0.65);
-  background: rgba(168, 85, 247, 0.08);
-  box-shadow: 0 0 9px rgba(168, 85, 247, 0.25);
+  border-color: rgba(245, 184, 0, 0.75);
+  background: rgba(245, 184, 0, 0.09);
+  box-shadow: 0 0 10px rgba(245, 184, 0, 0.32);
 }
 
 .split-pick-chip.correct {
-  border-color: rgba(16, 185, 129, 0.5);
-  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(16, 185, 129, 0.09);
 }
 
 .split-pick-chip.has-multiplier.correct {
-  border-color: rgba(16, 185, 129, 0.65);
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+  border-color: rgba(16, 185, 129, 0.75) !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.35) !important;
 }
 
-/* Perfect Exact Score Jackpot: Pure Gold takes top prestige */
-.split-pick-chip.exact {
-  border-color: var(--accent-gold) !important;
-  background: rgba(245, 184, 0, 0.14) !important;
-  box-shadow: 0 0 12px var(--accent-gold-glow) !important;
+/* Perfect Exact Score Jackpot: Electric Violet */
+.split-pick-chip.exact,
+.split-pick-chip.has-multiplier.exact {
+  border-color: #c084fc !important;
+  background: rgba(168, 85, 247, 0.16) !important;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.5) !important;
 }
 
 /* Closest Score Bonus: Electric Sky Blue */
-.split-pick-chip.closest {
-  border-color: rgba(56, 189, 248, 0.75) !important;
-  background: rgba(56, 189, 248, 0.12) !important;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3) !important;
+.split-pick-chip.closest,
+.split-pick-chip.has-multiplier.closest {
+  border-color: rgba(56, 189, 248, 0.85) !important;
+  background: rgba(56, 189, 248, 0.14) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
 }
 
-.split-pick-chip.wrong {
-  border-color: rgba(244, 63, 94, 0.25);
-  opacity: 0.7;
-}
-
+/* Vibrant Red for Incorrect Pick / Loss */
+.split-pick-chip.wrong,
 .split-pick-chip.has-multiplier.wrong {
-  border-color: rgba(168, 85, 247, 0.35);
-  opacity: 0.7;
-  box-shadow: none;
+  border-color: rgba(239, 68, 68, 0.8) !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+  opacity: 0.98 !important;
 }
 
 .chip-row-top {
@@ -1036,18 +1037,19 @@ body {
   text-overflow: ellipsis;
 }
 
-/* Electric Violet 3X Confidence Multiplier Badge */
+/* Pure Gold 3X Confidence Multiplier Badge */
+.chip-mult,
 .chip-mult-tag {
   font-size: 0.62rem;
   font-weight: 900;
-  color: #f3e8ff;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(126, 34, 206, 0.6));
-  border: 1px solid rgba(192, 132, 252, 0.7);
+  color: #1a1400;
+  background: linear-gradient(135deg, #ffd700, #f5b800);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   padding: 1px 5px;
   border-radius: 4px;
   line-height: 1.1;
   flex-shrink: 0;
-  box-shadow: 0 0 6px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 8px rgba(245, 184, 0, 0.45);
   letter-spacing: 0.3px;
   display: inline-flex;
   align-items: center;
@@ -1089,14 +1091,17 @@ body {
 }
 
 .chip-pts-badge.pts-exact {
-  color: var(--accent-gold);
-  background: rgba(245, 184, 0, 0.22);
-  border: 1px solid rgba(245, 184, 0, 0.45);
+  color: #f3e8ff;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(126, 34, 206, 0.6));
+  border: 1px solid rgba(192, 132, 252, 0.7);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
 }
 
 .chip-pts-badge.pts-zero {
-  color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.05);
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  font-weight: 800;
 }
 
 .no-picks-muted {
@@ -1678,15 +1683,17 @@ body {
 }
 
 .pts-exact {
-  background: rgba(255, 179, 0, 0.2);
-  color: var(--accent-gold);
-  border: 1px solid rgba(255, 179, 0, 0.35);
+  background: rgba(168, 85, 247, 0.22);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
 }
 
 .pts-mult {
-  background: rgba(0, 230, 118, 0.2);
-  color: var(--accent-green);
-  border: 1px solid rgba(0, 230, 118, 0.35);
+  background: rgba(245, 184, 0, 0.22);
+  color: var(--accent-gold);
+  border: 1px solid rgba(245, 184, 0, 0.5);
+  box-shadow: 0 0 8px rgba(245, 184, 0, 0.25);
 }
 
 .rule-desc {

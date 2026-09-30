@@ -1093,7 +1093,7 @@ function renderMatchups() {
       if (isFinal) {
         if (pick.exact) {
           chipClass += " exact";
-          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">🔮 +${pick.points}</span>`;
         } else if (pick.isClosest) {
           chipClass += " closest";
           ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
@@ -1501,8 +1501,8 @@ function renderPlayers() {
 
           if (isFinal) {
             if (pk.exact) {
-              resText = `🎯 EXACT (+${pk.bonusPoints})`;
-              ptsColor = "var(--accent-gold)";
+              resText = `🔮 EXACT (+${pk.bonusPoints})`;
+              ptsColor = "#c084fc";
             } else if (pk.isClosest) {
               resText = `🎯 CLOSEST (+${pk.bonusPoints})`;
               ptsColor = "#38bdf8";
@@ -1511,7 +1511,7 @@ function renderPlayers() {
               ptsColor = "var(--accent-green)";
             } else {
               resText = "❌ LOST";
-              ptsColor = "var(--text-dim)";
+              ptsColor = "#f87171";
             }
           }
 
