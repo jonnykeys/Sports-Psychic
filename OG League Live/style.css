@@ -549,11 +549,88 @@ body {
   align-items: center;
   font-size: 0.78rem;
   border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.matchup-card-header:hover {
+  background: var(--bg-card-hover);
 }
 
 .matchup-card-header .date-time {
   color: var(--text-muted);
   font-weight: 600;
+}
+
+.matchup-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.matchup-collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.matchup-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: var(--border-light);
+}
+
+.collapse-icon {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(180deg);
+}
+
+.matchup-collapse-btn.collapsed .collapse-icon {
+  transform: rotate(0deg);
+}
+
+.matchup-card.collapsed .matchup-split-picks,
+.matchup-card.collapsed .unpicked-footer {
+  display: none !important;
+}
+
+.matchup-card.collapsed .matchup-teams-display {
+  padding-bottom: 12px;
+}
+
+.btn-toggle-all-picks {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-toggle-all-picks:hover {
+  background: var(--bg-card-hover);
+  color: #fff;
+  border-color: var(--accent-blue);
 }
 
 .matchup-badge {
