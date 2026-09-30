@@ -201,9 +201,21 @@ function getTeamContrastColor(hexColor) {
 // =========================================================
 // APPLICATION STATE
 // =========================================================
+const SAVED_USER_KEY = "og_league_my_player";
+let initialSavedPlayer = null;
+try {
+  const stored = localStorage.getItem(SAVED_USER_KEY);
+  if (stored && PLAYERS.includes(stored)) {
+    initialSavedPlayer = stored;
+  }
+} catch (e) {
+  console.warn("localStorage unavailable:", e);
+}
+
 let state = {
   currentWeek: getCurrentNFLWeek(),
-  selectedPlayer: "Caleb",
+  myPlayer: initialSavedPlayer,
+  selectedPlayer: initialSavedPlayer || "Caleb",
   activeTab: "leaderboard",
   isSyncing: false,
   lastUpdated: null,
@@ -563,6 +575,11 @@ function setupNavigation() {
 function switchTab(tabId) {
   state.activeTab = tabId;
   
+  // If navigating directly to players tab and user has a saved profile, default to their scorecard
+  if (tabId === "players" && state.myPlayer) {
+    state.selectedPlayer = state.myPlayer;
+  }
+  
   // Update nav buttons
   document.querySelectorAll(".bottom-nav .nav-item").forEach(b => {
     b.classList.toggle("active", b.getAttribute("data-tab") === tabId);
@@ -902,6 +919,7 @@ function parseNFLStandingsCSV(csvText) {
 // UI RENDERING - APP MASTER
 // =========================================================
 function renderApp() {
+  renderHeaderProfile();
   renderTabContent();
 }
 
@@ -949,30 +967,34 @@ function renderLeaderboard() {
   const rec2 = getPlayerSeasonRecord(rank2.name);
   const rec3 = getPlayerSeasonRecord(rank3.name);
 
+  const isMeRank1 = Boolean(state.myPlayer && rank1.name === state.myPlayer);
+  const isMeRank2 = Boolean(state.myPlayer && rank2.name === state.myPlayer);
+  const isMeRank3 = Boolean(state.myPlayer && rank3.name === state.myPlayer);
+
   podiumEl.innerHTML = `
     <!-- 2nd Place -->
-    <div class="podium-card" onclick="openPlayer('${rank2.name}')">
+    <div class="podium-card ${isMeRank2 ? "is-my-rank" : ""}" onclick="openPlayer('${rank2.name}')">
       <div class="podium-medal">🥈</div>
       ${rank2.name && rank2.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank2.name, 42)}</div>` : ""}
-      <div class="podium-name">${rank2.name}</div>
+      <div class="podium-name">${rank2.name}${isMeRank2 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
       <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub">Rank #2 • <strong>${rec2.label}</strong></div>
     </div>
 
     <!-- 1st Place (Center Crown) -->
-    <div class="podium-card first" onclick="openPlayer('${rank1.name}')">
+    <div class="podium-card first ${isMeRank1 ? "is-my-rank" : ""}" onclick="openPlayer('${rank1.name}')">
       <div class="podium-medal">👑</div>
       ${rank1.name && rank1.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank1.name, 50)}</div>` : ""}
-      <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}</div>
+      <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}${isMeRank1 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
       <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER • ${rec1.label}</div>
     </div>
 
     <!-- 3rd Place -->
-    <div class="podium-card" onclick="openPlayer('${rank3.name}')">
+    <div class="podium-card ${isMeRank3 ? "is-my-rank" : ""}" onclick="openPlayer('${rank3.name}')">
       <div class="podium-medal">🥉</div>
       ${rank3.name && rank3.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank3.name, 42)}</div>` : ""}
-      <div class="podium-name">${rank3.name}</div>
+      <div class="podium-name">${rank3.name}${isMeRank3 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
       <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
       <div class="podium-sub">Rank #3 • <strong>${rec3.label}</strong></div>
     </div>
@@ -985,6 +1007,7 @@ function renderLeaderboard() {
     else if (player.rank === 2) rankBadgeClass = "top2";
     else if (player.rank === 3) rankBadgeClass = "top3";
 
+    const isMe = Boolean(state.myPlayer && player.name === state.myPlayer);
     const initial = player.name.charAt(0);
     const color = PLAYER_COLORS[player.name] || "var(--accent-blue)";
     const rec = getPlayerSeasonRecord(player.name);
@@ -1001,12 +1024,12 @@ function renderLeaderboard() {
     }
 
     return `
-      <div class="leader-row" onclick="openPlayer('${player.name}')">
+      <div class="leader-row ${isMe ? "is-my-rank" : ""}" onclick="openPlayer('${player.name}')">
         <div class="leader-left">
           <div class="rank-badge ${rankBadgeClass}">${player.rank}</div>
           ${getPlayerAvatarHtml(player.name, 36)}
           <div class="player-info-block">
-            <div class="player-title">${player.name}</div>
+            <div class="player-title">${player.name}${isMe ? ` <span class="leader-you-pill">YOU</span>` : ""}</div>
             <div class="player-sub record">
               <span>Record: <strong>${rec.wins}-${rec.losses} W-L</strong></span>
               <span class="rec-pct">(${rec.pct}%)</span>
@@ -1087,7 +1110,11 @@ function renderMatchups() {
         return;
       }
 
+      const isMe = Boolean(state.myPlayer && pName === state.myPlayer);
       let chipClass = pick.multiplier ? "has-multiplier" : "";
+      if (isMe) {
+        chipClass += " is-my-pick";
+      }
       let ptsBadge = "";
 
       if (isFinal) {
@@ -1112,6 +1139,7 @@ function renderMatchups() {
 
       const pData = {
         name: pName,
+        isMe,
         multiplier: pick.multiplier,
         scoreDisplay,
         chipClass: chipClass.trim(),
@@ -1155,7 +1183,10 @@ function renderMatchups() {
         <div class="chip-body">
           <div class="chip-row-top">
             <span class="chip-player-name">${p.name}</span>
-            ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+            <div class="chip-badges-group">
+              ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+            </div>
           </div>
           <div class="chip-row-bottom">
             <span class="chip-predicted-score">${p.scoreDisplay}</span>
@@ -1398,10 +1429,11 @@ function renderPlayers() {
   // Render Horizontal Filter Pills
   pillsContainer.innerHTML = PLAYERS.map(pName => {
     const isActive = pName === state.selectedPlayer;
+    const isMe = Boolean(state.myPlayer && pName === state.myPlayer);
     return `
-      <button class="player-filter-pill ${isActive ? "active" : ""}" onclick="openPlayer('${pName}')">
+      <button class="player-filter-pill ${isActive ? "active" : ""} ${isMe ? "is-my-profile" : ""}" onclick="openPlayer('${pName}')">
         ${getPlayerAvatarHtml(pName, 20)}
-        <span>${pName}</span>
+        <span>${pName}${isMe ? " (You)" : ""}</span>
       </button>
     `;
   }).join("");
@@ -1431,20 +1463,26 @@ function renderPlayers() {
 
   const pColor = PLAYER_COLORS[state.selectedPlayer] || "var(--accent-blue)";
   const seasonRec = getPlayerSeasonRecord(state.selectedPlayer);
+  const isMyProfile = Boolean(state.myPlayer && state.myPlayer === state.selectedPlayer);
 
   // Render Player Hero
   heroContainer.innerHTML = `
     <div class="player-hero-header">
-      <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px; min-width:0;">
         ${getPlayerAvatarHtml(state.selectedPlayer, 48)}
-        <div>
+        <div style="min-width:0;">
           <div class="player-hero-title">${state.selectedPlayer}</div>
           <div class="player-hero-sub" style="font-size:0.78rem; color:var(--accent-cyan); font-weight:700; margin-top:2px;">
             Season Record: <span style="color:#fff; font-weight:900;">${seasonRec.wins}-${seasonRec.losses} W-L</span> <span style="color:var(--text-muted); font-size:0.72rem;">(${seasonRec.pct}%)</span>
           </div>
         </div>
       </div>
-      <div class="player-hero-rank">Rank #${playerRankObj.rank}</div>
+      <div class="player-hero-header-actions">
+        <div class="player-hero-rank">Rank #${playerRankObj.rank}</div>
+        <button class="btn-hero-profile ${isMyProfile ? "is-active" : ""}" onclick="toggleMyProfile('${state.selectedPlayer}')" title="${isMyProfile ? 'You are remembered as this player' : 'Remember me as this player'}">
+          ${isMyProfile ? `⭐ Active Profile` : `☆ Set as Me`}
+        </button>
+      </div>
     </div>
 
     <div class="player-stats-row">
@@ -1718,8 +1756,127 @@ function showToast(msg) {
   }, 2600);
 }
 
+// =========================================================
+// PERSONALIZATION & "REMEMBER ME" ENGINE
+// =========================================================
+function renderHeaderProfile() {
+  const btn = document.getElementById("btn-header-profile");
+  if (!btn) return;
+
+  if (state.myPlayer) {
+    btn.className = "header-profile-btn has-user";
+    btn.innerHTML = `
+      <div class="header-profile-avatar-wrap">
+        ${getPlayerAvatarHtml(state.myPlayer, 26)}
+      </div>
+      <div class="header-profile-text-wrap">
+        <span class="header-profile-name">${state.myPlayer}</span>
+        <span class="header-profile-tag">YOU</span>
+      </div>
+    `;
+    btn.title = `Remembered as ${state.myPlayer} (Tap to change)`;
+  } else {
+    btn.className = "header-profile-btn not-set";
+    btn.innerHTML = `
+      <span class="header-profile-icon">👤</span>
+      <span class="header-profile-text">Set Me</span>
+    `;
+    btn.title = "Personalize: Choose your profile on this device";
+  }
+}
+
+function setMyPlayer(playerName) {
+  if (playerName && PLAYERS.includes(playerName)) {
+    state.myPlayer = playerName;
+    state.selectedPlayer = playerName;
+    try {
+      localStorage.setItem(SAVED_USER_KEY, playerName);
+    } catch (e) {
+      console.warn("Could not save to localStorage:", e);
+    }
+    showToast(`⭐ Remembered as ${playerName}! Your picks are highlighted.`);
+  } else {
+    state.myPlayer = null;
+    try {
+      localStorage.removeItem(SAVED_USER_KEY);
+    } catch (e) {
+      console.warn("Could not remove from localStorage:", e);
+    }
+    showToast("👤 Profile cleared (Browsing as Guest)");
+  }
+
+  closeProfileModal();
+  renderApp();
+}
+
+function toggleMyProfile(playerName) {
+  if (state.myPlayer === playerName) {
+    openProfileModal();
+  } else {
+    setMyPlayer(playerName);
+  }
+}
+
+function openProfileModal() {
+  const modal = document.getElementById("profile-modal");
+  const grid = document.getElementById("profile-modal-grid");
+  if (!modal || !grid) return;
+
+  const lb = (state.data && state.data.leaderboard) ? state.data.leaderboard : [];
+
+  grid.innerHTML = PLAYERS.map(pName => {
+    const isCurrent = Boolean(state.myPlayer && state.myPlayer === pName);
+    const playerRankObj = lb.find(p => p.name === pName) || { rank: "-", points: 0 };
+    return `
+      <div class="profile-choice-card ${isCurrent ? "active" : ""}" onclick="setMyPlayer('${pName}')">
+        <div class="choice-avatar">
+          ${getPlayerAvatarHtml(pName, 40)}
+        </div>
+        <div class="choice-info">
+          <div class="choice-name">
+            <span>${pName}</span>
+            ${isCurrent ? `<span class="choice-current-badge">YOU</span>` : ""}
+          </div>
+          <div class="choice-stats">Rank #${playerRankObj.rank} • ${playerRankObj.points} PTS</div>
+        </div>
+        <div class="choice-action">
+          ${isCurrent ? `<span class="choice-check">✓</span>` : `<span class="choice-select-btn">Select</span>`}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const clearBtn = document.getElementById("btn-clear-profile");
+  if (clearBtn) {
+    clearBtn.style.display = state.myPlayer ? "inline-block" : "none";
+  }
+
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeProfileModal(event) {
+  if (event && event.target && event.target.id !== "profile-modal" && !event.target.classList.contains("profile-modal-close") && !event.target.classList.contains("btn-modal-done")) {
+    return;
+  }
+  const modal = document.getElementById("profile-modal");
+  if (modal) modal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// Close profile modal on ESC key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeProfileModal();
+  }
+});
+
 // Expose navigation handlers globally for inline HTML onclicks
 window.openPlayer = openPlayer;
 window.switchTab = switchTab;
 window.toggleMatchupCollapse = toggleMatchupCollapse;
 window.toggleAllMatchups = toggleAllMatchups;
+window.openProfileModal = openProfileModal;
+window.closeProfileModal = closeProfileModal;
+window.setMyPlayer = setMyPlayer;
+window.toggleMyProfile = toggleMyProfile;
