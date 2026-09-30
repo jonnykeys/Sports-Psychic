@@ -537,8 +537,7 @@ function setupRefresh() {
 // GOOGLE SHEETS LIVE DATA SYNC
 // =========================================================
 async function syncWeek(weekNum, silent = false, forceNotice = false) {
-  const gid = WEEK_GIDS[weekNum];
-  if (!gid) return;
+  if (!weekNum || weekNum < 1 || weekNum > 18) return;
 
   const refreshBtn = document.getElementById("btn-refresh");
   const syncLabel = document.getElementById("sync-label");
@@ -549,7 +548,8 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
   }
 
   state.isSyncing = true;
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&t=${Date.now()}`;
+  const sheetParam = encodeURIComponent(`Week ${weekNum}`);
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetParam}&t=${Date.now()}`;
 
   try {
     const res = await fetch(url);
