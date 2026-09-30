@@ -388,6 +388,54 @@ function getPlayerSeasonRecord(playerName) {
   };
 }
 
+/**
+ * Calculates actual NFL team Win-Loss record entering the specified week (or through all completed games).
+ */
+function getNFLTeamRecord(teamCode, targetWeek = null) {
+  let wins = 0;
+  let losses = 0;
+  let ties = 0;
+
+  if (state.data && state.data.weeks) {
+    const maxWeek = (targetWeek !== null) ? Math.max(0, targetWeek - 1) : 18;
+
+    for (let w = 1; w <= maxWeek; w++) {
+      const wKey = `Week ${w}`;
+      const wData = state.data.weeks[wKey];
+      if (!wData || !wData.games) continue;
+
+      for (let g of wData.games) {
+        if (!g || !g.matchup || !g.isFinal) continue;
+        const parts = g.matchup.split("@").map(s => s.trim());
+        if (parts.length !== 2) continue;
+        const away = parts[0];
+        const home = parts[1];
+
+        if (away !== teamCode && home !== teamCode) continue;
+
+        if (g.winner === teamCode) {
+          wins++;
+        } else if (g.winner === "TIE" || (g.awayScore !== null && g.awayScore === g.homeScore)) {
+          ties++;
+        } else if (g.winner) {
+          losses++;
+        } else if (g.awayScore !== null && g.homeScore !== null) {
+          if (away === teamCode) {
+            if (g.awayScore > g.homeScore) wins++;
+            else losses++;
+          } else if (home === teamCode) {
+            if (g.homeScore > g.awayScore) wins++;
+            else losses++;
+          }
+        }
+      }
+    }
+  }
+
+  const text = ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+  return { wins, losses, ties, text };
+}
+
 // =========================================================
 // INITIALIZATION
 // =========================================================
@@ -958,6 +1006,9 @@ function renderMatchups() {
     const awayTextColor = getTeamContrastColor(awayInfo.color);
     const homeTextColor = getTeamContrastColor(homeInfo.color);
 
+    const awayRecord = getNFLTeamRecord(awayTeam, state.currentWeek);
+    const homeRecord = getNFLTeamRecord(homeTeam, state.currentWeek);
+
     const isFinal = game.isFinal;
     const badgeText = isFinal ? "FINAL" : (game.awayScore !== null ? "LIVE" : "SCHEDULED");
     const badgeClass = isFinal ? "final" : (game.awayScore !== null ? "live" : "scheduled");
@@ -1044,6 +1095,7 @@ function renderMatchups() {
             <div class="team-details">
               <div class="team-code">${awayTeam}</div>
               <div class="team-name-sub">${awayInfo.city || awayInfo.name || ""}</div>
+              <div class="team-record-sub">${awayRecord.text}</div>
             </div>
             <div class="team-score ${awayWinning ? "winning" : ""}">${game.awayScore !== null ? game.awayScore : "-"}</div>
           </div>
@@ -1059,6 +1111,7 @@ function renderMatchups() {
             <div class="team-details">
               <div class="team-code">${homeTeam}</div>
               <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
+              <div class="team-record-sub">${homeRecord.text}</div>
             </div>
             <div class="team-score ${homeWinning ? "winning" : ""}">${game.homeScore !== null ? game.homeScore : "-"}</div>
           </div>
