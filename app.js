@@ -208,7 +208,8 @@ let state = {
   isSyncing: false,
   lastUpdated: null,
   data: null,
-  nflStandings: null
+  nflStandings: null,
+  collapsedMatchups: new Set()
 };
 
 // =========================================================
@@ -1090,11 +1091,20 @@ function renderMatchups() {
       </div>
     `;
 
+    const isCollapsed = state.collapsedMatchups && state.collapsedMatchups.has(game.id);
+
     return `
-      <article class="matchup-card" id="${game.id}">
-        <div class="matchup-card-header">
+      <article class="matchup-card ${isCollapsed ? "collapsed" : ""}" id="${game.id}">
+        <div class="matchup-card-header" onclick="toggleMatchupCollapse('${game.id}', event)">
           <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
-          <span class="matchup-badge ${badgeClass}">${badgeText}</span>
+          <div class="matchup-header-actions">
+            <span class="matchup-badge ${badgeClass}">${badgeText}</span>
+            <button type="button" class="matchup-collapse-btn ${isCollapsed ? "collapsed" : ""}" aria-label="${isCollapsed ? "Expand picks" : "Collapse picks"}" title="${isCollapsed ? "Expand picks" : "Collapse picks"}">
+              <svg class="collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div class="matchup-teams-display">
@@ -1166,6 +1176,107 @@ function renderMatchups() {
       </article>
     `;
   }).join("");
+
+  updateToggleAllBtn();
+}
+
+// =========================================================
+// MATCHUP CARD COLLAPSE / EXPAND ENGINE
+// =========================================================
+function toggleMatchupCollapse(gameId, event) {
+  if (event) event.stopPropagation();
+  if (!state.collapsedMatchups) {
+    state.collapsedMatchups = new Set();
+  }
+
+  const card = document.getElementById(gameId);
+  const isCurrentlyCollapsed = state.collapsedMatchups.has(gameId);
+
+  if (isCurrentlyCollapsed) {
+    state.collapsedMatchups.delete(gameId);
+    if (card) {
+      card.classList.remove("collapsed");
+      const btn = card.querySelector(".matchup-collapse-btn");
+      if (btn) {
+        btn.classList.remove("collapsed");
+        btn.setAttribute("aria-label", "Collapse picks");
+        btn.setAttribute("title", "Collapse picks");
+      }
+    }
+  } else {
+    state.collapsedMatchups.add(gameId);
+    if (card) {
+      card.classList.add("collapsed");
+      const btn = card.querySelector(".matchup-collapse-btn");
+      if (btn) {
+        btn.classList.add("collapsed");
+        btn.setAttribute("aria-label", "Expand picks");
+        btn.setAttribute("title", "Expand picks");
+      }
+    }
+  }
+
+  updateToggleAllBtn();
+}
+
+function toggleAllMatchups() {
+  if (!state.collapsedMatchups) {
+    state.collapsedMatchups = new Set();
+  }
+
+  const weekKey = `Week ${state.currentWeek}`;
+  const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
+  const games = weekData && weekData.games ? weekData.games : [];
+  if (games.length === 0) return;
+
+  const allCollapsed = games.every(g => state.collapsedMatchups.has(g.id));
+
+  if (allCollapsed) {
+    games.forEach(g => {
+      state.collapsedMatchups.delete(g.id);
+      const card = document.getElementById(g.id);
+      if (card) {
+        card.classList.remove("collapsed");
+        const btn = card.querySelector(".matchup-collapse-btn");
+        if (btn) {
+          btn.classList.remove("collapsed");
+          btn.setAttribute("aria-label", "Collapse picks");
+          btn.setAttribute("title", "Collapse picks");
+        }
+      }
+    });
+  } else {
+    games.forEach(g => {
+      state.collapsedMatchups.add(g.id);
+      const card = document.getElementById(g.id);
+      if (card) {
+        card.classList.add("collapsed");
+        const btn = card.querySelector(".matchup-collapse-btn");
+        if (btn) {
+          btn.classList.add("collapsed");
+          btn.setAttribute("aria-label", "Expand picks");
+          btn.setAttribute("title", "Expand picks");
+        }
+      }
+    });
+  }
+
+  updateToggleAllBtn();
+}
+
+function updateToggleAllBtn() {
+  const btn = document.getElementById("toggle-all-matchups-btn");
+  if (!btn) return;
+  const weekKey = `Week ${state.currentWeek}`;
+  const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
+  const games = weekData && weekData.games ? weekData.games : [];
+  if (games.length === 0) {
+    btn.style.display = "none";
+    return;
+  }
+  btn.style.display = "inline-flex";
+  const allCollapsed = games.every(g => state.collapsedMatchups && state.collapsedMatchups.has(g.id));
+  btn.textContent = allCollapsed ? "Expand All" : "Collapse All";
 }
 
 // =========================================================
@@ -1507,3 +1618,5 @@ function showToast(msg) {
 // Expose navigation handlers globally for inline HTML onclicks
 window.openPlayer = openPlayer;
 window.switchTab = switchTab;
+window.toggleMatchupCollapse = toggleMatchupCollapse;
+window.toggleAllMatchups = toggleAllMatchups;
