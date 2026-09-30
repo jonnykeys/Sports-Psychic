@@ -655,6 +655,16 @@ body {
   max-width: 95px;
 }
 
+.team-record-sub {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  letter-spacing: 0.3px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
 .team-score {
   font-size: 1.35rem;
   font-weight: 900;
