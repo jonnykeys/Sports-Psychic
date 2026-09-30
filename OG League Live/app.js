@@ -553,9 +553,11 @@ function initData() {
     state.data.activeWeek = `Week ${state.currentWeek}`;
   }
 
-  // Pre-seed default top player
+  // Pre-seed default top player if no profile remembered
   if (state.data && state.data.leaderboard && state.data.leaderboard.length > 0) {
-    state.selectedPlayer = state.data.leaderboard[0].name;
+    if (!state.myPlayer) {
+      state.selectedPlayer = state.data.leaderboard[0].name;
+    }
   }
 }
 
@@ -567,6 +569,10 @@ function setupNavigation() {
   navBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       const tabId = btn.getAttribute("data-tab");
+      // When tapping bottom nav 'Players' tab directly, take user home to their own profile
+      if (tabId === "players" && state.myPlayer) {
+        state.selectedPlayer = state.myPlayer;
+      }
       switchTab(tabId);
     });
   });
@@ -574,11 +580,6 @@ function setupNavigation() {
 
 function switchTab(tabId) {
   state.activeTab = tabId;
-  
-  // If navigating directly to players tab and user has a saved profile, default to their scorecard
-  if (tabId === "players" && state.myPlayer) {
-    state.selectedPlayer = state.myPlayer;
-  }
   
   // Update nav buttons
   document.querySelectorAll(".bottom-nav .nav-item").forEach(b => {
