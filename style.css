@@ -722,7 +722,6 @@ body {
 }
 
 .matchup-card.collapsed .matchup-split-picks,
-.matchup-card.collapsed .matchup-consensus-container,
 .matchup-card.collapsed .unpicked-footer {
   display: none !important;
 }
