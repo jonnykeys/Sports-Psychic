@@ -2426,6 +2426,9 @@ function renderH2H() {
       <div class="h2h-tale-tape">
         <!-- Fighter A (Left) -->
         <div class="h2h-fighter">
+          <div class="h2h-fighter-rank-badge ${statA.numericRank === 1 ? 'rank-gold' : statA.numericRank === 2 ? 'rank-silver' : statA.numericRank === 3 ? 'rank-bronze' : ''}">
+            Rank ${rankA}
+          </div>
           ${getPlayerAvatarHtml(playerA, 52)}
           <div class="h2h-fighter-name">
             <span>${playerA}</span>
@@ -2435,7 +2438,7 @@ function renderH2H() {
             <span class="h2h-fighter-pts-num">${statA.points}</span>
             <span class="h2h-fighter-pts-lbl">PTS</span>
           </div>
-          <div class="h2h-fighter-rec-capsule">Rank ${rankA} • ${recTextA}</div>
+          <div class="h2h-fighter-rec-capsule">${recTextA}</div>
           <div class="h2h-fighter-week-gain">+${weekPtsA} in ${wkShort}</div>
         </div>
 
@@ -2454,6 +2457,9 @@ function renderH2H() {
 
         <!-- Fighter B (Right) -->
         <div class="h2h-fighter">
+          <div class="h2h-fighter-rank-badge ${statB.numericRank === 1 ? 'rank-gold' : statB.numericRank === 2 ? 'rank-silver' : statB.numericRank === 3 ? 'rank-bronze' : ''}">
+            Rank ${rankB}
+          </div>
           ${getPlayerAvatarHtml(playerB, 52)}
           <div class="h2h-fighter-name">
             <span>${playerB}</span>
@@ -2463,7 +2469,7 @@ function renderH2H() {
             <span class="h2h-fighter-pts-num">${statB.points}</span>
             <span class="h2h-fighter-pts-lbl">PTS</span>
           </div>
-          <div class="h2h-fighter-rec-capsule">Rank ${rankB} • ${recTextB}</div>
+          <div class="h2h-fighter-rec-capsule">${recTextB}</div>
           <div class="h2h-fighter-week-gain">+${weekPtsB} in ${wkShort}</div>
         </div>
       </div>

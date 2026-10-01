@@ -2320,6 +2320,43 @@ body {
   min-width: 0;
 }
 
+.h2h-fighter-rank-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 1px 7px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.h2h-fighter-rank-badge.rank-gold {
+  color: #ffd700;
+  background: rgba(245, 184, 0, 0.12);
+  border-color: rgba(245, 184, 0, 0.35);
+  box-shadow: 0 0 10px rgba(245, 184, 0, 0.2);
+}
+
+.h2h-fighter-rank-badge.rank-silver {
+  color: #e2e8f0;
+  background: rgba(226, 232, 240, 0.08);
+  border-color: rgba(226, 232, 240, 0.25);
+}
+
+.h2h-fighter-rank-badge.rank-bronze {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.08);
+  border-color: rgba(251, 146, 60, 0.25);
+}
+
 .h2h-fighter-name {
   font-size: 1rem;
   font-weight: 900;
