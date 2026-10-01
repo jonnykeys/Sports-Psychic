@@ -400,6 +400,63 @@ body {
 }
 
 /* =========================================================
+   STANDINGS VIEW TOGGLE (Season Total vs Weekly)
+   ========================================================= */
+.leaderboard-toggle-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.segmented-control {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.75);
+  padding: 4px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  gap: 4px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.segmented-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.segmented-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.segmented-btn.active {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.45);
+}
+
+.segmented-btn .segmented-icon {
+  font-size: 0.9rem;
+}
+
+/* =========================================================
    TAB 1: LEADERBOARD PODIUM & LIST
    ========================================================= */
 .podium-container {
@@ -634,6 +691,10 @@ body {
 
 .leader-right {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
 .leader-total-points {
@@ -643,10 +704,53 @@ body {
   line-height: 1.1;
 }
 
+.leader-behind-pts {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.2px;
+}
+
+.leader-behind-pts.is-leader {
+  color: var(--accent-gold);
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
 .leader-week-pts {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   font-weight: 600;
+}
+
+.week-empty-banner {
+  background: var(--bg-card);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 16px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.week-empty-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.week-empty-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.week-empty-desc {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.35;
 }
 
 /* =========================================================
