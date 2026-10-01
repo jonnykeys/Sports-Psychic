@@ -1129,16 +1129,13 @@ function renderLeaderboard() {
   const isMeRank2 = Boolean(state.myPlayer && rank2.name === state.myPlayer);
   const isMeRank3 = Boolean(state.myPlayer && rank3.name === state.myPlayer);
 
-  const diff2 = leader.points - rank2.points;
-  const diff3 = leader.points - rank3.points;
-
   // Podium subtitle labels
   let rank1Title = isWeekly
     ? (rank1.numericRank === rank2.numericRank ? `WEEK ${state.currentWeek} CO-LEADER` : `WEEK ${state.currentWeek} WINNER`)
     : (rank1.numericRank === rank2.numericRank ? `LEAGUE CO-LEADER` : `LEAGUE LEADER`);
 
-  let rank2Sub = `Rank #${rank2.rankDisplay} • ${diff2 > 0 ? `-${diff2} PTS` : "TIED"}`;
-  let rank3Sub = `Rank #${rank3.rankDisplay} • ${diff3 > 0 ? `-${diff3} PTS` : "TIED"}`;
+  let rank2Sub = `Rank #${rank2.rankDisplay}`;
+  let rank3Sub = `Rank #${rank3.rankDisplay}`;
 
   // If in weekly mode and no points scored yet (future or in-progress week)
   const isWeekUnplayed = isWeekly && leader.points === 0;
@@ -1196,17 +1193,6 @@ function renderLeaderboard() {
     const isMe = Boolean(state.myPlayer && player.name === state.myPlayer);
     const rec = player.rec || { wins: 0, losses: 0, pct: "0.0", label: "0-0" };
 
-    // Points difference from #1
-    const diffFromLeader = leader.points - player.points;
-    let behindText = "";
-    if (leader.points === 0) {
-      behindText = `<div class="leader-behind-pts is-leader">Tied</div>`;
-    } else if (diffFromLeader === 0) {
-      behindText = `<div class="leader-behind-pts is-leader">${isWeekly ? "Week Leader" : "Leader"}</div>`;
-    } else {
-      behindText = `<div class="leader-behind-pts">-${diffFromLeader} pts behind #1</div>`;
-    }
-
     // Weekly points if in season mode
     let weekPts = null;
     if (!isWeekly) {
@@ -1235,7 +1221,6 @@ function renderLeaderboard() {
         </div>
         <div class="leader-right">
           <div class="leader-total-points">${player.points} <span style="font-size:0.7rem;">PTS</span></div>
-          ${behindText}
           ${weekPts !== null ? `<div class="leader-week-pts">Wk ${state.currentWeek}: +${weekPts} pts</div>` : ""}
         </div>
       </div>
