@@ -265,6 +265,162 @@ let state = {
   collapsedMatchups: new Set()
 };
 
+// Navigation state persistence key for sessionStorage
+const NAV_STATE_KEY = "og_league_nav_state";
+
+/**
+ * Saves current navigation snapshot into sessionStorage and synchronizes URL hash.
+ */
+function saveNavState() {
+  try {
+    const nav = {
+      activeTab: state.activeTab,
+      currentWeek: state.currentWeek,
+      leaderboardMode: state.leaderboardMode,
+      playerViewMode: state.playerViewMode,
+      selectedPlayer: state.selectedPlayer,
+      h2hPlayerA: state.h2hPlayerA,
+      h2hPlayerB: state.h2hPlayerB,
+      h2hFilter: state.h2hFilter
+    };
+    sessionStorage.setItem(NAV_STATE_KEY, JSON.stringify(nav));
+  } catch (e) {
+    // sessionStorage unavailable in private mode or quota exceeded
+  }
+  syncUrlHash();
+}
+
+/**
+ * Synchronizes browser URL hash without cluttering browser history.
+ */
+function syncUrlHash() {
+  try {
+    const tab = state.activeTab || "leaderboard";
+    const params = new URLSearchParams();
+    if (state.currentWeek && state.currentWeek !== getCurrentNFLWeek()) {
+      params.set("week", state.currentWeek);
+    }
+    if (tab === "players") {
+      if (state.playerViewMode === "h2h") {
+        params.set("mode", "h2h");
+        if (state.h2hPlayerA) params.set("a", state.h2hPlayerA);
+        if (state.h2hPlayerB) params.set("b", state.h2hPlayerB);
+        if (state.h2hFilter && state.h2hFilter !== "swing") params.set("f", state.h2hFilter);
+      } else {
+        if (state.selectedPlayer) params.set("p", state.selectedPlayer);
+      }
+    } else if (tab === "leaderboard") {
+      if (state.leaderboardMode === "weekly") {
+        params.set("mode", "weekly");
+      }
+    }
+    const q = params.toString();
+    const targetHash = q ? `#${tab}?${q}` : `#${tab}`;
+    if (window.location.hash !== targetHash) {
+      history.replaceState(null, "", targetHash);
+    }
+  } catch (e) {}
+}
+
+/**
+ * Restores navigation snapshot from URL hash or sessionStorage.
+ */
+function restoreNavState() {
+  const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
+  let restoredFromHash = false;
+
+  // 1. Try URL Hash first
+  try {
+    const rawHash = window.location.hash ? window.location.hash.replace(/^#/, "").trim() : "";
+    if (rawHash) {
+      const parts = rawHash.split("?");
+      const tab = parts[0];
+      if (validTabs.includes(tab)) {
+        state.activeTab = tab;
+        restoredFromHash = true;
+
+        if (parts[1]) {
+          const params = new URLSearchParams(parts[1]);
+          if (params.has("week")) {
+            const w = parseInt(params.get("week"), 10);
+            if (w >= 1 && w <= 18) state.currentWeek = w;
+          }
+          if (params.has("p") && PLAYERS.includes(params.get("p"))) {
+            state.selectedPlayer = params.get("p");
+          }
+          if (params.has("mode")) {
+            const m = params.get("mode");
+            if (m === "h2h" || m === "single") state.playerViewMode = m;
+            if (m === "season" || m === "weekly") state.leaderboardMode = m;
+          }
+          if (params.has("a") && PLAYERS.includes(params.get("a"))) {
+            state.h2hPlayerA = params.get("a");
+          }
+          if (params.has("b") && PLAYERS.includes(params.get("b"))) {
+            state.h2hPlayerB = params.get("b");
+          }
+          if (params.has("f") && ["swing", "agreed", "all"].includes(params.get("f"))) {
+            state.h2hFilter = params.get("f");
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Error parsing URL hash:", e);
+  }
+
+  // 2. Fallback to sessionStorage
+  if (!restoredFromHash) {
+    try {
+      const raw = sessionStorage.getItem(NAV_STATE_KEY);
+      if (raw) {
+        const nav = JSON.parse(raw);
+        if (nav.activeTab && validTabs.includes(nav.activeTab)) {
+          state.activeTab = nav.activeTab;
+        }
+        if (typeof nav.currentWeek === "number" && nav.currentWeek >= 1 && nav.currentWeek <= 18) {
+          state.currentWeek = nav.currentWeek;
+        }
+        if (nav.leaderboardMode === "season" || nav.leaderboardMode === "weekly") {
+          state.leaderboardMode = nav.leaderboardMode;
+        }
+        if (nav.playerViewMode === "single" || nav.playerViewMode === "h2h") {
+          state.playerViewMode = nav.playerViewMode;
+        }
+        if (nav.selectedPlayer && PLAYERS.includes(nav.selectedPlayer)) {
+          state.selectedPlayer = nav.selectedPlayer;
+        }
+        if (nav.h2hPlayerA && PLAYERS.includes(nav.h2hPlayerA)) {
+          state.h2hPlayerA = nav.h2hPlayerA;
+        }
+        if (nav.h2hPlayerB && PLAYERS.includes(nav.h2hPlayerB)) {
+          state.h2hPlayerB = nav.h2hPlayerB;
+        }
+        if (nav.h2hFilter && ["swing", "agreed", "all"].includes(nav.h2hFilter)) {
+          state.h2hFilter = nav.h2hFilter;
+        }
+      }
+    } catch (e) {
+      console.warn("Error restoring nav state from sessionStorage:", e);
+    }
+  }
+
+  // Ensure activeWeek in data matches restored currentWeek
+  if (state.data) {
+    state.data.activeWeek = `Week ${state.currentWeek}`;
+  }
+
+  // Ensure valid H2H players if in H2H mode
+  if (state.playerViewMode === "h2h") {
+    if (!state.h2hPlayerA) state.h2hPlayerA = state.selectedPlayer || PLAYERS[0];
+    if (!state.h2hPlayerB) {
+      state.h2hPlayerB = (state.myPlayer && state.myPlayer !== state.h2hPlayerA)
+        ? state.myPlayer
+        : (PLAYERS.find(p => p !== state.h2hPlayerA) || PLAYERS[1]);
+    }
+  }
+}
+
 // =========================================================
 // CORE SCORING & CLOSEST BONUS ENGINE
 // =========================================================
@@ -576,6 +732,7 @@ function getNFLTeamRecord(teamCode, targetWeek = null) {
 // =========================================================
 document.addEventListener("DOMContentLoaded", () => {
   initData();
+  restoreNavState();
   setupNavigation();
   setupWeekStrip();
   setupRefresh();
@@ -687,13 +844,16 @@ function setupNavigation() {
       // When tapping bottom nav 'Players' tab directly, take user home to their own profile
       if (tabId === "players" && state.myPlayer) {
         state.selectedPlayer = state.myPlayer;
+        state.playerViewMode = "single";
       }
       switchTab(tabId);
     });
   });
 }
 
-function switchTab(tabId) {
+function switchTab(tabId, smoothScroll = true) {
+  const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
+  if (!validTabs.includes(tabId)) tabId = "leaderboard";
   state.activeTab = tabId;
   
   // Update nav buttons
@@ -706,8 +866,11 @@ function switchTab(tabId) {
     view.classList.toggle("active", view.id === `tab-${tabId}`);
   });
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (smoothScroll) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   renderTabContent();
+  saveNavState();
 }
 
 function setupWeekStrip() {
@@ -771,6 +934,7 @@ function selectWeek(weekNum) {
 
   updateStripButtons();
   renderTabContent();
+  saveNavState();
 
   // Sync this week's live data if not yet fetched or stale
   syncWeek(weekNum);
@@ -1207,7 +1371,7 @@ function parseNFLStandingsCSV(csvText) {
 // =========================================================
 function renderApp() {
   renderHeaderProfile();
-  renderTabContent();
+  switchTab(state.activeTab, false);
 }
 
 function renderTabContent() {
@@ -1237,6 +1401,7 @@ function renderTabContent() {
 function setLeaderboardMode(mode) {
   state.leaderboardMode = mode;
   renderLeaderboard();
+  saveNavState();
 }
 window.setLeaderboardMode = setLeaderboardMode;
 
@@ -1964,6 +2129,14 @@ function renderPlayers() {
     `;
   }).join("");
 
+  // Ensure active player pill is scrolled into view
+  setTimeout(() => {
+    const activePill = pillsContainer.querySelector(".player-filter-pill.active");
+    if (activePill) {
+      activePill.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }, 60);
+
   // Get Player Standings & Stats
   const seasonLb = getSeasonLeaderboard();
   const playerRankObj = seasonLb.find(p => p.name === state.selectedPlayer) || { numericRank: 0, rankDisplay: "-", points: 0 };
@@ -2203,6 +2376,7 @@ function openPlayer(playerName) {
 function setPlayerViewMode(mode) {
   state.playerViewMode = mode;
   renderPlayers();
+  saveNavState();
 }
 
 function startH2HComparison(playerA, playerB) {
@@ -2223,11 +2397,13 @@ function swapH2HPlayers() {
   state.h2hPlayerA = state.h2hPlayerB;
   state.h2hPlayerB = temp;
   renderH2H();
+  saveNavState();
 }
 
 function setH2HFilter(filter) {
   state.h2hFilter = filter;
   renderH2H();
+  saveNavState();
 }
 
 function openH2HPicker(slot) {
@@ -2288,6 +2464,7 @@ function selectH2HPlayer(pName) {
 
   closeH2HPicker();
   renderH2H();
+  saveNavState();
 }
 
 function closeH2HPicker(event) {
@@ -2978,6 +3155,8 @@ document.addEventListener("keydown", (e) => {
 // Expose navigation handlers globally for inline HTML onclicks
 window.openPlayer = openPlayer;
 window.switchTab = switchTab;
+window.saveNavState = saveNavState;
+window.restoreNavState = restoreNavState;
 window.toggleMatchupCollapse = toggleMatchupCollapse;
 window.toggleAllMatchups = toggleAllMatchups;
 window.openProfileModal = openProfileModal;
@@ -2991,3 +3170,9 @@ window.selectH2HPlayer = selectH2HPlayer;
 window.closeH2HPicker = closeH2HPicker;
 window.swapH2HPlayers = swapH2HPlayers;
 window.setH2HFilter = setH2HFilter;
+
+// Browser Back / Forward navigation support
+window.addEventListener("hashchange", () => {
+  restoreNavState();
+  switchTab(state.activeTab, false);
+});
