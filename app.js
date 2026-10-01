@@ -1965,8 +1965,15 @@ function renderPlayers() {
   }).join("");
 
   // Get Player Standings & Stats
-  const lb = (state.data && state.data.leaderboard) ? state.data.leaderboard : [];
-  const playerRankObj = lb.find(p => p.name === state.selectedPlayer) || { rank: "-", points: 0 };
+  const seasonLb = getSeasonLeaderboard();
+  const playerRankObj = seasonLb.find(p => p.name === state.selectedPlayer) || { numericRank: 0, rankDisplay: "-", points: 0 };
+
+  let rankBadgeClass = "";
+  if (playerRankObj.numericRank === 1) rankBadgeClass = "top1";
+  else if (playerRankObj.numericRank === 2) rankBadgeClass = "top2";
+  else if (playerRankObj.numericRank === 3) rankBadgeClass = "top3";
+
+  const rankText = playerRankObj.rankDisplay ? (String(playerRankObj.rankDisplay).startsWith("T-") ? `T-#${String(playerRankObj.rankDisplay).slice(2)}` : `#${playerRankObj.rankDisplay}`) : "#-";
 
   const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
   const games = weekData && weekData.games ? weekData.games : [];
@@ -1990,42 +1997,73 @@ function renderPlayers() {
   const pColor = PLAYER_COLORS[state.selectedPlayer] || "var(--accent-blue)";
   const seasonRec = getPlayerSeasonRecord(state.selectedPlayer);
   const isMyProfile = Boolean(state.myPlayer && state.myPlayer === state.selectedPlayer);
+  const pickPct = games.length > 0 ? Math.round((correctCount / games.length) * 100) : 0;
 
   // Render Player Hero
+  heroContainer.className = `player-hero-card ${isMyProfile ? "is-my-profile" : ""}`;
   heroContainer.innerHTML = `
     <div class="player-hero-header">
-      <div style="display:flex; align-items:center; gap:12px; min-width:0;">
-        ${getPlayerAvatarHtml(state.selectedPlayer, 48)}
-        <div style="min-width:0;">
-          <div class="player-hero-title">${state.selectedPlayer}</div>
-          <div class="player-hero-sub" style="font-size:0.78rem; color:var(--accent-cyan); font-weight:700; margin-top:2px;">
-            Season Record: <span style="color:#fff; font-weight:900;">${seasonRec.wins}-${seasonRec.losses} W-L</span> <span style="color:var(--text-muted); font-size:0.72rem;">(${seasonRec.pct}%)</span>
+      <div class="player-hero-identity">
+        <div class="player-hero-avatar-wrap">
+          ${getPlayerAvatarHtml(state.selectedPlayer, 52)}
+        </div>
+        <div class="player-hero-info">
+          <div class="player-hero-title">
+            <span>${state.selectedPlayer}</span>
+            ${isMyProfile ? '<span class="leader-you-pill">YOU</span>' : ""}
+          </div>
+          <div class="player-hero-sub">
+            <span class="hero-record-badge">${seasonRec.wins}-${seasonRec.losses} W-L</span>
+            <span class="hero-record-pct">(${seasonRec.pct}%)</span>
           </div>
         </div>
       </div>
-      <div class="player-hero-header-actions">
-        <div class="player-hero-rank">Rank #${playerRankObj.rank}</div>
-        <button type="button" class="btn-hero-compare" onclick="startH2HComparison('${state.selectedPlayer}')" title="Compare against another player in Head-to-Head">
-          ⚔️ Compare
-        </button>
-        <button class="btn-hero-profile ${isMyProfile ? "is-active" : ""}" onclick="toggleMyProfile('${state.selectedPlayer}')" title="${isMyProfile ? 'You are remembered as this player' : 'Remember me as this player'}">
-          ${isMyProfile ? `⭐ Active Profile` : `☆ Set as Me`}
-        </button>
+      <div class="player-hero-rank-badge ${rankBadgeClass}">
+        <span class="rank-badge-prefix">RANK</span>
+        <span class="rank-badge-value">${rankText}</span>
       </div>
     </div>
 
+    <div class="player-hero-actions-bar">
+      <button type="button" class="btn-hero-action btn-hero-compare" onclick="startH2HComparison('${state.selectedPlayer}')" title="Compare against another player in Head-to-Head">
+        <span class="action-btn-icon">⚔️</span>
+        <span>Compare Rival</span>
+      </button>
+      <button type="button" class="btn-hero-action btn-hero-profile ${isMyProfile ? "is-active" : ""}" onclick="toggleMyProfile('${state.selectedPlayer}')" title="${isMyProfile ? 'You are remembered as this player' : 'Remember me as this player'}">
+        <span class="action-btn-icon">${isMyProfile ? "★" : "☆"}</span>
+        <span>${isMyProfile ? "Active Profile" : "Set as Me"}</span>
+      </button>
+    </div>
+
     <div class="player-stats-row">
-      <div class="pstat-box">
-        <div class="pstat-val" style="color:var(--accent-gold);">${playerRankObj.points}</div>
-        <div class="pstat-lbl">Season Pts</div>
+      <!-- 1: Season Total Points -->
+      <div class="pstat-tile tile-season">
+        <div class="pstat-header-label">SEASON TOTAL</div>
+        <div class="pstat-value val-gold">
+          <span class="pstat-num">${playerRankObj.points}</span>
+          <span class="pstat-unit">PTS</span>
+        </div>
+        <div class="pstat-footer-pill pill-gold">League ${rankText}</div>
       </div>
-      <div class="pstat-box">
-        <div class="pstat-val">+${weekPts}</div>
-        <div class="pstat-lbl">${weekKey} Pts</div>
+
+      <!-- 2: Current Week Points -->
+      <div class="pstat-tile tile-week">
+        <div class="pstat-header-label">${weekKey.toUpperCase()} PTS</div>
+        <div class="pstat-value val-green">
+          <span class="pstat-num">${weekPts > 0 ? `+${weekPts}` : weekPts}</span>
+          <span class="pstat-unit">PTS</span>
+        </div>
+        <div class="pstat-footer-pill pill-green">${multiplierGame ? "⚡ 2X Active" : "Current Form"}</div>
       </div>
-      <div class="pstat-box">
-        <div class="pstat-val" style="color:var(--accent-blue);">${correctCount} / ${games.length}</div>
-        <div class="pstat-lbl">Correct Picks</div>
+
+      <!-- 3: Correct Picks & Hit Rate -->
+      <div class="pstat-tile tile-picks">
+        <div class="pstat-header-label">PICKS HIT</div>
+        <div class="pstat-value val-blue">
+          <span class="pstat-num">${correctCount}</span>
+          <span class="pstat-unit">/ ${games.length}</span>
+        </div>
+        <div class="pstat-footer-pill pill-blue">${pickPct}% Accuracy</div>
       </div>
     </div>
   `;

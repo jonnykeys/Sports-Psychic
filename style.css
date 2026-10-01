@@ -1775,104 +1775,378 @@ body {
   box-shadow: 0 0 12px var(--accent-blue-glow);
 }
 
+/* =========================================================
+   TAB 3: PLAYER HERO PROFILE & METRICS
+   ========================================================= */
 .player-hero-card {
-  background: linear-gradient(135deg, #182337 0%, #1f2e47 100%);
-  border: 1px solid var(--border-light);
-  border-radius: var(--border-radius);
-  padding: 16px;
+  background: 
+    radial-gradient(ellipse 60% 40% at 20% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 70%),
+    linear-gradient(135deg, rgba(22, 36, 74, 0.92) 0%, rgba(11, 18, 38, 0.98) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 16px;
+  padding: 16px 14px 14px 14px;
   margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.player-hero-card.is-my-profile {
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), 0 10px 28px -4px rgba(0, 0, 0, 0.5);
 }
 
 .player-hero-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
+}
+
+.player-hero-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.player-hero-avatar-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-hero-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .player-hero-title {
   font-size: 1.35rem;
   font-weight: 900;
-  color: #fff;
+  color: #ffffff;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.player-hero-rank {
-  background: var(--accent-gold);
-  color: #000;
-  font-weight: 900;
-  padding: 4px 10px;
+.player-hero-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.hero-record-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.hero-record-pct {
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+/* ATHLETIC RANK EMBLEM */
+.player-hero-rank-badge {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
   border-radius: 12px;
-  font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  min-width: 60px;
+  text-align: center;
+}
+
+.player-hero-rank-badge .rank-badge-prefix {
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--text-muted);
   line-height: 1;
 }
 
-.player-hero-header-actions {
+.player-hero-rank-badge .rank-badge-value {
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #ffffff;
+  margin-top: 1px;
+}
+
+.player-hero-rank-badge.top1 {
+  background: linear-gradient(135deg, #ffd700 0%, #b45309 100%);
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 16px rgba(245, 184, 0, 0.35);
+}
+
+.player-hero-rank-badge.top1 .rank-badge-prefix {
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.player-hero-rank-badge.top1 .rank-badge-value {
+  color: #110c02;
+}
+
+.player-hero-rank-badge.top2 {
+  background: linear-gradient(135deg, #f8fafc 0%, #64748b 100%);
+  border-color: rgba(203, 213, 225, 0.6);
+  box-shadow: 0 0 12px rgba(203, 213, 225, 0.2);
+}
+
+.player-hero-rank-badge.top2 .rank-badge-prefix {
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.player-hero-rank-badge.top2 .rank-badge-value {
+  color: #0f172a;
+}
+
+.player-hero-rank-badge.top3 {
+  background: linear-gradient(135deg, #fed7aa 0%, #b45309 100%);
+  border-color: rgba(205, 127, 50, 0.6);
+  box-shadow: 0 0 12px rgba(205, 127, 50, 0.2);
+}
+
+.player-hero-rank-badge.top3 .rank-badge-prefix {
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.player-hero-rank-badge.top3 .rank-badge-value {
+  color: #2b1104;
+}
+
+/* HORIZONTAL ACTION TOOLBAR */
+.player-hero-actions-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.btn-hero-action {
+  background: rgba(17, 29, 61, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
-  flex-shrink: 0;
+  user-select: none;
+  line-height: 1.2;
+}
+
+.btn-hero-action:hover {
+  transform: translateY(-2px);
+}
+
+.btn-hero-action:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-hero-compare {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: var(--accent-cyan);
+}
+
+.btn-hero-compare:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: var(--accent-cyan);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
 }
 
 .btn-hero-profile {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
   color: var(--text-muted);
-  padding: 4px 10px;
-  border-radius: 14px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  line-height: 1;
-  user-select: none;
 }
 
 .btn-hero-profile:hover {
   border-color: var(--accent-gold);
-  color: #fff;
+  color: #ffffff;
 }
 
 .btn-hero-profile.is-active {
   background: rgba(245, 184, 0, 0.14);
   border-color: rgba(245, 184, 0, 0.6);
   color: var(--accent-gold);
-  box-shadow: 0 0 8px rgba(245, 184, 0, 0.25);
+  box-shadow: 0 0 12px rgba(245, 184, 0, 0.25);
 }
 
 .player-filter-pill.is-my-profile {
   border-color: rgba(56, 189, 248, 0.45);
 }
 
+/* MODERN STAT METRIC TILES */
 .player-stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+}
+
+.pstat-tile {
+  border-radius: 12px;
+  padding: 10px 4px 8px 4px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 84px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease;
 }
 
-.pstat-box {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 8px 6px;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.pstat-tile:hover {
+  transform: translateY(-2px);
 }
 
-.pstat-val {
-  font-size: 1.15rem;
-  font-weight: 900;
-  color: var(--accent-green);
+.pstat-tile.tile-season {
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(245, 184, 0, 0.14) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(22, 34, 66, 0.85) 0%, rgba(12, 19, 39, 0.95) 100%);
+  border: 1px solid rgba(245, 184, 0, 0.22);
+  border-top: 2.5px solid #ffd700;
 }
 
-.pstat-lbl {
-  font-size: 0.68rem;
-  font-weight: 700;
+.pstat-tile.tile-week {
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.14) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(22, 34, 66, 0.85) 0%, rgba(12, 19, 39, 0.95) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-top: 2.5px solid #10b981;
+}
+
+.pstat-tile.tile-picks {
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.14) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(22, 34, 66, 0.85) 0%, rgba(12, 19, 39, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-top: 2.5px solid #38bdf8;
+}
+
+.pstat-header-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
   color: var(--text-muted);
   text-transform: uppercase;
+}
+
+.pstat-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  margin: 2px 0;
+}
+
+.pstat-value .pstat-num {
+  font-size: 1.32rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.pstat-value .pstat-unit {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.pstat-value.val-gold .pstat-num {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(245, 184, 0, 0.35);
+}
+
+.pstat-value.val-green .pstat-num {
+  color: #10b981;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+}
+
+.pstat-value.val-blue .pstat-num {
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.pstat-footer-pill {
+  font-size: 0.62rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  max-width: 96%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pill-gold {
+  color: #ffd700;
+  background: rgba(245, 184, 0, 0.1);
+  border: 1px solid rgba(245, 184, 0, 0.2);
+}
+
+.pill-green {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.pill-blue {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+@media (max-width: 360px) {
+  .player-stats-row {
+    gap: 5px;
+  }
+  .pstat-tile {
+    padding: 8px 3px 6px 3px;
+  }
+  .pstat-value .pstat-num {
+    font-size: 1.15rem;
+  }
+  .pstat-header-label {
+    font-size: 0.56rem;
+  }
+  .pstat-footer-pill {
+    font-size: 0.56rem;
+    padding: 1px 4px;
+  }
 }
 
 .player-picks-table {
@@ -2276,28 +2550,6 @@ body {
   gap: 4px;
 }
 
-.btn-hero-compare {
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  color: var(--accent-cyan);
-  padding: 4px 10px;
-  border-radius: 14px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  line-height: 1;
-  user-select: none;
-}
-
-.btn-hero-compare:hover {
-  background: rgba(56, 189, 248, 0.22);
-  color: #fff;
-  border-color: var(--accent-cyan);
-}
 
 /* Modal Picker for Selecting Players */
 .h2h-picker-modal {
