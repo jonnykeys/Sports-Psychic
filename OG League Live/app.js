@@ -2435,7 +2435,7 @@ function renderH2H() {
             <span class="h2h-fighter-pts-lbl">PTS</span>
           </div>
           <div class="h2h-fighter-rec-capsule">Rank ${rankA} • ${recTextA}</div>
-          <div class="h2h-fighter-week-gain">+${weekPtsA} in ${weekKey}</div>
+          <div class="h2h-fighter-week-gain">+${weekPtsA} pts in ${weekKey}</div>
         </div>
 
         <!-- Center Clash & Net Differentials -->
@@ -2463,7 +2463,7 @@ function renderH2H() {
             <span class="h2h-fighter-pts-lbl">PTS</span>
           </div>
           <div class="h2h-fighter-rec-capsule">Rank ${rankB} • ${recTextB}</div>
-          <div class="h2h-fighter-week-gain">+${weekPtsB} in ${weekKey}</div>
+          <div class="h2h-fighter-week-gain">+${weekPtsB} pts in ${weekKey}</div>
         </div>
       </div>
     </div>
