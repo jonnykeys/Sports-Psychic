@@ -786,6 +786,37 @@ function setupRefresh() {
 // AUTOMATED LIVE NFL SCORES (ESPN SCOREBOARD ENGINE)
 // =========================================================
 /**
+ * Formats ESPN event date and kickoff time in a clean, user-friendly format (e.g. "Thu 10/1 • 7:15 PM").
+ * Prioritizes ESPN's official ISO timestamp converted to local time, with fallback to ESPN's shortDetail.
+ */
+function formatEspnGameTime(event) {
+  if (!event) return "";
+  if (event.date) {
+    try {
+      const d = new Date(event.date);
+      if (!isNaN(d.getTime())) {
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const day = days[d.getDay()];
+        const month = d.getMonth() + 1;
+        const date = d.getDate();
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, "0");
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12;
+        return `${day} ${month}/${date} • ${hours}:${minutes} ${ampm}`;
+      }
+    } catch (e) {}
+  }
+  if (event.status?.type?.detail) {
+    return event.status.type.detail;
+  }
+  if (event.status?.type?.shortDetail) {
+    return event.status.type.shortDetail.replace(" - ", " • ");
+  }
+  return "";
+}
+
+/**
  * Automatically fetches real-time scores, clocks, and final outcomes directly from ESPN.
  * Dynamic matchup mapping: handles bye weeks dynamically (varying games per week) and
  * reconciles team acronym differences (WSH/WAS, AZ/ARI, LAR/LA, JAX/JAC).
@@ -851,6 +882,12 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       const stateCode = (statusType.state || "").toLowerCase(); // "pre" | "in" | "post"
       const shortDetail = statusType.shortDetail || "";
 
+      // Prioritize ESPN official kickoff date & time for real-time accuracy
+      const espnFormattedTime = formatEspnGameTime(matchedEvent);
+      if (espnFormattedTime) {
+        game.dateTime = espnFormattedTime;
+      }
+
       // Parse score integers (or null if pre-game)
       const parsedAway = (awayComp.score !== undefined && awayComp.score !== null && awayComp.score !== "")
         ? parseInt(awayComp.score, 10)
@@ -859,13 +896,11 @@ async function syncLiveNFLScores(weekNum, silent = false) {
         ? parseInt(homeComp.score, 10)
         : null;
 
-      // Status detail formatting (e.g. "Q3 4:12", "Halftime", "Final", "Final/OT")
-      game.statusDetail = shortDetail;
-
       if (stateCode === "post" || statusType.completed === true) {
         // Game is completed / FINAL
         game.isFinal = true;
         game.isLive = false;
+        game.statusDetail = shortDetail || "Final";
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
 
@@ -882,15 +917,14 @@ async function syncLiveNFLScores(weekNum, silent = false) {
         // Game is actively IN PROGRESS / LIVE
         game.isFinal = false;
         game.isLive = true;
+        game.statusDetail = shortDetail || "Live";
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
       } else {
         // Game is PRE / UPCOMING
+        game.statusDetail = "Scheduled";
         if (!game.isFinal) {
           game.isLive = false;
-          if (shortDetail && !game.dateTime) {
-            game.dateTime = shortDetail;
-          }
         }
       }
 
@@ -1486,16 +1520,15 @@ function renderMatchups() {
     let badgeClass = "scheduled";
 
     if (isFinal) {
-      badgeText = game.statusDetail || "FINAL";
+      badgeText = (game.statusDetail && game.statusDetail.toUpperCase().includes("FINAL"))
+        ? game.statusDetail.toUpperCase()
+        : "FINAL";
       badgeClass = "final";
     } else if (isLive) {
       badgeText = `<span class="live-pulse-dot"></span> ${game.statusDetail || "LIVE"}`;
       badgeClass = "live";
-    } else if (game.statusDetail && !game.statusDetail.includes("Final")) {
-      badgeText = game.statusDetail;
-      badgeClass = "scheduled";
-    } else if (game.dateTime) {
-      badgeText = game.dateTime;
+    } else {
+      badgeText = "SCHEDULED";
       badgeClass = "scheduled";
     }
 
@@ -1999,7 +2032,7 @@ function renderPlayers() {
             <tr>
               <td>
                 <div style="font-weight:800; color:#fff;">${g.matchup}</div>
-                <div style="font-size:0.68rem; color:var(--text-dim);">${g.statusDetail && !g.statusDetail.includes("Final") ? g.statusDetail : (g.dateTime || "")}</div>
+                <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime || ""}</div>
               </td>
               <td>
                 <div style="display:flex; align-items:center; gap:6px;">
@@ -2469,7 +2502,7 @@ function renderH2H() {
       } else {
         centerScoreHtml = `
           <span style="font-size:0.85rem; font-weight:800; color:var(--text-dim);">@</span>
-          <span style="font-size:0.62rem; color:var(--text-muted); font-weight:700;">${game.statusDetail && !game.statusDetail.includes("Final") ? game.statusDetail : (game.dateTime || "Upcoming")}</span>
+          <span style="font-size:0.62rem; color:var(--text-muted); font-weight:700;">${game.dateTime || "Upcoming"}</span>
         `;
       }
 
