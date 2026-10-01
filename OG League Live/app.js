@@ -465,12 +465,14 @@ function getPlayerSeasonRecord(playerName) {
 
   const total = wins + losses;
   const pct = total > 0 ? ((wins / total) * 100).toFixed(1) : "0.0";
+  const label = `${wins}-${losses} W-L`;
   return {
     wins,
     losses,
     total,
     pct,
-    label: `${wins}-${losses} W-L`
+    label,
+    text: label
   };
 }
 
@@ -508,12 +510,14 @@ function getPlayerWeekRecord(playerName, weekNum) {
   }
   const total = wins + losses;
   const pct = total > 0 ? ((wins / total) * 100).toFixed(1) : "0.0";
+  const label = `${wins}-${losses} W-L`;
   return {
     wins,
     losses,
     total,
     pct,
-    label: `${wins}-${losses} W-L`
+    label,
+    text: label
   };
 }
 
@@ -2222,8 +2226,13 @@ function renderH2H() {
 
   // Season Stats
   const seasonLb = getSeasonLeaderboard();
-  const statA = seasonLb.find(p => p.name === playerA) || { rankDisplay: "-", points: 0, rec: { text: "0-0" } };
-  const statB = seasonLb.find(p => p.name === playerB) || { rankDisplay: "-", points: 0, rec: { text: "0-0" } };
+  const statA = seasonLb.find(p => p.name === playerA) || { rankDisplay: "-", points: 0, rec: { label: "0-0 W-L", text: "0-0 W-L" } };
+  const statB = seasonLb.find(p => p.name === playerB) || { rankDisplay: "-", points: 0, rec: { label: "0-0 W-L", text: "0-0 W-L" } };
+
+  const recTextA = statA.rec ? (statA.rec.label || statA.rec.text || `${statA.rec.wins ?? 0}-${statA.rec.losses ?? 0} W-L`) : "0-0 W-L";
+  const recTextB = statB.rec ? (statB.rec.label || statB.rec.text || `${statB.rec.wins ?? 0}-${statB.rec.losses ?? 0} W-L`) : "0-0 W-L";
+  const rankA = statA.rankDisplay ? (String(statA.rankDisplay).startsWith("T-") ? `T-#${String(statA.rankDisplay).slice(2)}` : `#${statA.rankDisplay}`) : "#-";
+  const rankB = statB.rankDisplay ? (String(statB.rankDisplay).startsWith("T-") ? `T-#${String(statB.rankDisplay).slice(2)}` : `#${statB.rankDisplay}`) : "#-";
 
   const seasonDiff = (statA.points || 0) - (statB.points || 0);
 
@@ -2320,7 +2329,7 @@ function renderH2H() {
           </div>
           <div class="h2h-fighter-stats">
             <span class="h2h-fighter-pts">${statA.points} <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">PTS</span></span>
-            <span class="h2h-fighter-rec">Rank #${statA.rankDisplay} • ${statA.rec.text}</span>
+            <span class="h2h-fighter-rec">Rank ${rankA} • ${recTextA}</span>
             <span style="font-size:0.75rem; color:var(--accent-green); font-weight:800; margin-top:2px;">+${weekPtsA} in ${weekKey}</span>
           </div>
         </div>
@@ -2351,7 +2360,7 @@ function renderH2H() {
           </div>
           <div class="h2h-fighter-stats">
             <span class="h2h-fighter-pts">${statB.points} <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">PTS</span></span>
-            <span class="h2h-fighter-rec">Rank #${statB.rankDisplay} • ${statB.rec.text}</span>
+            <span class="h2h-fighter-rec">Rank ${rankB} • ${recTextB}</span>
             <span style="font-size:0.75rem; color:var(--accent-green); font-weight:800; margin-top:2px;">+${weekPtsB} in ${weekKey}</span>
           </div>
         </div>
