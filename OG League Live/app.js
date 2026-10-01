@@ -198,6 +198,42 @@ function getTeamContrastColor(hexColor) {
   return (yiq >= 140) ? '#0a0e17' : '#ffffff';
 }
 
+// Robust Team Code Aliases Dictionary
+// Normalizes team abbreviations across different data sources (ESPN vs Sheets vs Project)
+// E.g., WAS -> WSH, ARI -> AZ, LA -> LAR, JAC -> JAX, etc.
+const TEAM_ALIASES = {
+  // Arizona Cardinals
+  ARI: "AZ",
+  AZ: "AZ",
+  // Washington Commanders / Football Team / Redskins
+  WAS: "WSH",
+  WSH: "WSH",
+  // Jacksonville Jaguars
+  JAC: "JAX",
+  JAX: "JAX",
+  // Los Angeles Rams
+  LA: "LAR",
+  LAR: "LAR",
+  RAMS: "LAR",
+  // Los Angeles Chargers
+  SD: "LAC",
+  LAC: "LAC",
+  CHARGERS: "LAC",
+  // Las Vegas Raiders
+  OAK: "LV",
+  LV: "LV",
+  RAIDERS: "LV"
+};
+
+/**
+ * Returns canonical team abbreviation (matching NFL_TEAMS keys).
+ */
+function normalizeTeamCode(code) {
+  if (!code) return "";
+  const cleaned = String(code).trim().toUpperCase();
+  return TEAM_ALIASES[cleaned] || cleaned;
+}
+
 // =========================================================
 // APPLICATION STATE
 // =========================================================
@@ -264,10 +300,19 @@ function calculateGamePicksPoints(game) {
     game.winner = winner;
   }
 
-  const isValidWinner = (winner === awayTeam || winner === homeTeam || winner === "TIE");
+  const isValidWinner = (
+    winner === awayTeam || winner === homeTeam || winner === "TIE" ||
+    normalizeTeamCode(winner) === normalizeTeamCode(awayTeam) ||
+    normalizeTeamCode(winner) === normalizeTeamCode(homeTeam)
+  );
 
-  // If both scores and valid winner are present, mark as final
-  if (awayScore !== null && homeScore !== null && isValidWinner) {
+  // If game is actively live (in progress), it is NOT final yet
+  if (game.isLive) {
+    game.isFinal = false;
+  } else if (game.isFinal) {
+    // Retain explicitly finalized state
+    game.isFinal = true;
+  } else if (awayScore !== null && homeScore !== null && isValidWinner) {
     game.isFinal = true;
   } else {
     game.isFinal = false;
@@ -291,13 +336,16 @@ function calculateGamePicksPoints(game) {
     return;
   }
 
+  const normWinner = normalizeTeamCode(winner);
+
   // 1. Identify all players who picked the winning team and compute error diff
   const winningPickers = [];
   PLAYERS.forEach(pName => {
     const pk = game.picks[pName];
     if (!pk || !pk.winner) return;
 
-    if (pk.winner.toUpperCase().trim() === winner) {
+    const pkWinnerNorm = normalizeTeamCode(pk.winner);
+    if (pk.winner.toUpperCase().trim() === winner || pkWinnerNorm === normWinner) {
       const pAway = (pk.awayScore !== null && pk.awayScore !== "" && !isNaN(pk.awayScore)) ? Number(pk.awayScore) : null;
       const pHome = (pk.homeScore !== null && pk.homeScore !== "" && !isNaN(pk.homeScore)) ? Number(pk.homeScore) : null;
 
@@ -334,7 +382,8 @@ function calculateGamePicksPoints(game) {
     const pk = game.picks[pName];
     if (!pk || !pk.winner) return;
 
-    if (pk.winner.toUpperCase().trim() === winner) {
+    const pkWinnerNorm = normalizeTeamCode(pk.winner);
+    if (pk.winner.toUpperCase().trim() === winner || pkWinnerNorm === normWinner) {
       const mult = pk.multiplier ? 3 : 1;
       const basePoints = 10 * mult;
       let bonusPoints = 0;
@@ -394,11 +443,15 @@ function getPlayerSeasonRecord(playerName) {
         const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
         if (parts.length !== 2) return;
         const winner = game.winner.toUpperCase().trim();
-        if (winner !== parts[0] && winner !== parts[1] && winner !== "TIE") return;
+        const normWinner = normalizeTeamCode(winner);
+        const normAway = normalizeTeamCode(parts[0]);
+        const normHome = normalizeTeamCode(parts[1]);
+        if (normWinner !== normAway && normWinner !== normHome && normWinner !== "TIE") return;
 
         const pick = game.picks ? game.picks[playerName] : null;
         if (pick && pick.winner) {
-          if (pick.winner.toUpperCase().trim() === winner) {
+          const normPick = normalizeTeamCode(pick.winner);
+          if (pick.winner.toUpperCase().trim() === winner || normPick === normWinner) {
             wins++;
           } else {
             losses++;
@@ -435,11 +488,15 @@ function getPlayerWeekRecord(playerName, weekNum) {
       const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
       if (parts.length !== 2) return;
       const winner = game.winner.toUpperCase().trim();
-      if (winner !== parts[0] && winner !== parts[1] && winner !== "TIE") return;
+      const normWinner = normalizeTeamCode(winner);
+      const normAway = normalizeTeamCode(parts[0]);
+      const normHome = normalizeTeamCode(parts[1]);
+      if (normWinner !== normAway && normWinner !== normHome && normWinner !== "TIE") return;
 
       const pick = game.picks ? game.picks[playerName] : null;
       if (pick && pick.winner) {
-        if (pick.winner.toUpperCase().trim() === winner) {
+        const normPick = normalizeTeamCode(pick.winner);
+        if (pick.winner.toUpperCase().trim() === winner || normPick === normWinner) {
           wins++;
         } else {
           losses++;
@@ -467,6 +524,7 @@ function getNFLTeamRecord(teamCode, targetWeek = null) {
   let wins = 0;
   let losses = 0;
   let ties = 0;
+  const normTarget = normalizeTeamCode(teamCode);
 
   if (state.data && state.data.weeks) {
     const maxWeek = (targetWeek !== null) ? Math.max(0, targetWeek - 1) : 18;
@@ -480,22 +538,23 @@ function getNFLTeamRecord(teamCode, targetWeek = null) {
         if (!g || !g.matchup || !g.isFinal) continue;
         const parts = g.matchup.split("@").map(s => s.trim());
         if (parts.length !== 2) continue;
-        const away = parts[0];
-        const home = parts[1];
+        const away = normalizeTeamCode(parts[0]);
+        const home = normalizeTeamCode(parts[1]);
 
-        if (away !== teamCode && home !== teamCode) continue;
+        if (away !== normTarget && home !== normTarget) continue;
 
-        if (g.winner === teamCode) {
+        const normWinner = normalizeTeamCode(g.winner);
+        if (normWinner === normTarget) {
           wins++;
-        } else if (g.winner === "TIE" || (g.awayScore !== null && g.awayScore === g.homeScore)) {
+        } else if (normWinner === "TIE" || (g.awayScore !== null && g.awayScore === g.homeScore)) {
           ties++;
-        } else if (g.winner) {
+        } else if (normWinner) {
           losses++;
         } else if (g.awayScore !== null && g.homeScore !== null) {
-          if (away === teamCode) {
+          if (away === normTarget) {
             if (g.awayScore > g.homeScore) wins++;
             else losses++;
-          } else if (home === teamCode) {
+          } else if (home === normTarget) {
             if (g.homeScore > g.awayScore) wins++;
             else losses++;
           }
@@ -522,12 +581,12 @@ document.addEventListener("DOMContentLoaded", () => {
   syncWeek(state.currentWeek);
   syncNFLStandings();
 
-  // Auto-sync every 90 seconds
+  // Auto-sync every 60 seconds (snappy live NFL score updates)
   setInterval(() => {
     if (!document.hidden && !state.isSyncing) {
       syncWeek(state.currentWeek, true);
     }
-  }, 90000);
+  }, 60000);
 });
 
 function sanitizeData(dataObj) {
@@ -542,11 +601,18 @@ function sanitizeData(dataObj) {
       w.games.forEach(g => {
         const parts = g.matchup.split("@").map(s => s.trim().toUpperCase());
         const winner = (g.winner || "").toUpperCase().trim();
-        const isValidWinner = parts.length === 2 && (winner === parts[0] || winner === parts[1] || winner === "TIE");
+        const normWinner = normalizeTeamCode(winner);
+        const normAway = normalizeTeamCode(parts[0]);
+        const normHome = normalizeTeamCode(parts[1]);
+        const isValidWinner = parts.length === 2 && (
+          normWinner === normAway || normWinner === normHome || normWinner === "TIE"
+        );
         const hasScores = (g.awayScore !== null && g.awayScore !== "" && !isNaN(g.awayScore) &&
                            g.homeScore !== null && g.homeScore !== "" && !isNaN(g.homeScore));
 
-        if (!isValidWinner || !hasScores) {
+        if (g.isLive) {
+          g.isFinal = false;
+        } else if (!isValidWinner || !hasScores) {
           g.isFinal = false;
           if (!hasScores) {
             g.awayScore = null;
@@ -566,9 +632,10 @@ function initData() {
   // Purge legacy un-sanitized cache
   try {
     localStorage.removeItem("og_league_cache");
+    localStorage.removeItem("og_league_cache_v6");
   } catch (e) {}
 
-  const cached = localStorage.getItem("og_league_cache_v7");
+  const cached = localStorage.getItem("og_league_cache_v8") || localStorage.getItem("og_league_cache_v7");
   if (cached) {
     try {
       state.data = JSON.parse(cached);
@@ -586,7 +653,7 @@ function initData() {
     sanitizeData(state.data);
     recalculateAllWeeksPoints(state.data);
     try {
-      localStorage.setItem("og_league_cache_v7", JSON.stringify(state.data));
+      localStorage.setItem("og_league_cache_v8", JSON.stringify(state.data));
     } catch (e) {}
   }
 
@@ -716,6 +783,134 @@ function setupRefresh() {
 }
 
 // =========================================================
+// AUTOMATED LIVE NFL SCORES (ESPN SCOREBOARD ENGINE)
+// =========================================================
+/**
+ * Automatically fetches real-time scores, clocks, and final outcomes directly from ESPN.
+ * Dynamic matchup mapping: handles bye weeks dynamically (varying games per week) and
+ * reconciles team acronym differences (WSH/WAS, AZ/ARI, LAR/LA, JAX/JAC).
+ */
+async function syncLiveNFLScores(weekNum, silent = false) {
+  if (!weekNum || weekNum < 1 || weekNum > 18) return;
+  const weekKey = `Week ${weekNum}`;
+  if (!state.data || !state.data.weeks || !state.data.weeks[weekKey]) return;
+
+  const weekData = state.data.weeks[weekKey];
+  if (!weekData.games || !Array.isArray(weekData.games) || weekData.games.length === 0) return;
+
+  const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=${weekNum}`;
+
+  try {
+    const res = await fetch(espnUrl);
+    if (!res.ok) throw new Error(`ESPN API HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data || !data.events || !Array.isArray(data.events)) return;
+
+    let updatedCount = 0;
+
+    // Dynamically iterate over this week's games (adapts automatically to bye weeks)
+    weekData.games.forEach(game => {
+      if (!game || !game.matchup || !game.matchup.includes("@")) return;
+
+      const rawParts = game.matchup.split("@").map(s => s.trim());
+      if (rawParts.length !== 2) return;
+      const gameAwayRaw = rawParts[0];
+      const gameHomeRaw = rawParts[1];
+
+      const awayNorm = normalizeTeamCode(gameAwayRaw);
+      const homeNorm = normalizeTeamCode(gameHomeRaw);
+
+      // Search ESPN events for matching matchup (checking both direct and flipped neutral sites)
+      const matchedEvent = data.events.find(ev => {
+        if (!ev.competitions || !ev.competitions[0] || !ev.competitions[0].competitors) return false;
+        const comps = ev.competitions[0].competitors;
+        const evAway = comps.find(c => c.homeAway === "away");
+        const evHome = comps.find(c => c.homeAway === "home");
+        if (!evAway || !evHome) return false;
+
+        const aCode = normalizeTeamCode(evAway.team?.abbreviation);
+        const hCode = normalizeTeamCode(evHome.team?.abbreviation);
+
+        return (awayNorm === aCode && homeNorm === hCode) ||
+               (awayNorm === hCode && homeNorm === aCode);
+      });
+
+      if (!matchedEvent) return;
+
+      const comp = matchedEvent.competitions[0];
+      const evAway = comp.competitors.find(c => c.homeAway === "away");
+      const evHome = comp.competitors.find(c => c.homeAway === "home");
+      if (!evAway || !evHome) return;
+
+      const aCode = normalizeTeamCode(evAway.team?.abbreviation);
+      const awayComp = (aCode === awayNorm) ? evAway : evHome;
+      const homeComp = (aCode === awayNorm) ? evHome : evAway;
+
+      const status = matchedEvent.status || {};
+      const statusType = status.type || {};
+      const stateCode = (statusType.state || "").toLowerCase(); // "pre" | "in" | "post"
+      const shortDetail = statusType.shortDetail || "";
+
+      // Parse score integers (or null if pre-game)
+      const parsedAway = (awayComp.score !== undefined && awayComp.score !== null && awayComp.score !== "")
+        ? parseInt(awayComp.score, 10)
+        : null;
+      const parsedHome = (homeComp.score !== undefined && homeComp.score !== null && homeComp.score !== "")
+        ? parseInt(homeComp.score, 10)
+        : null;
+
+      // Status detail formatting (e.g. "Q3 4:12", "Halftime", "Final", "Final/OT")
+      game.statusDetail = shortDetail;
+
+      if (stateCode === "post" || statusType.completed === true) {
+        // Game is completed / FINAL
+        game.isFinal = true;
+        game.isLive = false;
+        game.awayScore = parsedAway;
+        game.homeScore = parsedHome;
+
+        if (awayComp.winner === true) {
+          game.winner = gameAwayRaw;
+        } else if (homeComp.winner === true) {
+          game.winner = gameHomeRaw;
+        } else if (parsedAway !== null && parsedHome !== null) {
+          if (parsedAway > parsedHome) game.winner = gameAwayRaw;
+          else if (parsedHome > parsedAway) game.winner = gameHomeRaw;
+          else game.winner = "TIE";
+        }
+      } else if (stateCode === "in") {
+        // Game is actively IN PROGRESS / LIVE
+        game.isFinal = false;
+        game.isLive = true;
+        game.awayScore = parsedAway;
+        game.homeScore = parsedHome;
+      } else {
+        // Game is PRE / UPCOMING
+        if (!game.isFinal) {
+          game.isLive = false;
+          if (shortDetail && !game.dateTime) {
+            game.dateTime = shortDetail;
+          }
+        }
+      }
+
+      // Calculate pick points, closest bonuses, and exact scores for this game
+      calculateGamePicksPoints(game);
+      updatedCount++;
+    });
+
+    if (updatedCount > 0) {
+      recalculateAllWeeksPoints(state.data);
+      try {
+        localStorage.setItem("og_league_cache_v8", JSON.stringify(state.data));
+      } catch (e) {}
+    }
+  } catch (err) {
+    console.warn("ESPN Scoreboard sync warning (using cached/sheet data):", err);
+  }
+}
+
+// =========================================================
 // GOOGLE SHEETS LIVE DATA SYNC
 // =========================================================
 async function syncWeek(weekNum, silent = false, forceNotice = false) {
@@ -740,12 +935,15 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     
     parseWeekCSV(weekNum, csvText);
 
+    // Sync real-time live NFL scores from ESPN scoreboard
+    await syncLiveNFLScores(weekNum, silent);
+
     state.lastUpdated = new Date();
     if (syncLabel) syncLabel.textContent = "Live";
     
     // Save state cache
     try {
-      localStorage.setItem("og_league_cache_v7", JSON.stringify(state.data));
+      localStorage.setItem("og_league_cache_v8", JSON.stringify(state.data));
     } catch (e) {}
 
     renderTabContent();
@@ -755,6 +953,12 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     }
   } catch (err) {
     console.warn("Live sync error (offline or network restricted):", err);
+    // If sheets failed, attempt ESPN sync directly so live game day updates still function
+    try {
+      await syncLiveNFLScores(weekNum, silent);
+      renderTabContent();
+    } catch (e2) {}
+
     if (syncLabel) syncLabel.textContent = "Offline";
     if (forceNotice) {
       showToast("Using local cached scores");
@@ -1258,15 +1462,16 @@ function renderMatchups() {
   games.forEach(g => calculateGamePicksPoints(g));
 
   const finalsCount = games.filter(g => g.isFinal).length;
-  bannerStat.textContent = `${games.length} Games • ${finalsCount} Final`;
+  const liveCount = games.filter(g => g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)).length;
+  bannerStat.innerHTML = `${games.length} Games • ${finalsCount} Final${liveCount > 0 ? ` • <span style="color:#f87171; font-weight:800;"><span class="live-pulse-dot"></span>${liveCount} Live</span>` : ""}`;
 
   container.innerHTML = games.map((game, idx) => {
     const parts = (game.matchup || "").split("@").map(s => s.trim());
     const awayTeam = parts[0] || "AWAY";
     const homeTeam = parts[1] || "HOME";
 
-    const awayInfo = NFL_TEAMS[awayTeam] || { code: awayTeam, name: awayTeam, city: awayTeam, color: '#2a3b50' };
-    const homeInfo = NFL_TEAMS[homeTeam] || { code: homeTeam, name: homeTeam, city: homeTeam, color: '#2a3b50' };
+    const awayInfo = NFL_TEAMS[awayTeam] || NFL_TEAMS[normalizeTeamCode(awayTeam)] || { code: awayTeam, name: awayTeam, city: awayTeam, color: '#2a3b50' };
+    const homeInfo = NFL_TEAMS[homeTeam] || NFL_TEAMS[normalizeTeamCode(homeTeam)] || { code: homeTeam, name: homeTeam, city: homeTeam, color: '#2a3b50' };
 
     const awayTextColor = getTeamContrastColor(awayInfo.color);
     const homeTextColor = getTeamContrastColor(homeInfo.color);
@@ -1275,11 +1480,29 @@ function renderMatchups() {
     const homeRecord = getNFLTeamRecord(homeTeam, state.currentWeek);
 
     const isFinal = game.isFinal;
-    const badgeText = isFinal ? "FINAL" : (game.awayScore !== null ? "LIVE" : "SCHEDULED");
-    const badgeClass = isFinal ? "final" : (game.awayScore !== null ? "live" : "scheduled");
+    const isLive = Boolean(game.isLive || (!isFinal && game.awayScore !== null && game.homeScore !== null));
 
-    const awayWinning = isFinal && game.winner === awayTeam;
-    const homeWinning = isFinal && game.winner === homeTeam;
+    let badgeText = "SCHEDULED";
+    let badgeClass = "scheduled";
+
+    if (isFinal) {
+      badgeText = game.statusDetail || "FINAL";
+      badgeClass = "final";
+    } else if (isLive) {
+      badgeText = `<span class="live-pulse-dot"></span> ${game.statusDetail || "LIVE"}`;
+      badgeClass = "live";
+    } else if (game.statusDetail && !game.statusDetail.includes("Final")) {
+      badgeText = game.statusDetail;
+      badgeClass = "scheduled";
+    } else if (game.dateTime) {
+      badgeText = game.dateTime;
+      badgeClass = "scheduled";
+    }
+
+    const awayWinning = (isFinal && (game.winner === awayTeam || normalizeTeamCode(game.winner) === normalizeTeamCode(awayTeam))) ||
+                        (isLive && game.awayScore !== null && game.homeScore !== null && game.awayScore > game.homeScore);
+    const homeWinning = (isFinal && (game.winner === homeTeam || normalizeTeamCode(game.winner) === normalizeTeamCode(homeTeam))) ||
+                        (isLive && game.awayScore !== null && game.homeScore !== null && game.homeScore > game.awayScore);
 
     // Group picks by team: Away, Home, and Unpicked
     const awayPicks = [];
@@ -1329,9 +1552,13 @@ function renderMatchups() {
         ptsBadge
       };
 
-      if (pick.winner === awayTeam) {
+      const pickWinNorm = normalizeTeamCode(pick.winner);
+      const awayNorm = normalizeTeamCode(awayTeam);
+      const homeNorm = normalizeTeamCode(homeTeam);
+
+      if (pick.winner === awayTeam || pickWinNorm === awayNorm) {
         awayPicks.push(pData);
-      } else if (pick.winner === homeTeam) {
+      } else if (pick.winner === homeTeam || pickWinNorm === homeNorm) {
         homePicks.push(pData);
       } else {
         unpicked.push({ name: pName, winner: pick.winner });
@@ -1739,6 +1966,7 @@ function renderPlayers() {
           }
 
           const isFinal = g.isFinal;
+          const isLive = Boolean(g.isLive || (!isFinal && g.awayScore !== null && g.homeScore !== null));
           let resText = "Pending";
           let ptsColor = "var(--text-dim)";
 
@@ -1756,19 +1984,22 @@ function renderPlayers() {
               resText = "❌ LOST";
               ptsColor = "#f87171";
             }
+          } else if (isLive) {
+            resText = `<span class="live-pulse-dot"></span> ${g.statusDetail || "LIVE"}`;
+            ptsColor = "#f87171";
           }
 
-          const winTeamInfo = NFL_TEAMS[pk.winner] || { color: '#2a3b50' };
+          const winTeamInfo = NFL_TEAMS[pk.winner] || NFL_TEAMS[normalizeTeamCode(pk.winner)] || { color: '#2a3b50' };
           const winTeamText = getTeamContrastColor(winTeamInfo.color);
 
-          const actualWinnerInfo = NFL_TEAMS[g.winner] || { color: '#2a3b50' };
+          const actualWinnerInfo = NFL_TEAMS[g.winner] || NFL_TEAMS[normalizeTeamCode(g.winner)] || { color: '#2a3b50' };
           const actualWinnerText = getTeamContrastColor(actualWinnerInfo.color);
 
           return `
             <tr>
               <td>
                 <div style="font-weight:800; color:#fff;">${g.matchup}</div>
-                <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime}</div>
+                <div style="font-size:0.68rem; color:var(--text-dim);">${g.statusDetail && !g.statusDetail.includes("Final") ? g.statusDetail : (g.dateTime || "")}</div>
               </td>
               <td>
                 <div style="display:flex; align-items:center; gap:6px;">
@@ -1786,6 +2017,11 @@ function renderPlayers() {
                     <span>Actual:</span>
                     <span class="team-badge-sm" style="background-color: ${actualWinnerInfo.color}; color: ${actualWinnerText}; font-size:0.62rem; padding:1px 5px; border-radius:4px; font-weight:800;">${g.winner}</span>
                     <span style="font-weight:700; color:var(--text-muted);">${g.awayScore}-${g.homeScore}</span>
+                  </div>
+                ` : isLive ? `
+                  <div style="font-size:0.68rem; color:var(--text-dim); margin-top:3px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                    <span style="color:#f87171; font-weight:700;">Live:</span>
+                    <span style="font-weight:700; color:#fff;">${g.awayScore}-${g.homeScore}</span>
                   </div>
                 ` : ""}
               </td>
@@ -1983,8 +2219,8 @@ function renderH2H() {
     weekPtsA += ptsA;
     weekPtsB += ptsB;
 
-    const isSwing = Boolean(pickAWinner && pickBWinner && pickAWinner !== pickBWinner);
-    const isAgreed = Boolean(pickAWinner && pickBWinner && pickAWinner === pickBWinner);
+    const isSwing = Boolean(pickAWinner && pickBWinner && normalizeTeamCode(pickAWinner) !== normalizeTeamCode(pickBWinner));
+    const isAgreed = Boolean(pickAWinner && pickBWinner && normalizeTeamCode(pickAWinner) === normalizeTeamCode(pickBWinner));
 
     if (isSwing) swingGamesCount++;
     if (isAgreed) agreedGamesCount++;
@@ -2175,7 +2411,7 @@ function renderH2H() {
           `;
         }
 
-        const tmInfo = NFL_TEAMS[pk.winner] || { color: '#2a3b50' };
+        const tmInfo = NFL_TEAMS[pk.winner] || NFL_TEAMS[normalizeTeamCode(pk.winner)] || { color: '#2a3b50' };
         const tmText = getTeamContrastColor(tmInfo.color);
         const scoreStr = (pk.awayScore !== null && pk.homeScore !== null) ? `${pk.awayScore}-${pk.homeScore}` : "-";
 
@@ -2218,21 +2454,22 @@ function renderH2H() {
       };
 
       // Middle Actual Score / Game Status
+      const isLive = Boolean(game.isLive || (!isFinal && game.awayScore !== null && game.homeScore !== null));
       let centerScoreHtml = "";
       if (isFinal) {
         centerScoreHtml = `
           <span class="h2h-game-actual-score">${game.awayScore} - ${game.homeScore}</span>
-          <span style="font-size:0.62rem; color:var(--accent-green); font-weight:800; text-transform:uppercase;">FINAL</span>
+          <span style="font-size:0.62rem; color:var(--accent-green); font-weight:800; text-transform:uppercase;">${game.statusDetail || "FINAL"}</span>
         `;
-      } else if (game.awayScore !== null && game.homeScore !== null) {
+      } else if (isLive) {
         centerScoreHtml = `
-          <span class="h2h-game-actual-score">${game.awayScore} - ${game.homeScore}</span>
-          <span style="font-size:0.62rem; color:#f87171; font-weight:800; text-transform:uppercase;">LIVE</span>
+          <span class="h2h-game-actual-score" style="color:#f87171;">${game.awayScore} - ${game.homeScore}</span>
+          <span class="h2h-live-tag"><span class="live-pulse-dot"></span> ${game.statusDetail || "LIVE"}</span>
         `;
       } else {
         centerScoreHtml = `
           <span style="font-size:0.85rem; font-weight:800; color:var(--text-dim);">@</span>
-          <span style="font-size:0.62rem; color:var(--text-muted); font-weight:700;">Upcoming</span>
+          <span style="font-size:0.62rem; color:var(--text-muted); font-weight:700;">${game.statusDetail && !game.statusDetail.includes("Final") ? game.statusDetail : (game.dateTime || "Upcoming")}</span>
         `;
       }
 
@@ -2243,13 +2480,16 @@ function renderH2H() {
         const pkBWinner = pkB ? pkB.winner : "None";
         let swingResult = "";
         if (isFinal) {
-          if (game.winner === pkAWinner) {
+          const normWinner = normalizeTeamCode(game.winner);
+          if (normWinner === normalizeTeamCode(pkAWinner)) {
             swingResult = `<strong style="color:var(--accent-green);">+${pkA ? pkA.points : 0} pts to ${playerA}</strong>`;
-          } else if (game.winner === pkBWinner) {
+          } else if (normWinner === normalizeTeamCode(pkBWinner)) {
             swingResult = `<strong style="color:var(--accent-green);">+${pkB ? pkB.points : 0} pts to ${playerB}</strong>`;
           } else {
             swingResult = `<span style="color:var(--text-dim);">0 pts awarded</span>`;
           }
+        } else if (isLive) {
+          swingResult = `<span style="color:#f87171; font-weight:700;"><span class="live-pulse-dot"></span> Live in progress</span>`;
         } else {
           swingResult = `<span style="color:var(--text-muted);">Points at stake</span>`;
         }
@@ -2266,13 +2506,16 @@ function renderH2H() {
         const agreedWinner = pkA ? pkA.winner : "";
         let agreedResult = "";
         if (isFinal) {
-          if (game.winner === agreedWinner) {
+          const normWinner = normalizeTeamCode(game.winner);
+          if (normWinner === normalizeTeamCode(agreedWinner)) {
             const ptsEarnedA = pkA ? pkA.points : 0;
             const ptsEarnedB = pkB ? pkB.points : 0;
             agreedResult = `<strong style="color:var(--accent-green);">+${ptsEarnedA} / +${ptsEarnedB} earned</strong>`;
           } else {
             agreedResult = `<span style="color:#f87171;">Both missed</span>`;
           }
+        } else if (isLive) {
+          agreedResult = `<span style="color:#f87171; font-weight:700;"><span class="live-pulse-dot"></span> Live in progress</span>`;
         } else {
           agreedResult = `<span style="color:var(--text-muted);">Points shared</span>`;
         }
