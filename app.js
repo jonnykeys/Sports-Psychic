@@ -221,7 +221,7 @@ let state = {
   playerViewMode: "single", // "single" | "h2h"
   h2hPlayerA: null,
   h2hPlayerB: null,
-  h2hFilter: "swing", // "swing" | "all"
+  h2hFilter: "swing", // "swing" | "agreed" | "all"
   isSyncing: false,
   lastUpdated: null,
   data: null,
@@ -2023,6 +2023,7 @@ function renderH2H() {
   const filter = state.h2hFilter || "swing";
   const displayGames = comparisonGames.filter(cg => {
     if (filter === "swing") return cg.isSwing;
+    if (filter === "agreed") return cg.isAgreed;
     return true; // "all"
   });
 
@@ -2124,14 +2125,17 @@ function renderH2H() {
       </div>
     </div>
 
-    <!-- 4. FILTER PILLS: SWING GAMES VS ALL GAMES -->
+    <!-- 4. FILTER PILLS: SWING GAMES VS AGREED VS ALL GAMES -->
     <div class="h2h-filter-row">
       <div style="font-size:0.78rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.5px;">
-        ${filter === "swing" ? `⚡ Swing Games (${swingGamesCount})` : `📋 All Games (${games.length})`}
+        ${filter === "swing" ? `⚡ Swing Games (${swingGamesCount})` : filter === "agreed" ? `🤝 Agreed Picks (${agreedGamesCount})` : `📋 All Games (${games.length})`}
       </div>
       <div class="h2h-filter-group">
         <button type="button" class="h2h-filter-btn ${filter === "swing" ? "active" : ""}" onclick="setH2HFilter('swing')">
           ⚡ Swings (${swingGamesCount})
+        </button>
+        <button type="button" class="h2h-filter-btn ${filter === "agreed" ? "active" : ""}" onclick="setH2HFilter('agreed')">
+          🤝 Agreed (${agreedGamesCount})
         </button>
         <button type="button" class="h2h-filter-btn ${filter === "all" ? "active" : ""}" onclick="setH2HFilter('all')">
           All (${games.length})
@@ -2147,6 +2151,17 @@ function renderH2H() {
         <div style="font-size:2.2rem; margin-bottom:8px;">🤝</div>
         <div style="font-size:0.95rem; font-weight:900; color:#fff; margin-bottom:4px;">No Swing Games in ${weekKey}</div>
         <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">Both ${playerA} and ${playerB} submitted identical winner picks for every game this week!</div>
+        <button type="button" class="h2h-filter-btn active" onclick="setH2HFilter('all')" style="padding:6px 14px; font-size:0.76rem;">
+          📋 View All ${games.length} Games
+        </button>
+      </div>
+    `;
+  } else if (filter === "agreed" && agreedGamesCount === 0) {
+    html += `
+      <div class="loading-box" style="padding:28px 16px; text-align:center; background:var(--bg-card); border-radius:var(--border-radius); border:1px solid var(--border-color); margin-bottom:14px;">
+        <div style="font-size:2.2rem; margin-bottom:8px;">⚡</div>
+        <div style="font-size:0.95rem; font-weight:900; color:#fff; margin-bottom:4px;">No Agreed Games in ${weekKey}</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">Total divergence! ${playerA} and ${playerB} picked different winners on every single game this week.</div>
         <button type="button" class="h2h-filter-btn active" onclick="setH2HFilter('all')" style="padding:6px 14px; font-size:0.76rem;">
           📋 View All ${games.length} Games
         </button>

@@ -1833,16 +1833,19 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .h2h-filter-group {
   display: inline-flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .h2h-filter-btn {
-  padding: 5px 12px;
-  font-size: 0.74rem;
+  padding: 5px 10px;
+  font-size: 0.72rem;
   font-weight: 800;
   border-radius: 12px;
   background: var(--bg-card);
@@ -1852,6 +1855,7 @@ body {
   transition: var(--transition);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
 .h2h-filter-btn.active {
