@@ -736,6 +736,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupNavigation();
   setupWeekStrip();
   setupRefresh();
+  setupPullToRefresh();
   renderApp();
   
   // Background live sync
@@ -948,6 +949,137 @@ function setupRefresh() {
     syncWeek(state.currentWeek, false, true);
     syncNFLStandings(true);
   });
+}
+
+/**
+ * Native touch-based Pull-to-Refresh gesture handler.
+ * Provides a fluid native iOS app feel inside mobile Safari and standalone Home Screen PWA mode.
+ */
+function setupPullToRefresh() {
+  const indicator = document.getElementById("ptr-indicator");
+  if (!indicator) return;
+
+  const textEl = indicator.querySelector(".ptr-text");
+  let startY = 0;
+  let startX = 0;
+  let isTracking = false;
+  let isRefreshing = false;
+  const THRESHOLD = 65;
+  const MAX_PULL = 90;
+
+  window.addEventListener("touchstart", (e) => {
+    // Only allow pull to refresh when user is at the very top of the page
+    const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    if (scrollTop > 2 || isRefreshing) {
+      isTracking = false;
+      return;
+    }
+    // Don't intercept touches inside open modals
+    if (document.querySelector(".profile-modal.open") || document.querySelector(".h2h-picker-modal.open")) {
+      isTracking = false;
+      return;
+    }
+
+    startY = e.touches[0].clientY;
+    startX = e.touches[0].clientX;
+    isTracking = true;
+  }, { passive: true });
+
+  window.addEventListener("touchmove", (e) => {
+    if (!isTracking || isRefreshing) return;
+
+    const currentY = e.touches[0].clientY;
+    const currentX = e.touches[0].clientX;
+    const deltaY = currentY - startY;
+    const deltaX = Math.abs(currentX - startX);
+
+    // If horizontal scroll is dominant, don't trigger pull to refresh
+    if (deltaX > deltaY) {
+      return;
+    }
+
+    const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    if (scrollTop > 2) {
+      isTracking = false;
+      indicator.style.transform = "";
+      indicator.style.opacity = "";
+      indicator.classList.remove("is-pulling", "is-ready");
+      return;
+    }
+
+    if (deltaY > 0) {
+      // Damping curve for smooth iOS rubber-band feel
+      const pull = Math.min(deltaY * 0.45, MAX_PULL);
+      indicator.classList.add("is-pulling");
+      indicator.style.transform = `translateY(${pull}px)`;
+      indicator.style.opacity = `${Math.min(pull / 30, 1)}`;
+
+      if (pull >= THRESHOLD) {
+        indicator.classList.add("is-ready");
+        if (textEl) textEl.textContent = "Release to refresh";
+      } else {
+        indicator.classList.remove("is-ready");
+        if (textEl) textEl.textContent = "Pull to refresh";
+      }
+    }
+  }, { passive: true });
+
+  window.addEventListener("touchend", async () => {
+    if (!isTracking || isRefreshing) {
+      isTracking = false;
+      return;
+    }
+    isTracking = false;
+
+    const isReady = indicator.classList.contains("is-ready");
+    indicator.classList.remove("is-pulling", "is-ready");
+
+    if (isReady) {
+      isRefreshing = true;
+      indicator.classList.add("is-refreshing");
+      if (textEl) textEl.textContent = "Syncing live scores...";
+
+      // Light haptic pulse on iPhone if supported
+      try {
+        if (window.navigator && window.navigator.vibrate) {
+          window.navigator.vibrate(12);
+        }
+      } catch (err) {}
+
+      const startTime = Date.now();
+
+      // Trigger the real live sync without reloading the page!
+      try {
+        await Promise.all([
+          syncWeek(state.currentWeek, false, true),
+          syncNFLStandings(true)
+        ]);
+      } catch (err) {
+        console.warn("PTR sync error:", err);
+      }
+
+      // Ensure at least 650ms so user clearly sees the refresh action
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 650) {
+        await new Promise(r => setTimeout(r, 650 - elapsed));
+      }
+
+      // Success state
+      indicator.classList.remove("is-refreshing");
+      indicator.classList.add("is-success");
+      if (textEl) textEl.textContent = "✓ Updated!";
+
+      setTimeout(() => {
+        indicator.classList.remove("is-success");
+        indicator.style.transform = "";
+        indicator.style.opacity = "";
+        isRefreshing = false;
+      }, 700);
+    } else {
+      indicator.style.transform = "";
+      indicator.style.opacity = "";
+    }
+  }, { passive: true });
 }
 
 // =========================================================

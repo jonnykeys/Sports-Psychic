@@ -143,6 +143,7 @@ body {
 .header-right-actions {
   display: flex;
   align-items: center;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -263,35 +264,151 @@ body {
 .btn-refresh {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.72rem;
+  color: var(--text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  line-height: 1;
+  justify-content: center;
   transition: var(--transition);
-}
-
-.btn-refresh .refresh-icon {
-  font-size: 0.72rem;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .btn-refresh:hover {
-  background: var(--bg-elevated);
-  border-color: var(--border-light);
+  background: var(--bg-card-hover);
+  border-color: var(--accent-cyan);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.btn-refresh .refresh-icon {
+  display: inline-block;
+  line-height: 1;
 }
 
 .btn-refresh.spinning .refresh-icon {
   animation: spin 0.8s linear infinite;
+  color: var(--accent-cyan);
 }
 
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   PULL TO REFRESH (NATIVE PWA GESTURE)
+   ========================================================= */
+.ptr-indicator {
+  position: fixed;
+  top: max(56px, calc(env(safe-area-inset-top, 0px) + 50px));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 95;
+  transform: translateY(-80px);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.2s ease;
+}
+
+.ptr-indicator.is-pulling {
+  transition: none; /* Instant follow when dragging */
+}
+
+.ptr-indicator.is-refreshing {
+  transform: translateY(12px) !important;
+  opacity: 1 !important;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.ptr-indicator.is-success {
+  transform: translateY(12px) !important;
+  opacity: 1 !important;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.ptr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.ptr-icon-wrap {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ptr-arrow {
+  color: var(--accent-cyan);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.ptr-indicator.is-ready .ptr-arrow {
+  transform: rotate(180deg);
+  color: var(--accent-gold);
+}
+
+.ptr-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(56, 189, 248, 0.25);
+  border-top-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: ptrSpin 0.75s linear infinite;
+}
+
+.ptr-indicator.is-refreshing .ptr-arrow {
+  display: none;
+}
+
+.ptr-indicator.is-refreshing .ptr-spinner {
+  display: block;
+}
+
+.ptr-indicator.is-success .ptr-arrow {
+  display: none;
+}
+
+.ptr-indicator.is-success .ptr-spinner {
+  display: none;
+}
+
+.ptr-indicator.is-success .ptr-pill {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+@keyframes ptrSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* =========================================================
