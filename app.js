@@ -2425,47 +2425,45 @@ function renderH2H() {
       <div class="h2h-tale-tape">
         <!-- Fighter A (Left) -->
         <div class="h2h-fighter">
-          ${getPlayerAvatarHtml(playerA, 46)}
+          ${getPlayerAvatarHtml(playerA, 52)}
           <div class="h2h-fighter-name">
-            ${playerA}
-            ${isMeA ? `<span class="chip-you-badge">YOU</span>` : ""}
+            <span>${playerA}</span>
+            ${isMeA ? `<span class="leader-you-pill">YOU</span>` : ""}
           </div>
-          <div class="h2h-fighter-stats">
-            <span class="h2h-fighter-pts">${statA.points} <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">PTS</span></span>
-            <span class="h2h-fighter-rec">Rank ${rankA} • ${recTextA}</span>
-            <span style="font-size:0.75rem; color:var(--accent-green); font-weight:800; margin-top:2px;">+${weekPtsA} in ${weekKey}</span>
+          <div class="h2h-fighter-points-wrap">
+            <span class="h2h-fighter-pts-num">${statA.points}</span>
+            <span class="h2h-fighter-pts-lbl">PTS</span>
           </div>
+          <div class="h2h-fighter-rec-capsule">Rank ${rankA} • ${recTextA}</div>
+          <div class="h2h-fighter-week-gain">+${weekPtsA} in ${weekKey}</div>
         </div>
 
         <!-- Center Clash & Net Differentials -->
         <div class="h2h-center-clash">
           <div class="h2h-vs-badge">⚔️ VS ⚔️</div>
-          <div class="h2h-lead-diff" style="margin-top:4px;">
-            <span style="color:var(--text-dim); font-size:0.65rem; display:block; text-transform:uppercase; letter-spacing:0.5px;">Season Lead</span>
-            <span style="font-weight:900; color:${seasonDiff !== 0 ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-size:0.8rem;">
-              ${seasonDiff > 0 ? `+${seasonDiff} ${playerA}` : seasonDiff < 0 ? `+${Math.abs(seasonDiff)} ${playerB}` : "Tied"}
-            </span>
+          <div class="h2h-lead-chip lead-season">
+            <span class="lead-chip-tag">SEASON</span>
+            <span class="lead-chip-val">${seasonDiff > 0 ? `+${seasonDiff} ${playerA}` : seasonDiff < 0 ? `+${Math.abs(seasonDiff)} ${playerB}` : "TIED"}</span>
           </div>
-          <div class="h2h-lead-diff" style="margin-top:2px;">
-            <span style="color:var(--text-dim); font-size:0.65rem; display:block; text-transform:uppercase; letter-spacing:0.5px;">${weekKey} Lead</span>
-            <span style="font-weight:900; color:${weekDiff !== 0 ? 'var(--accent-cyan)' : 'var(--text-muted)'}; font-size:0.8rem;">
-              ${weekDiff > 0 ? `+${weekDiff} ${playerA}` : weekDiff < 0 ? `+${Math.abs(weekDiff)} ${playerB}` : "Tied"}
-            </span>
+          <div class="h2h-lead-chip lead-week">
+            <span class="lead-chip-tag">${weekKey.toUpperCase()}</span>
+            <span class="lead-chip-val">${weekDiff > 0 ? `+${weekDiff} ${playerA}` : weekDiff < 0 ? `+${Math.abs(weekDiff)} ${playerB}` : "TIED"}</span>
           </div>
         </div>
 
         <!-- Fighter B (Right) -->
         <div class="h2h-fighter">
-          ${getPlayerAvatarHtml(playerB, 46)}
+          ${getPlayerAvatarHtml(playerB, 52)}
           <div class="h2h-fighter-name">
-            ${playerB}
-            ${isMeB ? `<span class="chip-you-badge">YOU</span>` : ""}
+            <span>${playerB}</span>
+            ${isMeB ? `<span class="leader-you-pill">YOU</span>` : ""}
           </div>
-          <div class="h2h-fighter-stats">
-            <span class="h2h-fighter-pts">${statB.points} <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">PTS</span></span>
-            <span class="h2h-fighter-rec">Rank ${rankB} • ${recTextB}</span>
-            <span style="font-size:0.75rem; color:var(--accent-green); font-weight:800; margin-top:2px;">+${weekPtsB} in ${weekKey}</span>
+          <div class="h2h-fighter-points-wrap">
+            <span class="h2h-fighter-pts-num">${statB.points}</span>
+            <span class="h2h-fighter-pts-lbl">PTS</span>
           </div>
+          <div class="h2h-fighter-rec-capsule">Rank ${rankB} • ${recTextB}</div>
+          <div class="h2h-fighter-week-gain">+${weekPtsB} in ${weekKey}</div>
         </div>
       </div>
     </div>
@@ -2473,18 +2471,18 @@ function renderH2H() {
     <!-- 3. AGREEMENT VS DIVERGENCE METER -->
     <div class="h2h-divergence-card">
       <div class="h2h-divergence-row">
-        <span style="color:var(--accent-green); display:flex; align-items:center; gap:4px;">
-          <span>✅</span> <strong>${agreedGamesCount} Agreed</strong> <span style="color:var(--text-dim); font-weight:600;">(${agreedPct}%)</span>
+        <span class="h2h-meter-pill pill-agreed">
+          <span class="meter-pill-dot dot-agreed"></span> <strong>${agreedGamesCount} Agreed</strong> (${agreedPct}%)
         </span>
-        <span style="color:var(--accent-gold); display:flex; align-items:center; gap:4px;">
-          <span>⚡</span> <strong>${swingGamesCount} Swing Games</strong> <span style="color:var(--text-dim); font-weight:600;">(${swingPct}%)</span>
+        <span class="h2h-meter-pill pill-swing">
+          <span class="meter-pill-dot dot-swing"></span> <strong>${swingGamesCount} Swing Games</strong> (${swingPct}%)
         </span>
       </div>
       <div class="h2h-meter-track" title="${agreedGamesCount} agreed (${agreedPct}%), ${swingGamesCount} swing (${swingPct}%)">
         <div class="h2h-meter-agreed" style="width: ${agreedPct}%;"></div>
         <div class="h2h-meter-swing" style="width: ${swingPct}%;"></div>
       </div>
-      <div style="font-size:0.72rem; color:var(--text-muted); margin-top:7px; text-align:center;">
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-top:6px; text-align:center;">
         ${swingGamesCount === 0
           ? `🤝 Full Consensus — Both players made identical winner predictions for all games in ${weekKey}!`
           : `⚡ <strong>${swingGamesCount}</strong> game${swingGamesCount === 1 ? '' : 's'} where picks differ will determine this matchup in ${weekKey}.`}
@@ -2571,22 +2569,21 @@ function renderH2H() {
             outcomeText = `🎯 CLOSEST (+${pk.points})`;
             outcomeClass = "win";
           } else if (pk.points > 0) {
-            outcomeText = `✅ WON (+${pk.points})`;
+            outcomeText = `🎯 WON (+${pk.points})`;
             outcomeClass = "win";
           } else {
-            outcomeText = `❌ LOST (0)`;
+            outcomeText = `❌ MISSED`;
             outcomeClass = "loss";
           }
         }
 
         const badgeHtml = `<span class="h2h-pick-team-badge" style="background-color: ${tmInfo.color}; color: ${tmText};">${pk.winner}</span>`;
         const scoreHtml = `<span class="h2h-pick-score-text">${scoreStr}</span>`;
-        const multHtml = pk.multiplier ? `<span style="font-size:0.62rem; color:var(--accent-gold); font-weight:800;">⭐ 3X</span>` : "";
 
-        // For player B, badge on right, score on left
+        // For player B, score on left, badge on right; for Player A, badge on left, score on right
         const chipContent = isPlayerB
-          ? `${multHtml} ${scoreHtml} ${badgeHtml}`
-          : `${badgeHtml} ${scoreHtml} ${multHtml}`;
+          ? `${scoreHtml} ${badgeHtml}`
+          : `${badgeHtml} ${scoreHtml}`;
 
         return `
           <div class="h2h-pick-col ${isPlayerB ? 'player-b' : ''}">
