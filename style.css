@@ -872,9 +872,39 @@ body {
 }
 
 .matchup-badge.live {
-  background: rgba(255, 179, 0, 0.15);
-  color: var(--accent-gold);
-  border: 1px solid rgba(255, 179, 0, 0.3);
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-pulse-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  animation: pulseLiveDot 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulseLiveDot {
+  0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 2px #ef4444; }
+  50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 8px #ef4444; }
+  100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 2px #ef4444; }
+}
+
+.h2h-live-tag {
+  font-size: 0.62rem;
+  color: #f87171;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .matchup-badge.scheduled {
