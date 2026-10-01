@@ -461,33 +461,15 @@ body {
    ========================================================= */
 .podium-container {
   display: grid;
-  grid-template-columns: 1fr 1.16fr 1fr;
+  grid-template-columns: 1fr 1.15fr 1fr;
   align-items: flex-end;
   gap: 8px;
-  margin-bottom: 20px;
-  padding: 16px 8px 10px 8px;
-  background: 
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(245, 184, 0, 0.16) 0%, transparent 80%),
-    linear-gradient(180deg, rgba(17, 29, 61, 0.75) 0%, rgba(10, 16, 34, 0.95) 100%);
-  border: 1px solid rgba(245, 184, 0, 0.24);
-  border-radius: var(--border-radius);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  margin-bottom: 22px;
+  padding: 4px 0 0 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   position: relative;
-  overflow: hidden;
-}
-
-/* Subtle stage floor light beam */
-.podium-container::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 5%;
-  right: 5%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(203, 213, 225, 0.3) 25%, rgba(245, 184, 0, 0.7) 50%, rgba(205, 127, 50, 0.3) 75%, transparent 100%);
-  border-radius: 999px;
-  filter: blur(0.5px);
-  pointer-events: none;
 }
 
 .podium-card {
@@ -783,7 +765,7 @@ body {
 @media (max-width: 380px) {
   .podium-container {
     gap: 6px;
-    padding: 12px 6px 8px 6px;
+    padding: 0;
   }
   .podium-name {
     font-size: 0.82rem;
