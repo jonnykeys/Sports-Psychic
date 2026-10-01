@@ -217,6 +217,7 @@ let state = {
   myPlayer: initialSavedPlayer,
   selectedPlayer: initialSavedPlayer || "Caleb",
   activeTab: "leaderboard",
+  leaderboardMode: "season", // "season" | "weekly"
   isSyncing: false,
   lastUpdated: null,
   data: null,
@@ -405,6 +406,45 @@ function getPlayerSeasonRecord(playerName) {
     });
   }
 
+  const total = wins + losses;
+  const pct = total > 0 ? ((wins / total) * 100).toFixed(1) : "0.0";
+  return {
+    wins,
+    losses,
+    total,
+    pct,
+    label: `${wins}-${losses} W-L`
+  };
+}
+
+/**
+ * Calculates a player's Win-Loss record specifically for a single week.
+ */
+function getPlayerWeekRecord(playerName, weekNum) {
+  let wins = 0;
+  let losses = 0;
+  const weekKey = `Week ${weekNum}`;
+  if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
+    const week = state.data.weeks[weekKey];
+    week.games.forEach(game => {
+      if (!game || !game.matchup || !game.matchup.includes("@") || !game.isFinal || !game.winner) return;
+      const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
+      if (parts.length !== 2) return;
+      const winner = game.winner.toUpperCase().trim();
+      if (winner !== parts[0] && winner !== parts[1] && winner !== "TIE") return;
+
+      const pick = game.picks ? game.picks[playerName] : null;
+      if (pick && pick.winner) {
+        if (pick.winner.toUpperCase().trim() === winner) {
+          wins++;
+        } else {
+          losses++;
+        }
+      } else {
+        losses++;
+      }
+    });
+  }
   const total = wins + losses;
   const pct = total > 0 ? ((wins / total) * 100).toFixed(1) : "0.0";
   return {
@@ -945,89 +985,241 @@ function renderTabContent() {
 }
 
 // =========================================================
-// TAB 1: LEADERBOARD RENDERING
+// TAB 1: LEADERBOARD RENDERING (Season Total & Weekly Toggle)
 // =========================================================
-function renderLeaderboard() {
-  const podiumEl = document.getElementById("podium-container");
-  const listEl = document.getElementById("leaderboard-list");
-  if (!podiumEl || !listEl) return;
 
+function setLeaderboardMode(mode) {
+  state.leaderboardMode = mode;
+  renderLeaderboard();
+}
+window.setLeaderboardMode = setLeaderboardMode;
+
+/**
+ * Returns overall Season Leaderboard with shared ranks based strictly on points.
+ */
+function getSeasonLeaderboard() {
   const lb = (state.data && state.data.leaderboard && state.data.leaderboard.length > 0)
     ? state.data.leaderboard
     : PLAYERS.map((p, idx) => ({ rank: idx + 1, name: p, points: 0 }));
 
-  // Sort by rank ascending
-  const sorted = [...lb].sort((a, b) => a.rank - b.rank);
+  const list = lb.map(p => ({
+    name: p.name,
+    points: typeof p.points === "number" ? p.points : parseInt(p.points, 10) || 0,
+    rec: getPlayerSeasonRecord(p.name)
+  }));
 
-  // Top 3 Podium
+  // Sort descending by points
+  list.sort((a, b) => b.points - a.points);
+
+  // Assign shared ranks based off of points only
+  let currentRank = 1;
+  for (let i = 0; i < list.length; i++) {
+    if (i > 0 && list[i].points < list[i - 1].points) {
+      currentRank = i + 1;
+    }
+    list[i].numericRank = currentRank;
+  }
+
+  const rankCounts = {};
+  list.forEach(p => {
+    rankCounts[p.numericRank] = (rankCounts[p.numericRank] || 0) + 1;
+  });
+
+  list.forEach(p => {
+    const isTied = rankCounts[p.numericRank] > 1;
+    p.rankDisplay = isTied ? `T-${p.numericRank}` : `${p.numericRank}`;
+    p.rank = p.numericRank;
+  });
+
+  return list;
+}
+
+/**
+ * Returns Weekly Leaderboard for a specific week with shared ranks based strictly on points.
+ */
+function getWeeklyLeaderboard(weekNum) {
+  const weekKey = `Week ${weekNum}`;
+  const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
+  const games = weekData && weekData.games ? weekData.games : [];
+
+  const list = PLAYERS.map(pName => {
+    let pts = 0;
+    games.forEach(g => {
+      const pk = g.picks && g.picks[pName];
+      if (pk) {
+        pts += (pk.points || 0);
+      }
+    });
+
+    const rec = getPlayerWeekRecord(pName, weekNum);
+
+    return {
+      name: pName,
+      points: pts,
+      rec
+    };
+  });
+
+  // Sort descending by points
+  list.sort((a, b) => b.points - a.points);
+
+  // Assign shared ranks based off of points only
+  let currentRank = 1;
+  for (let i = 0; i < list.length; i++) {
+    if (i > 0 && list[i].points < list[i - 1].points) {
+      currentRank = i + 1;
+    }
+    list[i].numericRank = currentRank;
+  }
+
+  const rankCounts = {};
+  list.forEach(p => {
+    rankCounts[p.numericRank] = (rankCounts[p.numericRank] || 0) + 1;
+  });
+
+  list.forEach(p => {
+    const isTied = rankCounts[p.numericRank] > 1;
+    p.rankDisplay = isTied ? `T-${p.numericRank}` : `${p.numericRank}`;
+    p.rank = p.numericRank;
+  });
+
+  return list;
+}
+
+function renderLeaderboard() {
+  const podiumEl = document.getElementById("podium-container");
+  const listEl = document.getElementById("leaderboard-list");
+  const sectionTitleEl = document.getElementById("leaderboard-section-title");
+  const labelWeeklyBtn = document.getElementById("label-toggle-weekly");
+  const btnSeason = document.getElementById("btn-toggle-season");
+  const btnWeekly = document.getElementById("btn-toggle-weekly");
+  if (!podiumEl || !listEl) return;
+
+  const isWeekly = state.leaderboardMode === "weekly";
+
+  // Sync toggle button states & labels
+  if (btnSeason) btnSeason.classList.toggle("active", !isWeekly);
+  if (btnWeekly) btnWeekly.classList.toggle("active", isWeekly);
+  if (labelWeeklyBtn) labelWeeklyBtn.textContent = `Week ${state.currentWeek} Standings`;
+
+  if (sectionTitleEl) {
+    sectionTitleEl.textContent = isWeekly
+      ? `Week ${state.currentWeek} Standings`
+      : "League Standings";
+  }
+
+  const sorted = isWeekly
+    ? getWeeklyLeaderboard(state.currentWeek)
+    : getSeasonLeaderboard();
+
+  const leader = sorted[0] || { name: "-", points: 0 };
   const rank1 = sorted[0] || { name: "-", points: 0 };
   const rank2 = sorted[1] || { name: "-", points: 0 };
   const rank3 = sorted[2] || { name: "-", points: 0 };
 
-  const rec1 = getPlayerSeasonRecord(rank1.name);
-  const rec2 = getPlayerSeasonRecord(rank2.name);
-  const rec3 = getPlayerSeasonRecord(rank3.name);
+  const rec1 = rank1.rec || { label: "0-0 W-L", wins: 0, losses: 0, pct: "0.0" };
+  const rec2 = rank2.rec || { label: "0-0 W-L", wins: 0, losses: 0, pct: "0.0" };
+  const rec3 = rank3.rec || { label: "0-0 W-L", wins: 0, losses: 0, pct: "0.0" };
 
   const isMeRank1 = Boolean(state.myPlayer && rank1.name === state.myPlayer);
   const isMeRank2 = Boolean(state.myPlayer && rank2.name === state.myPlayer);
   const isMeRank3 = Boolean(state.myPlayer && rank3.name === state.myPlayer);
 
-  podiumEl.innerHTML = `
-    <!-- 2nd Place -->
-    <div class="podium-card ${isMeRank2 ? "is-my-rank" : ""}" onclick="openPlayer('${rank2.name}')">
-      <div class="podium-medal">🥈</div>
-      ${rank2.name && rank2.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank2.name, 42)}</div>` : ""}
-      <div class="podium-name">${rank2.name}${isMeRank2 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-      <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub">Rank #2 • <strong>${rec2.label}</strong></div>
-    </div>
+  const diff2 = leader.points - rank2.points;
+  const diff3 = leader.points - rank3.points;
 
-    <!-- 1st Place (Center Crown) -->
-    <div class="podium-card first ${isMeRank1 ? "is-my-rank" : ""}" onclick="openPlayer('${rank1.name}')">
-      <div class="podium-medal">👑</div>
-      ${rank1.name && rank1.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank1.name, 50)}</div>` : ""}
-      <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}${isMeRank1 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-      <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">LEAGUE LEADER • ${rec1.label}</div>
-    </div>
+  // Podium subtitle labels
+  let rank1Title = isWeekly
+    ? (rank1.numericRank === rank2.numericRank ? `WEEK ${state.currentWeek} CO-LEADER` : `WEEK ${state.currentWeek} WINNER`)
+    : (rank1.numericRank === rank2.numericRank ? `LEAGUE CO-LEADER` : `LEAGUE LEADER`);
 
-    <!-- 3rd Place -->
-    <div class="podium-card ${isMeRank3 ? "is-my-rank" : ""}" onclick="openPlayer('${rank3.name}')">
-      <div class="podium-medal">🥉</div>
-      ${rank3.name && rank3.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank3.name, 42)}</div>` : ""}
-      <div class="podium-name">${rank3.name}${isMeRank3 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-      <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-      <div class="podium-sub">Rank #3 • <strong>${rec3.label}</strong></div>
-    </div>
-  `;
+  let rank2Sub = `Rank #${rank2.rankDisplay} • ${diff2 > 0 ? `-${diff2} PTS` : "TIED"}`;
+  let rank3Sub = `Rank #${rank3.rankDisplay} • ${diff3 > 0 ? `-${diff3} PTS` : "TIED"}`;
+
+  // If in weekly mode and no points scored yet (future or in-progress week)
+  const isWeekUnplayed = isWeekly && leader.points === 0;
+
+  if (isWeekUnplayed) {
+    podiumEl.innerHTML = `
+      <div style="grid-column: 1 / -1; width: 100%;">
+        <div class="week-empty-banner">
+          <span class="week-empty-icon">⏳</span>
+          <div class="week-empty-body">
+            <div class="week-empty-title">Week ${state.currentWeek} Games In Progress / Upcoming</div>
+            <div class="week-empty-desc">No final scores recorded yet for Week ${state.currentWeek}. Standings and the podium will update live as games conclude!</div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    podiumEl.innerHTML = `
+      <!-- 2nd Place -->
+      <div class="podium-card ${isMeRank2 ? "is-my-rank" : ""}" onclick="openPlayer('${rank2.name}')">
+        <div class="podium-medal">🥈</div>
+        ${rank2.name && rank2.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank2.name, 42)}</div>` : ""}
+        <div class="podium-name">${rank2.name}${isMeRank2 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
+        <div class="podium-sub">${rank2Sub} • <strong>${rec2.label}</strong></div>
+      </div>
+
+      <!-- 1st Place (Center Crown) -->
+      <div class="podium-card first ${isMeRank1 ? "is-my-rank" : ""}" onclick="openPlayer('${rank1.name}')">
+        <div class="podium-medal">${isWeekly ? "🥇" : "👑"}</div>
+        ${rank1.name && rank1.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank1.name, 50)}</div>` : ""}
+        <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}${isMeRank1 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
+        <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">${rank1Title} • ${rec1.label}</div>
+      </div>
+
+      <!-- 3rd Place -->
+      <div class="podium-card ${isMeRank3 ? "is-my-rank" : ""}" onclick="openPlayer('${rank3.name}')">
+        <div class="podium-medal">🥉</div>
+        ${rank3.name && rank3.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank3.name, 42)}</div>` : ""}
+        <div class="podium-name">${rank3.name}${isMeRank3 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
+        <div class="podium-sub">${rank3Sub} • <strong>${rec3.label}</strong></div>
+      </div>
+    `;
+  }
 
   // Full Leaderboard Rows (1 to 12)
   listEl.innerHTML = sorted.map((player) => {
     let rankBadgeClass = "";
-    if (player.rank === 1) rankBadgeClass = "top1";
-    else if (player.rank === 2) rankBadgeClass = "top2";
-    else if (player.rank === 3) rankBadgeClass = "top3";
+    if (player.numericRank === 1) rankBadgeClass = "top1";
+    else if (player.numericRank === 2) rankBadgeClass = "top2";
+    else if (player.numericRank === 3) rankBadgeClass = "top3";
 
     const isMe = Boolean(state.myPlayer && player.name === state.myPlayer);
-    const initial = player.name.charAt(0);
-    const color = PLAYER_COLORS[player.name] || "var(--accent-blue)";
-    const rec = getPlayerSeasonRecord(player.name);
+    const rec = player.rec || { wins: 0, losses: 0, pct: "0.0", label: "0-0" };
 
-    // Calculate weekly pts if available (including closest score bonuses)
-    const weekKey = `Week ${state.currentWeek}`;
+    // Points difference from #1
+    const diffFromLeader = leader.points - player.points;
+    let behindText = "";
+    if (leader.points === 0) {
+      behindText = `<div class="leader-behind-pts is-leader">Tied</div>`;
+    } else if (diffFromLeader === 0) {
+      behindText = `<div class="leader-behind-pts is-leader">${isWeekly ? "Week Leader" : "Leader"}</div>`;
+    } else {
+      behindText = `<div class="leader-behind-pts">-${diffFromLeader} pts behind #1</div>`;
+    }
+
+    // Weekly points if in season mode
     let weekPts = null;
-    if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
-      const gList = state.data.weeks[weekKey].games;
-      weekPts = gList.reduce((sum, g) => {
-        const pk = g.picks && g.picks[player.name];
-        return sum + (pk ? (pk.points || 0) : 0);
-      }, 0);
+    if (!isWeekly) {
+      const weekKey = `Week ${state.currentWeek}`;
+      if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
+        const gList = state.data.weeks[weekKey].games;
+        weekPts = gList.reduce((sum, g) => {
+          const pk = g.picks && g.picks[player.name];
+          return sum + (pk ? (pk.points || 0) : 0);
+        }, 0);
+      }
     }
 
     return `
       <div class="leader-row ${isMe ? "is-my-rank" : ""}" onclick="openPlayer('${player.name}')">
         <div class="leader-left">
-          <div class="rank-badge ${rankBadgeClass}">${player.rank}</div>
+          <div class="rank-badge ${rankBadgeClass}">${player.rankDisplay}</div>
           ${getPlayerAvatarHtml(player.name, 36)}
           <div class="player-info-block">
             <div class="player-title">${player.name}${isMe ? ` <span class="leader-you-pill">YOU</span>` : ""}</div>
@@ -1039,6 +1231,7 @@ function renderLeaderboard() {
         </div>
         <div class="leader-right">
           <div class="leader-total-points">${player.points} <span style="font-size:0.7rem;">PTS</span></div>
+          ${behindText}
           ${weekPts !== null ? `<div class="leader-week-pts">Wk ${state.currentWeek}: +${weekPts} pts</div>` : ""}
         </div>
       </div>
