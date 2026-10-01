@@ -1794,6 +1794,14 @@ function renderLeaderboard() {
   }
 
   // Full Leaderboard Rows (1 to 12)
+  const seasonPtsMap = {};
+  if (isWeekly) {
+    const seasonLeaderboard = getSeasonLeaderboard();
+    seasonLeaderboard.forEach(p => {
+      seasonPtsMap[p.name] = p.points;
+    });
+  }
+
   listEl.innerHTML = sorted.map((player) => {
     let rankBadgeClass = "";
     if (player.numericRank === 1) rankBadgeClass = "top1";
@@ -1803,9 +1811,11 @@ function renderLeaderboard() {
     const isMe = Boolean(state.myPlayer && player.name === state.myPlayer);
     const rec = player.rec || { wins: 0, losses: 0, pct: "0.0", label: "0-0" };
 
-    // Weekly points if in season mode
-    let weekPts = null;
+    let rightSideHtml = "";
     if (!isWeekly) {
+      // Season Total Tab:
+      // Points in Athletic Gold; sub-pill in Neon Emerald (+X in Wk Y)
+      let weekPts = 0;
       const weekKey = `Week ${state.currentWeek}`;
       if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
         const gList = state.data.weeks[weekKey].games;
@@ -1814,6 +1824,24 @@ function renderLeaderboard() {
           return sum + (pk ? (pk.points || 0) : 0);
         }, 0);
       }
+      rightSideHtml = `
+        <div class="leader-points-wrap pts-season">
+          <span class="leader-pts-val">${player.points}</span>
+          <span class="leader-pts-lbl">PTS</span>
+        </div>
+        <div class="leader-sub-pill pill-emerald">+${weekPts} in Wk ${state.currentWeek}</div>
+      `;
+    } else {
+      // Week # Standings Tab:
+      // Points in Neon Emerald; sub-pill in Athletic Gold (X Season Pts)
+      const seasonPts = seasonPtsMap[player.name] !== undefined ? seasonPtsMap[player.name] : player.points;
+      rightSideHtml = `
+        <div class="leader-points-wrap pts-weekly">
+          <span class="leader-pts-val">${player.points}</span>
+          <span class="leader-pts-lbl">PTS</span>
+        </div>
+        <div class="leader-sub-pill pill-gold">${seasonPts} Season Pts</div>
+      `;
     }
 
     return `
@@ -1822,16 +1850,19 @@ function renderLeaderboard() {
           <div class="rank-badge ${rankBadgeClass}">${player.rankDisplay}</div>
           ${getPlayerAvatarHtml(player.name, 36)}
           <div class="player-info-block">
-            <div class="player-title">${player.name}${isMe ? ` <span class="leader-you-pill">YOU</span>` : ""}</div>
-            <div class="player-sub record">
-              <span>Record: <strong>${rec.wins}-${rec.losses} W-L</strong></span>
-              <span class="rec-pct">(${rec.pct}%)</span>
+            <div class="player-title">
+              <span>${player.name}</span>
+              ${isMe ? `<span class="leader-you-pill">YOU</span>` : ""}
+            </div>
+            <div class="leader-rec-capsule">
+              <span>${rec.wins}-${rec.losses} W-L</span>
+              <span class="rec-dot">•</span>
+              <span>${rec.pct}%</span>
             </div>
           </div>
         </div>
         <div class="leader-right">
-          <div class="leader-total-points">${player.points} <span style="font-size:0.7rem;">PTS</span></div>
-          ${weekPts !== null ? `<div class="leader-week-pts">Wk ${state.currentWeek}: +${weekPts} pts</div>` : ""}
+          ${rightSideHtml}
         </div>
       </div>
     `;

@@ -904,6 +904,33 @@ body {
     font-size: 0.55rem;
     padding: 1px 5px;
   }
+  .leader-row {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .leader-left {
+    gap: 8px;
+  }
+  .rank-badge {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    font-size: 0.7rem;
+  }
+  .player-info-block .player-title {
+    font-size: 0.88rem;
+  }
+  .leader-rec-capsule {
+    font-size: 0.62rem;
+    padding: 1px 6px;
+  }
+  .leader-points-wrap .leader-pts-val {
+    font-size: 1.15rem;
+  }
+  .leader-sub-pill {
+    font-size: 0.62rem;
+    padding: 1px 6px;
+  }
 }
 
 .leaderboard-list {
@@ -916,23 +943,33 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(20, 32, 64, 0.65) 0%, rgba(12, 19, 39, 0.82) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 10px 14px;
-  border-radius: var(--border-radius);
-  transition: var(--transition);
+  border-radius: 14px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .leader-row:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-light);
+  background: linear-gradient(135deg, rgba(28, 44, 86, 0.75) 0%, rgba(16, 26, 54, 0.9) 100%);
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.leader-row:active {
+  transform: translateY(0);
 }
 
 .leader-row.is-my-rank {
-  background: rgba(56, 189, 248, 0.08) !important;
-  border-color: rgba(56, 189, 248, 0.5) !important;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.18);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(12, 28, 54, 0.85) 100%) !important;
+  border-color: rgba(56, 189, 248, 0.65) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.22), inset 0 0 10px rgba(56, 189, 248, 0.06);
 }
 
 .podium-card.is-my-rank {
@@ -960,36 +997,47 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1;
 }
 
 .rank-badge {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
   border-radius: 50%;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 900;
-  color: var(--text-muted);
+  color: #94a3b8;
+  flex-shrink: 0;
+  letter-spacing: -0.3px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .rank-badge.top1 {
-  background: var(--accent-gold);
-  color: #000;
-  box-shadow: 0 0 10px var(--accent-gold-glow);
+  background: linear-gradient(135deg, #ffd700 0%, #f59e0b 100%);
+  color: #0b0f19;
+  border-color: #ffe066;
+  box-shadow: 0 0 12px rgba(245, 184, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
 .rank-badge.top2 {
-  background: #cfd8dc;
-  color: #000;
+  background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+  color: #0b0f19;
+  border-color: #ffffff;
+  box-shadow: 0 0 10px rgba(226, 232, 240, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 
 .rank-badge.top3 {
-  background: #d7ccc8;
-  color: #000;
+  background: linear-gradient(135deg, #fb923c 0%, #b45309 100%);
+  color: #ffffff;
+  border-color: #fdba74;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .player-avatar {
@@ -1038,11 +1086,48 @@ body {
   display: flex;
 }
 
+.player-info-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
 .player-info-block .player-title {
-  font-size: 0.95rem;
+  font-size: 0.96rem;
   font-weight: 800;
-  color: #fff;
-  line-height: 1.1;
+  color: #ffffff;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.leader-rec-capsule {
+  font-size: 0.67rem;
+  font-weight: 800;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  padding: 1.5px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.25;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.leader-rec-capsule .rec-dot {
+  opacity: 0.6;
+  font-size: 0.6rem;
 }
 
 .player-info-block .player-sub {
@@ -1074,13 +1159,88 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center;
   gap: 2px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.leader-points-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  line-height: 1;
+}
+
+.leader-points-wrap .leader-pts-val {
+  font-size: 1.28rem;
+  font-weight: 900;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.4px;
+  line-height: 1;
+}
+
+.leader-points-wrap .leader-pts-lbl {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Season Total Tab: Athletic Gold Points */
+.leader-points-wrap.pts-season .leader-pts-val {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(245, 184, 0, 0.35);
+}
+
+.leader-points-wrap.pts-season .leader-pts-lbl {
+  color: rgba(245, 184, 0, 0.75);
+}
+
+/* Week # Standings Tab: Neon Emerald Points */
+.leader-points-wrap.pts-weekly .leader-pts-val {
+  color: #10b981;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+}
+
+.leader-points-wrap.pts-weekly .leader-pts-lbl {
+  color: rgba(52, 211, 153, 0.75);
+}
+
+/* Sub-Pills below Points */
+.leader-sub-pill {
+  font-size: 0.67rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 1.5px 8px;
+  line-height: 1.2;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Frosted Neon Emerald Pill (Weekly gain context on Season Total) */
+.leader-sub-pill.pill-emerald {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.26);
+}
+
+/* Frosted Athletic Gold Pill (Season total context on Week # Standings) */
+.leader-sub-pill.pill-gold {
+  color: #ffd700;
+  background: rgba(245, 184, 0, 0.1);
+  border: 1px solid rgba(245, 184, 0, 0.28);
 }
 
 .leader-total-points {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 900;
-  color: var(--accent-green);
+  color: #ffd700;
   line-height: 1.1;
 }
 
@@ -1099,9 +1259,9 @@ body {
 }
 
 .leader-week-pts {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  font-weight: 600;
+  font-size: 0.67rem;
+  color: #34d399;
+  font-weight: 800;
 }
 
 .week-empty-banner {
