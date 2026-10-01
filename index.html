@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=7.3">
+  <link rel="stylesheet" href="style.css?v=7.4">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 </head>
@@ -100,22 +100,44 @@
         </button>
       </div>
 
-      <!-- Player horizontal scroll selection -->
-      <div id="player-scroller-pills" class="player-scroller-pills">
-        <!-- Generated dynamically -->
+      <!-- PLAYERS SUB-VIEW MODE TOGGLE: Scorecard vs Head-to-Head -->
+      <div class="players-mode-toggle-wrap">
+        <div class="segmented-control" role="group" aria-label="Player View Selection">
+          <button id="btn-player-mode-single" type="button" class="segmented-btn active" onclick="setPlayerViewMode('single')" aria-label="Individual Scorecard">
+            <span class="segmented-icon">👤</span>
+            <span class="segmented-label">Scorecard</span>
+          </button>
+          <button id="btn-player-mode-h2h" type="button" class="segmented-btn" onclick="setPlayerViewMode('h2h')" aria-label="Head-to-Head Rivalry Comparison">
+            <span class="segmented-icon">⚔️</span>
+            <span class="segmented-label">Head-to-Head</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Selected Player Card -->
-      <div id="player-hero-card" class="player-hero-card">
-        <!-- Rendered by app.js -->
+      <!-- VIEW 1: SINGLE PLAYER SCORECARD -->
+      <div id="player-single-view">
+        <!-- Player horizontal scroll selection -->
+        <div id="player-scroller-pills" class="player-scroller-pills">
+          <!-- Generated dynamically -->
+        </div>
+
+        <!-- Selected Player Card -->
+        <div id="player-hero-card" class="player-hero-card">
+          <!-- Rendered by app.js -->
+        </div>
+
+        <!-- Player picks for selected week -->
+        <div style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
+          <span id="player-week-title">Week 4 Predictions</span>
+        </div>
+        <div id="player-picks-container">
+          <!-- Rendered by app.js -->
+        </div>
       </div>
 
-      <!-- Player picks for selected week -->
-      <div style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
-        <span id="player-week-title">Week 4 Predictions</span>
-      </div>
-      <div id="player-picks-container">
-        <!-- Rendered by app.js -->
+      <!-- VIEW 2: HEAD-TO-HEAD RIVALRY SHOWDOWN -->
+      <div id="player-h2h-view" style="display: none;">
+        <!-- Rendered dynamically by app.js -->
       </div>
     </section>
 
@@ -268,11 +290,24 @@
     </div>
   </div>
 
+  <!-- H2H PLAYER SELECTION MODAL -->
+  <div id="h2h-picker-modal" class="h2h-picker-modal" onclick="closeH2HPicker(event)">
+    <div class="h2h-picker-card" onclick="event.stopPropagation()">
+      <div class="h2h-picker-header">
+        <div class="h2h-picker-title" id="h2h-picker-title">Select Player</div>
+        <button type="button" class="h2h-picker-close" onclick="closeH2HPicker()" aria-label="Close">&times;</button>
+      </div>
+      <div id="h2h-picker-grid" class="h2h-picker-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div id="toast-notice" class="toast-notice" role="alert"></div>
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.1"></script>
-  <script src="app.js?v=7.7"></script>
+  <script src="app.js?v=7.8"></script>
 </body>
 </html>
