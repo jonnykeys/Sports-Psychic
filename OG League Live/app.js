@@ -218,6 +218,10 @@ let state = {
   selectedPlayer: initialSavedPlayer || "Caleb",
   activeTab: "leaderboard",
   leaderboardMode: "season", // "season" | "weekly"
+  playerViewMode: "single", // "single" | "h2h"
+  h2hPlayerA: null,
+  h2hPlayerB: null,
+  h2hFilter: "swing", // "swing" | "all"
   isSyncing: false,
   lastUpdated: null,
   data: null,
@@ -1611,6 +1615,25 @@ function updateToggleAllBtn() {
 // TAB 3: PLAYER ROSTERS RENDERING
 // =========================================================
 function renderPlayers() {
+  const singleBtn = document.getElementById("btn-player-mode-single");
+  const h2hBtn = document.getElementById("btn-player-mode-h2h");
+  const singleView = document.getElementById("player-single-view");
+  const h2hView = document.getElementById("player-h2h-view");
+
+  const isH2H = (state.playerViewMode === "h2h");
+  if (singleBtn) singleBtn.classList.toggle("active", !isH2H);
+  if (h2hBtn) h2hBtn.classList.toggle("active", isH2H);
+
+  if (isH2H) {
+    if (singleView) singleView.style.display = "none";
+    if (h2hView) h2hView.style.display = "block";
+    renderH2H();
+    return;
+  }
+
+  if (singleView) singleView.style.display = "block";
+  if (h2hView) h2hView.style.display = "none";
+
   const pillsContainer = document.getElementById("player-scroller-pills");
   const heroContainer = document.getElementById("player-hero-card");
   const picksContainer = document.getElementById("player-picks-container");
@@ -1673,6 +1696,9 @@ function renderPlayers() {
       </div>
       <div class="player-hero-header-actions">
         <div class="player-hero-rank">Rank #${playerRankObj.rank}</div>
+        <button type="button" class="btn-hero-compare" onclick="startH2HComparison('${state.selectedPlayer}')" title="Compare against another player in Head-to-Head">
+          ⚔️ Compare
+        </button>
         <button class="btn-hero-profile ${isMyProfile ? "is-active" : ""}" onclick="toggleMyProfile('${state.selectedPlayer}')" title="${isMyProfile ? 'You are remembered as this player' : 'Remember me as this player'}">
           ${isMyProfile ? `⭐ Active Profile` : `☆ Set as Me`}
         </button>
@@ -1797,6 +1823,7 @@ function renderPlayers() {
 
 function openPlayer(playerName) {
   state.selectedPlayer = playerName;
+  state.playerViewMode = "single";
   switchTab("players");
   
   // Center active player pill
@@ -1806,6 +1833,496 @@ function openPlayer(playerName) {
       activePill.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     }
   }, 100);
+}
+
+// =========================================================
+// HEAD-TO-HEAD (H2H) RIVALRY DIVERGENCE ENGINE
+// =========================================================
+
+function setPlayerViewMode(mode) {
+  state.playerViewMode = mode;
+  renderPlayers();
+}
+
+function startH2HComparison(playerA, playerB) {
+  state.h2hPlayerA = playerA || state.selectedPlayer || PLAYERS[0];
+  if (playerB) {
+    state.h2hPlayerB = playerB;
+  } else if (state.myPlayer && state.myPlayer !== state.h2hPlayerA) {
+    state.h2hPlayerB = state.myPlayer;
+  } else {
+    state.h2hPlayerB = PLAYERS.find(p => p !== state.h2hPlayerA) || PLAYERS[1];
+  }
+  state.playerViewMode = "h2h";
+  switchTab("players");
+}
+
+function swapH2HPlayers() {
+  const temp = state.h2hPlayerA;
+  state.h2hPlayerA = state.h2hPlayerB;
+  state.h2hPlayerB = temp;
+  renderH2H();
+}
+
+function setH2HFilter(filter) {
+  state.h2hFilter = filter;
+  renderH2H();
+}
+
+function openH2HPicker(slot) {
+  state.h2hPickerSlot = slot;
+  const modal = document.getElementById("h2h-picker-modal");
+  const title = document.getElementById("h2h-picker-title");
+  const grid = document.getElementById("h2h-picker-grid");
+  if (!modal || !grid) return;
+
+  const currentSelected = slot === 'A' ? state.h2hPlayerA : state.h2hPlayerB;
+  const otherSelected = slot === 'A' ? state.h2hPlayerB : state.h2hPlayerA;
+
+  if (title) {
+    title.textContent = `Select Player ${slot === 'A' ? 'A (Left)' : 'B (Right)'}`;
+  }
+
+  const seasonLb = getSeasonLeaderboard();
+
+  grid.innerHTML = PLAYERS.map(pName => {
+    const isSelected = pName === currentSelected;
+    const isOther = pName === otherSelected;
+    const isMe = Boolean(state.myPlayer && state.myPlayer === pName);
+    const pObj = seasonLb.find(p => p.name === pName) || { rankDisplay: "-", points: 0 };
+
+    return `
+      <div class="h2h-picker-item ${isSelected ? "active" : ""}" onclick="selectH2HPlayer('${pName}')">
+        ${getPlayerAvatarHtml(pName, 32)}
+        <div style="min-width:0; flex:1;">
+          <div style="display:flex; align-items:center; gap:4px; overflow:hidden;">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:800;">${pName}</span>
+            ${isMe ? `<span style="font-size:0.6rem; background:rgba(56,189,248,0.25); color:var(--accent-cyan); padding:1px 4px; border-radius:4px; font-weight:800;">YOU</span>` : ""}
+          </div>
+          <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-top:2px;">
+            Rank #${pObj.rankDisplay} • ${pObj.points} pts
+          </div>
+        </div>
+        ${isSelected ? `<span style="color:var(--accent-cyan); font-weight:900;">✓</span>` : isOther ? `<span style="font-size:0.65rem; color:var(--text-dim);">(Slot ${slot === 'A' ? 'B' : 'A'})</span>` : ""}
+      </div>
+    `;
+  }).join("");
+
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function selectH2HPlayer(pName) {
+  if (state.h2hPickerSlot === 'A') {
+    if (pName === state.h2hPlayerB) {
+      state.h2hPlayerB = state.h2hPlayerA;
+    }
+    state.h2hPlayerA = pName;
+  } else {
+    if (pName === state.h2hPlayerA) {
+      state.h2hPlayerA = state.h2hPlayerB;
+    }
+    state.h2hPlayerB = pName;
+  }
+
+  closeH2HPicker();
+  renderH2H();
+}
+
+function closeH2HPicker(event) {
+  if (event && event.target && event.target.id !== "h2h-picker-modal" && !event.target.classList.contains("h2h-picker-close")) {
+    return;
+  }
+  const modal = document.getElementById("h2h-picker-modal");
+  if (modal) modal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function renderH2H() {
+  const container = document.getElementById("player-h2h-view");
+  if (!container) return;
+
+  if (!state.data) {
+    container.innerHTML = `
+      <div class="loading-box"><p>Loading player data...</p></div>
+    `;
+    return;
+  }
+
+  // Initialize and validate selected players
+  if (!state.h2hPlayerA) {
+    state.h2hPlayerA = state.selectedPlayer || PLAYERS[0];
+  }
+  if (!state.h2hPlayerB || state.h2hPlayerB === state.h2hPlayerA) {
+    if (state.myPlayer && state.myPlayer !== state.h2hPlayerA) {
+      state.h2hPlayerB = state.myPlayer;
+    } else {
+      state.h2hPlayerB = PLAYERS.find(p => p !== state.h2hPlayerA) || PLAYERS[1];
+    }
+  }
+
+  const playerA = state.h2hPlayerA;
+  const playerB = state.h2hPlayerB;
+  const isMeA = Boolean(state.myPlayer && state.myPlayer === playerA);
+  const isMeB = Boolean(state.myPlayer && state.myPlayer === playerB);
+
+  // Season Stats
+  const seasonLb = getSeasonLeaderboard();
+  const statA = seasonLb.find(p => p.name === playerA) || { rankDisplay: "-", points: 0, rec: { text: "0-0" } };
+  const statB = seasonLb.find(p => p.name === playerB) || { rankDisplay: "-", points: 0, rec: { text: "0-0" } };
+
+  const seasonDiff = (statA.points || 0) - (statB.points || 0);
+
+  // Week Data & Calculations
+  const weekKey = `Week ${state.currentWeek}`;
+  const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
+  const games = weekData && weekData.games ? weekData.games : [];
+
+  games.forEach(g => calculateGamePicksPoints(g));
+
+  let weekPtsA = 0;
+  let weekPtsB = 0;
+  let swingGamesCount = 0;
+  let agreedGamesCount = 0;
+
+  const comparisonGames = games.map((g, idx) => {
+    const pkA = g.picks ? g.picks[playerA] : null;
+    const pkB = g.picks ? g.picks[playerB] : null;
+
+    const pickAWinner = pkA && pkA.winner ? pkA.winner : "";
+    const pickBWinner = pkB && pkB.winner ? pkB.winner : "";
+
+    const ptsA = pkA ? pkA.points || 0 : 0;
+    const ptsB = pkB ? pkB.points || 0 : 0;
+
+    weekPtsA += ptsA;
+    weekPtsB += ptsB;
+
+    const isSwing = Boolean(pickAWinner && pickBWinner && pickAWinner !== pickBWinner);
+    const isAgreed = Boolean(pickAWinner && pickBWinner && pickAWinner === pickBWinner);
+
+    if (isSwing) swingGamesCount++;
+    if (isAgreed) agreedGamesCount++;
+
+    return {
+      game: g,
+      idx,
+      pkA,
+      pkB,
+      isSwing,
+      isAgreed
+    };
+  });
+
+  const weekDiff = weekPtsA - weekPtsB;
+  const totalDecided = swingGamesCount + agreedGamesCount;
+  const agreedPct = totalDecided > 0 ? Math.round((agreedGamesCount / totalDecided) * 100) : 50;
+  const swingPct = totalDecided > 0 ? (100 - agreedPct) : 50;
+
+  // Filter games based on selected filter
+  const filter = state.h2hFilter || "swing";
+  const displayGames = comparisonGames.filter(cg => {
+    if (filter === "swing") return cg.isSwing;
+    return true; // "all"
+  });
+
+  // Build HTML
+  let html = `
+    <!-- 1. DUAL PLAYER SELECTORS & SWAP BUTTON -->
+    <div class="h2h-selectors-card">
+      <div class="h2h-player-select-wrap">
+        <span class="h2h-select-label">Player A</span>
+        <button type="button" class="h2h-select-btn" onclick="openH2HPicker('A')" title="Change Player A">
+          ${getPlayerAvatarHtml(playerA, 28)}
+          <span class="h2h-select-name">${playerA}${isMeA ? " (You)" : ""}</span>
+          <span class="h2h-select-arrow">▼</span>
+        </button>
+      </div>
+
+      <button type="button" class="h2h-swap-btn" onclick="swapH2HPlayers()" title="Swap Player A and Player B" aria-label="Swap Player A and Player B">
+        ⇄
+      </button>
+
+      <div class="h2h-player-select-wrap">
+        <span class="h2h-select-label" style="text-align:right;">Player B</span>
+        <button type="button" class="h2h-select-btn" onclick="openH2HPicker('B')" title="Change Player B">
+          ${getPlayerAvatarHtml(playerB, 28)}
+          <span class="h2h-select-name">${playerB}${isMeB ? " (You)" : ""}</span>
+          <span class="h2h-select-arrow">▼</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. TALE OF THE TAPE SHOWDOWN HERO -->
+    <div class="h2h-hero-showdown">
+      <div class="h2h-tale-tape">
+        <!-- Fighter A (Left) -->
+        <div class="h2h-fighter">
+          ${getPlayerAvatarHtml(playerA, 46)}
+          <div class="h2h-fighter-name">
+            ${playerA}
+            ${isMeA ? `<span class="chip-you-badge">YOU</span>` : ""}
+          </div>
+          <div class="h2h-fighter-stats">
+            <span class="h2h-fighter-pts">${statA.points} <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">PTS</span></span>
+            <span class="h2h-fighter-rec">Rank #${statA.rankDisplay} • ${statA.rec.text}</span>
+            <span style="font-size:0.75rem; color:var(--accent-green); font-weight:800; margin-top:2px;">+${weekPtsA} in ${weekKey}</span>
+          </div>
+        </div>
+
+        <!-- Center Clash & Net Differentials -->
+        <div class="h2h-center-clash">
+          <div class="h2h-vs-badge">⚔️ VS ⚔️</div>
+          <div class="h2h-lead-diff" style="margin-top:4px;">
+            <span style="color:var(--text-dim); font-size:0.65rem; display:block; text-transform:uppercase; letter-spacing:0.5px;">Season Lead</span>
+            <span style="font-weight:900; color:${seasonDiff !== 0 ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-size:0.8rem;">
+              ${seasonDiff > 0 ? `+${seasonDiff} ${playerA}` : seasonDiff < 0 ? `+${Math.abs(seasonDiff)} ${playerB}` : "Tied"}
+            </span>
+          </div>
+          <div class="h2h-lead-diff" style="margin-top:2px;">
+            <span style="color:var(--text-dim); font-size:0.65rem; display:block; text-transform:uppercase; letter-spacing:0.5px;">${weekKey} Lead</span>
+            <span style="font-weight:900; color:${weekDiff !== 0 ? 'var(--accent-cyan)' : 'var(--text-muted)'}; font-size:0.8rem;">
+              ${weekDiff > 0 ? `+${weekDiff} ${playerA}` : weekDiff < 0 ? `+${Math.abs(weekDiff)} ${playerB}` : "Tied"}
+            </span>
+          </div>
+        </div>
+
+        <!-- Fighter B (Right) -->
+        <div class="h2h-fighter">
+          ${getPlayerAvatarHtml(playerB, 46)}
+          <div class="h2h-fighter-name">
+            ${playerB}
+            ${isMeB ? `<span class="chip-you-badge">YOU</span>` : ""}
+          </div>
+          <div class="h2h-fighter-stats">
+            <span class="h2h-fighter-pts">${statB.points} <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">PTS</span></span>
+            <span class="h2h-fighter-rec">Rank #${statB.rankDisplay} • ${statB.rec.text}</span>
+            <span style="font-size:0.75rem; color:var(--accent-green); font-weight:800; margin-top:2px;">+${weekPtsB} in ${weekKey}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. AGREEMENT VS DIVERGENCE METER -->
+    <div class="h2h-divergence-card">
+      <div class="h2h-divergence-row">
+        <span style="color:var(--accent-green); display:flex; align-items:center; gap:4px;">
+          <span>✅</span> <strong>${agreedGamesCount} Agreed</strong> <span style="color:var(--text-dim); font-weight:600;">(${agreedPct}%)</span>
+        </span>
+        <span style="color:var(--accent-gold); display:flex; align-items:center; gap:4px;">
+          <span>⚡</span> <strong>${swingGamesCount} Swing Games</strong> <span style="color:var(--text-dim); font-weight:600;">(${swingPct}%)</span>
+        </span>
+      </div>
+      <div class="h2h-meter-track" title="${agreedGamesCount} agreed (${agreedPct}%), ${swingGamesCount} swing (${swingPct}%)">
+        <div class="h2h-meter-agreed" style="width: ${agreedPct}%;"></div>
+        <div class="h2h-meter-swing" style="width: ${swingPct}%;"></div>
+      </div>
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-top:7px; text-align:center;">
+        ${swingGamesCount === 0
+          ? `🤝 Full Consensus — Both players made identical winner predictions for all games in ${weekKey}!`
+          : `⚡ <strong>${swingGamesCount}</strong> game${swingGamesCount === 1 ? '' : 's'} where picks differ will determine this matchup in ${weekKey}.`}
+      </div>
+    </div>
+
+    <!-- 4. FILTER PILLS: SWING GAMES VS ALL GAMES -->
+    <div class="h2h-filter-row">
+      <div style="font-size:0.78rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.5px;">
+        ${filter === "swing" ? `⚡ Swing Games (${swingGamesCount})` : `📋 All Games (${games.length})`}
+      </div>
+      <div class="h2h-filter-group">
+        <button type="button" class="h2h-filter-btn ${filter === "swing" ? "active" : ""}" onclick="setH2HFilter('swing')">
+          ⚡ Swings (${swingGamesCount})
+        </button>
+        <button type="button" class="h2h-filter-btn ${filter === "all" ? "active" : ""}" onclick="setH2HFilter('all')">
+          All (${games.length})
+        </button>
+      </div>
+    </div>
+  `;
+
+  // 5. SIDE-BY-SIDE MATCHUP CARDS
+  if (filter === "swing" && swingGamesCount === 0) {
+    html += `
+      <div class="loading-box" style="padding:28px 16px; text-align:center; background:var(--bg-card); border-radius:var(--border-radius); border:1px solid var(--border-color); margin-bottom:14px;">
+        <div style="font-size:2.2rem; margin-bottom:8px;">🤝</div>
+        <div style="font-size:0.95rem; font-weight:900; color:#fff; margin-bottom:4px;">No Swing Games in ${weekKey}</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">Both ${playerA} and ${playerB} submitted identical winner picks for every game this week!</div>
+        <button type="button" class="h2h-filter-btn active" onclick="setH2HFilter('all')" style="padding:6px 14px; font-size:0.76rem;">
+          📋 View All ${games.length} Games
+        </button>
+      </div>
+    `;
+  } else if (displayGames.length === 0) {
+    html += `
+      <div class="loading-box" style="padding:24px 16px; text-align:center;">
+        <p style="color:var(--text-dim);">No games recorded for ${weekKey}</p>
+      </div>
+    `;
+  } else {
+    html += displayGames.map(({ game, idx, pkA, pkB, isSwing, isAgreed }) => {
+      const isFinal = game.isFinal;
+
+      // Helper to generate player pick display
+      const getPickColHtml = (pk, isPlayerB = false) => {
+        if (!pk || !pk.winner) {
+          return `
+            <div class="h2h-pick-col ${isPlayerB ? 'player-b' : ''}">
+              <div class="h2h-pick-chip-box">
+                <span style="color:var(--text-dim); font-size:0.72rem;">No pick</span>
+              </div>
+              <div class="h2h-pick-outcome pending">-</div>
+            </div>
+          `;
+        }
+
+        const tmInfo = NFL_TEAMS[pk.winner] || { color: '#2a3b50' };
+        const tmText = getTeamContrastColor(tmInfo.color);
+        const scoreStr = (pk.awayScore !== null && pk.homeScore !== null) ? `${pk.awayScore}-${pk.homeScore}` : "-";
+
+        let outcomeText = "Pending";
+        let outcomeClass = "pending";
+
+        if (isFinal) {
+          if (pk.exact) {
+            outcomeText = `🔮 EXACT (+${pk.points})`;
+            outcomeClass = "win";
+          } else if (pk.isClosest) {
+            outcomeText = `🎯 CLOSEST (+${pk.points})`;
+            outcomeClass = "win";
+          } else if (pk.points > 0) {
+            outcomeText = `✅ WON (+${pk.points})`;
+            outcomeClass = "win";
+          } else {
+            outcomeText = `❌ LOST (0)`;
+            outcomeClass = "loss";
+          }
+        }
+
+        const badgeHtml = `<span class="h2h-pick-team-badge" style="background-color: ${tmInfo.color}; color: ${tmText};">${pk.winner}</span>`;
+        const scoreHtml = `<span class="h2h-pick-score-text">${scoreStr}</span>`;
+        const multHtml = pk.multiplier ? `<span style="font-size:0.62rem; color:var(--accent-gold); font-weight:800;">⭐ 3X</span>` : "";
+
+        // For player B, badge on right, score on left
+        const chipContent = isPlayerB
+          ? `${multHtml} ${scoreHtml} ${badgeHtml}`
+          : `${badgeHtml} ${scoreHtml} ${multHtml}`;
+
+        return `
+          <div class="h2h-pick-col ${isPlayerB ? 'player-b' : ''}">
+            <div class="h2h-pick-chip-box">
+              ${chipContent}
+            </div>
+            <div class="h2h-pick-outcome ${outcomeClass}">${outcomeText}</div>
+          </div>
+        `;
+      };
+
+      // Middle Actual Score / Game Status
+      let centerScoreHtml = "";
+      if (isFinal) {
+        centerScoreHtml = `
+          <span class="h2h-game-actual-score">${game.awayScore} - ${game.homeScore}</span>
+          <span style="font-size:0.62rem; color:var(--accent-green); font-weight:800; text-transform:uppercase;">FINAL</span>
+        `;
+      } else if (game.awayScore !== null && game.homeScore !== null) {
+        centerScoreHtml = `
+          <span class="h2h-game-actual-score">${game.awayScore} - ${game.homeScore}</span>
+          <span style="font-size:0.62rem; color:#f87171; font-weight:800; text-transform:uppercase;">LIVE</span>
+        `;
+      } else {
+        centerScoreHtml = `
+          <span style="font-size:0.85rem; font-weight:800; color:var(--text-dim);">@</span>
+          <span style="font-size:0.62rem; color:var(--text-muted); font-weight:700;">Upcoming</span>
+        `;
+      }
+
+      // Footer callout
+      let footerHtml = "";
+      if (isSwing) {
+        const pkAWinner = pkA ? pkA.winner : "None";
+        const pkBWinner = pkB ? pkB.winner : "None";
+        let swingResult = "";
+        if (isFinal) {
+          if (game.winner === pkAWinner) {
+            swingResult = `<strong style="color:var(--accent-green);">+${pkA ? pkA.points : 0} pts to ${playerA}</strong>`;
+          } else if (game.winner === pkBWinner) {
+            swingResult = `<strong style="color:var(--accent-green);">+${pkB ? pkB.points : 0} pts to ${playerB}</strong>`;
+          } else {
+            swingResult = `<span style="color:var(--text-dim);">0 pts awarded</span>`;
+          }
+        } else {
+          swingResult = `<span style="color:var(--text-muted);">Points at stake</span>`;
+        }
+
+        footerHtml = `
+          <div class="h2h-card-footer">
+            <span class="h2h-swing-callout">
+              <span>⚡</span> Swing: ${playerA} (${pkAWinner}) vs ${playerB} (${pkBWinner})
+            </span>
+            <span>${swingResult}</span>
+          </div>
+        `;
+      } else if (isAgreed) {
+        const agreedWinner = pkA ? pkA.winner : "";
+        let agreedResult = "";
+        if (isFinal) {
+          if (game.winner === agreedWinner) {
+            const ptsEarnedA = pkA ? pkA.points : 0;
+            const ptsEarnedB = pkB ? pkB.points : 0;
+            agreedResult = `<strong style="color:var(--accent-green);">+${ptsEarnedA} / +${ptsEarnedB} earned</strong>`;
+          } else {
+            agreedResult = `<span style="color:#f87171;">Both missed</span>`;
+          }
+        } else {
+          agreedResult = `<span style="color:var(--text-muted);">Points shared</span>`;
+        }
+
+        footerHtml = `
+          <div class="h2h-card-footer">
+            <span class="h2h-agreed-callout">
+              <span>🤝</span> Both picked ${agreedWinner}
+            </span>
+            <span>${agreedResult}</span>
+          </div>
+        `;
+      }
+
+      return `
+        <article class="h2h-game-card ${isSwing ? 'is-swing' : 'is-agreed'}">
+          <div class="h2h-game-header">
+            <span style="font-weight:800; color:#fff;">${game.matchup}</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="color:var(--text-dim); font-size:0.68rem;">${game.dateTime}</span>
+              ${isSwing
+                ? `<span style="font-size:0.62rem; background:rgba(245,158,11,0.2); color:var(--accent-gold); border:1px solid rgba(245,158,11,0.4); padding:1px 6px; border-radius:10px; font-weight:800;">SWING</span>`
+                : `<span style="font-size:0.62rem; background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:1px 6px; border-radius:10px; font-weight:800;">AGREED</span>`}
+            </div>
+          </div>
+          <div class="h2h-card-body">
+            ${getPickColHtml(pkA, false)}
+            <div class="h2h-card-center-score">
+              ${centerScoreHtml}
+            </div>
+            ${getPickColHtml(pkB, true)}
+          </div>
+          ${footerHtml}
+        </article>
+      `;
+    }).join("");
+  }
+
+  html += `
+    <div style="margin-top:16px; margin-bottom:8px; display:flex; gap:10px;">
+      <button type="button" class="btn-back-bottom" onclick="setPlayerViewMode('single')" style="flex:1;">
+        👤 View ${playerA} Scorecard
+      </button>
+      <button type="button" class="btn-back-bottom" onclick="switchTab('leaderboard')" style="flex:1;">
+        ← Standings
+      </button>
+    </div>
+  `;
+
+  container.innerHTML = html;
 }
 
 // =========================================================
@@ -2058,10 +2575,11 @@ function closeProfileModal(event) {
   document.body.style.overflow = "";
 }
 
-// Close profile modal on ESC key
+// Close modals on ESC key
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeProfileModal();
+    closeH2HPicker();
   }
 });
 
@@ -2074,3 +2592,10 @@ window.openProfileModal = openProfileModal;
 window.closeProfileModal = closeProfileModal;
 window.setMyPlayer = setMyPlayer;
 window.toggleMyProfile = toggleMyProfile;
+window.setPlayerViewMode = setPlayerViewMode;
+window.startH2HComparison = startH2HComparison;
+window.openH2HPicker = openH2HPicker;
+window.selectH2HPlayer = selectH2HPlayer;
+window.closeH2HPicker = closeH2HPicker;
+window.swapH2HPlayers = swapH2HPlayers;
+window.setH2HFilter = setH2HFilter;
