@@ -1371,13 +1371,35 @@ function renderLeaderboard() {
   const isMeRank2 = Boolean(state.myPlayer && rank2.name === state.myPlayer);
   const isMeRank3 = Boolean(state.myPlayer && rank3.name === state.myPlayer);
 
-  // Podium subtitle labels
+  // Podium subtitle & pedestal labels
   let rank1Title = isWeekly
     ? (rank1.numericRank === rank2.numericRank ? `WEEK ${state.currentWeek} CO-LEADER` : `WEEK ${state.currentWeek} WINNER`)
     : (rank1.numericRank === rank2.numericRank ? `LEAGUE CO-LEADER` : `LEAGUE LEADER`);
 
-  let rank2Sub = `Rank #${rank2.rankDisplay}`;
-  let rank3Sub = `Rank #${rank3.rankDisplay}`;
+  const getPedestalRankText = (p, defaultLabel) => {
+    if (!p || !p.rankDisplay || p.rankDisplay === "-") return defaultLabel;
+    const str = String(p.rankDisplay);
+    if (str.startsWith("T-")) {
+      const num = str.slice(2);
+      const sfx = num === "1" ? "ST" : (num === "2" ? "ND" : (num === "3" ? "RD" : "TH"));
+      return `T-${num}${sfx}`;
+    }
+    const sfx = str === "1" ? "ST" : (str === "2" ? "ND" : (str === "3" ? "RD" : "TH"));
+    return `${str}${sfx}`;
+  };
+
+  const getBadgeRankText = (p, defaultVal) => {
+    if (!p || !p.rankDisplay || p.rankDisplay === "-") return defaultVal;
+    return String(p.rankDisplay).replace("T-", "T");
+  };
+
+  const ped1Text = getPedestalRankText(rank1, "1ST");
+  const ped2Text = getPedestalRankText(rank2, "2ND");
+  const ped3Text = getPedestalRankText(rank3, "3RD");
+
+  const badge1Text = getBadgeRankText(rank1, "1");
+  const badge2Text = getBadgeRankText(rank2, "2");
+  const badge3Text = getBadgeRankText(rank3, "3");
 
   // If in weekly mode and no points scored yet (future or in-progress week)
   const isWeekUnplayed = isWeekly && leader.points === 0;
@@ -1396,31 +1418,73 @@ function renderLeaderboard() {
     `;
   } else {
     podiumEl.innerHTML = `
-      <!-- 2nd Place -->
-      <div class="podium-card ${isMeRank2 ? "is-my-rank" : ""}" onclick="openPlayer('${rank2.name}')">
-        <div class="podium-medal">🥈</div>
-        ${rank2.name && rank2.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank2.name, 42)}</div>` : ""}
-        <div class="podium-name">${rank2.name}${isMeRank2 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-        <div class="podium-points">${rank2.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-        <div class="podium-sub">${rank2Sub} • <strong>${rec2.label}</strong></div>
+      <!-- 2nd Place Pedestal (Silver) -->
+      <div class="podium-card rank-2 ${isMeRank2 ? "is-my-rank" : ""}" onclick="${rank2.name && rank2.name !== '-' ? `openPlayer('${rank2.name}')` : ''}">
+        <div class="podium-pedestal-header">
+          <div class="podium-avatar-frame frame-silver">
+            ${rank2.name && rank2.name !== "-" ? getPlayerAvatarHtml(rank2.name, 44) : '<div class="player-avatar" style="width:44px; height:44px;">?</div>'}
+            <div class="podium-rank-badge badge-silver">${badge2Text}</div>
+          </div>
+        </div>
+        <div class="podium-body">
+          <div class="podium-name">${rank2.name}${isMeRank2 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+          <div class="podium-points-wrap">
+            <span class="podium-pts-val">${rank2.points}</span>
+            <span class="podium-pts-lbl">PTS</span>
+          </div>
+          <div class="podium-record-pill">${rec2.label}</div>
+        </div>
+        <div class="podium-base-pedestal base-silver">
+          <span class="pedestal-rank-num">${ped2Text}</span>
+        </div>
       </div>
 
-      <!-- 1st Place (Center Crown) -->
-      <div class="podium-card first ${isMeRank1 ? "is-my-rank" : ""}" onclick="openPlayer('${rank1.name}')">
-        <div class="podium-medal">${isWeekly ? "🥇" : "👑"}</div>
-        ${rank1.name && rank1.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank1.name, 50)}</div>` : ""}
-        <div class="podium-name" style="font-size:1.1rem; color:#fff;">${rank1.name}${isMeRank1 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-        <div class="podium-points" style="font-size:1.4rem;">${rank1.points} <span style="font-size:0.75rem; font-weight:700;">PTS</span></div>
-        <div class="podium-sub" style="color:var(--accent-gold); font-weight:800;">${rank1Title} • ${rec1.label}</div>
+      <!-- 1st Place Pedestal (Gold - Champion) -->
+      <div class="podium-card rank-1 first ${isMeRank1 ? "is-my-rank" : ""}" onclick="${rank1.name && rank1.name !== '-' ? `openPlayer('${rank1.name}')` : ''}">
+        <div class="podium-pedestal-header">
+          <div class="podium-crown-wrap">
+            <svg class="podium-crown-svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+              <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+            </svg>
+          </div>
+          <div class="podium-avatar-frame frame-gold">
+            ${rank1.name && rank1.name !== "-" ? getPlayerAvatarHtml(rank1.name, 54) : '<div class="player-avatar" style="width:54px; height:54px;">?</div>'}
+            <div class="podium-rank-badge badge-gold">${badge1Text}</div>
+          </div>
+        </div>
+        <div class="podium-body">
+          <div class="podium-title-tag">${rank1Title}</div>
+          <div class="podium-name rank-1-name">${rank1.name}${isMeRank1 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+          <div class="podium-points-wrap rank-1-pts">
+            <span class="podium-pts-val">${rank1.points}</span>
+            <span class="podium-pts-lbl">PTS</span>
+          </div>
+          <div class="podium-record-pill rank-1-rec">${rec1.label}</div>
+        </div>
+        <div class="podium-base-pedestal base-gold">
+          <span class="pedestal-rank-num">${ped1Text}</span>
+        </div>
       </div>
 
-      <!-- 3rd Place -->
-      <div class="podium-card ${isMeRank3 ? "is-my-rank" : ""}" onclick="openPlayer('${rank3.name}')">
-        <div class="podium-medal">🥉</div>
-        ${rank3.name && rank3.name !== "-" ? `<div class="podium-avatar">${getPlayerAvatarHtml(rank3.name, 42)}</div>` : ""}
-        <div class="podium-name">${rank3.name}${isMeRank3 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-        <div class="podium-points">${rank3.points} <span style="font-size:0.7rem; font-weight:700;">PTS</span></div>
-        <div class="podium-sub">${rank3Sub} • <strong>${rec3.label}</strong></div>
+      <!-- 3rd Place Pedestal (Bronze) -->
+      <div class="podium-card rank-3 ${isMeRank3 ? "is-my-rank" : ""}" onclick="${rank3.name && rank3.name !== '-' ? `openPlayer('${rank3.name}')` : ''}">
+        <div class="podium-pedestal-header">
+          <div class="podium-avatar-frame frame-bronze">
+            ${rank3.name && rank3.name !== "-" ? getPlayerAvatarHtml(rank3.name, 42) : '<div class="player-avatar" style="width:42px; height:42px;">?</div>'}
+            <div class="podium-rank-badge badge-bronze">${badge3Text}</div>
+          </div>
+        </div>
+        <div class="podium-body">
+          <div class="podium-name">${rank3.name}${isMeRank3 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+          <div class="podium-points-wrap">
+            <span class="podium-pts-val">${rank3.points}</span>
+            <span class="podium-pts-lbl">PTS</span>
+          </div>
+          <div class="podium-record-pill">${rec3.label}</div>
+        </div>
+        <div class="podium-base-pedestal base-bronze">
+          <span class="pedestal-rank-num">${ped3Text}</span>
+        </div>
       </div>
     `;
   }
