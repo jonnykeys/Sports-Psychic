@@ -1983,16 +1983,21 @@ function renderPlayers() {
 
   let weekPts = 0;
   let correctCount = 0;
-  let multiplierGame = null;
 
   games.forEach(g => {
     const pk = g.picks ? g.picks[state.selectedPlayer] : null;
     if (pk) {
       weekPts += pk.points || 0;
       if (pk.points > 0) correctCount++;
-      if (pk.multiplier) multiplierGame = g;
     }
   });
+
+  const weeklyLb = getWeeklyLeaderboard(state.currentWeek);
+  const weekRankObj = weeklyLb.find(p => p.name === state.selectedPlayer) || { rankDisplay: "-" };
+  const weekRankText = weekRankObj.rankDisplay && weekRankObj.rankDisplay !== "-"
+    ? (String(weekRankObj.rankDisplay).startsWith("T-") ? `T-#${String(weekRankObj.rankDisplay).slice(2)}` : `#${weekRankObj.rankDisplay}`)
+    : "#-";
+  const weekPillText = weekPts > 0 ? `Week ${weekRankText}` : `Week ${state.currentWeek}`;
 
   const pColor = PLAYER_COLORS[state.selectedPlayer] || "var(--accent-blue)";
   const seasonRec = getPlayerSeasonRecord(state.selectedPlayer);
@@ -2027,7 +2032,7 @@ function renderPlayers() {
     <div class="player-hero-actions-bar">
       <button type="button" class="btn-hero-action btn-hero-compare" onclick="startH2HComparison('${state.selectedPlayer}')" title="Compare against another player in Head-to-Head">
         <span class="action-btn-icon">⚔️</span>
-        <span>Compare Rival</span>
+        <span>Compare Players</span>
       </button>
       <button type="button" class="btn-hero-action btn-hero-profile ${isMyProfile ? "is-active" : ""}" onclick="toggleMyProfile('${state.selectedPlayer}')" title="${isMyProfile ? 'You are remembered as this player' : 'Remember me as this player'}">
         <span class="action-btn-icon">${isMyProfile ? "★" : "☆"}</span>
@@ -2043,7 +2048,7 @@ function renderPlayers() {
           <span class="pstat-num">${playerRankObj.points}</span>
           <span class="pstat-unit">PTS</span>
         </div>
-        <div class="pstat-footer-pill pill-gold">League ${rankText}</div>
+        <div class="pstat-footer-pill pill-gold">${rankText}</div>
       </div>
 
       <!-- 2: Current Week Points -->
@@ -2053,12 +2058,12 @@ function renderPlayers() {
           <span class="pstat-num">${weekPts > 0 ? `+${weekPts}` : weekPts}</span>
           <span class="pstat-unit">PTS</span>
         </div>
-        <div class="pstat-footer-pill pill-green">${multiplierGame ? "⚡ 2X Active" : "Current Form"}</div>
+        <div class="pstat-footer-pill pill-green">${weekPillText}</div>
       </div>
 
       <!-- 3: Correct Picks & Hit Rate -->
       <div class="pstat-tile tile-picks">
-        <div class="pstat-header-label">PICKS HIT</div>
+        <div class="pstat-header-label">CORRECT PICKS</div>
         <div class="pstat-value val-blue">
           <span class="pstat-num">${correctCount}</span>
           <span class="pstat-unit">/ ${games.length}</span>
