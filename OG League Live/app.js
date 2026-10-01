@@ -941,13 +941,71 @@ function selectWeek(weekNum) {
   syncWeek(weekNum);
 }
 
+let isScoresRefreshing = false;
+
+async function triggerScoresRefresh() {
+  if (isScoresRefreshing) return;
+  isScoresRefreshing = true;
+
+  const indicator = document.getElementById("ptr-indicator");
+  const textEl = indicator ? indicator.querySelector(".ptr-text") : null;
+  const refreshBtn = document.getElementById("btn-refresh");
+
+  if (refreshBtn) refreshBtn.classList.add("spinning");
+
+  if (indicator) {
+    indicator.classList.remove("is-pulling", "is-ready", "is-success");
+    indicator.classList.add("is-refreshing");
+    if (textEl) textEl.textContent = "Refreshing Scores...";
+  }
+
+  // Light haptic pulse on iPhone if supported
+  try {
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(12);
+    }
+  } catch (err) {}
+
+  const startTime = Date.now();
+
+  try {
+    await Promise.all([
+      syncWeek(state.currentWeek, false, false),
+      syncNFLStandings(false)
+    ]);
+  } catch (err) {
+    console.warn("Scores refresh error:", err);
+  }
+
+  // Ensure at least 650ms for smooth user visual confirmation
+  const elapsed = Date.now() - startTime;
+  if (elapsed < 650) {
+    await new Promise(r => setTimeout(r, 650 - elapsed));
+  }
+
+  if (indicator) {
+    indicator.classList.remove("is-refreshing");
+    indicator.classList.add("is-success");
+    if (textEl) textEl.textContent = "✓ Updated!";
+
+    setTimeout(() => {
+      indicator.classList.remove("is-success");
+      indicator.style.transform = "";
+      indicator.style.opacity = "";
+      isScoresRefreshing = false;
+      if (refreshBtn) refreshBtn.classList.remove("spinning");
+    }, 700);
+  } else {
+    isScoresRefreshing = false;
+    if (refreshBtn) refreshBtn.classList.remove("spinning");
+  }
+}
+
 function setupRefresh() {
   const refreshBtn = document.getElementById("btn-refresh");
   if (!refreshBtn) return;
   refreshBtn.addEventListener("click", () => {
-    showToast("Syncing with Google Sheets...");
-    syncWeek(state.currentWeek, false, true);
-    syncNFLStandings(true);
+    triggerScoresRefresh();
   });
 }
 
@@ -963,14 +1021,13 @@ function setupPullToRefresh() {
   let startY = 0;
   let startX = 0;
   let isTracking = false;
-  let isRefreshing = false;
   const THRESHOLD = 65;
   const MAX_PULL = 90;
 
   window.addEventListener("touchstart", (e) => {
     // Only allow pull to refresh when user is at the very top of the page
     const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
-    if (scrollTop > 2 || isRefreshing) {
+    if (scrollTop > 2 || isScoresRefreshing) {
       isTracking = false;
       return;
     }
@@ -986,7 +1043,7 @@ function setupPullToRefresh() {
   }, { passive: true });
 
   window.addEventListener("touchmove", (e) => {
-    if (!isTracking || isRefreshing) return;
+    if (!isTracking || isScoresRefreshing) return;
 
     const currentY = e.touches[0].clientY;
     const currentX = e.touches[0].clientX;
@@ -1024,8 +1081,8 @@ function setupPullToRefresh() {
     }
   }, { passive: true });
 
-  window.addEventListener("touchend", async () => {
-    if (!isTracking || isRefreshing) {
+  window.addEventListener("touchend", () => {
+    if (!isTracking || isScoresRefreshing) {
       isTracking = false;
       return;
     }
@@ -1035,46 +1092,7 @@ function setupPullToRefresh() {
     indicator.classList.remove("is-pulling", "is-ready");
 
     if (isReady) {
-      isRefreshing = true;
-      indicator.classList.add("is-refreshing");
-      if (textEl) textEl.textContent = "Syncing live scores...";
-
-      // Light haptic pulse on iPhone if supported
-      try {
-        if (window.navigator && window.navigator.vibrate) {
-          window.navigator.vibrate(12);
-        }
-      } catch (err) {}
-
-      const startTime = Date.now();
-
-      // Trigger the real live sync without reloading the page!
-      try {
-        await Promise.all([
-          syncWeek(state.currentWeek, false, true),
-          syncNFLStandings(true)
-        ]);
-      } catch (err) {
-        console.warn("PTR sync error:", err);
-      }
-
-      // Ensure at least 650ms so user clearly sees the refresh action
-      const elapsed = Date.now() - startTime;
-      if (elapsed < 650) {
-        await new Promise(r => setTimeout(r, 650 - elapsed));
-      }
-
-      // Success state
-      indicator.classList.remove("is-refreshing");
-      indicator.classList.add("is-success");
-      if (textEl) textEl.textContent = "✓ Updated!";
-
-      setTimeout(() => {
-        indicator.classList.remove("is-success");
-        indicator.style.transform = "";
-        indicator.style.opacity = "";
-        isRefreshing = false;
-      }, 700);
+      triggerScoresRefresh();
     } else {
       indicator.style.transform = "";
       indicator.style.opacity = "";
@@ -1281,10 +1299,6 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     } catch (e) {}
 
     renderTabContent();
-
-    if (forceNotice) {
-      showToast(`Synced Week ${weekNum} successfully!`);
-    }
   } catch (err) {
     console.warn("Live sync error (offline or network restricted):", err);
     // If sheets failed, attempt ESPN sync directly so live game day updates still function
@@ -1294,9 +1308,6 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     } catch (e2) {}
 
     if (syncLabel) syncLabel.textContent = "Offline";
-    if (forceNotice) {
-      showToast("Using local cached scores");
-    }
   } finally {
     state.isSyncing = false;
     if (refreshBtn) refreshBtn.classList.remove("spinning");
