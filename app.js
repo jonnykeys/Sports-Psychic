@@ -1371,10 +1371,7 @@ function renderLeaderboard() {
   const isMeRank2 = Boolean(state.myPlayer && rank2.name === state.myPlayer);
   const isMeRank3 = Boolean(state.myPlayer && rank3.name === state.myPlayer);
 
-  // Podium subtitle & pedestal labels
-  let rank1Title = isWeekly
-    ? (rank1.numericRank === rank2.numericRank ? `WEEK ${state.currentWeek} CO-LEADER` : `WEEK ${state.currentWeek} WINNER`)
-    : (rank1.numericRank === rank2.numericRank ? `LEAGUE CO-LEADER` : `LEAGUE LEADER`);
+  // Podium pedestal labels
 
   const getPedestalRankText = (p, defaultLabel) => {
     if (!p || !p.rankDisplay || p.rankDisplay === "-") return defaultLabel;
@@ -1453,7 +1450,6 @@ function renderLeaderboard() {
           </div>
         </div>
         <div class="podium-body">
-          <div class="podium-title-tag">${rank1Title}</div>
           <div class="podium-name rank-1-name">${rank1.name}${isMeRank1 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
           <div class="podium-points-wrap rank-1-pts">
             <span class="podium-pts-val">${rank1.points}</span>
