@@ -2364,9 +2364,9 @@ body {
   background: rgba(56, 189, 248, 0.08);
   border: 1px solid rgba(56, 189, 248, 0.2);
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 2px 8px;
   white-space: nowrap;
-  max-width: 95%;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.2;
@@ -2379,9 +2379,9 @@ body {
   background: rgba(16, 185, 129, 0.09);
   border: 1px solid rgba(16, 185, 129, 0.24);
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 2px 8px;
   white-space: nowrap;
-  max-width: 95%;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.2;
