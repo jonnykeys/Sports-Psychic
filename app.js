@@ -1750,6 +1750,122 @@ function getWeeklyLeaderboard(weekNum) {
   return list;
 }
 
+/**
+ * Calculates rank movements for all players for a given week.
+ * Compares rank entering the week (points summed for weeks < weekNum)
+ * against live rank in the week (points summed for weeks <= weekNum).
+ *
+ * If no games in the week have reached a final score yet, all players
+ * show a neutral dash (—) with delta 0.
+ */
+function getWeeklyRankMovements(weekNum = state.currentWeek) {
+  const result = {};
+  PLAYERS.forEach(p => {
+    result[p] = {
+      delta: 0,
+      html: '<span class="rank-shift-pill shift-neutral">—</span>'
+    };
+  });
+
+  const weekKey = `Week ${weekNum}`;
+  const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
+  const games = weekData && weekData.games ? weekData.games : [];
+
+  // Requirement: no movement until at least one game for the week has reached a final score
+  const hasFinal = games.some(g => Boolean(g.isFinal));
+  if (!hasFinal) {
+    return result;
+  }
+
+  // Pre-week rank: points accumulated strictly in prior weeks (weeks 1 to weekNum - 1)
+  const preWeekList = PLAYERS.map(pName => {
+    let pts = 0;
+    if (state.data && state.data.weeks) {
+      for (let w = 1; w < weekNum; w++) {
+        const wk = state.data.weeks[`Week ${w}`];
+        if (wk && wk.games && Array.isArray(wk.games)) {
+          wk.games.forEach(g => {
+            const pk = g.picks ? g.picks[pName] : null;
+            if (pk && typeof pk.points === "number") {
+              pts += pk.points;
+            }
+          });
+        }
+      }
+    }
+    return { name: pName, points: pts };
+  });
+
+  preWeekList.sort((a, b) => b.points - a.points);
+  let preRank = 1;
+  for (let i = 0; i < preWeekList.length; i++) {
+    if (i > 0 && preWeekList[i].points < preWeekList[i - 1].points) {
+      preRank = i + 1;
+    }
+    preWeekList[i].numericRank = preRank;
+  }
+  const preRankMap = {};
+  preWeekList.forEach(p => {
+    preRankMap[p.name] = p.numericRank;
+  });
+
+  // Current rank: points accumulated through weekNum (weeks 1 to weekNum)
+  const currWeekList = PLAYERS.map(pName => {
+    let pts = 0;
+    if (state.data && state.data.weeks) {
+      for (let w = 1; w <= weekNum; w++) {
+        const wk = state.data.weeks[`Week ${w}`];
+        if (wk && wk.games && Array.isArray(wk.games)) {
+          wk.games.forEach(g => {
+            const pk = g.picks ? g.picks[pName] : null;
+            if (pk && typeof pk.points === "number") {
+              pts += pk.points;
+            }
+          });
+        }
+      }
+    }
+    return { name: pName, points: pts };
+  });
+
+  currWeekList.sort((a, b) => b.points - a.points);
+  let currRank = 1;
+  for (let i = 0; i < currWeekList.length; i++) {
+    if (i > 0 && currWeekList[i].points < currWeekList[i - 1].points) {
+      currRank = i + 1;
+    }
+    currWeekList[i].numericRank = currRank;
+  }
+  const currRankMap = {};
+  currWeekList.forEach(p => {
+    currRankMap[p.name] = p.numericRank;
+  });
+
+  // Compute movement delta for each player
+  PLAYERS.forEach(pName => {
+    const prior = preRankMap[pName] !== undefined ? preRankMap[pName] : 1;
+    const current = currRankMap[pName] !== undefined ? currRankMap[pName] : 1;
+    // Lower numeric rank is better (e.g. rank 6 -> rank 2 is +4 improvement)
+    const delta = prior - current;
+
+    let html = '<span class="rank-shift-pill shift-neutral">—</span>';
+    if (delta > 0) {
+      html = `<span class="rank-shift-pill shift-up"><span class="shift-arrow">▲</span>${delta}</span>`;
+    } else if (delta < 0) {
+      html = `<span class="rank-shift-pill shift-down"><span class="shift-arrow">▼</span>${Math.abs(delta)}</span>`;
+    }
+
+    result[pName] = {
+      delta,
+      preRank: prior,
+      currentRank: current,
+      html
+    };
+  });
+
+  return result;
+}
+
 function renderLeaderboard() {
   const podiumEl = document.getElementById("podium-container");
   const listEl = document.getElementById("leaderboard-list");
@@ -1775,6 +1891,8 @@ function renderLeaderboard() {
   const sorted = isWeekly
     ? getWeeklyLeaderboard(state.currentWeek)
     : getSeasonLeaderboard();
+
+  const rankMovements = getWeeklyRankMovements(state.currentWeek);
 
   const leader = sorted[0] || { name: "-", points: 0 };
   const rank1 = sorted[0] || { name: "-", points: 0 };
@@ -1847,7 +1965,10 @@ function renderLeaderboard() {
             <span class="podium-pts-val">${rank2.points}</span>
             <span class="podium-pts-lbl">PTS</span>
           </div>
-          <div class="podium-record-pill">${rec2.label}</div>
+          <div class="podium-footer-row">
+            <div class="podium-record-pill">${rec2.label}</div>
+            ${rankMovements[rank2.name]?.html || ''}
+          </div>
         </div>
         <div class="podium-base-pedestal base-silver">
           <span class="pedestal-rank-num">${ped2Text}</span>
@@ -1873,7 +1994,10 @@ function renderLeaderboard() {
             <span class="podium-pts-val">${rank1.points}</span>
             <span class="podium-pts-lbl">PTS</span>
           </div>
-          <div class="podium-record-pill rank-1-rec">${rec1.label}</div>
+          <div class="podium-footer-row">
+            <div class="podium-record-pill rank-1-rec">${rec1.label}</div>
+            ${rankMovements[rank1.name]?.html || ''}
+          </div>
         </div>
         <div class="podium-base-pedestal base-gold">
           <span class="pedestal-rank-num">${ped1Text}</span>
@@ -1894,7 +2018,10 @@ function renderLeaderboard() {
             <span class="podium-pts-val">${rank3.points}</span>
             <span class="podium-pts-lbl">PTS</span>
           </div>
-          <div class="podium-record-pill">${rec3.label}</div>
+          <div class="podium-footer-row">
+            <div class="podium-record-pill">${rec3.label}</div>
+            ${rankMovements[rank3.name]?.html || ''}
+          </div>
         </div>
         <div class="podium-base-pedestal base-bronze">
           <span class="pedestal-rank-num">${ped3Text}</span>
@@ -1920,6 +2047,7 @@ function renderLeaderboard() {
 
     const isMe = Boolean(state.myPlayer && player.name === state.myPlayer);
     const rec = player.rec || { wins: 0, losses: 0, pct: "0.0", label: "0-0" };
+    const movementHtml = rankMovements[player.name]?.html || '<span class="rank-shift-pill shift-neutral">—</span>';
 
     let rightSideHtml = "";
     if (!isWeekly) {
@@ -1958,6 +2086,7 @@ function renderLeaderboard() {
       <div class="leader-row ${isMe ? "is-my-rank" : ""}" onclick="openPlayer('${player.name}')">
         <div class="leader-left">
           <div class="rank-badge ${rankBadgeClass}">${player.rankDisplay}</div>
+          ${movementHtml}
           ${getPlayerAvatarHtml(player.name, 36)}
           <div class="player-info-block">
             <div class="player-title">
