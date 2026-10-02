@@ -2523,6 +2523,7 @@ body {
 .player-picks-table td {
   padding: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
 }
 
 /* =========================================================

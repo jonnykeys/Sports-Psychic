@@ -2548,9 +2548,6 @@ function renderPlayers() {
               resText = "❌ LOST";
               ptsColor = "#f87171";
             }
-          } else if (isLive) {
-            resText = `<span class="live-pulse-dot"></span> ${formatQuarterStatus(g.statusDetail) || "LIVE"}`;
-            ptsColor = "#f87171";
           }
 
           const winTeamInfo = NFL_TEAMS[pk.winner] || NFL_TEAMS[normalizeTeamCode(pk.winner)] || { color: '#2a3b50' };
@@ -2575,22 +2572,28 @@ function renderPlayers() {
                 ${pk.awayScore !== null ? `${pk.awayScore}-${pk.homeScore}` : "-"}
               </td>
               <td>
-                <span style="font-size:0.75rem; font-weight:800; color:${ptsColor};">${resText}</span>
                 ${isFinal ? `
+                  <span style="font-size:0.75rem; font-weight:800; color:${ptsColor};">${resText}</span>
                   <div style="font-size:0.68rem; color:var(--text-dim); margin-top:3px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
                     <span>Actual:</span>
                     <span class="team-badge-sm" style="background-color: ${actualWinnerInfo.color}; color: ${actualWinnerText}; font-size:0.62rem; padding:1px 5px; border-radius:4px; font-weight:800;">${g.winner}</span>
                     <span style="font-weight:700; color:var(--text-muted);">${g.awayScore}-${g.homeScore}</span>
                   </div>
                 ` : isLive ? `
-                  <div style="font-size:0.68rem; color:var(--text-dim); margin-top:3px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                    <span style="color:#f87171; font-weight:700;"><span class="live-pulse-dot"></span> Live:</span>
-                    <span style="font-weight:700; color:#fff;">
-                      ${g.possession === 'away' ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.awayScore}-${g.homeScore}${g.possession === 'home' ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}
-                    </span>
-                    <span style="font-size:0.62rem; color:var(--text-muted);">(${formatQuarterStatus(g.statusDetail) || "LIVE"}${g.downDistance ? ` • ${g.downDistance}` : ""})</span>
+                  <div style="display:flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:800; white-space:nowrap;">
+                    <span class="live-pulse-dot"></span>
+                    <span style="color:#fff;">${g.awayScore !== null ? `${g.awayScore} - ${g.homeScore}` : "LIVE"}</span>
+                    <span style="color:var(--text-muted); font-size:0.68rem; font-weight:700;">(${formatQuarterStatus(g.statusDetail) || "LIVE"})</span>
                   </div>
-                ` : ""}
+                  ${(g.downDistance || g.isRedZone) ? `
+                    <div style="font-size:0.65rem; color:var(--text-muted); margin-top:3px; display:flex; align-items:center; gap:4px; font-weight:600; white-space:nowrap;">
+                      ${g.downDistance ? `<span>${g.possession ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.downDistance}</span>` : ''}
+                      ${g.isRedZone ? `<span class="redzone-tag" style="font-size:0.62rem;">🔴 RZ</span>` : ''}
+                    </div>
+                  ` : ''}
+                ` : `
+                  <span style="font-size:0.75rem; font-weight:800; color:var(--text-dim);">Pending</span>
+                `}
               </td>
               <td style="text-align:right; font-weight:900; font-size:1rem; color:${ptsColor};">
                 ${pk.points > 0 ? `+${pk.points}` : "0"}
