@@ -263,7 +263,8 @@ let state = {
   data: null,
   nflStandings: null,
   collapsedMatchups: new Set(),
-  playerPicksFilter: "all" // "all" | "final" | "live" | "upcoming"
+  playerPicksFilter: "all", // "all" | "upcoming" | "live" | "final"
+  matchupsFilter: "all"     // "all" | "upcoming" | "live" | "final"
 };
 
 // Navigation state persistence key for sessionStorage
@@ -2125,6 +2126,7 @@ function renderLeaderboard() {
 // =========================================================
 function renderMatchups() {
   const container = document.getElementById("matchups-list");
+  const filterBar = document.getElementById("matchups-filter-bar");
   const bannerTitle = document.getElementById("matchup-banner-title");
   const bannerStat = document.getElementById("matchup-banner-stat");
   if (!container) return;
@@ -2137,6 +2139,7 @@ function renderMatchups() {
 
   if (games.length === 0) {
     bannerStat.textContent = "0 Games";
+    if (filterBar) filterBar.innerHTML = "";
     container.innerHTML = `
       <div class="loading-box">
         <div class="loading-spinner"></div>
@@ -2149,11 +2152,65 @@ function renderMatchups() {
   // Ensure points and closest bonuses are fully calculated for every game
   games.forEach(g => calculateGamePicksPoints(g));
 
-  const finalsCount = games.filter(g => g.isFinal).length;
-  const liveCount = games.filter(g => g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)).length;
-  bannerStat.innerHTML = `${games.length}&nbsp;Games • ${finalsCount}&nbsp;Final${liveCount > 0 ? ` • <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
+  const finalGamesList = games.filter(g => Boolean(g.isFinal));
+  const liveGamesList = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)));
+  const upcomingGamesList = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null)));
 
-  container.innerHTML = games.map((game, idx) => {
+  const totalGames = games.length;
+  const finalsCount = finalGamesList.length;
+  const liveCount = liveGamesList.length;
+  const upcomingCount = upcomingGamesList.length;
+
+  bannerStat.innerHTML = `${totalGames}&nbsp;Games • ${finalsCount}&nbsp;Final${liveCount > 0 ? ` • <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
+
+  // Filter games based on selected status filter: All, Upcoming, Live, Final
+  const currentFilter = state.matchupsFilter || "all";
+  let filteredGames = games;
+  if (currentFilter === "upcoming") {
+    filteredGames = upcomingGamesList;
+  } else if (currentFilter === "live") {
+    filteredGames = liveGamesList;
+  } else if (currentFilter === "final") {
+    filteredGames = finalGamesList;
+  }
+
+  const filterChipsHtml = `
+    <div class="filter-pills-row" role="group" aria-label="Matchup status filters">
+      <button type="button" class="filter-chip ${currentFilter === "all" ? "active" : ""}" onclick="setMatchupsFilter('all')" aria-label="Show all matchups">
+        All (${totalGames})
+      </button>
+      <button type="button" class="filter-chip ${currentFilter === "upcoming" ? "active" : ""}" onclick="setMatchupsFilter('upcoming')" aria-label="Show upcoming matchups">
+        Upcoming (${upcomingCount})
+      </button>
+      <button type="button" class="filter-chip ${currentFilter === "live" ? "active" : ""}" onclick="setMatchupsFilter('live')" aria-label="Show live matchups">
+        Live (${liveCount})
+      </button>
+      <button type="button" class="filter-chip ${currentFilter === "final" ? "active" : ""}" onclick="setMatchupsFilter('final')" aria-label="Show final matchups">
+        Final (${finalsCount})
+      </button>
+    </div>
+  `;
+
+  if (filterBar) {
+    filterBar.innerHTML = filterChipsHtml;
+  }
+
+  if (filteredGames.length === 0) {
+    container.innerHTML = `
+      <div class="empty-filter-box" style="padding: 32px 16px; text-align: center; color: var(--text-dim); background: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 4px;">
+        <p style="margin: 0; font-size: 0.88rem; font-weight: 700; color: #ffffff;">No ${currentFilter} matchups found for ${weekKey}</p>
+        <div style="margin-top: 14px;">
+          <button type="button" class="btn-back-bottom" style="max-width: 200px; display: inline-flex;" onclick="setMatchupsFilter('all')">
+            Show All Matchups
+          </button>
+        </div>
+      </div>
+    `;
+    updateToggleAllBtn();
+    return;
+  }
+
+  container.innerHTML = filteredGames.map((game, idx) => {
     const parts = (game.matchup || "").split("@").map(s => s.trim());
     const awayTeam = parts[0] || "AWAY";
     const homeTeam = parts[1] || "HOME";
@@ -2423,8 +2480,25 @@ function renderMatchups() {
 }
 
 // =========================================================
-// MATCHUP CARD COLLAPSE / EXPAND ENGINE
+// MATCHUP CARD COLLAPSE / EXPAND ENGINE & FILTERS
 // =========================================================
+function setMatchupsFilter(filter) {
+  state.matchupsFilter = filter;
+  renderMatchups();
+}
+
+function getMatchupsTargetGames(games) {
+  const currentFilter = state.matchupsFilter || "all";
+  if (currentFilter === "upcoming") {
+    return games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null)));
+  } else if (currentFilter === "live") {
+    return games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)));
+  } else if (currentFilter === "final") {
+    return games.filter(g => Boolean(g.isFinal));
+  }
+  return games;
+}
+
 function toggleMatchupCollapse(gameId, event) {
   if (event) event.stopPropagation();
   if (!state.collapsedMatchups) {
@@ -2471,10 +2545,13 @@ function toggleAllMatchups() {
   const games = weekData && weekData.games ? weekData.games : [];
   if (games.length === 0) return;
 
-  const allCollapsed = games.every(g => state.collapsedMatchups.has(g.id));
+  const targetGames = getMatchupsTargetGames(games);
+  if (targetGames.length === 0) return;
+
+  const allCollapsed = targetGames.every(g => state.collapsedMatchups.has(g.id));
 
   if (allCollapsed) {
-    games.forEach(g => {
+    targetGames.forEach(g => {
       state.collapsedMatchups.delete(g.id);
       const card = document.getElementById(g.id);
       if (card) {
@@ -2488,7 +2565,7 @@ function toggleAllMatchups() {
       }
     });
   } else {
-    games.forEach(g => {
+    targetGames.forEach(g => {
       state.collapsedMatchups.add(g.id);
       const card = document.getElementById(g.id);
       if (card) {
@@ -2516,8 +2593,13 @@ function updateToggleAllBtn() {
     btn.style.display = "none";
     return;
   }
+  const targetGames = getMatchupsTargetGames(games);
+  if (targetGames.length === 0) {
+    btn.style.display = "none";
+    return;
+  }
   btn.style.display = "inline-flex";
-  const allCollapsed = games.every(g => state.collapsedMatchups && state.collapsedMatchups.has(g.id));
+  const allCollapsed = targetGames.every(g => state.collapsedMatchups && state.collapsedMatchups.has(g.id));
   btn.textContent = allCollapsed ? "Expand All" : "Collapse All";
 }
 
@@ -2726,14 +2808,14 @@ function renderPlayers() {
       <button type="button" class="filter-chip ${currentFilter === "all" ? "active" : ""}" onclick="setPlayerPicksFilter('all')" aria-label="Show all games">
         All (${totalPicks})
       </button>
-      <button type="button" class="filter-chip ${currentFilter === "final" ? "active" : ""}" onclick="setPlayerPicksFilter('final')" aria-label="Show final games">
-        Final (${finalCount})
+      <button type="button" class="filter-chip ${currentFilter === "upcoming" ? "active" : ""}" onclick="setPlayerPicksFilter('upcoming')" aria-label="Show upcoming games">
+        Upcoming (${upcomingCount})
       </button>
       <button type="button" class="filter-chip ${currentFilter === "live" ? "active" : ""}" onclick="setPlayerPicksFilter('live')" aria-label="Show live games">
         Live (${liveCount})
       </button>
-      <button type="button" class="filter-chip ${currentFilter === "upcoming" ? "active" : ""}" onclick="setPlayerPicksFilter('upcoming')" aria-label="Show upcoming games">
-        Upcoming (${upcomingCount})
+      <button type="button" class="filter-chip ${currentFilter === "final" ? "active" : ""}" onclick="setPlayerPicksFilter('final')" aria-label="Show final games">
+        Final (${finalCount})
       </button>
     </div>
   `;
@@ -2910,6 +2992,10 @@ function renderSinglePlayer() {
 
 function navigateToMatchup(gameId) {
   if (!gameId) return;
+  // If target game might be filtered out on matchups tab, ensure filter is set to 'all'
+  if (state.matchupsFilter && state.matchupsFilter !== "all") {
+    state.matchupsFilter = "all";
+  }
   // Switch to the Matchups tab without auto-scrolling to top
   switchTab("matchups", false);
 
@@ -2926,7 +3012,7 @@ function navigateToMatchup(gameId) {
           btn.setAttribute("aria-label", "Collapse picks");
           btn.setAttribute("title", "Collapse picks");
         }
-        updateToggleAllButtonText();
+        updateToggleAllBtn();
       }
       card.scrollIntoView({ behavior: "smooth", block: "center" });
       card.classList.add("matchup-highlight-target");
@@ -2935,6 +3021,10 @@ function navigateToMatchup(gameId) {
       }, 2200);
     }
   }, 100);
+}
+
+function updateToggleAllButtonText() {
+  updateToggleAllBtn();
 }
 
 function openPlayer(playerName) {
