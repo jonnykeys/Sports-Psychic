@@ -2119,8 +2119,8 @@ function renderMatchups() {
             <div class="team-badge" style="background-color: ${homeInfo.color}; color: ${homeTextColor};">${homeTeam}</div>
             <div class="team-details">
               <div class="team-code">
-                <span>${homeTeam}</span>
                 ${isLive && game.possession === 'home' ? '<span class="possession-football" title="Possession: ' + homeTeam + '">🏈</span>' : ''}
+                <span>${homeTeam}</span>
               </div>
               <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
               <div class="team-record-sub">${homeRecord.text}</div>
