@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=9.2">
+  <link rel="stylesheet" href="style.css?v=9.3">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 </head>
@@ -133,8 +133,9 @@
         </div>
 
         <!-- Player picks for selected week -->
-        <div style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
-          <span id="player-week-title">Week 4 Predictions</span>
+        <div class="player-picks-section-header">
+          <span id="player-week-title" class="player-picks-title">Week 4 Predictions</span>
+          <span id="player-week-stat" class="player-picks-stat-badge"></span>
         </div>
         <div id="player-picks-container">
           <!-- Rendered by app.js -->
@@ -314,6 +315,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.1"></script>
-  <script src="app.js?v=10.6"></script>
+  <script src="app.js?v=10.7"></script>
 </body>
 </html>

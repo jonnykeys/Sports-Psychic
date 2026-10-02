@@ -2500,6 +2500,52 @@ body {
   }
 }
 
+/* Container to safeguard mobile horizontal scrolling */
+#player-picks-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Section Header above table */
+.player-picks-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.player-picks-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.2px;
+}
+
+.player-picks-stat-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-picks-stat-badge .stat-live-count {
+  color: #f87171;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+}
+
+/* Player Picks Table */
 .player-picks-table {
   width: 100%;
   border-collapse: collapse;
@@ -2513,35 +2559,180 @@ body {
 .player-picks-table th {
   background: var(--bg-card);
   text-align: left;
-  padding: 10px;
+  padding: 10px 8px;
   font-size: 0.72rem;
   color: var(--text-muted);
   text-transform: uppercase;
+  letter-spacing: 0.3px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .player-picks-table td {
-  padding: 10px;
+  padding: 10px 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   vertical-align: middle;
 }
 
+.player-picks-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.player-picks-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.player-picks-table tr.is-live-row {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.player-picks-table tr.is-live-row td:first-child {
+  border-left: 3px solid #ef4444;
+}
+
+.player-picks-table tr.is-live-row:hover {
+  background: rgba(239, 68, 68, 0.09);
+}
+
+/* Predicted Score Capsule */
+.pred-score-capsule {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Result Outcome Pill */
+.res-outcome-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.res-outcome-pill.res-won {
+  background: rgba(0, 230, 118, 0.12);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 230, 118, 0.25);
+}
+
+.res-outcome-pill.res-lost {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.res-outcome-pill.res-exact {
+  background: rgba(192, 132, 252, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+}
+
+.res-outcome-pill.res-closest {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.res-outcome-pill.res-pending {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Points Pill */
+.pts-score-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 0.86rem;
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pts-score-pill.pts-won {
+  background: rgba(0, 230, 118, 0.14);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 230, 118, 0.28);
+}
+
+.pts-score-pill.pts-lost {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.pts-score-pill.pts-pending {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-dim);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+}
+
+/* Micro team badge for actual winner */
+.team-badge-micro {
+  font-size: 0.60rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 800;
+  display: inline-block;
+  white-space: nowrap;
+}
+
 @media (max-width: 480px) {
+  .player-picks-section-header {
+    margin-top: 18px;
+    margin-bottom: 10px;
+  }
+  .player-picks-title {
+    font-size: 0.95rem;
+  }
+  .player-picks-stat-badge {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+  }
   .player-picks-table th,
   .player-picks-table td {
-    padding: 8px 5px;
-    font-size: 0.78rem;
+    padding: 8px 4px;
+    font-size: 0.76rem;
   }
   .player-picks-table th {
-    font-size: 0.68rem;
+    font-size: 0.66rem;
   }
   .player-picks-table th:first-child,
   .player-picks-table td:first-child {
-    padding-left: 8px;
+    padding-left: 6px;
   }
   .player-picks-table th:last-child,
   .player-picks-table td:last-child {
-    padding-right: 8px;
+    padding-right: 6px;
+  }
+  .pred-score-capsule {
+    font-size: 0.74rem;
+    padding: 2px 5px;
+  }
+  .res-outcome-pill {
+    font-size: 0.66rem;
+    padding: 2px 6px;
+  }
+  .pts-score-pill {
+    min-width: 32px;
+    font-size: 0.78rem;
+    padding: 2px 4px;
   }
 }
 
