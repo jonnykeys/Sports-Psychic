@@ -2699,7 +2699,6 @@ function renderPlayers() {
 
   const totalPicks = games.length;
   const liveCount = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null))).length;
-  const finalCount = games.filter(g => g.isFinal).length;
 
   if (weekStat) {
     if (liveCount > 0) {
