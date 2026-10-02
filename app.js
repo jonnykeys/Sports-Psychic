@@ -1104,6 +1104,27 @@ function setupPullToRefresh() {
 // AUTOMATED LIVE NFL SCORES (ESPN SCOREBOARD ENGINE)
 // =========================================================
 /**
+ * Formats game quarter references to clean, compact notation (Q1, Q2, Q3, Q4)
+ * to avoid confusion with down & distance text (e.g. "12:14 - Q2 • 2nd & 7").
+ */
+function formatQuarterStatus(text) {
+  if (!text || typeof text !== "string") return text || "";
+  return text
+    .replace(/\b1st\s+Quarter\b/gi, "Q1")
+    .replace(/\b2nd\s+Quarter\b/gi, "Q2")
+    .replace(/\b3rd\s+Quarter\b/gi, "Q3")
+    .replace(/\b4th\s+Quarter\b/gi, "Q4")
+    .replace(/\b1st\s+Qtr\b/gi, "Q1")
+    .replace(/\b2nd\s+Qtr\b/gi, "Q2")
+    .replace(/\b3rd\s+Qtr\b/gi, "Q3")
+    .replace(/\b4th\s+Qtr\b/gi, "Q4")
+    .replace(/\b1st\b(?!\s*(?:OT|Half|and|&))/gi, "Q1")
+    .replace(/\b2nd\b(?!\s*(?:OT|Half|and|&))/gi, "Q2")
+    .replace(/\b3rd\b(?!\s*(?:OT|Half|and|&))/gi, "Q3")
+    .replace(/\b4th\b(?!\s*(?:OT|Half|and|&))/gi, "Q4");
+}
+
+/**
  * Formats ESPN event date and kickoff time in a clean, user-friendly format (e.g. "Thu 10/1 • 7:15 PM").
  * Prioritizes ESPN's official ISO timestamp converted to local time, with fallback to ESPN's shortDetail.
  */
@@ -1126,10 +1147,10 @@ function formatEspnGameTime(event) {
     } catch (e) {}
   }
   if (event.status?.type?.detail) {
-    return event.status.type.detail;
+    return formatQuarterStatus(event.status.type.detail);
   }
   if (event.status?.type?.shortDetail) {
-    return event.status.type.shortDetail.replace(" - ", " • ");
+    return formatQuarterStatus(event.status.type.shortDetail.replace(" - ", " • "));
   }
   return "";
 }
@@ -1238,7 +1259,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
         // Game is completed / FINAL
         game.isFinal = true;
         game.isLive = false;
-        game.statusDetail = shortDetail || "Final";
+        game.statusDetail = formatQuarterStatus(shortDetail) || "Final";
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
         game.possession = null;
@@ -1258,7 +1279,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
         // Game is actively IN PROGRESS / LIVE
         game.isFinal = false;
         game.isLive = true;
-        game.statusDetail = shortDetail || "Live";
+        game.statusDetail = formatQuarterStatus(shortDetail) || "Live";
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
         game.possession = possession;
@@ -1957,7 +1978,7 @@ function renderMatchups() {
         : "FINAL";
       badgeClass = "final";
     } else if (isLive) {
-      let liveText = game.statusDetail || "LIVE";
+      let liveText = formatQuarterStatus(game.statusDetail) || "LIVE";
       if (game.downDistance) {
         liveText += ` • ${game.downDistance}`;
       }
@@ -2514,7 +2535,7 @@ function renderPlayers() {
               ptsColor = "#f87171";
             }
           } else if (isLive) {
-            resText = `<span class="live-pulse-dot"></span> ${g.statusDetail || "LIVE"}`;
+            resText = `<span class="live-pulse-dot"></span> ${formatQuarterStatus(g.statusDetail) || "LIVE"}`;
             ptsColor = "#f87171";
           }
 
@@ -2553,7 +2574,7 @@ function renderPlayers() {
                     <span style="font-weight:700; color:#fff;">
                       ${g.possession === 'away' ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.awayScore}-${g.homeScore}${g.possession === 'home' ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}
                     </span>
-                    <span style="font-size:0.62rem; color:var(--text-muted);">(${g.statusDetail || "LIVE"}${g.downDistance ? ` • ${g.downDistance}` : ""})</span>
+                    <span style="font-size:0.62rem; color:var(--text-muted);">(${formatQuarterStatus(g.statusDetail) || "LIVE"}${g.downDistance ? ` • ${g.downDistance}` : ""})</span>
                   </div>
                 ` : ""}
               </td>
@@ -3004,10 +3025,10 @@ function renderH2H() {
       if (isFinal) {
         centerScoreHtml = `
           <span class="h2h-game-actual-score">${game.awayScore} - ${game.homeScore}</span>
-          <span style="font-size:0.62rem; color:var(--accent-green); font-weight:800; text-transform:uppercase;">${game.statusDetail || "FINAL"}</span>
+          <span style="font-size:0.62rem; color:var(--accent-green); font-weight:800; text-transform:uppercase;">${formatQuarterStatus(game.statusDetail) || "FINAL"}</span>
         `;
       } else if (isLive) {
-        let liveDetail = game.statusDetail || "LIVE";
+        let liveDetail = formatQuarterStatus(game.statusDetail) || "LIVE";
         if (game.downDistance) liveDetail += ` • ${game.downDistance}`;
         const possAway = game.possession === 'away';
         const possHome = game.possession === 'home';
