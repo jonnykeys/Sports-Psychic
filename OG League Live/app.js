@@ -2590,18 +2590,24 @@ function renderPlayers() {
               ? `<span class="pts-score-pill pts-won">+${pk.points}</span>`
               : `<span class="pts-score-pill pts-lost">0</span>`;
           } else if (isLive) {
+            const possAway = g.possession === 'away';
+            const possHome = g.possession === 'home';
+            const scoreDisplay = g.awayScore !== null
+              ? `${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.awayScore} - ${g.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}`
+              : '';
+
             outcomeHtml = `
               <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
                 <div style="display:inline-flex; align-items:center; justify-content:center; gap:5px; font-size:0.72rem; font-weight:800; white-space:nowrap;">
                   <span class="live-pulse-dot"></span>
                   <span style="color:#f87171;">(${formatQuarterStatus(g.statusDetail) || "LIVE"})</span>
                 </div>
-                <div style="font-size:0.84rem; font-weight:900; color:#fff; margin-top:2px; white-space:nowrap;">
-                  ${g.awayScore !== null ? `${g.awayScore} - ${g.homeScore}` : ""}
+                <div style="font-size:0.84rem; font-weight:900; color:#fff; margin-top:2px; display:inline-flex; align-items:center; justify-content:center; gap:4px; white-space:nowrap;">
+                  ${scoreDisplay}
                 </div>
                 ${(g.downDistance || g.isRedZone) ? `
                   <div style="font-size:0.62rem; color:var(--text-muted); margin-top:2px; display:inline-flex; align-items:center; justify-content:center; gap:3px; font-weight:600; white-space:nowrap;">
-                    ${g.downDistance ? `<span>${g.possession ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.downDistance}</span>` : ''}
+                    ${g.downDistance ? `<span>${g.downDistance}</span>` : ''}
                     ${g.isRedZone ? `<span class="redzone-tag" style="font-size:0.6rem;">🔴 RZ</span>` : ''}
                   </div>
                 ` : ''}
