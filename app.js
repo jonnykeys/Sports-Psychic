@@ -120,7 +120,7 @@ const PLAYER_AVATARS = {
   "Wells": "avatars/wells.jpg",
   "Brett": "avatars/brett.jpg",
   "Rob": "avatars/rob.jpg",
-  "Dishman": "avatars/dishman.jpg"
+  "Dishman": "avatars/dishman.jpg?v=2"
 };
 
 function getPlayerAvatarHtml(playerName, size = 36) {
