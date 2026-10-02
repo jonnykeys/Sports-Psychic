@@ -2008,10 +2008,8 @@ function renderMatchups() {
       badgeClass = "scheduled";
     }
 
-    const awayWinning = (isFinal && (game.winner === awayTeam || normalizeTeamCode(game.winner) === normalizeTeamCode(awayTeam))) ||
-                        (isLive && game.awayScore !== null && game.homeScore !== null && game.awayScore > game.homeScore);
-    const homeWinning = (isFinal && (game.winner === homeTeam || normalizeTeamCode(game.winner) === normalizeTeamCode(homeTeam))) ||
-                        (isLive && game.awayScore !== null && game.homeScore !== null && game.homeScore > game.awayScore);
+    const awayWinning = Boolean(isFinal && (game.winner === awayTeam || normalizeTeamCode(game.winner) === normalizeTeamCode(awayTeam)));
+    const homeWinning = Boolean(isFinal && (game.winner === homeTeam || normalizeTeamCode(game.winner) === normalizeTeamCode(homeTeam)));
 
     // Group picks by team: Away, Home, and Unpicked
     const awayPicks = [];
