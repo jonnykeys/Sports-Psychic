@@ -850,6 +850,19 @@ body {
   background: rgba(245, 184, 0, 0.08);
 }
 
+.podium-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.podium-footer-row .podium-record-pill {
+  margin-top: 0;
+}
+
 /* PEDESTAL BASE PLATFORMS */
 .podium-base-pedestal {
   width: 100%;
@@ -929,7 +942,16 @@ body {
     gap: 6px;
   }
   .leader-left {
-    gap: 8px;
+    gap: 6px;
+  }
+  .rank-shift-pill {
+    min-width: 21px;
+    height: 18px;
+    font-size: 0.6rem;
+    padding: 0 3px;
+  }
+  .rank-shift-pill .shift-arrow {
+    font-size: 0.52rem;
   }
   .rank-badge {
     width: 26px;
@@ -1058,6 +1080,52 @@ body {
   color: #ffffff;
   border-color: #fdba74;
   box-shadow: 0 0 10px rgba(249, 115, 22, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+/* =========================================================
+   WEEKLY RANK MOVEMENT PILLS
+   ========================================================= */
+.rank-shift-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 25px;
+  height: 20px;
+  padding: 0 4.5px;
+  border-radius: 5px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: -0.2px;
+}
+
+.rank-shift-pill .shift-arrow {
+  font-size: 0.58rem;
+  line-height: 1;
+}
+
+.rank-shift-pill.shift-up {
+  color: #00e676;
+  background: rgba(0, 230, 118, 0.14);
+  border: 1px solid rgba(0, 230, 118, 0.32);
+  box-shadow: 0 0 6px rgba(0, 230, 118, 0.15);
+}
+
+.rank-shift-pill.shift-down {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.15);
+}
+
+.rank-shift-pill.shift-neutral {
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.7rem;
 }
 
 .player-avatar {
