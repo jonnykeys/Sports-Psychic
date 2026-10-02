@@ -2770,9 +2770,7 @@ function renderPlayers() {
   `;
 
   // Render Weekly Picks List
-  const weekStat = document.getElementById("player-week-stat");
   if (games.length === 0) {
-    if (weekStat) weekStat.innerHTML = "";
     picksContainer.innerHTML = `
       <div class="loading-box"><p>No picks recorded for ${weekKey}</p></div>
       <button class="btn-back-bottom" onclick="switchTab('leaderboard')">← Back to Standings</button>
@@ -2784,23 +2782,15 @@ function renderPlayers() {
   const liveCount = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null))).length;
   const upcomingCount = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null))).length;
 
-  if (weekStat) {
-    if (liveCount > 0) {
-      weekStat.innerHTML = `<span>${totalPicks} Picks</span> &bull; <span class="stat-live-count"><span class="live-pulse-dot"></span>${liveCount} Live</span>`;
-    } else {
-      weekStat.innerHTML = `<span>${totalPicks} Picks</span> &bull; <span>${finalCount} Final</span>`;
-    }
-  }
-
-  // Filter games based on selected status filter
+  // Filter games based on selected status filter: All, Upcoming, Live, Final
   const currentFilter = state.playerPicksFilter || "all";
   let filteredGames = games;
-  if (currentFilter === "final") {
-    filteredGames = games.filter(g => Boolean(g.isFinal));
+  if (currentFilter === "upcoming") {
+    filteredGames = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null)));
   } else if (currentFilter === "live") {
     filteredGames = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)));
-  } else if (currentFilter === "upcoming") {
-    filteredGames = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null)));
+  } else if (currentFilter === "final") {
+    filteredGames = games.filter(g => Boolean(g.isFinal));
   }
 
   const filterChipsHtml = `
