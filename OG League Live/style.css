@@ -2526,6 +2526,25 @@ body {
   vertical-align: middle;
 }
 
+@media (max-width: 480px) {
+  .player-picks-table th,
+  .player-picks-table td {
+    padding: 8px 5px;
+    font-size: 0.78rem;
+  }
+  .player-picks-table th {
+    font-size: 0.68rem;
+  }
+  .player-picks-table th:first-child,
+  .player-picks-table td:first-child {
+    padding-left: 8px;
+  }
+  .player-picks-table th:last-child,
+  .player-picks-table td:last-child {
+    padding-right: 8px;
+  }
+}
+
 /* =========================================================
    HEAD-TO-HEAD (H2H) RIVALRY DIVERGENCE STYLES
    ========================================================= */
