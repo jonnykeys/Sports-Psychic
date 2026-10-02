@@ -2580,15 +2580,17 @@ function renderPlayers() {
                     <span style="font-weight:700; color:var(--text-muted);">${g.awayScore}-${g.homeScore}</span>
                   </div>
                 ` : isLive ? `
-                  <div style="display:flex; align-items:center; gap:6px; font-size:0.78rem; font-weight:800; white-space:nowrap;">
+                  <div style="display:flex; align-items:center; gap:5px; font-size:0.74rem; font-weight:800; white-space:nowrap;">
                     <span class="live-pulse-dot"></span>
-                    <span style="color:#f87171; font-weight:800;">(${formatQuarterStatus(g.statusDetail) || "LIVE"})</span>
-                    <span style="color:#fff; font-weight:800;">${g.awayScore !== null ? `${g.awayScore} - ${g.homeScore}` : ""}</span>
+                    <span style="color:#f87171;">(${formatQuarterStatus(g.statusDetail) || "LIVE"})</span>
+                  </div>
+                  <div style="font-size:0.82rem; font-weight:900; color:#fff; margin-top:2px; white-space:nowrap;">
+                    ${g.awayScore !== null ? `${g.awayScore} - ${g.homeScore}` : ""}
                   </div>
                   ${(g.downDistance || g.isRedZone) ? `
-                    <div style="font-size:0.65rem; color:var(--text-muted); margin-top:3px; display:flex; align-items:center; gap:4px; font-weight:600; white-space:nowrap;">
+                    <div style="font-size:0.62rem; color:var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:3px; font-weight:600; white-space:nowrap;">
                       ${g.downDistance ? `<span>${g.possession ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.downDistance}</span>` : ''}
-                      ${g.isRedZone ? `<span class="redzone-tag" style="font-size:0.62rem;">🔴 RZ</span>` : ''}
+                      ${g.isRedZone ? `<span class="redzone-tag" style="font-size:0.6rem;">🔴 RZ</span>` : ''}
                     </div>
                   ` : ''}
                 ` : `
