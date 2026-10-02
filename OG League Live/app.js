@@ -571,7 +571,61 @@ function calculateGamePicksPoints(game) {
 }
 
 /**
- * Recalculates all game picks points across all weeks in data.
+ * Dynamically computes overall Season Leaderboard by summing pick points across all weeks in data.
+ */
+function computeSeasonLeaderboard(dataObj) {
+  const data = dataObj || state.data;
+  const list = PLAYERS.map(pName => {
+    let totalPts = 0;
+    if (data && data.weeks) {
+      Object.keys(data.weeks).forEach(wKey => {
+        const week = data.weeks[wKey];
+        if (week && week.games && Array.isArray(week.games)) {
+          week.games.forEach(g => {
+            const pk = g.picks ? g.picks[pName] : null;
+            if (pk && typeof pk.points === "number") {
+              totalPts += pk.points;
+            }
+          });
+        }
+      });
+    }
+
+    return {
+      name: pName,
+      points: totalPts,
+      rec: getPlayerSeasonRecord(pName)
+    };
+  });
+
+  // Sort descending by points
+  list.sort((a, b) => b.points - a.points);
+
+  // Assign shared ranks based off of points only
+  let currentRank = 1;
+  for (let i = 0; i < list.length; i++) {
+    if (i > 0 && list[i].points < list[i - 1].points) {
+      currentRank = i + 1;
+    }
+    list[i].numericRank = currentRank;
+  }
+
+  const rankCounts = {};
+  list.forEach(p => {
+    rankCounts[p.numericRank] = (rankCounts[p.numericRank] || 0) + 1;
+  });
+
+  list.forEach(p => {
+    const isTied = rankCounts[p.numericRank] > 1;
+    p.rankDisplay = isTied ? `T-${p.numericRank}` : `${p.numericRank}`;
+    p.rank = p.numericRank;
+  });
+
+  return list;
+}
+
+/**
+ * Recalculates all game picks points across all weeks in data and updates dynamic season leaderboard.
  */
 function recalculateAllWeeksPoints(dataObj) {
   if (!dataObj || !dataObj.weeks) return;
@@ -581,6 +635,9 @@ function recalculateAllWeeksPoints(dataObj) {
       w.games.forEach(g => calculateGamePicksPoints(g));
     }
   });
+
+  // Keep leaderboard dynamically synchronized with game points
+  dataObj.leaderboard = computeSeasonLeaderboard(dataObj);
 }
 
 /**
@@ -797,7 +854,7 @@ function initData() {
     localStorage.removeItem("og_league_cache_v6");
   } catch (e) {}
 
-  const cached = localStorage.getItem("og_league_cache_v8") || localStorage.getItem("og_league_cache_v7");
+  const cached = localStorage.getItem("og_league_cache_v9") || localStorage.getItem("og_league_cache_v8");
   if (cached) {
     try {
       state.data = JSON.parse(cached);
@@ -815,7 +872,7 @@ function initData() {
     sanitizeData(state.data);
     recalculateAllWeeksPoints(state.data);
     try {
-      localStorage.setItem("og_league_cache_v8", JSON.stringify(state.data));
+      localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
     } catch (e) {}
   }
 
@@ -1320,7 +1377,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
     if (updatedCount > 0) {
       recalculateAllWeeksPoints(state.data);
       try {
-        localStorage.setItem("og_league_cache_v8", JSON.stringify(state.data));
+        localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
       } catch (e) {}
     }
   } catch (err) {
@@ -1361,7 +1418,7 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     
     // Save state cache
     try {
-      localStorage.setItem("og_league_cache_v8", JSON.stringify(state.data));
+      localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
     } catch (e) {}
 
     renderTabContent();
@@ -1436,6 +1493,8 @@ function parseWeekCSV(weekNum, csvText) {
   if (!state.data) state.data = { weeks: {}, leaderboard: [] };
   if (!state.data.weeks) state.data.weeks = {};
 
+  const existingWeek = (state.data && state.data.weeks) ? state.data.weeks[weekKey] : null;
+  const existingGames = (existingWeek && Array.isArray(existingWeek.games)) ? existingWeek.games : [];
   const games = [];
 
   // Rows 1 to 16 are the 16 NFL Games
@@ -1470,6 +1529,36 @@ function parseWeekCSV(weekNum, csvText) {
     const isValidWinner = (winner === awayTeam || winner === homeTeam || winner === "TIE");
     const isFinal = (awayScore !== null && homeScore !== null && isValidWinner);
 
+    // Look for existing game state (e.g. updated by ESPN)
+    const existingGame = existingGames.find(eg => eg.id === `${weekKey}_g${r}` || (eg.matchup && eg.matchup === matchup));
+
+    let finalAwayScore = awayScore;
+    let finalHomeScore = homeScore;
+    let finalWinner = winner;
+    let finalIsFinal = isFinal;
+    let finalDateTime = dateTime;
+    let finalPossession = null;
+    let finalDownDistance = null;
+    let finalIsRedZone = false;
+    let finalStatusDetail = "";
+    let finalIsLive = false;
+
+    if (existingGame) {
+      // If spreadsheet has no score yet but game was already updated by ESPN, preserve live/final ESPN data
+      if (finalAwayScore === null && existingGame.awayScore !== null) {
+        finalAwayScore = existingGame.awayScore;
+        finalHomeScore = existingGame.homeScore;
+        finalWinner = existingGame.winner;
+        finalIsFinal = existingGame.isFinal;
+        finalIsLive = Boolean(existingGame.isLive);
+      }
+      if (existingGame.dateTime) finalDateTime = existingGame.dateTime;
+      finalPossession = existingGame.possession || null;
+      finalDownDistance = existingGame.downDistance || null;
+      finalIsRedZone = Boolean(existingGame.isRedZone);
+      finalStatusDetail = existingGame.statusDetail || "";
+    }
+
     const picks = {};
 
     // 12 players starting at col 6, step 5
@@ -1497,36 +1586,23 @@ function parseWeekCSV(weekNum, csvText) {
 
     const gameObj = {
       id: `${weekKey}_g${r}`,
-      dateTime,
+      dateTime: finalDateTime,
       matchup,
-      winner,
-      awayScore,
-      homeScore,
-      isFinal,
+      winner: finalWinner,
+      awayScore: finalAwayScore,
+      homeScore: finalHomeScore,
+      isFinal: finalIsFinal,
+      isLive: finalIsLive,
+      possession: finalPossession,
+      downDistance: finalDownDistance,
+      isRedZone: finalIsRedZone,
+      statusDetail: finalStatusDetail,
       picks
     };
 
     // Dynamically calculate accurate pick points & closest bonus
     calculateGamePicksPoints(gameObj);
     games.push(gameObj);
-  }
-
-  // Parse season leaderboard from rows 23-34
-  const leaderboard = [];
-  for (let r = 22; r <= 35; r++) {
-    const row = rows[r];
-    if (!row) continue;
-    const rankStr = (row[2] || "").trim();
-    const nameStr = (row[3] || "").trim();
-    const ptsStr = (row[4] || "").trim();
-
-    if (nameStr && ptsStr && !isNaN(ptsStr)) {
-      leaderboard.push({
-        rank: parseInt(rankStr, 10) || leaderboard.length + 1,
-        name: nameStr,
-        points: parseInt(ptsStr, 10)
-      });
-    }
   }
 
   // Parse Player weekly stats from rows 17-21 if present
@@ -1550,9 +1626,9 @@ function parseWeekCSV(weekNum, csvText) {
   }
 
   state.data.weeks[weekKey] = { games, playerStats };
-  if (leaderboard.length > 0) {
-    state.data.leaderboard = leaderboard;
-  }
+
+  // Dynamically compute season leaderboard from all games
+  state.data.leaderboard = computeSeasonLeaderboard(state.data);
 }
 
 function parseNFLStandingsCSV(csvText) {
@@ -1616,42 +1692,10 @@ window.setLeaderboardMode = setLeaderboardMode;
 
 /**
  * Returns overall Season Leaderboard with shared ranks based strictly on points.
+ * Dynamically computes season standings across all finalized games in all weeks.
  */
 function getSeasonLeaderboard() {
-  const lb = (state.data && state.data.leaderboard && state.data.leaderboard.length > 0)
-    ? state.data.leaderboard
-    : PLAYERS.map((p, idx) => ({ rank: idx + 1, name: p, points: 0 }));
-
-  const list = lb.map(p => ({
-    name: p.name,
-    points: typeof p.points === "number" ? p.points : parseInt(p.points, 10) || 0,
-    rec: getPlayerSeasonRecord(p.name)
-  }));
-
-  // Sort descending by points
-  list.sort((a, b) => b.points - a.points);
-
-  // Assign shared ranks based off of points only
-  let currentRank = 1;
-  for (let i = 0; i < list.length; i++) {
-    if (i > 0 && list[i].points < list[i - 1].points) {
-      currentRank = i + 1;
-    }
-    list[i].numericRank = currentRank;
-  }
-
-  const rankCounts = {};
-  list.forEach(p => {
-    rankCounts[p.numericRank] = (rankCounts[p.numericRank] || 0) + 1;
-  });
-
-  list.forEach(p => {
-    const isTied = rankCounts[p.numericRank] > 1;
-    p.rankDisplay = isTied ? `T-${p.numericRank}` : `${p.numericRank}`;
-    p.rank = p.numericRank;
-  });
-
-  return list;
+  return computeSeasonLeaderboard(state.data);
 }
 
 /**
@@ -3412,11 +3456,12 @@ function openProfileModal() {
   const grid = document.getElementById("profile-modal-grid");
   if (!modal || !grid) return;
 
-  const lb = (state.data && state.data.leaderboard) ? state.data.leaderboard : [];
+  const lb = getSeasonLeaderboard();
 
   grid.innerHTML = PLAYERS.map(pName => {
     const isCurrent = Boolean(state.myPlayer && state.myPlayer === pName);
-    const playerRankObj = lb.find(p => p.name === pName) || { rank: "-", points: 0 };
+    const playerRankObj = lb.find(p => p.name === pName) || { rankDisplay: "-", points: 0 };
+    const rankLabel = playerRankObj.rankDisplay ? (String(playerRankObj.rankDisplay).startsWith("T-") ? `T-#${String(playerRankObj.rankDisplay).slice(2)}` : `#${playerRankObj.rankDisplay}`) : "#-";
     return `
       <div class="profile-choice-card ${isCurrent ? "active" : ""}" onclick="setMyPlayer('${pName}')">
         <div class="choice-avatar">
@@ -3427,7 +3472,7 @@ function openProfileModal() {
             <span>${pName}</span>
             ${isCurrent ? `<span class="choice-current-badge">YOU</span>` : ""}
           </div>
-          <div class="choice-stats">Rank #${playerRankObj.rank} • ${playerRankObj.points} PTS</div>
+          <div class="choice-stats">Rank ${rankLabel} • ${playerRankObj.points} PTS</div>
         </div>
         <div class="choice-action">
           ${isCurrent ? `<span class="choice-check">✓</span>` : `<span class="choice-select-btn">Select</span>`}
