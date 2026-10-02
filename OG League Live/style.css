@@ -3611,18 +3611,40 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   font-size: 0.82rem;
+}
+
+.week-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
 
 .week-summary-title {
   font-weight: 800;
   color: #fff;
+  white-space: nowrap;
 }
 
 .week-summary-stat {
   color: var(--accent-green);
   font-weight: 700;
   font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .week-summary-banner {
+    align-items: flex-start;
+  }
+  .week-summary-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
 }
 
 /* Empty State / Loading State */
