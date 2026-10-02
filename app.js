@@ -1966,7 +1966,7 @@ function renderMatchups() {
 
   const finalsCount = games.filter(g => g.isFinal).length;
   const liveCount = games.filter(g => g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)).length;
-  bannerStat.innerHTML = `${games.length} Games • ${finalsCount} Final${liveCount > 0 ? ` • <span style="color:#f87171; font-weight:800;"><span class="live-pulse-dot"></span>${liveCount} Live</span>` : ""}`;
+  bannerStat.innerHTML = `${games.length}&nbsp;Games • ${finalsCount}&nbsp;Final${liveCount > 0 ? ` • <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
 
   container.innerHTML = games.map((game, idx) => {
     const parts = (game.matchup || "").split("@").map(s => s.trim());
