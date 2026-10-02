@@ -2596,9 +2596,15 @@ function renderPlayers() {
     const pk = g.picks ? g.picks[state.selectedPlayer] : null;
     if (pk) {
       weekPts += pk.points || 0;
-      if (pk.points > 0) correctCount++;
+      if (g.isFinal && pk.points > 0) correctCount++;
     }
   });
+
+  const finalGames = games.filter(g => Boolean(g.isFinal));
+  const finalCount = finalGames.length;
+  const pickPct = finalCount > 0 ? Math.round((correctCount / finalCount) * 100) : 0;
+  const pickUnitText = finalCount > 0 ? `/ ${finalCount}` : `/ 0`;
+  const pickPillText = finalCount > 0 ? `${pickPct}% Accuracy` : `—% Accuracy`;
 
   const weeklyLb = getWeeklyLeaderboard(state.currentWeek);
   const weekRankObj = weeklyLb.find(p => p.name === state.selectedPlayer) || { rankDisplay: "-" };
@@ -2610,7 +2616,6 @@ function renderPlayers() {
   const pColor = PLAYER_COLORS[state.selectedPlayer] || "var(--accent-blue)";
   const seasonRec = getPlayerSeasonRecord(state.selectedPlayer);
   const isMyProfile = Boolean(state.myPlayer && state.myPlayer === state.selectedPlayer);
-  const pickPct = games.length > 0 ? Math.round((correctCount / games.length) * 100) : 0;
 
   // Render Player Hero
   heroContainer.className = `player-hero-card ${isMyProfile ? "is-my-profile" : ""}`;
@@ -2674,9 +2679,9 @@ function renderPlayers() {
         <div class="pstat-header-label">CORRECT PICKS</div>
         <div class="pstat-value val-gold">
           <span class="pstat-num">${correctCount}</span>
-          <span class="pstat-unit">/ ${games.length}</span>
+          <span class="pstat-unit">${pickUnitText}</span>
         </div>
-        <div class="pstat-footer-pill pill-gold">${pickPct}% Accuracy</div>
+        <div class="pstat-footer-pill pill-gold">${pickPillText}</div>
       </div>
     </div>
   `;
