@@ -262,7 +262,8 @@ let state = {
   lastUpdated: null,
   data: null,
   nflStandings: null,
-  collapsedMatchups: new Set()
+  collapsedMatchups: new Set(),
+  playerPicksFilter: "all" // "all" | "final" | "live" | "upcoming"
 };
 
 // Navigation state persistence key for sessionStorage
@@ -2699,6 +2700,7 @@ function renderPlayers() {
 
   const totalPicks = games.length;
   const liveCount = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null))).length;
+  const upcomingCount = Math.max(0, totalPicks - finalCount - liveCount);
 
   if (weekStat) {
     if (liveCount > 0) {
@@ -2708,7 +2710,51 @@ function renderPlayers() {
     }
   }
 
+  // Filter games based on selected status filter
+  const currentFilter = state.playerPicksFilter || "all";
+  let filteredGames = games;
+  if (currentFilter === "final") {
+    filteredGames = games.filter(g => g.isFinal);
+  } else if (currentFilter === "live") {
+    filteredGames = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)));
+  } else if (currentFilter === "upcoming") {
+    filteredGames = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null)));
+  }
+
+  const filterChipsHtml = `
+    <div class="filter-pills-row" role="group" aria-label="Game status filters">
+      <button type="button" class="filter-chip ${currentFilter === "all" ? "active" : ""}" onclick="setPlayerPicksFilter('all')" aria-label="Show all games">
+        All (${totalPicks})
+      </button>
+      <button type="button" class="filter-chip ${currentFilter === "final" ? "active" : ""}" onclick="setPlayerPicksFilter('final')" aria-label="Show final games">
+        Final (${finalCount})
+      </button>
+      <button type="button" class="filter-chip ${currentFilter === "live" ? "active" : ""}" onclick="setPlayerPicksFilter('live')" aria-label="Show live games">
+        Live (${liveCount})
+      </button>
+      <button type="button" class="filter-chip ${currentFilter === "upcoming" ? "active" : ""}" onclick="setPlayerPicksFilter('upcoming')" aria-label="Show upcoming games">
+        Upcoming (${upcomingCount})
+      </button>
+    </div>
+  `;
+
+  if (filteredGames.length === 0) {
+    picksContainer.innerHTML = `
+      ${filterChipsHtml}
+      <div class="empty-filter-box" style="padding: 28px 12px; text-align: center; color: var(--text-dim); background: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 4px;">
+        <p style="margin: 0; font-size: 0.82rem; font-weight: 700;">No ${currentFilter} games found for ${weekKey}</p>
+      </div>
+      <div style="margin-top:16px; margin-bottom:8px;">
+        <button class="btn-back-bottom" onclick="switchTab('leaderboard')">
+          ← Back to Standings
+        </button>
+      </div>
+    `;
+    return;
+  }
+
   picksContainer.innerHTML = `
+    ${filterChipsHtml}
     <table class="player-picks-table">
       <thead>
         <tr>
@@ -2720,16 +2766,19 @@ function renderPlayers() {
         </tr>
       </thead>
       <tbody>
-        ${games.map(g => {
+        ${filteredGames.map(g => {
           const pk = g.picks ? g.picks[state.selectedPlayer] : null;
           const isFinal = g.isFinal;
           const isLive = Boolean(g.isLive || (!isFinal && g.awayScore !== null && g.homeScore !== null));
 
           if (!pk || !pk.winner) {
             return `
-              <tr class="${isLive ? "is-live-row" : ""}">
+              <tr class="clickable-matchup-row ${isLive ? "is-live-row" : ""}" onclick="navigateToMatchup('${g.id}')" title="View ${g.matchup} on Matchups tab">
                 <td>
-                  <div style="font-weight:800; color:#fff;">${g.matchup}</div>
+                  <div style="font-weight:800; color:#fff; display:flex; align-items:center; gap:3px;">
+                    <span>${g.matchup}</span>
+                    <span class="matchup-link-icon" title="View on Matchups tab">↗</span>
+                  </div>
                   <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime || ""}</div>
                 </td>
                 <td colspan="4" style="text-align:center; color:var(--text-dim);">No pick submitted</td>
@@ -2811,9 +2860,12 @@ function renderPlayers() {
           const hasPredScores = pk.awayScore !== null && pk.awayScore !== "" && !isNaN(pk.awayScore);
 
           return `
-            <tr class="${isLive ? "is-live-row" : ""}">
+            <tr class="clickable-matchup-row ${isLive ? "is-live-row" : ""}" onclick="navigateToMatchup('${g.id}')" title="View ${g.matchup} on Matchups tab">
               <td>
-                <div style="font-weight:800; color:#fff;">${g.matchup}</div>
+                <div style="font-weight:800; color:#fff; display:flex; align-items:center; gap:3px;">
+                  <span>${g.matchup}</span>
+                  <span class="matchup-link-icon" title="View on Matchups tab">↗</span>
+                </div>
                 <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime || ""}</div>
               </td>
               <td style="text-align:center;">
@@ -2845,6 +2897,40 @@ function renderPlayers() {
       </button>
     </div>
   `;
+}
+
+function setPlayerPicksFilter(filter) {
+  state.playerPicksFilter = filter;
+  renderSinglePlayer(state.selectedPlayer);
+}
+
+function navigateToMatchup(gameId) {
+  if (!gameId) return;
+  // Switch to the Matchups tab without auto-scrolling to top
+  switchTab("matchups", false);
+
+  // Allow tab view to render and smooth scroll to target card
+  setTimeout(() => {
+    const card = document.getElementById(gameId);
+    if (card) {
+      if (state.collapsedMatchups && state.collapsedMatchups.has(gameId)) {
+        state.collapsedMatchups.delete(gameId);
+        card.classList.remove("collapsed");
+        const btn = card.querySelector(".matchup-collapse-btn");
+        if (btn) {
+          btn.classList.remove("collapsed");
+          btn.setAttribute("aria-label", "Collapse picks");
+          btn.setAttribute("title", "Collapse picks");
+        }
+        updateToggleAllButtonText();
+      }
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("matchup-highlight-target");
+      setTimeout(() => {
+        card.classList.remove("matchup-highlight-target");
+      }, 2200);
+    }
+  }, 100);
 }
 
 function openPlayer(playerName) {
