@@ -2580,10 +2580,10 @@ function renderPlayers() {
                     <span style="font-weight:700; color:var(--text-muted);">${g.awayScore}-${g.homeScore}</span>
                   </div>
                 ` : isLive ? `
-                  <div style="display:flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:800; white-space:nowrap;">
+                  <div style="display:flex; align-items:center; gap:6px; font-size:0.78rem; font-weight:800; white-space:nowrap;">
                     <span class="live-pulse-dot"></span>
-                    <span style="color:#fff;">${g.awayScore !== null ? `${g.awayScore} - ${g.homeScore}` : "LIVE"}</span>
-                    <span style="color:var(--text-muted); font-size:0.68rem; font-weight:700;">(${formatQuarterStatus(g.statusDetail) || "LIVE"})</span>
+                    <span style="color:#f87171; font-weight:800;">(${formatQuarterStatus(g.statusDetail) || "LIVE"})</span>
+                    <span style="color:#fff; font-weight:800;">${g.awayScore !== null ? `${g.awayScore} - ${g.homeScore}` : ""}</span>
                   </div>
                   ${(g.downDistance || g.isRedZone) ? `
                     <div style="font-size:0.65rem; color:var(--text-muted); margin-top:3px; display:flex; align-items:center; gap:4px; font-weight:600; white-space:nowrap;">
