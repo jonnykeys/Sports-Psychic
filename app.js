@@ -572,14 +572,16 @@ function calculateGamePicksPoints(game) {
 
 /**
  * Dynamically computes overall Season Leaderboard by summing pick points across all weeks in data.
+ * Optionally limits accumulation up to throughWeek (e.g. for historical week standings).
  */
-function computeSeasonLeaderboard(dataObj) {
+function computeSeasonLeaderboard(dataObj, throughWeek = null) {
   const data = dataObj || state.data;
+  const maxW = (throughWeek !== null && throughWeek !== undefined) ? throughWeek : 18;
   const list = PLAYERS.map(pName => {
     let totalPts = 0;
     if (data && data.weeks) {
-      Object.keys(data.weeks).forEach(wKey => {
-        const week = data.weeks[wKey];
+      for (let w = 1; w <= maxW; w++) {
+        const week = data.weeks[`Week ${w}`];
         if (week && week.games && Array.isArray(week.games)) {
           week.games.forEach(g => {
             const pk = g.picks ? g.picks[pName] : null;
@@ -588,13 +590,13 @@ function computeSeasonLeaderboard(dataObj) {
             }
           });
         }
-      });
+      }
     }
 
     return {
       name: pName,
       points: totalPts,
-      rec: getPlayerSeasonRecord(pName)
+      rec: getPlayerSeasonRecord(pName, throughWeek)
     };
   });
 
@@ -642,15 +644,18 @@ function recalculateAllWeeksPoints(dataObj) {
 
 /**
  * Calculates season-long Win-Loss record for a player across all finalized games.
+ * Optionally limits accumulation up to throughWeek.
  */
-function getPlayerSeasonRecord(playerName) {
+function getPlayerSeasonRecord(playerName, throughWeek = null) {
   let wins = 0;
   let losses = 0;
 
   if (state.data && state.data.weeks) {
-    Object.keys(state.data.weeks).forEach(weekKey => {
+    const maxW = (throughWeek !== null && throughWeek !== undefined) ? throughWeek : 18;
+    for (let w = 1; w <= maxW; w++) {
+      const weekKey = `Week ${w}`;
       const week = state.data.weeks[weekKey];
-      if (!week || !week.games) return;
+      if (!week || !week.games) continue;
       week.games.forEach(game => {
         if (!game || !game.matchup || !game.matchup.includes("@") || !game.isFinal || !game.winner) return;
         const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
@@ -673,7 +678,7 @@ function getPlayerSeasonRecord(playerName) {
           losses++;
         }
       });
-    });
+    }
   }
 
   const total = wins + losses;
@@ -1693,9 +1698,10 @@ window.setLeaderboardMode = setLeaderboardMode;
 /**
  * Returns overall Season Leaderboard with shared ranks based strictly on points.
  * Dynamically computes season standings across all finalized games in all weeks.
+ * Optionally limits accumulation up to throughWeek.
  */
-function getSeasonLeaderboard() {
-  return computeSeasonLeaderboard(state.data);
+function getSeasonLeaderboard(throughWeek = null) {
+  return computeSeasonLeaderboard(state.data, throughWeek);
 }
 
 /**
@@ -1755,8 +1761,8 @@ function getWeeklyLeaderboard(weekNum) {
  * Compares rank entering the week (points summed for weeks < weekNum)
  * against live rank in the week (points summed for weeks <= weekNum).
  *
- * If no games in the week have reached a final score yet, all players
- * show a neutral dash (—) with delta 0.
+ * If weekNum <= 1 (Week 1 of the season), or if no games in the week
+ * have reached a final score yet, all players show a neutral dash (—) with delta 0.
  */
 function getWeeklyRankMovements(weekNum = state.currentWeek) {
   const result = {};
@@ -1766,6 +1772,11 @@ function getWeeklyRankMovements(weekNum = state.currentWeek) {
       html: '<span class="rank-shift-pill shift-neutral">—</span>'
     };
   });
+
+  // Week 1 has no prior week to compare against: always neutral
+  if (weekNum <= 1) {
+    return result;
+  }
 
   const weekKey = `Week ${weekNum}`;
   const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
@@ -1890,7 +1901,7 @@ function renderLeaderboard() {
 
   const sorted = isWeekly
     ? getWeeklyLeaderboard(state.currentWeek)
-    : getSeasonLeaderboard();
+    : getSeasonLeaderboard(state.currentWeek);
 
   const rankMovements = getWeeklyRankMovements(state.currentWeek);
 
