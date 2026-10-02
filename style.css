@@ -1445,6 +1445,14 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.redzone-tag {
+  color: #f87171;
+  font-weight: 900;
+  letter-spacing: 0.3px;
 }
 
 .live-pulse-dot {
@@ -1541,6 +1549,64 @@ body {
   font-weight: 800;
   color: #fff;
   line-height: 1.15;
+  display: flex;
+  align-items: center;
+}
+
+.team-box.home .team-details .team-code {
+  justify-content: flex-end;
+}
+
+.possession-football {
+  font-size: 0.92rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+  animation: football-pulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(245, 184, 0, 0.7));
+  vertical-align: middle;
+}
+
+.team-box.home .possession-football {
+  margin-left: 0;
+  margin-right: 5px;
+}
+
+.possession-football-sm {
+  font-size: 0.76rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  animation: football-pulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px rgba(245, 184, 0, 0.6));
+  vertical-align: middle;
+}
+
+@keyframes football-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 4px rgba(245, 184, 0, 0.45));
+  }
+  50% {
+    transform: scale(1.15) rotate(-6deg);
+    filter: drop-shadow(0 0 8px rgba(245, 184, 0, 0.85));
+  }
+}
+
+.team-box.has-possession {
+  background: rgba(245, 184, 0, 0.05);
+  border-radius: 8px;
+  padding: 2px 6px;
+  transition: all 0.3s ease;
+}
+
+.team-box.away.has-possession {
+  box-shadow: inset 2.5px 0 0 #ffd700;
+}
+
+.team-box.home.has-possession {
+  box-shadow: inset -2.5px 0 0 #ffd700;
 }
 
 .team-name-sub {

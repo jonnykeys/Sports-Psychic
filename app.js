@@ -1214,6 +1214,26 @@ async function syncLiveNFLScores(weekNum, silent = false) {
         ? parseInt(homeComp.score, 10)
         : null;
 
+      // Extract real-time possession and situation from ESPN
+      let possession = null; // "away" | "home" | null
+      let downDistance = null;
+      let isRedZone = false;
+
+      if (comp.situation) {
+        const possId = String(comp.situation.possession || "").trim();
+        const awayId = String(awayComp.id || awayComp.team?.id || "").trim();
+        const homeId = String(homeComp.id || homeComp.team?.id || "").trim();
+
+        if (possId && possId === awayId) {
+          possession = "away";
+        } else if (possId && possId === homeId) {
+          possession = "home";
+        }
+
+        downDistance = comp.situation.shortDownDistanceText || comp.situation.downDistanceText || null;
+        isRedZone = Boolean(comp.situation.isRedZone);
+      }
+
       if (stateCode === "post" || statusType.completed === true) {
         // Game is completed / FINAL
         game.isFinal = true;
@@ -1221,6 +1241,9 @@ async function syncLiveNFLScores(weekNum, silent = false) {
         game.statusDetail = shortDetail || "Final";
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
+        game.possession = null;
+        game.downDistance = null;
+        game.isRedZone = false;
 
         if (awayComp.winner === true) {
           game.winner = gameAwayRaw;
@@ -1238,11 +1261,17 @@ async function syncLiveNFLScores(weekNum, silent = false) {
         game.statusDetail = shortDetail || "Live";
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
+        game.possession = possession;
+        game.downDistance = downDistance;
+        game.isRedZone = isRedZone;
       } else {
         // Game is PRE / UPCOMING
         game.statusDetail = "Scheduled";
         if (!game.isFinal) {
           game.isLive = false;
+          game.possession = null;
+          game.downDistance = null;
+          game.isRedZone = false;
         }
       }
 
@@ -1928,7 +1957,14 @@ function renderMatchups() {
         : "FINAL";
       badgeClass = "final";
     } else if (isLive) {
-      badgeText = `<span class="live-pulse-dot"></span> ${game.statusDetail || "LIVE"}`;
+      let liveText = game.statusDetail || "LIVE";
+      if (game.downDistance) {
+        liveText += ` • ${game.downDistance}`;
+      }
+      if (game.isRedZone) {
+        liveText += ` • <span class="redzone-tag">🔴 RZ</span>`;
+      }
+      badgeText = `<span class="live-pulse-dot"></span> ${liveText}`;
       badgeClass = "live";
     } else {
       badgeText = "SCHEDULED";
@@ -2060,10 +2096,13 @@ function renderMatchups() {
 
         <div class="matchup-teams-display">
           <!-- Away Team (Left) -->
-          <div class="team-box away">
+          <div class="team-box away ${isLive && game.possession === 'away' ? 'has-possession' : ''}">
             <div class="team-badge" style="background-color: ${awayInfo.color}; color: ${awayTextColor};">${awayTeam}</div>
             <div class="team-details">
-              <div class="team-code">${awayTeam}</div>
+              <div class="team-code">
+                <span>${awayTeam}</span>
+                ${isLive && game.possession === 'away' ? '<span class="possession-football" title="Possession: ' + awayTeam + '">🏈</span>' : ''}
+              </div>
               <div class="team-name-sub">${awayInfo.city || awayInfo.name || ""}</div>
               <div class="team-record-sub">${awayRecord.text}</div>
             </div>
@@ -2076,10 +2115,13 @@ function renderMatchups() {
           </div>
 
           <!-- Home Team (Right) -->
-          <div class="team-box home">
+          <div class="team-box home ${isLive && game.possession === 'home' ? 'has-possession' : ''}">
             <div class="team-badge" style="background-color: ${homeInfo.color}; color: ${homeTextColor};">${homeTeam}</div>
             <div class="team-details">
-              <div class="team-code">${homeTeam}</div>
+              <div class="team-code">
+                <span>${homeTeam}</span>
+                ${isLive && game.possession === 'home' ? '<span class="possession-football" title="Possession: ' + homeTeam + '">🏈</span>' : ''}
+              </div>
               <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
               <div class="team-record-sub">${homeRecord.text}</div>
             </div>
@@ -2507,8 +2549,11 @@ function renderPlayers() {
                   </div>
                 ` : isLive ? `
                   <div style="font-size:0.68rem; color:var(--text-dim); margin-top:3px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                    <span style="color:#f87171; font-weight:700;">Live:</span>
-                    <span style="font-weight:700; color:#fff;">${g.awayScore}-${g.homeScore}</span>
+                    <span style="color:#f87171; font-weight:700;"><span class="live-pulse-dot"></span> Live:</span>
+                    <span style="font-weight:700; color:#fff;">
+                      ${g.possession === 'away' ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.awayScore}-${g.homeScore}${g.possession === 'home' ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}
+                    </span>
+                    <span style="font-size:0.62rem; color:var(--text-muted);">(${g.statusDetail || "LIVE"}${g.downDistance ? ` • ${g.downDistance}` : ""})</span>
                   </div>
                 ` : ""}
               </td>
@@ -2962,9 +3007,15 @@ function renderH2H() {
           <span style="font-size:0.62rem; color:var(--accent-green); font-weight:800; text-transform:uppercase;">${game.statusDetail || "FINAL"}</span>
         `;
       } else if (isLive) {
+        let liveDetail = game.statusDetail || "LIVE";
+        if (game.downDistance) liveDetail += ` • ${game.downDistance}`;
+        const possAway = game.possession === 'away';
+        const possHome = game.possession === 'home';
         centerScoreHtml = `
-          <span class="h2h-game-actual-score" style="color:#f87171;">${game.awayScore} - ${game.homeScore}</span>
-          <span class="h2h-live-tag"><span class="live-pulse-dot"></span> ${game.statusDetail || "LIVE"}</span>
+          <span class="h2h-game-actual-score" style="color:#f87171;">
+            ${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${game.awayScore} - ${game.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}
+          </span>
+          <span class="h2h-live-tag"><span class="live-pulse-dot"></span> ${liveDetail}</span>
         `;
       } else {
         centerScoreHtml = `
