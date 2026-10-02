@@ -1251,7 +1251,23 @@ async function syncLiveNFLScores(weekNum, silent = false) {
           possession = "home";
         }
 
-        downDistance = comp.situation.shortDownDistanceText || comp.situation.downDistanceText || null;
+        // Prioritize full down & distance with ball yard line (e.g. "1st & 10 at PIT 35")
+        const rawDownDist = comp.situation.downDistanceText;
+        const shortDownDist = comp.situation.shortDownDistanceText;
+        const possText = comp.situation.possessionText;
+
+        if (rawDownDist && typeof rawDownDist === "string" && rawDownDist.trim()) {
+          downDistance = rawDownDist.trim();
+        } else if (shortDownDist && typeof shortDownDist === "string" && shortDownDist.trim()) {
+          if (possText && typeof possText === "string" && possText.trim()) {
+            downDistance = `${shortDownDist.trim()} at ${possText.trim()}`;
+          } else {
+            downDistance = shortDownDist.trim();
+          }
+        } else if (possText && typeof possText === "string" && possText.trim()) {
+          downDistance = `Ball at ${possText.trim()}`;
+        }
+
         isRedZone = Boolean(comp.situation.isRedZone);
       }
 
@@ -2102,7 +2118,7 @@ function renderMatchups() {
     const isCollapsed = state.collapsedMatchups && state.collapsedMatchups.has(game.id);
 
     return `
-      <article class="matchup-card ${isCollapsed ? "collapsed" : ""}" id="${game.id}">
+      <article class="matchup-card ${isCollapsed ? "collapsed" : ""} ${isLive ? "is-live" : ""}" id="${game.id}">
         <div class="matchup-card-header" onclick="toggleMatchupCollapse('${game.id}', event)">
           <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
           <div class="matchup-header-actions">
