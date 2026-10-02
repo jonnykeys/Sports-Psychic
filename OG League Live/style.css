@@ -804,12 +804,32 @@ body {
 
 .rank-1-pts .podium-pts-val {
   font-size: 1.45rem;
-  color: var(--accent-gold-bright);
-  text-shadow: 0 0 10px rgba(245, 184, 0, 0.4);
+  color: #ffd700;
+  text-shadow: 0 0 12px rgba(245, 184, 0, 0.45);
 }
 
 .rank-1-pts .podium-pts-lbl {
-  color: var(--accent-gold);
+  color: #ffd700;
+}
+
+.rank-2-pts .podium-pts-val {
+  font-size: 1.25rem;
+  color: #f1f5f9;
+  text-shadow: 0 0 10px rgba(226, 232, 240, 0.35);
+}
+
+.rank-2-pts .podium-pts-lbl {
+  color: #cbd5e1;
+}
+
+.rank-3-pts .podium-pts-val {
+  font-size: 1.25rem;
+  color: #fdba74;
+  text-shadow: 0 0 10px rgba(251, 146, 60, 0.35);
+}
+
+.rank-3-pts .podium-pts-lbl {
+  color: #fb923c;
 }
 
 .podium-record-pill {
@@ -1188,14 +1208,14 @@ body {
   text-transform: uppercase;
 }
 
-/* Season Total Tab: Athletic Gold Points */
+/* Season Total Tab: Light Blue Points */
 .leader-points-wrap.pts-season .leader-pts-val {
-  color: #ffd700;
-  text-shadow: 0 0 10px rgba(245, 184, 0, 0.35);
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
 }
 
 .leader-points-wrap.pts-season .leader-pts-lbl {
-  color: rgba(245, 184, 0, 0.75);
+  color: rgba(56, 189, 248, 0.75);
 }
 
 /* Week # Standings Tab: Neon Emerald Points */
@@ -1230,7 +1250,14 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.26);
 }
 
-/* Frosted Athletic Gold Pill (Season total context on Week # Standings) */
+/* Frosted Light Blue Pill (Season total context on Week # Standings) */
+.leader-sub-pill.pill-blue {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+/* Frosted Athletic Gold Pill */
 .leader-sub-pill.pill-gold {
   color: #ffd700;
   background: rgba(245, 184, 0, 0.1);
@@ -1240,7 +1267,7 @@ body {
 .leader-total-points {
   font-size: 1.25rem;
   font-weight: 900;
-  color: #ffd700;
+  color: #38bdf8;
   line-height: 1.1;
 }
 
@@ -2129,9 +2156,9 @@ body {
 .hero-record-badge {
   font-size: 0.72rem;
   font-weight: 800;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.22);
   border-radius: 999px;
   padding: 1px 8px;
 }
@@ -2313,10 +2340,10 @@ body {
 
 .pstat-tile.tile-season {
   background: 
-    radial-gradient(circle at 50% 0%, rgba(245, 184, 0, 0.14) 0%, transparent 70%),
+    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.14) 0%, transparent 70%),
     linear-gradient(180deg, rgba(22, 34, 66, 0.85) 0%, rgba(12, 19, 39, 0.95) 100%);
-  border: 1px solid rgba(245, 184, 0, 0.22);
-  border-top: 2.5px solid #ffd700;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-top: 2.5px solid #38bdf8;
 }
 
 .pstat-tile.tile-week {
@@ -2329,10 +2356,10 @@ body {
 
 .pstat-tile.tile-picks {
   background: 
-    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.14) 0%, transparent 70%),
+    radial-gradient(circle at 50% 0%, rgba(245, 184, 0, 0.14) 0%, transparent 70%),
     linear-gradient(180deg, rgba(22, 34, 66, 0.85) 0%, rgba(12, 19, 39, 0.95) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.22);
-  border-top: 2.5px solid #38bdf8;
+  border: 1px solid rgba(245, 184, 0, 0.22);
+  border-top: 2.5px solid #ffd700;
 }
 
 .pstat-header-label {
@@ -2659,16 +2686,16 @@ body {
 .h2h-fighter-pts-num {
   font-size: 1.42rem;
   font-weight: 900;
-  color: #ffd700;
+  color: #38bdf8;
   letter-spacing: -0.5px;
   line-height: 1;
-  text-shadow: 0 0 12px rgba(245, 184, 0, 0.35);
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
 }
 
 .h2h-fighter-pts-lbl {
   font-size: 0.65rem;
   font-weight: 800;
-  color: var(--accent-gold);
+  color: rgba(56, 189, 248, 0.75);
 }
 
 .h2h-fighter-rec-capsule {
@@ -2739,13 +2766,13 @@ body {
 }
 
 .h2h-lead-chip.lead-season {
-  border-color: rgba(245, 184, 0, 0.25);
-  background: rgba(245, 184, 0, 0.06);
+  border-color: rgba(56, 189, 248, 0.25);
+  background: rgba(56, 189, 248, 0.06);
 }
 
 .h2h-lead-chip.lead-week {
-  border-color: rgba(56, 189, 248, 0.25);
-  background: rgba(56, 189, 248, 0.06);
+  border-color: rgba(16, 185, 129, 0.28);
+  background: rgba(16, 185, 129, 0.08);
 }
 
 .lead-chip-tag {
@@ -2766,11 +2793,12 @@ body {
 }
 
 .lead-season .lead-chip-val {
-  color: #ffd700;
+  color: #38bdf8;
 }
 
 .lead-week .lead-chip-val {
-  color: var(--accent-cyan);
+  color: #10b981;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.25);
 }
 
 /* 3. DIVERGENCE & SWING METER */

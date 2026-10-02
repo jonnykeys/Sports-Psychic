@@ -1733,7 +1733,7 @@ function renderLeaderboard() {
         </div>
         <div class="podium-body">
           <div class="podium-name">${rank2.name}${isMeRank2 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-          <div class="podium-points-wrap">
+          <div class="podium-points-wrap rank-2-pts">
             <span class="podium-pts-val">${rank2.points}</span>
             <span class="podium-pts-lbl">PTS</span>
           </div>
@@ -1780,7 +1780,7 @@ function renderLeaderboard() {
         </div>
         <div class="podium-body">
           <div class="podium-name">${rank3.name}${isMeRank3 ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
-          <div class="podium-points-wrap">
+          <div class="podium-points-wrap rank-3-pts">
             <span class="podium-pts-val">${rank3.points}</span>
             <span class="podium-pts-lbl">PTS</span>
           </div>
@@ -1833,14 +1833,14 @@ function renderLeaderboard() {
       `;
     } else {
       // Week # Standings Tab:
-      // Points in Neon Emerald; sub-pill in Athletic Gold (X Season Pts)
+      // Points in Neon Emerald; sub-pill in Light Blue (X Season Pts)
       const seasonPts = seasonPtsMap[player.name] !== undefined ? seasonPtsMap[player.name] : player.points;
       rightSideHtml = `
         <div class="leader-points-wrap pts-weekly">
           <span class="leader-pts-val">${player.points}</span>
           <span class="leader-pts-lbl">PTS</span>
         </div>
-        <div class="leader-sub-pill pill-gold">${seasonPts} Season Pts</div>
+        <div class="leader-sub-pill pill-blue">${seasonPts} Season Pts</div>
       `;
     }
 
@@ -2388,17 +2388,17 @@ function renderPlayers() {
     </div>
 
     <div class="player-stats-row">
-      <!-- 1: Season Total Points -->
+      <!-- 1: Season Total Points (Light Blue) -->
       <div class="pstat-tile tile-season">
         <div class="pstat-header-label">SEASON TOTAL</div>
-        <div class="pstat-value val-gold">
+        <div class="pstat-value val-blue">
           <span class="pstat-num">${playerRankObj.points}</span>
           <span class="pstat-unit">PTS</span>
         </div>
-        <div class="pstat-footer-pill pill-gold">${rankText}</div>
+        <div class="pstat-footer-pill pill-blue">${rankText}</div>
       </div>
 
-      <!-- 2: Current Week Points -->
+      <!-- 2: Current Week Points (Neon Emerald) -->
       <div class="pstat-tile tile-week">
         <div class="pstat-header-label">${weekKey.toUpperCase()} PTS</div>
         <div class="pstat-value val-green">
@@ -2408,14 +2408,14 @@ function renderPlayers() {
         <div class="pstat-footer-pill pill-green">${weekPillText}</div>
       </div>
 
-      <!-- 3: Correct Picks & Hit Rate -->
+      <!-- 3: Correct Picks & Hit Rate (Athletic Gold) -->
       <div class="pstat-tile tile-picks">
         <div class="pstat-header-label">CORRECT PICKS</div>
-        <div class="pstat-value val-blue">
+        <div class="pstat-value val-gold">
           <span class="pstat-num">${correctCount}</span>
           <span class="pstat-unit">/ ${games.length}</span>
         </div>
-        <div class="pstat-footer-pill pill-blue">${pickPct}% Accuracy</div>
+        <div class="pstat-footer-pill pill-gold">${pickPct}% Accuracy</div>
       </div>
     </div>
   `;
