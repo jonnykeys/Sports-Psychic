@@ -912,7 +912,7 @@ body {
   color: #fed7aa;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 480px) {
   .podium-container {
     gap: 6px;
     padding: 0;
@@ -939,7 +939,7 @@ body {
   }
   .leader-row {
     padding: 8px 10px;
-    gap: 6px;
+    gap: 8px;
   }
   .leader-left {
     gap: 6px;
@@ -959,19 +959,24 @@ body {
     min-width: 26px;
     font-size: 0.7rem;
   }
+  .player-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
   .player-info-block .player-title {
     font-size: 0.88rem;
   }
   .leader-rec-capsule {
-    font-size: 0.62rem;
-    padding: 1px 6px;
+    font-size: 0.6rem;
+    padding: 1px 5px;
   }
   .leader-points-wrap .leader-pts-val {
     font-size: 1.15rem;
   }
   .leader-sub-pill {
-    font-size: 0.62rem;
-    padding: 1px 6px;
+    font-size: 0.6rem;
+    padding: 1px 5.5px;
   }
 }
 
@@ -985,6 +990,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   background: linear-gradient(135deg, rgba(20, 32, 64, 0.65) 0%, rgba(12, 19, 39, 0.82) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 10px 14px;
@@ -1038,9 +1044,10 @@ body {
 .leader-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .rank-badge {
@@ -1178,12 +1185,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
+  gap: 2.5px;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .player-info-block .player-title {
-  font-size: 0.96rem;
+  font-size: 0.94rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.2;
@@ -1197,20 +1206,23 @@ body {
 }
 
 .leader-rec-capsule {
-  font-size: 0.67rem;
+  font-size: 0.64rem;
   font-weight: 800;
   color: #38bdf8;
   background: rgba(56, 189, 248, 0.08);
   border: 1px solid rgba(56, 189, 248, 0.2);
   border-radius: 999px;
-  padding: 1.5px 8px;
+  padding: 1px 6.5px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   line-height: 1.25;
   white-space: nowrap;
   letter-spacing: 0.2px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .leader-rec-capsule .rec-dot {
@@ -1250,7 +1262,7 @@ body {
   justify-content: center;
   gap: 2px;
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-left: 0;
 }
 
 .leader-points-wrap {
@@ -1298,10 +1310,10 @@ body {
 
 /* Sub-Pills below Points */
 .leader-sub-pill {
-  font-size: 0.67rem;
+  font-size: 0.65rem;
   font-weight: 800;
   border-radius: 999px;
-  padding: 1.5px 8px;
+  padding: 1px 6.5px;
   line-height: 1.2;
   white-space: nowrap;
   letter-spacing: 0.2px;

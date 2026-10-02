@@ -2078,18 +2078,18 @@ function renderLeaderboard() {
           <span class="leader-pts-val">${player.points}</span>
           <span class="leader-pts-lbl">PTS</span>
         </div>
-        <div class="leader-sub-pill pill-emerald">+${weekPts} in Wk ${state.currentWeek}</div>
+        <div class="leader-sub-pill pill-emerald">+${weekPts} Wk ${state.currentWeek}</div>
       `;
     } else {
       // Week # Standings Tab:
-      // Points in Neon Emerald; sub-pill in Light Blue (X Season Pts)
+      // Points in Neon Emerald; sub-pill in Light Blue (X Total)
       const seasonPts = seasonPtsMap[player.name] !== undefined ? seasonPtsMap[player.name] : player.points;
       rightSideHtml = `
         <div class="leader-points-wrap pts-weekly">
           <span class="leader-pts-val">${player.points}</span>
           <span class="leader-pts-lbl">PTS</span>
         </div>
-        <div class="leader-sub-pill pill-blue">${seasonPts} Season Pts</div>
+        <div class="leader-sub-pill pill-blue">${seasonPts} Total</div>
       `;
     }
 
@@ -2105,9 +2105,9 @@ function renderLeaderboard() {
               ${isMe ? `<span class="leader-you-pill">YOU</span>` : ""}
             </div>
             <div class="leader-rec-capsule">
-              <span>${rec.wins}-${rec.losses} W-L</span>
+              <span>${rec.wins}-${rec.losses}</span>
               <span class="rec-dot">•</span>
-              <span>${rec.pct}%</span>
+              <span>${Math.round(parseFloat(rec.pct) || 0)}%</span>
             </div>
           </div>
         </div>
