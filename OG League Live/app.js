@@ -2512,7 +2512,7 @@ function renderPlayers() {
         <tr>
           <th>Matchup</th>
           <th>Pick</th>
-          <th>Score</th>
+          <th>Predicted</th>
           <th>Result</th>
           <th style="text-align:right;">Pts</th>
         </tr>
