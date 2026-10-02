@@ -2700,7 +2700,7 @@ function renderPlayers() {
 
   const totalPicks = games.length;
   const liveCount = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null))).length;
-  const upcomingCount = Math.max(0, totalPicks - finalCount - liveCount);
+  const upcomingCount = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null))).length;
 
   if (weekStat) {
     if (liveCount > 0) {
@@ -2714,7 +2714,7 @@ function renderPlayers() {
   const currentFilter = state.playerPicksFilter || "all";
   let filteredGames = games;
   if (currentFilter === "final") {
-    filteredGames = games.filter(g => g.isFinal);
+    filteredGames = games.filter(g => Boolean(g.isFinal));
   } else if (currentFilter === "live") {
     filteredGames = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)));
   } else if (currentFilter === "upcoming") {
@@ -2901,7 +2901,11 @@ function renderPlayers() {
 
 function setPlayerPicksFilter(filter) {
   state.playerPicksFilter = filter;
-  renderSinglePlayer(state.selectedPlayer);
+  renderPlayers();
+}
+
+function renderSinglePlayer() {
+  renderPlayers();
 }
 
 function navigateToMatchup(gameId) {
