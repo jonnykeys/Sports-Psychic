@@ -1447,6 +1447,17 @@ body {
   gap: 4px;
   white-space: nowrap;
   line-height: 1.2;
+  text-transform: none;
+}
+
+@media (max-width: 480px) {
+  .matchup-card.is-live .matchup-card-header .date-time {
+    display: none;
+  }
+  .matchup-card.is-live .matchup-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .redzone-tag {
