@@ -268,7 +268,9 @@ function normalizeTeamCode(code) {
 // =========================================================
 // APPLICATION STATE
 // =========================================================
-const SAVED_USER_KEY = "og_league_my_player";
+const IS_PREVIEW = typeof window !== "undefined" && window.location.pathname.includes("/preview");
+const SAVED_USER_KEY = IS_PREVIEW ? "sp_preview_my_player" : "og_league_my_player";
+const CACHE_KEY = IS_PREVIEW ? "sp_preview_cache_v1" : "og_league_cache_v9";
 let initialSavedPlayer = null;
 try {
   const stored = localStorage.getItem(SAVED_USER_KEY);
@@ -921,7 +923,7 @@ function initData() {
     localStorage.removeItem("og_league_cache_v6");
   } catch (e) {}
 
-  const cached = localStorage.getItem("og_league_cache_v9") || localStorage.getItem("og_league_cache_v8");
+  const cached = localStorage.getItem(CACHE_KEY) || localStorage.getItem("og_league_cache_v8");
   if (cached) {
     try {
       state.data = JSON.parse(cached);
@@ -939,7 +941,7 @@ function initData() {
     sanitizeData(state.data);
     recalculateAllWeeksPoints(state.data);
     try {
-      localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
     } catch (e) {}
   }
 
@@ -1597,7 +1599,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
     if (updatedCount > 0) {
       recalculateAllWeeksPoints(state.data);
       try {
-        localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
       } catch (e) {}
     }
   } catch (err) {
@@ -1638,7 +1640,7 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     
     // Save state cache
     try {
-      localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
     } catch (e) {}
 
     renderTabContent();
