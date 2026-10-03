@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0e17">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sports Psychic">
+  <meta name="description" content="Live view-only scores, player predictions, and season standings for the OG League">
+  <title>Sports Psychic - OG League 🏈</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css?v=11.0">
+  <link rel="icon" type="image/png" href="logo.png?v=3.2">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
+</head>
+<body>
+
+  <!-- APP STICKY HEADER -->
+  <header class="app-header">
+    <div class="brand-row" onclick="switchTab('leaderboard')" style="cursor: pointer;" title="Back to Standings / Home">
+      <img src="logo.png?v=3.2" class="brand-logo" alt="Sports Psychic Logo" width="32" height="32">
+      <div class="brand-text">
+        <h1 id="header-brand-title">OG League</h1>
+        <div class="subtext" id="header-brand-sub">SPORTS PSYCHIC</div>
+      </div>
+    </div>
+    <div class="header-right-actions">
+      <button id="btn-league-switcher" class="league-selector-btn" onclick="openLeagueDrawer()" aria-label="Switch League" title="Switch League">
+        <span id="header-active-league-pill">🏆 OG League</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      <button id="btn-header-profile" class="header-profile-btn not-set" onclick="openProfileModal()" aria-label="Personalize profile" title="Personalize / Remember Me">
+        <span class="header-profile-icon">👤</span>
+        <span class="header-profile-text">Set Me</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PULL TO REFRESH INDICATOR -->
+  <div id="ptr-indicator" class="ptr-indicator" aria-hidden="true">
+    <div class="ptr-pill">
+      <div class="ptr-icon-wrap">
+        <span class="ptr-arrow">↓</span>
+        <div class="ptr-spinner"></div>
+      </div>
+      <span class="ptr-text">Pull to refresh</span>
+    </div>
+  </div>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="main-content">
+
+    <!-- WEEK SELECTOR STEPPER & DROPDOWN -->
+    <section class="week-stepper-container" aria-label="Week Selector">
+      <div class="week-stepper-bar">
+        <button id="week-prev-btn" class="week-stepper-btn" aria-label="Previous week" title="Previous Week">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button id="week-dropdown-trigger" class="week-stepper-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" title="Choose NFL Week">
+          <span id="week-trigger-title" class="week-trigger-title">Week 4</span>
+          <span id="week-trigger-badge" class="week-trigger-badge badge-live">
+            <span class="pulse-dot"></span>
+            <span id="week-badge-text">LIVE</span>
+          </span>
+          <svg id="week-trigger-chevron" class="week-trigger-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <button id="week-next-btn" class="week-stepper-btn" aria-label="Next week" title="Next Week">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- FLOATING DROPDOWN POPOVER -->
+      <div id="week-dropdown-popover" class="week-dropdown-popover" hidden>
+        <div class="week-dropdown-topbar">
+          <span class="week-dropdown-heading">Select NFL Week</span>
+          <button id="btn-jump-current-week" class="btn-jump-current-week" type="button" title="Jump to current active week">
+            <span class="pulse-dot"></span>
+            <span>Current Week</span>
+          </button>
+        </div>
+        <div id="week-grid-container" class="week-grid-container">
+          <!-- Week cells 1-18 generated dynamically -->
+        </div>
+      </div>
+
+      <!-- BACKDROP SCRIM -->
+      <div id="week-dropdown-backdrop" class="week-dropdown-backdrop" hidden></div>
+    </section>
+
+    <!-- TAB 1: LEADERBOARD -->
+    <section id="tab-leaderboard" class="tab-view active" role="tabpanel">
+      <!-- LEADERBOARD VIEW TOGGLE (Season Total vs Weekly Standings) -->
+      <div class="leaderboard-toggle-wrap">
+        <div class="segmented-control" role="group" aria-label="Standings View Selection">
+          <button id="btn-toggle-season" type="button" class="segmented-btn active" onclick="setLeaderboardMode('season')" aria-label="Season Total Standings">
+            <span class="segmented-icon">
+              <svg class="segmented-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+              </svg>
+            </span>
+            <span class="segmented-label">Season Total</span>
+          </button>
+          <button id="btn-toggle-weekly" type="button" class="segmented-btn" onclick="setLeaderboardMode('weekly')" aria-label="Weekly Standings">
+            <span class="segmented-icon">
+              <svg class="segmented-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </span>
+            <span id="label-toggle-weekly" class="segmented-label">Week 4 Standings</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top 3 Podium (Rank 2, 1, 3) -->
+      <div id="podium-container" class="podium-container">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <!-- Complete Rankings (4-12) -->
+      <div id="leaderboard-section-title" class="leaderboard-section-title" style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
+        League Standings
+      </div>
+      <div id="leaderboard-list" class="leaderboard-list">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 2: MATCHUPS & PICKS -->
+    <section id="tab-matchups" class="tab-view" role="tabpanel">
+      <div id="matchups-week-banner" class="week-summary-banner">
+        <div class="week-summary-left">
+          <span id="matchup-banner-title" class="week-summary-title">Week 4 Matchups</span>
+          <span id="matchup-banner-stat" class="week-summary-stat">16 Games</span>
+        </div>
+        <button id="toggle-all-matchups-btn" class="btn-toggle-all-picks" type="button" onclick="toggleAllMatchups()" title="Collapse or expand all game picks">Collapse All</button>
+      </div>
+      <div id="matchups-bye-strip" class="matchups-bye-strip" hidden></div>
+      <div id="matchups-filter-bar" class="matchups-filter-bar"></div>
+      <div id="matchups-list">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 3: PLAYERS ROSTER -->
+    <section id="tab-players" class="tab-view" role="tabpanel">
+      <!-- PLAYERS SUB-VIEW MODE TOGGLE: Scorecard vs Head-to-Head -->
+      <div class="players-mode-toggle-wrap">
+        <div class="segmented-control" role="group" aria-label="Player View Selection">
+          <button id="btn-player-mode-single" type="button" class="segmented-btn active" onclick="setPlayerViewMode('single')" aria-label="Individual Scorecard">
+            <span class="segmented-icon">
+              <svg class="segmented-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <span class="segmented-label">Scorecard</span>
+          </button>
+          <button id="btn-player-mode-h2h" type="button" class="segmented-btn" onclick="setPlayerViewMode('h2h')" aria-label="Head-to-Head Rivalry Comparison">
+            <span class="segmented-icon">
+              <svg class="segmented-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/>
+                <line x1="13" y1="19" x2="19" y2="13"/>
+                <line x1="16" y1="16" x2="20" y2="20"/>
+                <line x1="19" y1="21" x2="21" y2="19"/>
+                <polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/>
+                <line x1="5" y1="14" x2="9" y2="18"/>
+                <line x1="7" y1="17" x2="4" y2="20"/>
+                <line x1="3" y1="19" x2="5" y2="21"/>
+              </svg>
+            </span>
+            <span class="segmented-label">Head-to-Head</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 1: SINGLE PLAYER SCORECARD -->
+      <div id="player-single-view">
+        <!-- Player horizontal scroll selection -->
+        <div id="player-scroller-pills" class="player-scroller-pills">
+          <!-- Generated dynamically -->
+        </div>
+
+        <!-- Selected Player Card -->
+        <div id="player-hero-card" class="player-hero-card">
+          <!-- Rendered by app.js -->
+        </div>
+
+        <!-- Player picks for selected week -->
+        <div class="player-picks-section-header">
+          <span id="player-week-title" class="player-picks-title">Week 4 Predictions</span>
+        </div>
+        <div id="player-picks-container">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+
+      <!-- VIEW 2: HEAD-TO-HEAD RIVALRY SHOWDOWN -->
+      <div id="player-h2h-view" style="display: none;">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 4: NFL STANDINGS -->
+    <section id="tab-nfl" class="tab-view" role="tabpanel">
+      <div class="nfl-section-header">🏈 Playoff Picture</div>
+      <div id="nfl-playoff-container" class="playoff-picture-container">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <div class="nfl-section-header">📊 Division Standings</div>
+      <div id="nfl-divisions-container" class="divisions-grid">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- TAB 5: RULES & SCORING -->
+    <section id="tab-rules" class="tab-view" role="tabpanel">
+      <div class="rules-container">
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>🏈 Correct Winner</span>
+            <span class="rule-badge-pts pts-winner">+10 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Earn 10 base points for predicting the winning NFL team of each matchup correctly.
+          </p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>🎯 Closest Score Bonus</span>
+            <span class="rule-badge-pts pts-closest">+10 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Contenders who pick the winning team compete for the Closest Score Bonus. The winning picker whose predicted score has the lowest absolute difference to the final score receives an additional <strong>+10 bonus points</strong> (or triples to <strong>+30 PTS</strong> if a 3X multiplier is used).
+          </p>
+          <div class="rule-tip">
+            💡 If contenders tie for the closest score, the bonus is split evenly (e.g. +5 PTS each).
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>🔮 Exact Score Prediction</span>
+            <span class="rule-badge-pts pts-exact">+50 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Correctly predict both the exact home and away final scores of the game! Hits on exact score award a massive 50-point jackpot (or 25 PTS each if tied; triples to 150 PTS on 3X multiplier).
+          </p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>⭐ Weekly Multiplier (3x)</span>
+            <span class="rule-badge-pts pts-mult">3X MULTIPLIER</span>
+          </div>
+          <p class="rule-desc">
+            Each player designates one game per week as their confidence multiplier. If your pick wins, your winner points and closest/exact bonuses for that game are tripled!
+          </p>
+          <div class="rule-tip">
+            💡 <strong>Max Payout:</strong> (10 base + 10 closest) &times; 3 = <strong>60 PTS</strong>, or (10 base + 50 exact) &times; 3 = <strong>180 PTS</strong>!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    </section>
+
+  </main>
+
+  <!-- LEAGUE SWITCHER BOTTOM DRAWER -->
+  <div id="league-drawer" class="drawer-overlay" onclick="closeLeagueDrawer(event)">
+    <div class="drawer-content" onclick="event.stopPropagation()">
+      <div class="drawer-handle"></div>
+      <div class="drawer-header-row">
+        <div>
+          <div class="drawer-title">Select League</div>
+          <div class="drawer-subtitle">Switch between your leagues or play solo</div>
+        </div>
+        <span class="season-badge-pill">2026 Season</span>
+      </div>
+
+      <!-- Option 1: OG League (Active) -->
+      <div id="drawer-card-og" class="league-option-card active" onclick="selectLeague('OG League')">
+        <div class="league-card-left">
+          <div class="league-icon-box">🏆</div>
+          <div>
+            <div class="league-title-row">
+              <span class="league-name">OG League</span>
+              <span class="league-status-tag">ACTIVE</span>
+            </div>
+            <div class="league-meta-row" id="drawer-og-meta">12 Members • 2026 NFL Season</div>
+          </div>
+        </div>
+        <span class="league-check-icon">✓</span>
+      </div>
+
+      <!-- Option 2: Solo Psychic Play -->
+      <div id="drawer-card-solo" class="league-option-card" onclick="selectLeague('solo')">
+        <div class="league-card-left">
+          <div class="league-icon-box icon-solo">🔮</div>
+          <div>
+            <div class="league-title-row">
+              <span class="league-name">Solo Psychic Play</span>
+            </div>
+            <div class="league-meta-row">Personal Full-Season Forecasting & Accuracies</div>
+          </div>
+        </div>
+        <span class="league-switch-arrow">Switch &rarr;</span>
+      </div>
+
+      <div class="drawer-divider"></div>
+
+      <!-- Action Buttons -->
+      <button class="btn-create-league" onclick="openCreateLeagueModal()">
+        <span>➕</span>
+        <span>Create a New League</span>
+      </button>
+      <button class="btn-join-league" onclick="openJoinLeagueModal()">
+        <span>🔑</span>
+        <span>Join League with Invite Code</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FIXED MOBILE BOTTOM NAVIGATION -->
+  <nav class="bottom-nav" aria-label="Bottom Navigation">
+    <button class="nav-item active" data-tab="leaderboard">
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+          <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+          <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
+          <path d="M12 17v4" />
+          <path d="M8 21h8" />
+        </svg>
+      </span>
+      <span>Standings</span>
+    </button>
+    <button class="nav-item" data-tab="matchups">
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 9l-6 6" />
+          <path d="M10 12l2 2" />
+          <path d="M12 10l2 2" />
+          <path d="M8 21a5 5 0 0 0 -5 -5" />
+          <path d="M16 3c-7.18 0 -13 5.82 -13 13a5 5 0 0 0 5 5c7.18 0 13 -5.82 13 -13a5 5 0 0 0 -5 -5" />
+          <path d="M16 3a5 5 0 0 0 5 5" />
+        </svg>
+      </span>
+      <span>Matchups</span>
+    </button>
+    <button class="nav-item" data-tab="players">
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </span>
+      <span>Players</span>
+    </button>
+    <button class="nav-item" data-tab="nfl">
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L4 5v6c0 5.5 3.5 10.5 8 11 4.5-.5 8-5.5 8-11V5l-8-3z" />
+          <path d="M12 7v10" />
+          <path d="M9 10h6" />
+          <path d="M9 13h6" />
+        </svg>
+      </span>
+      <span>NFL</span>
+    </button>
+    <button class="nav-item" data-tab="rules">
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      </span>
+      <span>Rules</span>
+    </button>
+  </nav>
+
+  <!-- PROFILE PERSONALIZATION MODAL -->
+  <div id="profile-modal" class="profile-modal-backdrop" onclick="closeProfileModal(event)">
+    <div class="profile-modal-dialog" onclick="event.stopPropagation()">
+      <div class="profile-modal-header">
+        <div class="profile-modal-title-row">
+          <span class="profile-modal-icon">👤</span>
+          <h3>Personalize Your Profile</h3>
+        </div>
+        <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Close">&times;</button>
+      </div>
+      <p class="profile-modal-desc">
+        Select who you are on this device to highlight your picks across all 16 games and jump straight to your scorecard.
+      </p>
+      <div id="profile-modal-grid" class="profile-modal-grid">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="profile-modal-footer">
+        <button id="btn-clear-profile" class="btn-clear-profile" onclick="setMyPlayer(null)">Clear Profile (Guest Mode)</button>
+        <button class="btn-modal-done" onclick="closeProfileModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- H2H PLAYER SELECTION MODAL -->
+  <div id="h2h-picker-modal" class="h2h-picker-modal" onclick="closeH2HPicker(event)">
+    <div class="h2h-picker-card" onclick="event.stopPropagation()">
+      <div class="h2h-picker-header">
+        <div class="h2h-picker-title" id="h2h-picker-title">Select Player</div>
+        <button type="button" class="h2h-picker-close" onclick="closeH2HPicker()" aria-label="Close">&times;</button>
+      </div>
+      <div id="h2h-picker-grid" class="h2h-picker-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notice" class="toast-notice" role="alert"></div>
+
+  <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
+  <script src="data.js?v=7.2"></script>
+  <script src="app.js?v=11.0"></script>
+</body>
+</html>
