@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=10.20">
+  <link rel="stylesheet" href="style.css?v=10.21">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 </head>
@@ -51,13 +51,47 @@
   <!-- MAIN VIEWPORT -->
   <main class="main-content">
 
-    <!-- WEEK SELECTOR STRIP -->
-    <section class="week-strip-container" aria-label="Week Selector">
-      <button id="week-prev-btn" class="strip-nav-btn" aria-label="Previous week">◀</button>
-      <div id="week-strip-scroll" class="week-strip-scroll">
-        <!-- Week pills 1-18 generated dynamically -->
+    <!-- WEEK SELECTOR STEPPER & DROPDOWN -->
+    <section class="week-stepper-container" aria-label="Week Selector">
+      <div class="week-stepper-bar">
+        <button id="week-prev-btn" class="week-stepper-btn" aria-label="Previous week" title="Previous Week">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button id="week-dropdown-trigger" class="week-stepper-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" title="Choose NFL Week">
+          <span id="week-trigger-title" class="week-trigger-title">Week 4</span>
+          <span id="week-trigger-badge" class="week-trigger-badge badge-live">
+            <span class="pulse-dot"></span>
+            <span id="week-badge-text">LIVE</span>
+          </span>
+          <svg id="week-trigger-chevron" class="week-trigger-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <button id="week-next-btn" class="week-stepper-btn" aria-label="Next week" title="Next Week">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
       </div>
-      <button id="week-next-btn" class="strip-nav-btn" aria-label="Next week">▶</button>
+
+      <!-- FLOATING DROPDOWN POPOVER -->
+      <div id="week-dropdown-popover" class="week-dropdown-popover" hidden>
+        <div class="week-dropdown-topbar">
+          <span class="week-dropdown-heading">Select NFL Week</span>
+          <button id="btn-jump-current-week" class="btn-jump-current-week" type="button" title="Jump to current active week">
+            <span class="pulse-dot"></span>
+            <span>Current Week</span>
+          </button>
+        </div>
+        <div id="week-grid-container" class="week-grid-container">
+          <!-- Week cells 1-18 generated dynamically -->
+        </div>
+      </div>
+
+      <!-- BACKDROP SCRIM -->
+      <div id="week-dropdown-backdrop" class="week-dropdown-backdrop" hidden></div>
     </section>
 
     <!-- TAB 1: LEADERBOARD -->
@@ -347,6 +381,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=10.20"></script>
+  <script src="app.js?v=10.21"></script>
 </body>
 </html>
