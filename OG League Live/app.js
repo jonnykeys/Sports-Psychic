@@ -920,6 +920,7 @@ function switchTab(tabId, smoothScroll = true) {
   const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
   if (!validTabs.includes(tabId)) tabId = "leaderboard";
   state.activeTab = tabId;
+  closeWeekDropdown();
   
   // Update nav buttons
   document.querySelectorAll(".bottom-nav .nav-item").forEach(b => {
@@ -938,41 +939,168 @@ function switchTab(tabId, smoothScroll = true) {
   saveNavState();
 }
 
-function setupWeekStrip() {
-  const strip = document.getElementById("week-strip-scroll");
-  if (!strip) return;
-  strip.innerHTML = "";
+function getWeekDateLabel(w) {
+  const dateStr = NFL_2026_WEEK_STARTS[w - 1];
+  if (!dateStr) return `Wk ${w}`;
+  const parts = dateStr.split("-");
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const m = parseInt(parts[1], 10) - 1;
+  const d = parseInt(parts[2], 10) + 1; // Thursday TNF kickoff
+  return `${monthNames[m]} ${d}`;
+}
 
-  for (let w = 1; w <= 18; w++) {
-    const pill = document.createElement("button");
-    pill.className = `strip-pill ${w === state.currentWeek ? "active" : ""}`;
-    pill.textContent = `Week ${w}`;
-    pill.setAttribute("data-week", w);
-    pill.addEventListener("click", () => {
-      selectWeek(w);
-    });
-    strip.appendChild(pill);
+function getWeekStatusInfo(w) {
+  const currentNFL = getCurrentNFLWeek();
+  if (w < currentNFL) {
+    return { label: "Final", type: "final", isLive: false };
+  } else if (w === currentNFL) {
+    return { label: "Live", type: "live", isLive: true };
+  } else {
+    return { label: getWeekDateLabel(w), type: "upcoming", isLive: false };
+  }
+}
+
+function handleWeekDropdownOutsideClick(e) {
+  const container = document.querySelector(".week-stepper-container");
+  const popover = document.getElementById("week-dropdown-popover");
+  if (popover && !popover.hidden && container && !container.contains(e.target)) {
+    closeWeekDropdown();
+  }
+}
+
+function handleWeekDropdownKeydown(e) {
+  if (e.key === "Escape") {
+    closeWeekDropdown();
+  }
+}
+
+function toggleWeekDropdown() {
+  const popover = document.getElementById("week-dropdown-popover");
+  if (!popover) return;
+  if (popover.hidden) {
+    openWeekDropdown();
+  } else {
+    closeWeekDropdown();
+  }
+}
+
+function openWeekDropdown() {
+  const popover = document.getElementById("week-dropdown-popover");
+  const backdrop = document.getElementById("week-dropdown-backdrop");
+  const trigger = document.getElementById("week-dropdown-trigger");
+  if (!popover) return;
+
+  popover.hidden = false;
+  if (backdrop) backdrop.hidden = false;
+  if (trigger) {
+    trigger.classList.add("is-open");
+    trigger.setAttribute("aria-expanded", "true");
   }
 
-  // Arrow buttons
+  // Auto-scroll active cell into view in the grid
+  setTimeout(() => {
+    const activeCell = popover.querySelector(`.week-cell-btn[data-week="${state.currentWeek}"]`);
+    if (activeCell && typeof activeCell.scrollIntoView === "function") {
+      activeCell.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }, 40);
+}
+
+function closeWeekDropdown() {
+  const popover = document.getElementById("week-dropdown-popover");
+  const backdrop = document.getElementById("week-dropdown-backdrop");
+  const trigger = document.getElementById("week-dropdown-trigger");
+  if (popover) popover.hidden = true;
+  if (backdrop) backdrop.hidden = true;
+  if (trigger) {
+    trigger.classList.remove("is-open");
+    trigger.setAttribute("aria-expanded", "false");
+  }
+}
+
+function setupWeekStrip() {
+  const grid = document.getElementById("week-grid-container");
+  const currentNFL = getCurrentNFLWeek();
+
+  if (grid) {
+    grid.innerHTML = "";
+    for (let w = 1; w <= 18; w++) {
+      const status = getWeekStatusInfo(w);
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = `week-cell-btn strip-pill ${w === state.currentWeek ? "active-cell active" : ""}`;
+      cell.setAttribute("data-week", w);
+
+      const statusHtml = status.isLive
+        ? `<span class="pulse-dot"></span><span>${status.label}</span>`
+        : `<span>${status.label}</span>`;
+
+      cell.innerHTML = `
+        <span class="week-cell-name">Week ${w}</span>
+        <span class="week-cell-status status-${status.type}">${statusHtml}</span>
+      `;
+
+      cell.addEventListener("click", () => {
+        selectWeek(w);
+        closeWeekDropdown();
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  // Stepper arrow buttons
   const prevBtn = document.getElementById("week-prev-btn");
   const nextBtn = document.getElementById("week-next-btn");
 
   if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
+    prevBtn.onclick = () => {
       if (state.currentWeek > 1) {
         selectWeek(state.currentWeek - 1);
+        closeWeekDropdown();
       }
-    });
+    };
   }
 
   if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
+    nextBtn.onclick = () => {
       if (state.currentWeek < 18) {
         selectWeek(state.currentWeek + 1);
+        closeWeekDropdown();
       }
-    });
+    };
   }
+
+  // Center trigger button to toggle dropdown
+  const trigger = document.getElementById("week-dropdown-trigger");
+  if (trigger) {
+    trigger.onclick = (e) => {
+      e.stopPropagation();
+      toggleWeekDropdown();
+    };
+  }
+
+  // Quick Jump to Current Week button
+  const jumpBtn = document.getElementById("btn-jump-current-week");
+  if (jumpBtn) {
+    jumpBtn.onclick = (e) => {
+      e.stopPropagation();
+      selectWeek(currentNFL);
+      closeWeekDropdown();
+    };
+  }
+
+  // Backdrop click to dismiss
+  const backdrop = document.getElementById("week-dropdown-backdrop");
+  if (backdrop) {
+    backdrop.onclick = () => closeWeekDropdown();
+  }
+
+  // Dismiss on clicking outside or pressing Escape
+  document.removeEventListener("click", handleWeekDropdownOutsideClick);
+  document.addEventListener("click", handleWeekDropdownOutsideClick);
+  document.removeEventListener("keydown", handleWeekDropdownKeydown);
+  document.addEventListener("keydown", handleWeekDropdownKeydown);
 
   updateStripButtons();
   setTimeout(() => updateStripButtons(), 60);
@@ -984,19 +1112,36 @@ function updateStripButtons() {
   if (prevBtn) prevBtn.disabled = state.currentWeek <= 1;
   if (nextBtn) nextBtn.disabled = state.currentWeek >= 18;
 
-  // Center active week pill
-  const activePill = document.querySelector(`.strip-pill[data-week="${state.currentWeek}"]`);
-  if (activePill) {
-    activePill.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  // Update trigger display
+  const titleEl = document.getElementById("week-trigger-title");
+  if (titleEl) {
+    titleEl.textContent = `Week ${state.currentWeek}`;
   }
+
+  const badgeEl = document.getElementById("week-trigger-badge");
+  if (badgeEl) {
+    const status = getWeekStatusInfo(state.currentWeek);
+    badgeEl.className = `week-trigger-badge badge-${status.type}`;
+    if (status.isLive) {
+      badgeEl.innerHTML = `<span class="pulse-dot"></span><span id="week-badge-text">LIVE</span>`;
+    } else if (status.type === "final") {
+      badgeEl.innerHTML = `<span id="week-badge-text">FINAL</span>`;
+    } else {
+      badgeEl.innerHTML = `<span id="week-badge-text">${status.label.toUpperCase()}</span>`;
+    }
+  }
+
+  // Highlight active week cell in popover
+  document.querySelectorAll(".week-cell-btn, .strip-pill").forEach(p => {
+    const w = parseInt(p.getAttribute("data-week"), 10);
+    const isActive = w === state.currentWeek;
+    p.classList.toggle("active-cell", isActive);
+    p.classList.toggle("active", isActive);
+  });
 }
 
 function selectWeek(weekNum) {
   state.currentWeek = weekNum;
-  document.querySelectorAll(".strip-pill").forEach(p => {
-    p.classList.toggle("active", parseInt(p.getAttribute("data-week"), 10) === weekNum);
-  });
-
   updateStripButtons();
   renderTabContent();
   saveNavState();

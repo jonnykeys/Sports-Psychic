@@ -437,83 +437,302 @@ body {
 }
 
 /* =========================================================
-   WEEK CAROUSEL SCROLLER
+   MODERN WEEK STEPPER & DROPDOWN POPOVER
    ========================================================= */
-.week-strip-container {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.week-stepper-container {
+  position: relative;
+  z-index: 90;
   margin-top: 4px;
   margin-bottom: 14px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  padding: 6px 8px;
-  border-radius: var(--border-radius);
 }
 
-.strip-nav-btn {
-  flex: 0 0 32px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+.week-stepper-bar {
+  position: relative;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius);
+  padding: 4px;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.week-stepper-btn {
+  width: 36px;
+  height: 38px;
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
   cursor: pointer;
   transition: var(--transition);
+  flex-shrink: 0;
 }
 
-.strip-nav-btn:hover:not(:disabled) {
-  background: var(--accent-blue);
+.week-stepper-btn:hover:not(:disabled) {
+  background: var(--bg-card-hover);
   color: #fff;
+  border-color: var(--accent-cyan);
 }
 
-.strip-nav-btn:disabled {
-  opacity: 0.3;
+.week-stepper-btn:disabled {
+  opacity: 0.25;
   cursor: not-allowed;
 }
 
-.week-strip-scroll {
+.week-stepper-trigger {
   flex: 1;
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 2px 0;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.week-strip-scroll::-webkit-scrollbar { display: none; }
-
-.strip-pill {
-  flex: 0 0 auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 0.82rem;
-  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.16) 0%, rgba(14, 116, 144, 0.2) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 10px;
+  color: #ffffff;
   cursor: pointer;
-  white-space: nowrap;
+  padding: 0 12px;
+  transition: all 0.18s ease;
+  user-select: none;
+  font-family: inherit;
+}
+
+.week-stepper-trigger:hover {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.28) 0%, rgba(14, 116, 144, 0.32) 100%);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+
+.week-stepper-trigger.is-open {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.38) 0%, rgba(14, 116, 144, 0.45) 100%);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+}
+
+.week-trigger-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.week-trigger-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.4px;
+}
+
+.week-trigger-badge.badge-live {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.week-trigger-badge.badge-final {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.week-trigger-badge.badge-upcoming {
+  color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.pulse-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f87171;
+  box-shadow: 0 0 6px #f87171;
+  animation: livePulseDot 1.8s infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+@keyframes livePulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+.week-trigger-chevron {
+  width: 15px;
+  height: 15px;
+  color: var(--accent-cyan);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 1px;
+}
+
+.week-stepper-trigger.is-open .week-trigger-chevron {
+  transform: rotate(180deg);
+}
+
+/* FLOATING POPOVER & BACKDROP */
+.week-dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 88;
+  background: rgba(4, 7, 18, 0.5);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.week-dropdown-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 96;
+  background: linear-gradient(180deg, rgba(14, 23, 44, 0.98) 0%, rgba(9, 15, 30, 0.99) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.12);
+  animation: weekDropIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes weekDropIn {
+  0% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.week-dropdown-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.week-dropdown-heading {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.btn-jump-current-week {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   transition: var(--transition);
+  font-family: inherit;
 }
 
-.strip-pill:hover {
-  background: var(--bg-card-hover);
+.btn-jump-current-week:hover {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: rgba(56, 189, 248, 0.5);
   color: #fff;
 }
 
-.strip-pill.active {
-  background: linear-gradient(135deg, #0284c7 0%, #0c4a6e 100%);
-  color: #fff;
-  border-color: var(--accent-blue);
-  box-shadow: 0 2px 10px rgba(0, 198, 255, 0.45);
+.week-grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-height: 290px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.week-grid-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.week-grid-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.week-cell-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  color: inherit;
+  font-family: inherit;
+}
+
+.week-cell-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.week-cell-name {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #e2e8f0;
+}
+
+.week-cell-status {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.week-cell-status.status-final {
+  color: #94a3b8;
+}
+
+.week-cell-status.status-live {
+  color: #f87171;
+  font-weight: 800;
+}
+
+.week-cell-status.status-upcoming {
+  color: #64748b;
+}
+
+.week-cell-btn.active-cell {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.4) 0%, rgba(14, 116, 144, 0.5) 100%);
+  border: 1.5px solid var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+}
+
+.week-cell-btn.active-cell .week-cell-name {
+  color: #ffffff;
+}
+
+/* Fallback / legacy support for strip pill */
+.strip-pill {
+  transition: var(--transition);
 }
 
 /* =========================================================
