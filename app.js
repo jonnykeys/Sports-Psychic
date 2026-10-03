@@ -189,6 +189,37 @@ const NFL_TEAMS = {
   JAC: { code: 'JAX', name: 'Jacksonville Jaguars',   city: 'Jacksonville',conf: 'AFC', div: 'South', color: '#006778', alt: '#D7A22A' }
 };
 
+// The 32 Canonical NFL Teams (excluding alias keys like ARI, WAS, LA, JAC)
+const CANONICAL_NFL_TEAMS = [
+  "KC", "LV", "DEN", "LAC", "BUF", "MIA", "NYJ", "NE",
+  "BAL", "CLE", "PIT", "CIN", "HOU", "JAX", "IND", "TEN",
+  "SF", "LAR", "SEA", "AZ", "DAL", "PHI", "NYG", "WSH",
+  "DET", "GB", "MIN", "CHI", "TB", "NO", "ATL", "CAR"
+];
+
+// Official 2026 NFL Regular Season Bye Weeks Schedule (matches NFL and ESPN official schedule)
+// Exactly 1 bye per team across weeks 5, 6, 7, 8, 9, 10, 11, 13, and 14.
+const NFL_OFFICIAL_BYES = {
+  1: [],
+  2: [],
+  3: [],
+  4: [],
+  5: ["CAR", "KC"],
+  6: ["CIN", "DET", "MIA", "MIN"],
+  7: ["BUF", "JAX", "LAC", "WSH"],
+  8: ["HOU", "NO", "NYG", "SF"],
+  9: ["PIT", "TEN"],
+  10: ["CHI", "DEN", "PHI", "TB"],
+  11: ["ATL", "CLE", "GB", "LAR", "NE", "SEA"],
+  12: [],
+  13: ["BAL", "IND", "LV", "NYJ"],
+  14: ["AZ", "DAL"],
+  15: [],
+  16: [],
+  17: [],
+  18: []
+};
+
 function getTeamContrastColor(hexColor) {
   if (!hexColor || hexColor.charAt(0) !== '#') return '#ffffff';
   const r = parseInt(hexColor.substr(1, 2), 16);
@@ -1533,6 +1564,14 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       updatedCount++;
     });
 
+    // Sync official NFL teams on bye directly from ESPN scoreboard API
+    if (data.week && Array.isArray(data.week.teamsOnBye)) {
+      const espnByeCodes = data.week.teamsOnBye
+        .map(b => normalizeTeamCode(b.abbreviation || b.name))
+        .filter(c => CANONICAL_NFL_TEAMS.includes(c));
+      weekData.byeTeams = espnByeCodes;
+    }
+
     if (updatedCount > 0) {
       recalculateAllWeeksPoints(state.data);
       try {
@@ -1784,7 +1823,32 @@ function parseWeekCSV(weekNum, csvText) {
     }
   }
 
-  state.data.weeks[weekKey] = { games, playerStats };
+  // Parse Bye Teams from Spreadsheet if present in rows 15-20
+  const byeTeamsFromSheet = [];
+  let foundByeHeader = false;
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || !row[0]) continue;
+    const cellVal = String(row[0]).trim().toUpperCase();
+    if (cellVal.includes("BYE WEEK")) {
+      foundByeHeader = true;
+      continue;
+    }
+    if (foundByeHeader) {
+      if (cellVal.includes("SEASON") || cellVal.includes("CORRECT") || cellVal.includes("WRONG") || cellVal.includes("POINTS")) {
+        break;
+      }
+      const code = normalizeTeamCode(cellVal);
+      if (CANONICAL_NFL_TEAMS.includes(code)) {
+        byeTeamsFromSheet.push(code);
+      }
+    }
+  }
+
+  const existingByeTeams = existingWeek && Array.isArray(existingWeek.byeTeams) ? existingWeek.byeTeams : [];
+  const finalByeTeams = byeTeamsFromSheet.length > 0 ? byeTeamsFromSheet : existingByeTeams;
+
+  state.data.weeks[weekKey] = { games, playerStats, byeTeams: finalByeTeams };
 
   // Dynamically compute season leaderboard from all games
   state.data.leaderboard = computeSeasonLeaderboard(state.data);
@@ -2283,39 +2347,56 @@ function renderLeaderboard() {
 function getByeTeamsForWeek(weekNum) {
   const weekKey = `Week ${weekNum}`;
   const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
-  const games = weekData && weekData.games ? weekData.games : [];
 
-  // Bye weeks only occur when games are scheduled, but fewer than full 16 games
-  if (!games || games.length === 0 || games.length >= 16) {
+  let byeCodes = null;
+
+  // 1. Prioritize live bye data synced directly from ESPN API or Google Sheet
+  if (weekData && Array.isArray(weekData.byeTeams) && weekData.byeTeams.length > 0) {
+    byeCodes = weekData.byeTeams
+      .map(c => normalizeTeamCode(c))
+      .filter(c => CANONICAL_NFL_TEAMS.includes(c));
+  }
+
+  // 2. Dynamically determine missing teams from the scheduled games for this week
+  if (!byeCodes || byeCodes.length === 0) {
+    const games = weekData && weekData.games ? weekData.games : [];
+    if (games && games.length > 0 && games.length < 16) {
+      const playingTeams = new Set();
+      games.forEach(g => {
+        if (!g || !g.matchup || !g.matchup.includes("@")) return;
+        const parts = g.matchup.split("@").map(s => s.trim());
+        const away = normalizeTeamCode(parts[0]);
+        const home = normalizeTeamCode(parts[1]);
+        if (away) playingTeams.add(away);
+        if (home) playingTeams.add(home);
+      });
+
+      // Filter against ONLY the 32 canonical NFL teams (never aliases like ARI, WAS, LA, JAC)
+      const calculated = CANONICAL_NFL_TEAMS.filter(code => !playingTeams.has(code));
+      if (calculated.length > 0 && calculated.length <= 8) {
+        byeCodes = calculated;
+      }
+    }
+  }
+
+  // 3. Fallback to official 2026 NFL schedule baseline if games not loaded yet or offline
+  if ((!byeCodes || byeCodes.length === 0) && NFL_OFFICIAL_BYES[weekNum]) {
+    byeCodes = [...NFL_OFFICIAL_BYES[weekNum]];
+  }
+
+  if (!byeCodes || byeCodes.length === 0) {
     return [];
   }
 
-  const playingTeams = new Set();
-  games.forEach(g => {
-    if (!g || !g.matchup || !g.matchup.includes("@")) return;
-    const parts = g.matchup.split("@").map(s => s.trim());
-    const away = normalizeTeamCode(parts[0]);
-    const home = normalizeTeamCode(parts[1]);
-    if (away) playingTeams.add(away);
-    if (home) playingTeams.add(home);
-  });
-
-  const allTeamCodes = Object.keys(NFL_TEAMS);
-  const byeCodes = allTeamCodes.filter(code => !playingTeams.has(code));
-
-  // Sanity check: an NFL week never has more than 6 teams on bye
-  if (byeCodes.length === 0 || byeCodes.length > 8) {
-    return [];
-  }
-
-  // Sort alphabetically by team city/name or code
-  byeCodes.sort((a, b) => {
+  // Deduplicate and sort alphabetically by team city/name or code
+  const uniqueCodes = Array.from(new Set(byeCodes));
+  uniqueCodes.sort((a, b) => {
     const nameA = NFL_TEAMS[a] ? (NFL_TEAMS[a].city || NFL_TEAMS[a].name) : a;
     const nameB = NFL_TEAMS[b] ? (NFL_TEAMS[b].city || NFL_TEAMS[b].name) : b;
     return nameA.localeCompare(nameB);
   });
 
-  return byeCodes.map(code => NFL_TEAMS[code] || { code, name: code, color: '#38bdf8' });
+  return uniqueCodes.map(code => NFL_TEAMS[code] || { code, name: code, color: '#38bdf8' });
 }
 
 function renderMatchups() {
