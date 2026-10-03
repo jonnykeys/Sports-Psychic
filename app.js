@@ -2276,9 +2276,52 @@ function renderLeaderboard() {
 // =========================================================
 // TAB 2: MATCHUPS & SPLIT PICKS RENDERING
 // =========================================================
+/**
+ * Calculates which NFL teams are on a bye week for a given week number.
+ * Returns an array of team objects with { code, name, city, color }.
+ */
+function getByeTeamsForWeek(weekNum) {
+  const weekKey = `Week ${weekNum}`;
+  const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
+  const games = weekData && weekData.games ? weekData.games : [];
+
+  // Bye weeks only occur when games are scheduled, but fewer than full 16 games
+  if (!games || games.length === 0 || games.length >= 16) {
+    return [];
+  }
+
+  const playingTeams = new Set();
+  games.forEach(g => {
+    if (!g || !g.matchup || !g.matchup.includes("@")) return;
+    const parts = g.matchup.split("@").map(s => s.trim());
+    const away = normalizeTeamCode(parts[0]);
+    const home = normalizeTeamCode(parts[1]);
+    if (away) playingTeams.add(away);
+    if (home) playingTeams.add(home);
+  });
+
+  const allTeamCodes = Object.keys(NFL_TEAMS);
+  const byeCodes = allTeamCodes.filter(code => !playingTeams.has(code));
+
+  // Sanity check: an NFL week never has more than 6 teams on bye
+  if (byeCodes.length === 0 || byeCodes.length > 8) {
+    return [];
+  }
+
+  // Sort alphabetically by team city/name or code
+  byeCodes.sort((a, b) => {
+    const nameA = NFL_TEAMS[a] ? (NFL_TEAMS[a].city || NFL_TEAMS[a].name) : a;
+    const nameB = NFL_TEAMS[b] ? (NFL_TEAMS[b].city || NFL_TEAMS[b].name) : b;
+    return nameA.localeCompare(nameB);
+  });
+
+  return byeCodes.map(code => NFL_TEAMS[code] || { code, name: code, color: '#38bdf8' });
+}
+
 function renderMatchups() {
   const container = document.getElementById("matchups-list");
   const filterBar = document.getElementById("matchups-filter-bar");
+  const byeStripEl = document.getElementById("matchups-bye-strip");
   const bannerTitle = document.getElementById("matchup-banner-title");
   const bannerStat = document.getElementById("matchup-banner-stat");
   if (!container) return;
@@ -2292,6 +2335,10 @@ function renderMatchups() {
   if (games.length === 0) {
     bannerStat.textContent = "0 Games";
     if (filterBar) filterBar.innerHTML = "";
+    if (byeStripEl) {
+      byeStripEl.hidden = true;
+      byeStripEl.innerHTML = "";
+    }
     container.innerHTML = `
       <div class="loading-box">
         <div class="loading-spinner"></div>
@@ -2314,6 +2361,33 @@ function renderMatchups() {
   const upcomingCount = upcomingGamesList.length;
 
   bannerStat.innerHTML = `${totalGames}&nbsp;Games • ${finalsCount}&nbsp;Final${liveCount > 0 ? ` • <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
+
+  // Render Concept 2 Bye Week Ticker Strip
+  const byeTeams = getByeTeamsForWeek(state.currentWeek);
+  if (byeStripEl) {
+    if (byeTeams.length > 0) {
+      const chipsHtml = byeTeams.map(t => `
+        <div class="bye-mini-pill" title="${t.name || t.code} (Bye Week)">
+          <span class="mini-color-dot" style="background:${t.color || '#ffd700'};"></span>
+          <span class="bye-mini-code">${t.code}</span>
+        </div>
+      `).join("");
+
+      byeStripEl.innerHTML = `
+        <div class="bye-strip-left">
+          <span class="bye-strip-icon">☕</span>
+          <span class="bye-strip-label">ON BYE:</span>
+        </div>
+        <div class="bye-strip-chips">
+          ${chipsHtml}
+        </div>
+      `;
+      byeStripEl.hidden = false;
+    } else {
+      byeStripEl.hidden = true;
+      byeStripEl.innerHTML = "";
+    }
+  }
 
   // Filter games based on selected status filter: All, Upcoming, Live, Final
   const currentFilter = state.matchupsFilter || "all";
