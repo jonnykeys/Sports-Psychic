@@ -261,41 +261,6 @@ body {
   box-shadow: 0 0 5px var(--accent-green);
 }
 
-.btn-refresh {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-.btn-refresh:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--accent-cyan);
-  color: #fff;
-  transform: scale(1.05);
-}
-
-.btn-refresh .refresh-icon {
-  display: inline-block;
-  line-height: 1;
-}
-
-.btn-refresh.spinning .refresh-icon {
-  animation: spin 0.8s linear infinite;
-  color: var(--accent-cyan);
-}
-
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

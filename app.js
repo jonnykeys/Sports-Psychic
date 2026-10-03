@@ -813,6 +813,13 @@ document.addEventListener("DOMContentLoaded", () => {
       syncWeek(state.currentWeek, true);
     }
   }, 60000);
+
+  // Sync immediately when returning to the tab or app
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && !state.isSyncing) {
+      syncWeek(state.currentWeek, true);
+    }
+  });
 });
 
 function sanitizeData(dataObj) {
