@@ -4849,22 +4849,4 @@ body {
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
 }
 
-.mypick-team-card {
-  flex: 1;
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.mypick-team-card.is-picked {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1.5px solid #10b981;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
-}
-
-.mypick-team-card.is-opponent {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-}
 

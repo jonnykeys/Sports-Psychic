@@ -359,10 +359,10 @@ function syncUrlHash() {
  * Restores navigation snapshot from URL hash or sessionStorage.
  */
 function restoreNavState() {
-  const validTabs = ["leaderboard", "matchups", "players", "mypicks", "nfl", "rules"];
+  const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
   let restoredFromHash = false;
 
-  // 0. Try URL Query Params first (?tab=mypicks&week=5&p=Jon)
+  // 0. Try URL Query Params first (?tab=players&week=5&p=Jon)
   try {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("tab")) {
@@ -977,7 +977,7 @@ function setupNavigation() {
 }
 
 function switchTab(tabId, smoothScroll = true) {
-  const validTabs = ["leaderboard", "matchups", "players", "mypicks", "nfl", "rules"];
+  const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
   if (!validTabs.includes(tabId)) tabId = "leaderboard";
   state.activeTab = tabId;
   closeWeekDropdown();
@@ -1914,9 +1914,6 @@ function renderTabContent() {
       break;
     case "players":
       renderPlayers();
-      break;
-    case "mypicks":
-      renderMyPicks();
       break;
     case "nfl":
       renderNFLStandings();
@@ -4219,7 +4216,7 @@ function selectLeague(leagueId) {
     if (cardSolo) cardSolo.classList.add("active");
     showToast("🔮 Switched to Solo Psychic Mode!");
     closeLeagueDrawer();
-    switchTab("mypicks");
+    switchTab("players");
   } else {
     if (brandTitle) brandTitle.textContent = "OG League";
     if (activePill) activePill.textContent = "🏆 OG League";
@@ -4253,151 +4250,11 @@ function openJoinLeagueModal() {
   }
 }
 
-function renderMyPicks() {
-  const container = document.getElementById("tab-mypicks");
-  if (!container) return;
-
-  const activePlayer = state.myPlayer || "Jon";
-  const weekKey = `Week ${state.currentWeek}`;
-  const weekData = (state.data && state.data.weeks) ? state.data.weeks[weekKey] : null;
-  const games = weekData ? (weekData.games || []) : [];
-
-  // Calculate season stats for active player
-  const seasonLb = getSeasonLeaderboard();
-  const playerStat = seasonLb.find(p => p.name === activePlayer) || {
-    rankDisplay: "1",
-    points: 490,
-    rec: { wins: 32, losses: 16, label: "32-16" }
-  };
-
-  const rankStr = playerStat.rankDisplay ? (String(playerStat.rankDisplay).startsWith("T-") ? `T-#${String(playerStat.rankDisplay).slice(2)}` : `#${playerStat.rankDisplay}`) : "#1";
-  const recStr = playerStat.rec ? (playerStat.rec.label || `${playerStat.rec.wins || 0}-${playerStat.rec.losses || 0}`) : "0-0";
-
-  let gamesHtml = "";
-  if (games.length === 0) {
-    gamesHtml = `
-      <div class="empty-state-card" style="text-align:center; padding:30px 16px; color:var(--text-muted);">
-        <span style="font-size:2rem; display:block; margin-bottom:8px;">⏳</span>
-        <div style="font-weight:800; color:#fff;">No games scheduled for ${weekKey}</div>
-      </div>
-    `;
-  } else {
-    games.forEach(g => {
-      const pPick = (g.picks && g.picks[activePlayer]) ? g.picks[activePlayer] : null;
-      const isMult = Boolean(pPick && pPick.multiplier);
-      const pickedWinner = pPick ? pPick.winner : null;
-      const awayPredicted = pPick ? (pPick.awayScore ?? 24) : 24;
-      const homePredicted = pPick ? (pPick.homeScore ?? 21) : 21;
-
-      const teams = g.matchup.split(" @ ");
-      const awayTeam = teams[0] ? teams[0].trim() : "AWAY";
-      const homeTeam = teams[1] ? teams[1].trim() : "HOME";
-
-      const isAwayPicked = pickedWinner === awayTeam;
-      const isHomePicked = pickedWinner === homeTeam;
-
-      // Status pill
-      let statusHtml = `<span style="font-size:0.65rem; color:var(--text-muted); font-weight:800;">${isMult ? '<span class="mult-star-pill">★ 3x LOCK OF WEEK</span>' : 'STANDARD (1x)'}</span>`;
-      if (g.isFinal) {
-        const isWin = g.winner === pickedWinner;
-        statusHtml = `
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:0.62rem; font-weight:900; padding:2px 6px; border-radius:4px; background:${isWin ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color:${isWin ? '#10b981' : '#f87171'}; border:1px solid ${isWin ? '#10b981' : '#f87171'};">
-              ${isWin ? '✓ WIN (' + (isMult ? '30' : '10') + ' PTS)' : '✗ LOSS (0 PTS)'}
-            </span>
-            ${isMult ? '<span class="mult-star-pill">★ 3x LOCK</span>' : ''}
-          </div>
-        `;
-      }
-
-      gamesHtml += `
-        <div class="matchup-card" style="padding:12px; margin-bottom:12px; ${isMult ? 'border:1.5px solid rgba(255,215,0,0.5); background:linear-gradient(180deg, rgba(255,215,0,0.08) 0%, rgba(17,29,61,0.95) 100%); box-shadow:0 0 20px rgba(245,184,0,0.18);' : ''}">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span style="font-size:0.68rem; color:var(--text-muted); font-weight:800;">${g.dateTime}</span>
-            ${statusHtml}
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <!-- Away Team Block -->
-            <div class="mypick-team-card ${isAwayPicked ? 'is-picked' : 'is-opponent'}">
-              <div style="font-size:0.6rem; color:${isAwayPicked ? '#10b981' : 'var(--text-muted)'}; font-weight:800; margin-bottom:2px;">
-                ${isAwayPicked ? 'YOUR PICK (WINNER)' : 'OPPONENT'}
-              </div>
-              <div style="font-size:1rem; font-weight:900; color:${isAwayPicked ? '#fff' : '#94a3b8'};">${awayTeam}</div>
-              <div style="font-size:1.3rem; font-weight:900; color:${isAwayPicked ? '#ffd700' : '#94a3b8'}; margin-top:2px;">${awayPredicted}</div>
-              ${g.isFinal ? `<div style="font-size:0.62rem; color:var(--text-dim); margin-top:2px;">Actual: <strong>${g.awayScore}</strong></div>` : ''}
-            </div>
-
-            <span style="font-size:0.85rem; color:var(--text-muted); font-weight:900;">@</span>
-
-            <!-- Home Team Block -->
-            <div class="mypick-team-card ${isHomePicked ? 'is-picked' : 'is-opponent'}">
-              <div style="font-size:0.6rem; color:${isHomePicked ? '#10b981' : 'var(--text-muted)'}; font-weight:800; margin-bottom:2px;">
-                ${isHomePicked ? 'YOUR PICK (WINNER)' : 'OPPONENT'}
-              </div>
-              <div style="font-size:1rem; font-weight:900; color:${isHomePicked ? '#fff' : '#94a3b8'};">${homeTeam}</div>
-              <div style="font-size:1.3rem; font-weight:900; color:${isHomePicked ? '#ffd700' : '#94a3b8'}; margin-top:2px;">${homePredicted}</div>
-              ${g.isFinal ? `<div style="font-size:0.62rem; color:var(--text-dim); margin-top:2px;">Actual: <strong>${g.homeScore}</strong></div>` : ''}
-            </div>
-          </div>
-
-          <div style="margin-top:10px; font-size:0.65rem; color:var(--text-muted); text-align:center;">
-            ${isMult
-              ? 'Triple Stakes: <strong style="color:#ffd700;">30 PTS</strong> (Win) • <strong style="color:#10b981;">150 PTS</strong> (Exact Hit!)'
-              : 'Standard Stakes: <strong style="color:#ffd700;">10 PTS</strong> (Win) • <strong style="color:#10b981;">50 PTS</strong> (Exact Hit!)'}
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  container.innerHTML = `
-    <!-- Forecaster Status Banner -->
-    <div class="forecaster-banner">
-      <div>
-        <div style="font-size:0.92rem; font-weight:900; color:#fff;">🔮 2026 Psychic Forecaster</div>
-        <div style="font-size:0.66rem; color:var(--text-dim); margin-top:2px;">Season locked before Week 1 kickoff</div>
-      </div>
-      <span style="background:rgba(255,255,255,0.08); color:#ffd700; font-size:0.64rem; font-weight:800; padding:4px 8px; border-radius:6px; border:1px solid rgba(255,215,0,0.35);">
-        🔒 Season Locked
-      </span>
-    </div>
-
-    <!-- Season Stats Overview Card -->
-    <div class="matchup-card" style="padding:12px; margin-bottom:12px; display:flex; justify-content:space-around; text-align:center;">
-      <div>
-        <div style="font-size:1.15rem; font-weight:900; color:#10b981;">${recStr}</div>
-        <div style="font-size:0.62rem; color:var(--text-muted); margin-top:2px;">Current W-L</div>
-      </div>
-      <div style="width:1px; background:rgba(255,255,255,0.08);"></div>
-      <div>
-        <div style="font-size:1.15rem; font-weight:900; color:#ffd700;">${playerStat.points}</div>
-        <div style="font-size:0.62rem; color:var(--text-muted); margin-top:2px;">Points (Rank ${rankStr})</div>
-      </div>
-      <div style="width:1px; background:rgba(255,255,255,0.08);"></div>
-      <div>
-        <div style="font-size:1.15rem; font-weight:900; color:#38bdf8;">172 - 100</div>
-        <div style="font-size:0.62rem; color:var(--text-muted); margin-top:2px;">Projected Finish</div>
-      </div>
-    </div>
-
-    <!-- Week Title & Progress -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <span style="font-size:0.82rem; font-weight:800; color:#fff;">${weekKey} Predictions (${games.length} Games)</span>
-      <span style="font-size:0.68rem; color:#ffd700; font-weight:800;">100% FILLED</span>
-    </div>
-
-    <!-- Games Predictions List -->
-    <div class="mypicks-games-list">
-      ${gamesHtml}
-    </div>
-  `;
-}
-
 // Global window bindings for inline HTML handlers
 window.openLeagueDrawer = openLeagueDrawer;
 window.closeLeagueDrawer = closeLeagueDrawer;
 window.selectLeague = selectLeague;
 window.openCreateLeagueModal = openCreateLeagueModal;
 window.openJoinLeagueModal = openJoinLeagueModal;
-window.renderMyPicks = renderMyPicks;
+
 
