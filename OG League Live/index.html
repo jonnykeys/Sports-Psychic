@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=10.25">
+  <link rel="stylesheet" href="style.css?v=11.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 </head>
@@ -22,11 +22,17 @@
     <div class="brand-row" onclick="switchTab('leaderboard')" style="cursor: pointer;" title="Back to Standings / Home">
       <img src="logo.png?v=3.2" class="brand-logo" alt="Sports Psychic Logo" width="32" height="32">
       <div class="brand-text">
-        <h1>OG League</h1>
-        <div class="subtext">Official Season Tracker</div>
+        <h1 id="header-brand-title">OG League</h1>
+        <div class="subtext" id="header-brand-sub">SPORTS PSYCHIC</div>
       </div>
     </div>
     <div class="header-right-actions">
+      <button id="btn-league-switcher" class="league-selector-btn" onclick="openLeagueDrawer()" aria-label="Switch League" title="Switch League">
+        <span id="header-active-league-pill">🏆 OG League</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
       <button id="btn-header-profile" class="header-profile-btn not-set" onclick="openProfileModal()" aria-label="Personalize profile" title="Personalize / Remember Me">
         <span class="header-profile-icon">👤</span>
         <span class="header-profile-text">Set Me</span>
@@ -276,7 +282,67 @@
       </div>
     </section>
 
+    <!-- TAB: MY PICKS (THE PSYCHIC FORECASTER) -->
+    <section id="tab-mypicks" class="tab-view" role="tabpanel">
+      <!-- Dynamically rendered by app.js: renderMyPicks() -->
+    </section>
+
   </main>
+
+  <!-- LEAGUE SWITCHER BOTTOM DRAWER -->
+  <div id="league-drawer" class="drawer-overlay" onclick="closeLeagueDrawer(event)">
+    <div class="drawer-content" onclick="event.stopPropagation()">
+      <div class="drawer-handle"></div>
+      <div class="drawer-header-row">
+        <div>
+          <div class="drawer-title">Select League</div>
+          <div class="drawer-subtitle">Switch between your leagues or play solo</div>
+        </div>
+        <span class="season-badge-pill">2026 Season</span>
+      </div>
+
+      <!-- Option 1: OG League (Active) -->
+      <div id="drawer-card-og" class="league-option-card active" onclick="selectLeague('OG League')">
+        <div class="league-card-left">
+          <div class="league-icon-box">🏆</div>
+          <div>
+            <div class="league-title-row">
+              <span class="league-name">OG League</span>
+              <span class="league-status-tag">ACTIVE</span>
+            </div>
+            <div class="league-meta-row" id="drawer-og-meta">12 Members • 2026 NFL Season</div>
+          </div>
+        </div>
+        <span class="league-check-icon">✓</span>
+      </div>
+
+      <!-- Option 2: Solo Psychic Play -->
+      <div id="drawer-card-solo" class="league-option-card" onclick="selectLeague('solo')">
+        <div class="league-card-left">
+          <div class="league-icon-box icon-solo">🔮</div>
+          <div>
+            <div class="league-title-row">
+              <span class="league-name">Solo Psychic Play</span>
+            </div>
+            <div class="league-meta-row">Personal Full-Season Forecasting & Accuracies</div>
+          </div>
+        </div>
+        <span class="league-switch-arrow">Switch &rarr;</span>
+      </div>
+
+      <div class="drawer-divider"></div>
+
+      <!-- Action Buttons -->
+      <button class="btn-create-league" onclick="openCreateLeagueModal()">
+        <span>➕</span>
+        <span>Create a New League</span>
+      </button>
+      <button class="btn-join-league" onclick="openJoinLeagueModal()">
+        <span>🔑</span>
+        <span>Join League with Invite Code</span>
+      </button>
+    </div>
+  </div>
 
   <!-- FIXED MOBILE BOTTOM NAVIGATION -->
   <nav class="bottom-nav" aria-label="Bottom Navigation">
@@ -315,6 +381,16 @@
         </svg>
       </span>
       <span>Players</span>
+    </button>
+    <button class="nav-item" data-tab="mypicks">
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3a9 9 0 0 1 9 9"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </span>
+      <span>My Picks</span>
     </button>
     <button class="nav-item" data-tab="nfl">
       <span class="nav-icon">
@@ -379,6 +455,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=10.25"></script>
+  <script src="app.js?v=11.0"></script>
 </body>
 </html>
