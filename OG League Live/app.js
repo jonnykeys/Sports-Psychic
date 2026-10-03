@@ -2376,7 +2376,7 @@ function renderMatchups() {
       byeStripEl.innerHTML = `
         <div class="bye-strip-left">
           <span class="bye-strip-icon">☕</span>
-          <span class="bye-strip-label">ON BYE:</span>
+          <span class="bye-strip-label">BYE:</span>
         </div>
         <div class="bye-strip-chips">
           ${chipsHtml}
