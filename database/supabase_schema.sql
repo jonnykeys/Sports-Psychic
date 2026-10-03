@@ -47,10 +47,24 @@ create table public.leagues (
   join_code text unique not null, -- 6-character code (e.g. 'OG2026')
   commissioner_id uuid references public.profiles(id) on delete set null,
   avatar_url text,
-  scoring_format text default 'classic_proximity', -- 'classic_proximity' | 'standard'
+  scoring_format text default 'classic_proximity', -- 'classic_proximity' | 'winner_only' | 'custom'
   season_year integer default 2026 not null,
   is_public boolean default false not null,
   max_members integer default 100,
+
+  -- League Scoring Rules (Defaults aligned with OG League verified rules)
+  pts_winner integer default 10 not null,
+  pts_closest integer default 10 not null,
+  pts_closest_tie integer default 5 not null,
+  pts_exact integer default 50 not null,
+  pts_exact_tie integer default 25 not null,
+  lock_of_week_multiplier integer default 3 not null,
+  require_scores boolean default true not null, -- false allows winner-only pick'ems without score predictions
+
+  -- League Lock Settings
+  lock_type text default 'season_prekickoff' not null, -- 'season_prekickoff' (default: full season locked prior to kickoff) | 'rolling_kickoff'
+  season_lock_time timestamp with time zone,
+
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -129,16 +143,28 @@ create table public.picks (
 alter table public.picks enable row level security;
 
 -- SECURITY RULE: Users can always view their own picks.
--- Other league members can ONLY view picks once the game has kicked off (kickoff_time <= now())
+-- Other league members can view picks once unlocked according to league lock_type:
+-- 1. season_prekickoff: Picks unlock when season_lock_time has passed (or first game kicked off).
+-- 2. rolling_kickoff: Picks unlock on a game-by-game basis as kickoff_time arrives.
 create policy "Users can manage own picks" on public.picks for all using (auth.uid() = user_id);
 
-create policy "League members see picks after kickoff" on public.picks for select using (
+create policy "League members see picks after kickoff or season lock" on public.picks for select using (
   auth.uid() = user_id
   or (
     exists (
-      select 1 from public.games
-      where games.id = picks.game_id
-      and (games.kickoff_time <= now() or games.is_live = true or games.is_final = true)
+      select 1 from public.leagues
+      where leagues.id = picks.league_id
+      and (
+        (leagues.lock_type = 'season_prekickoff' and (leagues.season_lock_time is null or leagues.season_lock_time <= now()))
+        or (
+          leagues.lock_type = 'rolling_kickoff'
+          and exists (
+            select 1 from public.games
+            where games.id = picks.game_id
+            and (games.kickoff_time <= now() or games.is_live = true or games.is_final = true)
+          )
+        )
+      )
     )
   )
 );
