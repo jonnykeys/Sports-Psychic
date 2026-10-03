@@ -4248,6 +4248,85 @@ body {
   }
 }
 
+/* =========================================================
+   BYE WEEK COMPACT TICKER STRIP (CONCEPT 2)
+   ========================================================= */
+.matchups-bye-strip {
+  background: rgba(14, 23, 48, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3.5px solid #ffd700;
+  border-radius: var(--border-radius-sm);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.matchups-bye-strip[hidden] {
+  display: none !important;
+}
+
+.bye-strip-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+.bye-strip-icon {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.bye-strip-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.bye-mini-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  transition: var(--transition);
+}
+
+.bye-mini-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.mini-color-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.bye-mini-code {
+  letter-spacing: 0.3px;
+}
+
 /* Empty State / Loading State */
 .loading-box {
   text-align: center;
