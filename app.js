@@ -934,6 +934,14 @@ function initData() {
       state.selectedPlayer = state.data.leaderboard[0].name;
     }
   }
+
+  // Restore cached NFL standings if available
+  try {
+    const cachedStandings = localStorage.getItem("og_league_nfl_standings");
+    if (cachedStandings) {
+      state.nflStandings = JSON.parse(cachedStandings);
+    }
+  } catch (e) {}
 }
 
 // =========================================================
@@ -975,6 +983,14 @@ function switchTab(tabId, smoothScroll = true) {
   }
   renderTabContent();
   saveNavState();
+
+  // If opening NFL standings tab, ensure live records are fresh
+  if (tabId === "nfl") {
+    const lastSync = (state.nflStandings && state.nflStandings.lastSynced) || 0;
+    if (Date.now() - lastSync > 120000) {
+      syncNFLStandings(true);
+    }
+  }
 }
 
 function getWeekDateLabel(w) {
@@ -1635,18 +1651,163 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
   }
 }
 
+/**
+ * Dynamically computes NFL team win-loss-tie records and point differentials
+ * across all finalized games present in state.data.weeks.
+ */
+function computeTeamRecordsFromGames() {
+  const records = {};
+  CANONICAL_NFL_TEAMS.forEach(tm => {
+    records[tm] = { w: 0, l: 0, t: 0, winPct: 0, diff: 0 };
+  });
+
+  if (state.data && state.data.weeks) {
+    Object.values(state.data.weeks).forEach(wk => {
+      if (!wk || !wk.games) return;
+      wk.games.forEach(g => {
+        if (!g.isFinal) return;
+        const teams = (g.matchup || "").split(" @ ");
+        if (teams.length < 2) return;
+        const away = normalizeTeamCode(teams[0]);
+        const home = normalizeTeamCode(teams[1]);
+
+        const aScore = (g.awayScore !== null && g.awayScore !== undefined) ? parseInt(g.awayScore, 10) : null;
+        const hScore = (g.homeScore !== null && g.homeScore !== undefined) ? parseInt(g.homeScore, 10) : null;
+
+        if (aScore === null || hScore === null || isNaN(aScore) || isNaN(hScore)) return;
+
+        if (records[away]) records[away].diff += (aScore - hScore);
+        if (records[home]) records[home].diff += (hScore - aScore);
+
+        if (aScore === hScore || g.winner === "TIE") {
+          if (records[away]) records[away].t += 1;
+          if (records[home]) records[home].t += 1;
+        } else if (g.winner === away || aScore > hScore) {
+          if (records[away]) records[away].w += 1;
+          if (records[home]) records[home].l += 1;
+        } else if (g.winner === home || hScore > aScore) {
+          if (records[home]) records[home].w += 1;
+          if (records[away]) records[away].l += 1;
+        }
+      });
+    });
+  }
+
+  CANONICAL_NFL_TEAMS.forEach(tm => {
+    const total = records[tm].w + records[tm].l + records[tm].t;
+    records[tm].winPct = total > 0 ? (records[tm].w + records[tm].t * 0.5) / total : 0;
+  });
+
+  return records;
+}
+
+/**
+ * Synchronizes real-time NFL standings, division records, and playoff seeds
+ * from ESPN's official Standings API, with automated fallbacks to Google Sheets
+ * and dynamic calculations from all completed games.
+ */
 async function syncNFLStandings(forceNotice = false) {
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid=${NFL_STANDINGS_GID}&t=${Date.now()}`;
+  let synced = false;
+
+  // 1. Primary: Fetch official live NFL Standings directly from ESPN
   try {
-    const res = await fetch(url);
-    if (!res.ok) return;
-    const csv = await res.text();
-    parseNFLStandingsCSV(csv);
-    if (state.activeTab === "nfl") {
-      renderNFLStandings();
+    const espnUrl = "https://site.api.espn.com/apis/v2/sports/football/nfl/standings";
+    const res = await fetch(espnUrl);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.children && data.children.length > 0) {
+        const teamRecords = {};
+        const afcPlayoffs = [];
+        const nfcPlayoffs = [];
+
+        data.children.forEach(conf => {
+          const confName = String(conf.name || "");
+          const isAFC = confName.includes("American");
+          const isNFC = confName.includes("National");
+          const entries = (conf.standings && conf.standings.entries) ? conf.standings.entries : [];
+
+          entries.forEach(entry => {
+            const rawAbbr = entry.team?.abbreviation || "";
+            const teamCode = normalizeTeamCode(rawAbbr);
+            if (!CANONICAL_NFL_TEAMS.includes(teamCode)) return;
+
+            const stats = entry.stats || [];
+            const getStat = (name) => {
+              const item = stats.find(s => s.name === name);
+              if (!item) return 0;
+              return item.value !== undefined ? item.value : parseInt(item.displayValue, 10);
+            };
+
+            const wins = getStat("wins") || 0;
+            const losses = getStat("losses") || 0;
+            const ties = getStat("ties") || 0;
+            const seed = getStat("playoffSeed") || 16;
+            const winPct = getStat("winPercent") || 0;
+            const diff = getStat("pointDifferential") || 0;
+
+            teamRecords[teamCode] = {
+              w: wins,
+              l: losses,
+              t: ties,
+              seed: String(seed),
+              winPct: winPct,
+              diff: diff,
+              conf: isAFC ? "AFC" : "NFC"
+            };
+
+            if (seed >= 1 && seed <= 7) {
+              const pItem = { seed: String(seed), team: teamCode };
+              if (isAFC) afcPlayoffs.push(pItem);
+              if (isNFC) nfcPlayoffs.push(pItem);
+            }
+          });
+        });
+
+        afcPlayoffs.sort((a, b) => parseInt(a.seed, 10) - parseInt(b.seed, 10));
+        nfcPlayoffs.sort((a, b) => parseInt(a.seed, 10) - parseInt(b.seed, 10));
+
+        state.nflStandings = {
+          teamRecords,
+          afcPlayoffs,
+          nfcPlayoffs,
+          lastSynced: Date.now()
+        };
+
+        try {
+          localStorage.setItem("og_league_nfl_standings", JSON.stringify(state.nflStandings));
+        } catch (e) {}
+
+        synced = true;
+      }
     }
-  } catch (e) {
-    console.warn("NFL Standings sync warning:", e);
+  } catch (err) {
+    console.warn("ESPN Live Standings API sync notice:", err);
+  }
+
+  // 2. Secondary fallback: Google Sheet NFL Standings tab
+  if (!synced) {
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid=${NFL_STANDINGS_GID}&t=${Date.now()}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const csv = await res.text();
+        parseNFLStandingsCSV(csv);
+        synced = true;
+      }
+    } catch (e) {
+      console.warn("Google Sheet NFL Standings fallback notice:", e);
+    }
+  }
+
+  // 3. Fallback: dynamically compute from all finalized season games if team records missing
+  if (!state.nflStandings || !state.nflStandings.teamRecords) {
+    const computed = computeTeamRecordsFromGames();
+    if (!state.nflStandings) state.nflStandings = {};
+    state.nflStandings.teamRecords = computed;
+  }
+
+  if (state.activeTab === "nfl") {
+    renderNFLStandings();
   }
 }
 
@@ -3880,16 +4041,16 @@ function renderNFLStandings() {
   const fallbackAFC = [
     { seed: "1", team: "KC" },
     { seed: "2", team: "BUF" },
-    { seed: "3", team: "PIT" },
+    { seed: "3", team: "CLE" },
     { seed: "4", team: "JAX" },
     { seed: "5", team: "LV" },
     { seed: "6", team: "BAL" },
-    { seed: "7", team: "CIN" }
+    { seed: "7", team: "DEN" }
   ];
 
   const fallbackNFC = [
-    { seed: "1", team: "SF" },
-    { seed: "2", team: "MIN" },
+    { seed: "1", team: "MIN" },
+    { seed: "2", team: "SF" },
     { seed: "3", team: "NYG" },
     { seed: "4", team: "CAR" },
     { seed: "5", team: "DET" },
@@ -3953,21 +4114,47 @@ function renderNFLStandings() {
     </div>
   `;
 
+  // Dynamic Division Records from ESPN or dynamic game tallies
+  const records = (state.nflStandings && state.nflStandings.teamRecords)
+    ? state.nflStandings.teamRecords
+    : computeTeamRecordsFromGames();
+
   // Standard NFL Divisions - Paired AFC (left) / NFC (right)
-  const divisions = [
-    { name: "AFC West", teams: [ { t: "KC", w: 3, l: 0 }, { t: "LV", w: 3, l: 0 }, { t: "DEN", w: 2, l: 1 }, { t: "LAC", w: 0, l: 3 } ] },
-    { name: "NFC West", teams: [ { t: "SF", w: 3, l: 0 }, { t: "SEA", w: 2, l: 1 }, { t: "LAR", w: 1, l: 2 }, { t: "AZ", w: 1, l: 2 } ] },
-    { name: "AFC East", teams: [ { t: "BUF", w: 3, l: 0 }, { t: "NYJ", w: 1, l: 2 }, { t: "NE", w: 1, l: 2 }, { t: "MIA", w: 0, l: 3 } ] },
-    { name: "NFC East", teams: [ { t: "PHI", w: 2, l: 0 }, { t: "NYG", w: 2, l: 1 }, { t: "DAL", w: 1, l: 2 }, { t: "WSH", w: 1, l: 2 } ] },
-    { name: "AFC North", teams: [ { t: "BAL", w: 2, l: 1 }, { t: "CLE", w: 2, l: 1 }, { t: "PIT", w: 2, l: 1 }, { t: "CIN", w: 2, l: 1 } ] },
-    { name: "NFC North", teams: [ { t: "MIN", w: 3, l: 0 }, { t: "DET", w: 2, l: 1 }, { t: "CHI", w: 1, l: 1 }, { t: "GB", w: 1, l: 2 } ] },
-    { name: "AFC South", teams: [ { t: "JAX", w: 2, l: 1 }, { t: "IND", w: 1, l: 2 }, { t: "HOU", w: 0, l: 3 }, { t: "TEN", w: 0, l: 3 } ] },
-    { name: "NFC South", teams: [ { t: "NO", w: 1, l: 2 }, { t: "ATL", w: 1, l: 2 }, { t: "CAR", w: 1, l: 2 }, { t: "TB", w: 0, l: 3 } ] }
+  const divisionConfigs = [
+    { name: "AFC West", teams: ["KC", "LV", "DEN", "LAC"] },
+    { name: "NFC West", teams: ["SF", "SEA", "LAR", "AZ"] },
+    { name: "AFC East", teams: ["BUF", "NYJ", "NE", "MIA"] },
+    { name: "NFC East", teams: ["PHI", "NYG", "DAL", "WSH"] },
+    { name: "AFC North", teams: ["CLE", "BAL", "CIN", "PIT"] },
+    { name: "NFC North", teams: ["MIN", "DET", "CHI", "GB"] },
+    { name: "AFC South", teams: ["JAX", "IND", "HOU", "TEN"] },
+    { name: "NFC South", teams: ["NO", "ATL", "CAR", "TB"] }
   ];
 
-  divisionsContainer.innerHTML = divisions.map(div => {
+  divisionsContainer.innerHTML = divisionConfigs.map(div => {
     const isAfc = div.name.startsWith("AFC");
     const confClass = isAfc ? "afc" : "nfc";
+
+    // Build and sort division teams dynamically by W-L records
+    const divTeams = div.teams.map(tCode => {
+      const rec = records[tCode] || { w: 0, l: 0, t: 0, winPct: 0, diff: 0 };
+      return {
+        t: tCode,
+        w: rec.w,
+        l: rec.l,
+        tCount: rec.t || 0,
+        winPct: rec.winPct !== undefined ? rec.winPct : (rec.w / Math.max(1, rec.w + rec.l)),
+        diff: rec.diff || 0
+      };
+    });
+
+    // Sort: 1) winPct descending, 2) wins descending, 3) point differential descending
+    divTeams.sort((a, b) => {
+      if (b.winPct !== a.winPct) return b.winPct - a.winPct;
+      if (b.w !== a.w) return b.w - a.w;
+      return b.diff - a.diff;
+    });
+
     return `
       <div class="division-card">
         <div class="division-header">
@@ -3976,15 +4163,16 @@ function renderNFLStandings() {
         </div>
         <table class="division-table">
           <tbody>
-            ${div.teams.map(tm => {
+            ${divTeams.map(tm => {
               const tmInfo = NFL_TEAMS[tm.t] || { color: '#2a3b50' };
               const tmText = getTeamContrastColor(tmInfo.color);
+              const recLabel = tm.tCount > 0 ? `${tm.w}-${tm.l}-${tm.tCount}` : `${tm.w} - ${tm.l}`;
               return `
                 <tr>
                   <td>
                     <span class="team-badge-sm" style="background-color: ${tmInfo.color}; color: ${tmText}; font-size: 0.65rem; padding: 1.5px 6px; border-radius: 4px; min-width: 32px; text-align: center;">${tm.t}</span>
                   </td>
-                  <td class="division-record">${tm.w} - ${tm.l}</td>
+                  <td class="division-record">${recLabel}</td>
                 </tr>
               `;
             }).join("")}
