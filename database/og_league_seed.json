@@ -440,8 +440,8 @@
                       "home_team":  "IND",
                       "dateTime":  "Sun 9/27 @ 12:00pm",
                       "winner":  "IND",
-                      "away_score":  19,
-                      "home_score":  27,
+                      "away_score":  17,
+                      "home_score":  19,
                       "is_final":  true
                   },
                   {
@@ -9412,10 +9412,10 @@
                       "predicted_away":  17,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  10,
+                      "points_earned":  20,
                       "base_points":  10,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -9482,10 +9482,10 @@
                       "predicted_away":  20,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  20,
+                      "points_earned":  10,
                       "base_points":  10,
-                      "bonus_points":  10,
-                      "is_closest":  true,
+                      "bonus_points":  0,
+                      "is_closest":  false,
                       "is_exact":  false
                   },
                   {
