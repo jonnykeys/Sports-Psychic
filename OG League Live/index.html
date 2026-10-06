@@ -163,40 +163,54 @@
 
     <!-- TAB 2: MATCHUPS & PICKS (Or Public NFL Schedule in Lobby Mode) -->
     <section id="tab-matchups" class="tab-view" role="tabpanel">
-      <!-- LOBBY HERO & MEMBER HUB (Visible in Lobby Mode) -->
+      <!-- LOBBY HERO & NEW USER ONBOARDING (Visible in Lobby Mode) -->
       <div id="lobby-hero-card" class="lobby-hero-card">
-        <div class="hero-badge">🏈 2026 NFL SEASON • PREDICTION LEAGUES</div>
+        <div class="hero-badge">🏈 2026 NFL SEASON • PREDICTION ARENA</div>
         <h2 class="hero-headline">Predict NFL Games.<br><span class="hero-glow">Prove You're Psychic.</span></h2>
-        <p class="hero-subtext">Compete with friends in custom leagues, lock in 3x multipliers, or test your psychic instincts in Solo Play.</p>
+        <p class="hero-subtext">Lock in score predictions, challenge friends in custom weekly or full-season leagues, and compete against the world in Solo Play.</p>
         
         <div class="hero-cta-group">
-          <button class="btn-hero-primary" onclick="enterLeagueView('og')">
-            <span>🏆 Enter OG League</span>
+          <button class="btn-hero-primary" onclick="openAuthModal('Get Started Free')">
+            <span>🔮 Get Started Free</span>
             <span class="hero-btn-arrow">→</span>
           </button>
-          <button class="btn-hero-secondary" onclick="openAuthModal('Join Free')">
-            <span>🔮 Join Free / Sign In</span>
+          <button class="btn-hero-secondary" onclick="openJoinLeagueModal()">
+            <span>🔑 Have an Invite Code?</span>
           </button>
         </div>
 
-        <!-- Quick Hub Cards -->
+        <!-- Quick League Invite Code Box -->
+        <div class="lobby-invite-bar">
+          <div class="invite-bar-header">
+            <span class="invite-icon">🔑</span>
+            <span class="invite-bar-label">Invited by a friend? Enter 6-digit League Code:</span>
+          </div>
+          <div class="invite-input-row">
+            <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. OG2026" maxlength="12" autocomplete="off" autocapitalize="characters">
+            <button class="btn-invite-submit" onclick="handleQuickInviteSubmit()">Join League</button>
+          </div>
+        </div>
+
+        <!-- Ways to Play Hub Cards -->
         <div class="lobby-hub-grid">
-          <div class="hub-card" onclick="enterLeagueView('og')">
+          <div class="hub-card" onclick="openAuthModal('Custom Leagues')">
             <div class="hub-card-header">
               <span class="hub-icon">🏆</span>
-              <span class="hub-badge live-tag">LIVE LEAGUE</span>
+              <span class="hub-badge league-tag">PLAY WITH FRIENDS</span>
             </div>
-            <div class="hub-card-title">OG League</div>
-            <div class="hub-card-desc">12 Players • Week 5 • Season Lock</div>
+            <div class="hub-card-title">Custom Leagues</div>
+            <div class="hub-card-desc">Weekly rolling locks or full-season lock. Custom scoring & 3x multipliers with your crew.</div>
+            <div class="hub-card-action">Create League →</div>
           </div>
 
-          <div class="hub-card" onclick="enterLeagueView('solo')">
+          <div class="hub-card" onclick="openAuthModal('Solo Psychic')">
             <div class="hub-card-header">
               <span class="hub-icon">🔮</span>
-              <span class="hub-badge solo-tag">SOLO PLAY</span>
+              <span class="hub-badge solo-tag">GLOBAL COMMUNITY</span>
             </div>
-            <div class="hub-card-title">Solo Psychic</div>
-            <div class="hub-card-desc">Personal Season Prophecies & Accuracies</div>
+            <div class="hub-card-title">Solo Psychic Play</div>
+            <div class="hub-card-desc">Craft custom Prophecy slates and rank on Global Community Leaderboards.</div>
+            <div class="hub-card-action">Play Solo →</div>
           </div>
         </div>
       </div>
@@ -512,20 +526,6 @@
       </p>
 
       <div class="auth-modal-actions">
-        <button class="btn-auth-demo" onclick="closeAuthModal(); enterLeagueView('og');">
-          <span>🏆 Enter OG League (Live Season)</span>
-          <span class="auth-demo-arrow">→</span>
-        </button>
-
-        <div class="auth-divider">
-          <span>OR SIGN IN / REGISTER</span>
-        </div>
-
-        <div class="auth-input-group">
-          <input type="email" id="auth-email-input" class="auth-input" placeholder="Enter your email address" autocomplete="email">
-          <button class="btn-auth-submit" onclick="handleAuthSubmit()">Continue with Email</button>
-        </div>
-
         <button class="btn-auth-google" onclick="handleGoogleSignIn()">
           <svg width="18" height="18" viewBox="0 0 24 24">
             <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"/>
@@ -535,6 +535,20 @@
           </svg>
           <span>Continue with Google</span>
         </button>
+
+        <div class="auth-divider">
+          <span>OR WITH EMAIL</span>
+        </div>
+
+        <div class="auth-input-group">
+          <input type="email" id="auth-email-input" class="auth-input" placeholder="Enter your email address" autocomplete="email">
+          <button class="btn-auth-submit" onclick="handleAuthSubmit()">Continue</button>
+        </div>
+
+        <div class="auth-invite-link-row">
+          <span>Have a friend's League Code?</span>
+          <button type="button" class="btn-invite-text-link" onclick="closeAuthModal(); openJoinLeagueModal();">Enter Code →</button>
+        </div>
       </div>
 
       <div class="auth-modal-footer">

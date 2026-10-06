@@ -5148,6 +5148,12 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
+.league-tag {
+  background: rgba(245, 184, 0, 0.15);
+  color: #f5b800;
+  border: 1px solid rgba(245, 184, 0, 0.35);
+}
+
 .solo-tag {
   background: rgba(168, 85, 247, 0.15);
   color: #c084fc;
@@ -5165,6 +5171,94 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   color: var(--text-muted);
   margin-top: 2px;
   line-height: 1.35;
+}
+
+.hub-card-action {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #38bdf8;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hub-card:hover .hub-card-action {
+  color: #7dd3fc;
+  text-decoration: underline;
+}
+
+/* Quick Invite Code Bar */
+.lobby-invite-bar {
+  background: rgba(12, 20, 44, 0.7);
+  border: 1px dashed rgba(245, 184, 0, 0.3);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.invite-bar-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.invite-icon {
+  font-size: 0.85rem;
+}
+
+.invite-bar-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.invite-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.lobby-quick-code-input {
+  flex: 1;
+  background: rgba(5, 9, 20, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.lobby-quick-code-input:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 10px rgba(245, 184, 0, 0.25);
+}
+
+.btn-invite-submit {
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.2), rgba(217, 119, 6, 0.3));
+  border: 1px solid rgba(245, 184, 0, 0.45);
+  color: #ffd700;
+  font-size: 0.74rem;
+  font-weight: 800;
+  border-radius: 8px;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-invite-submit:hover {
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.35), rgba(217, 119, 6, 0.45));
+  border-color: #ffd700;
+  color: #ffffff;
 }
 
 /* ---------------------------------------------------------
@@ -5435,6 +5529,33 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 
 .btn-auth-cancel:hover {
   color: #ffffff;
+}
+
+.auth-invite-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.btn-invite-text-link {
+  background: none;
+  border: none;
+  color: var(--accent-gold);
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.76rem;
+  font-family: inherit;
+  padding: 0;
+}
+
+.btn-invite-text-link:hover {
+  color: #ffd700;
 }
 
 /* Mobile responsive header tweaks */

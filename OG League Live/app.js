@@ -4573,14 +4573,43 @@ function handleAuthSubmit() {
     return;
   }
   closeAuthModal();
-  showToast(`🔮 Welcome, ${email.split("@")[0]}! Logged in.`);
-  enterLeagueView("OG League");
+  showToast(`🔮 Welcome, ${email.split("@")[0]}! Account created.`);
+  openProfileModal();
 }
 
 function handleGoogleSignIn() {
   closeAuthModal();
   showToast("🔮 Signed in with Google Demo Account!");
-  enterLeagueView("OG League");
+  openProfileModal();
+}
+
+function processLeagueCode(code) {
+  const cleanCode = (code || "").trim().toUpperCase();
+  if (!cleanCode) return;
+
+  if (cleanCode === "OG2026" || cleanCode === "OG") {
+    enterLeagueView("OG League");
+    if (!state.myPlayer) {
+      setTimeout(() => {
+        showToast("👋 Welcome to OG League! Select your name to claim your picks:");
+        openProfileModal();
+      }, 500);
+    }
+  } else if (cleanCode === "SOLO") {
+    enterLeagueView("solo");
+  } else {
+    showToast(`🔑 Joined League with code: ${cleanCode}`);
+  }
+}
+
+function handleQuickInviteSubmit() {
+  const input = document.getElementById("lobby-quick-code-input");
+  const code = (input && input.value) ? input.value.trim().toUpperCase() : "";
+  if (!code) {
+    showToast("⚠️ Please enter a 6-digit League Code (e.g. OG2026)");
+    return;
+  }
+  processLeagueCode(code);
 }
 
 function openCreateLeagueModal() {
@@ -4593,14 +4622,10 @@ function openCreateLeagueModal() {
 
 function openJoinLeagueModal() {
   closeLeagueDrawer();
-  const code = prompt("Enter 6-character League Invite Code:");
+  closeAuthModal();
+  const code = prompt("Enter 6-character League Invite Code (e.g. OG2026):");
   if (code && code.trim()) {
-    const cleanCode = code.trim().toUpperCase();
-    if (cleanCode === "OG2026" || cleanCode === "OG") {
-      enterLeagueView("OG League");
-    } else {
-      showToast(`🔑 Joined League with code: ${cleanCode}`);
-    }
+    processLeagueCode(code);
   }
 }
 
@@ -4616,6 +4641,8 @@ window.openAuthModal = openAuthModal;
 window.closeAuthModal = closeAuthModal;
 window.handleAuthSubmit = handleAuthSubmit;
 window.handleGoogleSignIn = handleGoogleSignIn;
+window.processLeagueCode = processLeagueCode;
+window.handleQuickInviteSubmit = handleQuickInviteSubmit;
 window.openCreateLeagueModal = openCreateLeagueModal;
 window.openJoinLeagueModal = openJoinLeagueModal;
 
