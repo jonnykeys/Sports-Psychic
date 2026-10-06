@@ -595,10 +595,10 @@
                       "away_team":  "IND",
                       "home_team":  "WSH",
                       "dateTime":  "Sun 10/4 @ 8:30am (INTL)",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "IND",
+                      "away_score":  30,
+                      "home_score":  13,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g3",
@@ -607,10 +607,10 @@
                       "away_team":  "NE",
                       "home_team":  "BUF",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "NE",
+                      "away_score":  29,
+                      "home_score":  26,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g4",
@@ -619,10 +619,10 @@
                       "away_team":  "LAR",
                       "home_team":  "PHI",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "LAR",
+                      "away_score":  24,
+                      "home_score":  20,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g5",
@@ -631,10 +631,10 @@
                       "away_team":  "NYJ",
                       "home_team":  "CHI",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "CHI",
+                      "away_score":  12,
+                      "home_score":  23,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g6",
@@ -643,10 +643,10 @@
                       "away_team":  "JAX",
                       "home_team":  "CIN",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "JAX",
+                      "away_score":  22,
+                      "home_score":  17,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g7",
@@ -655,10 +655,10 @@
                       "away_team":  "GB",
                       "home_team":  "TB",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "GB",
+                      "away_score":  17,
+                      "home_score":  14,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g8",
@@ -667,10 +667,10 @@
                       "away_team":  "DAL",
                       "home_team":  "HOU",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "DAL",
+                      "away_score":  34,
+                      "home_score":  30,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g9",
@@ -679,10 +679,10 @@
                       "away_team":  "TEN",
                       "home_team":  "BAL",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "BAL",
+                      "away_score":  18,
+                      "home_score":  24,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g10",
@@ -691,10 +691,10 @@
                       "away_team":  "AZ",
                       "home_team":  "NYG",
                       "dateTime":  "Sun 10/4 @ 12:00pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "NYG",
+                      "away_score":  24,
+                      "home_score":  36,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g11",
@@ -703,10 +703,10 @@
                       "away_team":  "MIA",
                       "home_team":  "MIN",
                       "dateTime":  "Sun 10/4 @ 3:05pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "MIN",
+                      "away_score":  10,
+                      "home_score":  15,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g12",
@@ -715,10 +715,10 @@
                       "away_team":  "LAC",
                       "home_team":  "SEA",
                       "dateTime":  "Sun 10/4 @ 3:25pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "SEA",
+                      "away_score":  23,
+                      "home_score":  30,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g13",
@@ -727,10 +727,10 @@
                       "away_team":  "DEN",
                       "home_team":  "SF",
                       "dateTime":  "Sun 10/4 @ 3:25pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "SF",
+                      "away_score":  14,
+                      "home_score":  24,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g14",
@@ -739,10 +739,10 @@
                       "away_team":  "KC",
                       "home_team":  "LV",
                       "dateTime":  "Sun 10/4 @ 3:25pm",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "KC",
+                      "away_score":  30,
+                      "home_score":  27,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g15",
@@ -751,10 +751,10 @@
                       "away_team":  "DET",
                       "home_team":  "CAR",
                       "dateTime":  "Sun 10/4 @ 7:20pm (SNF)",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "CAR",
+                      "away_score":  26,
+                      "home_score":  32,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 4_g16",
@@ -763,10 +763,10 @@
                       "away_team":  "ATL",
                       "home_team":  "NO",
                       "dateTime":  "Mon 10/5 @ 7:15pm (MNF)",
-                      "winner":  "",
-                      "away_score":  null,
-                      "home_score":  null,
-                      "is_final":  false
+                      "winner":  "ATL",
+                      "away_score":  45,
+                      "home_score":  24,
+                      "is_final":  true
                   },
                   {
                       "id":  "Week 5_g1",
@@ -11582,10 +11582,10 @@
                       "predicted_away":  17,
                       "predicted_home":  14,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -11638,10 +11638,10 @@
                       "predicted_away":  17,
                       "predicted_home":  14,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -11680,8 +11680,8 @@
                       "predicted_away":  10,
                       "predicted_home":  7,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -11694,10 +11694,10 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -11708,10 +11708,10 @@
                       "predicted_away":  20,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -11722,10 +11722,10 @@
                       "predicted_away":  20,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -11736,10 +11736,10 @@
                       "predicted_away":  21,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -11848,8 +11848,8 @@
                       "predicted_away":  14,
                       "predicted_home":  10,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -11904,8 +11904,8 @@
                       "predicted_away":  20,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -11932,10 +11932,10 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -11974,8 +11974,8 @@
                       "predicted_away":  27,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -11988,8 +11988,8 @@
                       "predicted_away":  17,
                       "predicted_home":  14,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12002,8 +12002,8 @@
                       "predicted_away":  21,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12030,10 +12030,10 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12044,8 +12044,8 @@
                       "predicted_away":  21,
                       "predicted_home":  17,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12072,8 +12072,8 @@
                       "predicted_away":  24,
                       "predicted_home":  31,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12086,8 +12086,8 @@
                       "predicted_away":  10,
                       "predicted_home":  14,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12100,8 +12100,8 @@
                       "predicted_away":  7,
                       "predicted_home":  10,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12114,8 +12114,8 @@
                       "predicted_away":  17,
                       "predicted_home":  27,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12128,8 +12128,8 @@
                       "predicted_away":  17,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12142,8 +12142,8 @@
                       "predicted_away":  7,
                       "predicted_home":  10,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12156,10 +12156,10 @@
                       "predicted_away":  10,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12170,8 +12170,8 @@
                       "predicted_away":  24,
                       "predicted_home":  27,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12184,8 +12184,8 @@
                       "predicted_away":  24,
                       "predicted_home":  31,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12198,8 +12198,8 @@
                       "predicted_away":  20,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12212,8 +12212,8 @@
                       "predicted_away":  24,
                       "predicted_home":  31,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12226,8 +12226,8 @@
                       "predicted_away":  10,
                       "predicted_home":  14,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12240,8 +12240,8 @@
                       "predicted_away":  20,
                       "predicted_home":  14,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12268,8 +12268,8 @@
                       "predicted_away":  24,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12324,8 +12324,8 @@
                       "predicted_away":  27,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12338,8 +12338,8 @@
                       "predicted_away":  10,
                       "predicted_home":  7,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12380,10 +12380,10 @@
                       "predicted_away":  20,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12394,10 +12394,10 @@
                       "predicted_away":  24,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12436,8 +12436,8 @@
                       "predicted_away":  24,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12506,8 +12506,8 @@
                       "predicted_away":  31,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12534,8 +12534,8 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12548,8 +12548,8 @@
                       "predicted_away":  24,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12562,10 +12562,10 @@
                       "predicted_away":  20,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12604,10 +12604,10 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12632,8 +12632,8 @@
                       "predicted_away":  24,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12730,8 +12730,8 @@
                       "predicted_away":  20,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12744,8 +12744,8 @@
                       "predicted_away":  13,
                       "predicted_home":  20,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12772,8 +12772,8 @@
                       "predicted_away":  21,
                       "predicted_home":  28,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12786,8 +12786,8 @@
                       "predicted_away":  14,
                       "predicted_home":  27,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12800,10 +12800,10 @@
                       "predicted_away":  17,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12814,8 +12814,8 @@
                       "predicted_away":  21,
                       "predicted_home":  27,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12828,8 +12828,8 @@
                       "predicted_away":  10,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12842,8 +12842,8 @@
                       "predicted_away":  20,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12856,8 +12856,8 @@
                       "predicted_away":  21,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12870,8 +12870,8 @@
                       "predicted_away":  20,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12912,10 +12912,10 @@
                       "predicted_away":  24,
                       "predicted_home":  31,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -12926,8 +12926,8 @@
                       "predicted_away":  17,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12968,8 +12968,8 @@
                       "predicted_away":  17,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12982,8 +12982,8 @@
                       "predicted_away":  21,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -12996,8 +12996,8 @@
                       "predicted_away":  7,
                       "predicted_home":  13,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13010,8 +13010,8 @@
                       "predicted_away":  14,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13024,8 +13024,8 @@
                       "predicted_away":  24,
                       "predicted_home":  27,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13038,8 +13038,8 @@
                       "predicted_away":  20,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13080,10 +13080,10 @@
                       "predicted_away":  10,
                       "predicted_home":  14,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -13094,8 +13094,8 @@
                       "predicted_away":  17,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13108,8 +13108,8 @@
                       "predicted_away":  14,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13122,8 +13122,8 @@
                       "predicted_away":  14,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13150,8 +13150,8 @@
                       "predicted_away":  10,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13164,8 +13164,8 @@
                       "predicted_away":  17,
                       "predicted_home":  31,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13178,8 +13178,8 @@
                       "predicted_away":  21,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13206,8 +13206,8 @@
                       "predicted_away":  20,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13248,8 +13248,8 @@
                       "predicted_away":  10,
                       "predicted_home":  14,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13304,8 +13304,8 @@
                       "predicted_away":  17,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13318,8 +13318,8 @@
                       "predicted_away":  17,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13346,8 +13346,8 @@
                       "predicted_away":  7,
                       "predicted_home":  10,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13374,8 +13374,8 @@
                       "predicted_away":  20,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13402,10 +13402,10 @@
                       "predicted_away":  24,
                       "predicted_home":  31,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -13416,8 +13416,8 @@
                       "predicted_away":  21,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13430,8 +13430,8 @@
                       "predicted_away":  14,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13458,8 +13458,8 @@
                       "predicted_away":  14,
                       "predicted_home":  28,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13472,10 +13472,10 @@
                       "predicted_away":  17,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -13486,8 +13486,8 @@
                       "predicted_away":  21,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13500,8 +13500,8 @@
                       "predicted_away":  14,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13514,8 +13514,8 @@
                       "predicted_away":  14,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13570,8 +13570,8 @@
                       "predicted_away":  27,
                       "predicted_home":  31,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13598,10 +13598,10 @@
                       "predicted_away":  31,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -13612,8 +13612,8 @@
                       "predicted_away":  28,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13626,8 +13626,8 @@
                       "predicted_away":  31,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13640,8 +13640,8 @@
                       "predicted_away":  24,
                       "predicted_home":  17,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13654,8 +13654,8 @@
                       "predicted_away":  28,
                       "predicted_home":  23,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13668,8 +13668,8 @@
                       "predicted_away":  21,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13682,8 +13682,8 @@
                       "predicted_away":  27,
                       "predicted_home":  14,
                       "is_multiplier":  true,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  30,
+                      "base_points":  30,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13696,8 +13696,8 @@
                       "predicted_away":  27,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13710,8 +13710,8 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13724,8 +13724,8 @@
                       "predicted_away":  28,
                       "predicted_home":  21,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13738,10 +13738,10 @@
                       "predicted_away":  31,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  15,
+                      "base_points":  10,
+                      "bonus_points":  5,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -13906,10 +13906,10 @@
                       "predicted_away":  24,
                       "predicted_home":  31,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
@@ -13920,8 +13920,8 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13948,8 +13948,8 @@
                       "predicted_away":  21,
                       "predicted_home":  17,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -13990,8 +13990,8 @@
                       "predicted_away":  23,
                       "predicted_home":  20,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
+                      "points_earned":  10,
+                      "base_points":  10,
                       "bonus_points":  0,
                       "is_closest":  false,
                       "is_exact":  false
@@ -14004,10 +14004,10 @@
                       "predicted_away":  31,
                       "predicted_home":  24,
                       "is_multiplier":  false,
-                      "points_earned":  0,
-                      "base_points":  0,
-                      "bonus_points":  0,
-                      "is_closest":  false,
+                      "points_earned":  20,
+                      "base_points":  10,
+                      "bonus_points":  10,
+                      "is_closest":  true,
                       "is_exact":  false
                   },
                   {
