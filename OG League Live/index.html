@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="style.css?v=11.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
+
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -485,6 +488,10 @@
         </div>
         <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Close">&times;</button>
       </div>
+
+      <!-- Authenticated Account Banner (Rendered dynamically if signed in) -->
+      <div id="profile-account-card" style="display: none;"></div>
+
       <p class="profile-modal-desc">
         Select who you are on this device to highlight your picks across all 16 games and jump straight to your scorecard.
       </p>
@@ -494,6 +501,9 @@
       <div class="profile-modal-footer">
         <button id="btn-clear-profile" class="btn-clear-profile" onclick="setMyPlayer(null)">Clear Profile (Guest Mode)</button>
         <button class="btn-modal-done" onclick="closeProfileModal()">Done</button>
+      </div>
+      <div id="profile-signout-container" style="display: none; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 12px;">
+        <button type="button" id="btn-auth-signout" class="btn-auth-signout" onclick="handleSignOut()">Sign Out of Account</button>
       </div>
     </div>
   </div>
@@ -517,16 +527,20 @@
       <div class="auth-modal-header">
         <div class="auth-modal-title-row">
           <span class="auth-modal-icon">🔮</span>
-          <h3>Join Sports Psychic</h3>
+          <h3 id="auth-modal-title">Join Sports Psychic</h3>
         </div>
         <button class="profile-modal-close" onclick="closeAuthModal()" aria-label="Close">&times;</button>
       </div>
-      <p class="auth-modal-desc">
-        Create an account to make your picks, join leagues with friends, or start a solo psychic season.
+      <p class="auth-modal-desc" id="auth-modal-desc">
+        Sign in to make your predictions, claim your league picks, and play with friends.
       </p>
 
+      <!-- Alert Notification Banner -->
+      <div id="auth-alert" class="auth-alert-box" style="display: none;"></div>
+
       <div class="auth-modal-actions">
-        <button class="btn-auth-google" onclick="handleGoogleSignIn()">
+        <!-- Google OAuth -->
+        <button type="button" class="btn-auth-google" onclick="handleGoogleSignIn()">
           <svg width="18" height="18" viewBox="0 0 24 24">
             <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"/>
             <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
@@ -540,9 +554,26 @@
           <span>OR WITH EMAIL</span>
         </div>
 
-        <div class="auth-input-group">
-          <input type="email" id="auth-email-input" class="auth-input" placeholder="Enter your email address" autocomplete="email">
-          <button class="btn-auth-submit" onclick="handleAuthSubmit()">Continue</button>
+        <!-- Email & Password Form -->
+        <div class="auth-form-fields">
+          <div class="auth-field-row">
+            <label class="auth-label" for="auth-email-input">Email Address</label>
+            <input type="email" id="auth-email-input" class="auth-input" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+
+          <div class="auth-field-row">
+            <label class="auth-label" for="auth-password-input">Password</label>
+            <input type="password" id="auth-password-input" class="auth-input" placeholder="Enter password (min 6 characters)" autocomplete="current-password">
+          </div>
+
+          <div class="auth-btn-row">
+            <button type="button" id="btn-auth-signin" class="btn-auth-primary" onclick="handleEmailSignIn()">Sign In</button>
+            <button type="button" id="btn-auth-signup" class="btn-auth-secondary" onclick="handleEmailSignUp()">Create Account</button>
+          </div>
+
+          <div class="auth-magic-link-row">
+            <button type="button" class="btn-auth-magic" onclick="handleMagicLinkSignIn()">✨ Or send a Magic Link to sign in without password</button>
+          </div>
         </div>
 
         <div class="auth-invite-link-row">
@@ -552,7 +583,7 @@
       </div>
 
       <div class="auth-modal-footer">
-        <button class="btn-auth-cancel" onclick="closeAuthModal()">Cancel</button>
+        <button type="button" class="btn-auth-cancel" onclick="closeAuthModal()">Cancel</button>
       </div>
     </div>
   </div>

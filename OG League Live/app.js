@@ -281,6 +281,24 @@ try {
   console.warn("localStorage unavailable:", e);
 }
 
+// Supabase Cloud Project Configuration (Live Production Engine)
+const SUPABASE_CONFIG = {
+  url: "https://linfhswrpzoniajhzssd.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpbmZoc3dycHpvbmlhamh6c3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzMjk4NzUsImV4cCI6MjEwNjkwNTg3NX0.E8Hszna2tKhrzNItZlw9N0PWlHD8DyBsKKj8ja6hKx0"
+};
+let supabaseClient = null;
+
+function initSupabaseClient() {
+  if (typeof window !== "undefined" && window.supabase && !supabaseClient) {
+    try {
+      supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    } catch (e) {
+      console.warn("Error initializing Supabase client:", e);
+    }
+  }
+  return supabaseClient;
+}
+
 let state = {
   appMode: "lobby", // "lobby" | "league"
   activeLeague: "OG League", // "OG League" | "solo"
@@ -299,7 +317,10 @@ let state = {
   nflStandings: null,
   collapsedMatchups: new Set(),
   playerPicksFilter: "all", // "all" | "upcoming" | "live" | "final"
-  matchupsFilter: "all"     // "all" | "upcoming" | "live" | "final"
+  matchupsFilter: "all",    // "all" | "upcoming" | "live" | "final"
+  authUser: null,           // Authenticated Supabase user object
+  userProfile: null,        // Profile record from public.profiles
+  cloudStandings: null      // Live Standings directly from Supabase view public.league_standings
 };
 
 // Navigation state persistence key for sessionStorage
@@ -677,9 +698,22 @@ function calculateGamePicksPoints(game) {
 function computeSeasonLeaderboard(dataObj, throughWeek = null) {
   const data = dataObj || state.data;
   const maxW = (throughWeek !== null && throughWeek !== undefined) ? throughWeek : 18;
+
+  // Build cloud standings lookup if available and viewing full season
+  const cloudMap = {};
+  if (state.cloudStandings && Array.isArray(state.cloudStandings) && (throughWeek === null || throughWeek >= 18)) {
+    state.cloudStandings.forEach(row => {
+      if (row.player_name && typeof row.total_points === "number") {
+        cloudMap[row.player_name] = row.total_points;
+      }
+    });
+  }
+
   const list = PLAYERS.map(pName => {
     let totalPts = 0;
-    if (data && data.weeks) {
+    if (cloudMap[pName] !== undefined) {
+      totalPts = cloudMap[pName];
+    } else if (data && data.weeks) {
       for (let w = 1; w <= maxW; w++) {
         const week = data.weeks[`Week ${w}`];
         if (week && week.games && Array.isArray(week.games)) {
@@ -893,6 +927,7 @@ function getNFLTeamRecord(teamCode, targetWeek = null) {
 // INITIALIZATION
 // =========================================================
 document.addEventListener("DOMContentLoaded", () => {
+  initSupabaseAuth();
   initData();
   restoreNavState();
   setupNavigation();
@@ -4390,6 +4425,33 @@ function openProfileModal() {
     clearBtn.style.display = state.myPlayer ? "inline-block" : "none";
   }
 
+  // Render signed-in account details banner if authenticated
+  const accountCard = document.getElementById("profile-account-card");
+  const signoutContainer = document.getElementById("profile-signout-container");
+  if (accountCard) {
+    if (state.authUser) {
+      const email = state.authUser.email || "";
+      const name = state.myPlayer || (state.userProfile && state.userProfile.full_name) || email.split("@")[0];
+      accountCard.style.display = "block";
+      accountCard.innerHTML = `
+        <div class="auth-account-badge">
+          <div class="header-profile-avatar-wrap">
+            ${getPlayerAvatarHtml(state.myPlayer || "Jon", 32)}
+          </div>
+          <div class="auth-account-details">
+            <div class="auth-account-name">Signed In: ${name}</div>
+            <div class="auth-account-email">${email}</div>
+          </div>
+        </div>
+      `;
+    } else {
+      accountCard.style.display = "none";
+    }
+  }
+  if (signoutContainer) {
+    signoutContainer.style.display = state.authUser ? "block" : "none";
+  }
+
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
 }
@@ -4487,6 +4549,27 @@ function updateAppShellForMode() {
       activePill.textContent = isSolo ? "🔮 Solo Play" : "🏆 OG League";
     }
   }
+
+  // Update header sign in button based on authentication status
+  const signInBtn = document.getElementById("btn-header-signin");
+  if (signInBtn) {
+    if (state.authUser) {
+      const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Account");
+      signInBtn.innerHTML = `
+        <span class="signin-sparkle">👤</span>
+        <span>${displayName}</span>
+      `;
+      signInBtn.onclick = () => openProfileModal();
+      signInBtn.title = `Signed in as ${state.authUser.email} (Click for Account Profile)`;
+    } else {
+      signInBtn.innerHTML = `
+        <span class="signin-sparkle">🔮</span>
+        <span>Sign In</span>
+      `;
+      signInBtn.onclick = () => openAuthModal();
+      signInBtn.title = "Sign In or Join Free";
+    }
+  }
 }
 
 function selectLeague(leagueId) {
@@ -4543,17 +4626,152 @@ function handleBrandClick() {
   }
 }
 
+// =========================================================
+// SUPABASE AUTHENTICATION & CLOUD SYNC ENGINE
+// =========================================================
+
+async function initSupabaseAuth() {
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    // 1. Check existing session
+    const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
+    if (!sessionErr && sessionData && sessionData.session && sessionData.session.user) {
+      await handleUserSession(sessionData.session.user);
+    }
+
+    // 2. Subscribe to auth lifecycle changes
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      if (session && session.user) {
+        await handleUserSession(session.user);
+      } else if (event === "SIGNED_OUT") {
+        state.authUser = null;
+        state.userProfile = null;
+        updateAppShellForMode();
+        renderHeaderProfile();
+      }
+    });
+
+    // 3. Sync live cloud standings view
+    await syncLeagueStandingsFromCloud();
+  } catch (e) {
+    console.warn("Supabase Auth initialization warning:", e);
+  }
+}
+
+async function handleUserSession(user) {
+  if (!user) return;
+  state.authUser = user;
+
+  try {
+    // 1. Fetch user profile from public.profiles
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile) {
+      state.userProfile = profile;
+    }
+
+    // 2. Resolve league member identity
+    const userEmail = (user.email || "").toLowerCase().trim();
+    let claimedPlayer = null;
+
+    if (profile && profile.full_name && PLAYERS.includes(profile.full_name)) {
+      claimedPlayer = profile.full_name;
+    }
+
+    if (!claimedPlayer && userEmail) {
+      const { data: invite } = await supabaseClient
+        .from("league_roster_invites")
+        .select("player_name")
+        .ilike("invited_email", userEmail)
+        .maybeSingle();
+
+      if (invite && invite.player_name && PLAYERS.includes(invite.player_name)) {
+        claimedPlayer = invite.player_name;
+      }
+    }
+
+    // Automatic pre-mapping fallbacks
+    if (!claimedPlayer) {
+      if (userEmail === "jonnylcolbert@gmail.com") claimedPlayer = "Jon";
+      else if (userEmail === "alishaklezmer16@gmail.com") claimedPlayer = "Alisha";
+      else if (userEmail === "thatpkboy@gmail.com") claimedPlayer = "Carson";
+    }
+
+    if (claimedPlayer) {
+      state.myPlayer = claimedPlayer;
+      state.selectedPlayer = claimedPlayer;
+      try {
+        localStorage.setItem(SAVED_USER_KEY, claimedPlayer);
+      } catch (e) {}
+    }
+  } catch (err) {
+    console.warn("User session handling error:", err);
+  }
+
+  updateAppShellForMode();
+  renderHeaderProfile();
+  syncLeagueStandingsFromCloud();
+}
+
+async function syncLeagueStandingsFromCloud() {
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("league_standings")
+      .select("*");
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      state.cloudStandings = data;
+      if (state.activeTab === "leaderboard") {
+        renderLeaderboard();
+      }
+    }
+  } catch (e) {
+    console.warn("Cloud standings fetch warning:", e);
+  }
+}
+
+function setAuthAlert(message, type = "error") {
+  const alertEl = document.getElementById("auth-alert");
+  if (!alertEl) return;
+  alertEl.className = `auth-alert-box ${type}`;
+  alertEl.textContent = message;
+  alertEl.style.display = "block";
+}
+
 function openAuthModal(contextMsg = "") {
   const modal = document.getElementById("auth-modal");
   if (!modal) return;
+
+  const alertEl = document.getElementById("auth-alert");
+  if (alertEl) {
+    alertEl.style.display = "none";
+    alertEl.textContent = "";
+  }
+
+  const desc = document.getElementById("auth-modal-desc");
+  if (desc) {
+    desc.textContent = contextMsg || "Sign in to place predictions, create custom leagues with friends, or play solo against community leaderboards.";
+  }
+
+  const emailInput = document.getElementById("auth-email-input");
+  const passInput = document.getElementById("auth-password-input");
+  if (emailInput && !emailInput.value && state.authUser) {
+    emailInput.value = state.authUser.email || "";
+  }
+  if (passInput) passInput.value = "";
+
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
-  const desc = modal.querySelector(".auth-modal-desc");
-  if (desc && contextMsg) {
-    desc.textContent = "Sign in to place predictions, create custom leagues with friends, or play solo against community leaderboards.";
-  }
-  const input = document.getElementById("auth-email-input");
-  if (input) setTimeout(() => input.focus(), 150);
+  if (emailInput) setTimeout(() => emailInput.focus(), 150);
 }
 
 function closeAuthModal(event) {
@@ -4565,22 +4783,186 @@ function closeAuthModal(event) {
   document.body.style.overflow = "";
 }
 
-function handleAuthSubmit() {
-  const input = document.getElementById("auth-email-input");
-  const email = (input && input.value) ? input.value.trim() : "";
-  if (!email || !email.includes("@")) {
-    showToast("⚠️ Please enter a valid email address");
+async function handleEmailSignIn() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
     return;
   }
-  closeAuthModal();
-  showToast(`🔮 Welcome, ${email.split("@")[0]}! Account created.`);
-  openProfileModal();
+
+  const emailInput = document.getElementById("auth-email-input");
+  const passInput = document.getElementById("auth-password-input");
+  const email = (emailInput && emailInput.value || "").trim();
+  const password = (passInput && passInput.value || "").trim();
+
+  if (!email || !email.includes("@")) {
+    setAuthAlert("Please enter a valid email address.", "error");
+    return;
+  }
+  if (!password) {
+    setAuthAlert("Please enter your account password.", "error");
+    return;
+  }
+
+  const btn = document.getElementById("btn-auth-signin");
+  const origText = btn ? btn.textContent : "Sign In";
+  if (btn) { btn.disabled = true; btn.textContent = "Signing In..."; }
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      setAuthAlert(error.message, "error");
+      return;
+    }
+    closeAuthModal();
+    showToast("🔮 Welcome back! Signed in successfully.");
+    if (data && data.user) {
+      await handleUserSession(data.user);
+    }
+    renderApp();
+  } catch (err) {
+    setAuthAlert(err.message || "Failed to sign in. Please try again.", "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
 }
 
-function handleGoogleSignIn() {
-  closeAuthModal();
-  showToast("🔮 Signed in with Google Demo Account!");
-  openProfileModal();
+async function handleEmailSignUp() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
+    return;
+  }
+
+  const emailInput = document.getElementById("auth-email-input");
+  const passInput = document.getElementById("auth-password-input");
+  const email = (emailInput && emailInput.value || "").trim();
+  const password = (passInput && passInput.value || "").trim();
+
+  if (!email || !email.includes("@")) {
+    setAuthAlert("Please enter a valid email address.", "error");
+    return;
+  }
+  if (!password || password.length < 6) {
+    setAuthAlert("Password must be at least 6 characters.", "error");
+    return;
+  }
+
+  const btn = document.getElementById("btn-auth-signup");
+  const origText = btn ? btn.textContent : "Create Account";
+  if (btn) { btn.disabled = true; btn.textContent = "Creating..."; }
+
+  try {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: { email }
+      }
+    });
+
+    if (error) {
+      setAuthAlert(error.message, "error");
+      return;
+    }
+
+    if (data && data.session) {
+      closeAuthModal();
+      showToast("🔮 Welcome! Account created and signed in.");
+      if (data.user) {
+        await handleUserSession(data.user);
+      }
+      renderApp();
+    } else {
+      setAuthAlert("✨ Account created! Please check your email to confirm your account, then sign in.", "success");
+      showToast("✨ Confirmation email sent! Please check your inbox.");
+    }
+  } catch (err) {
+    setAuthAlert(err.message || "Failed to create account.", "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
+async function handleMagicLinkSignIn() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
+    return;
+  }
+
+  const emailInput = document.getElementById("auth-email-input");
+  const email = (emailInput && emailInput.value || "").trim();
+
+  if (!email || !email.includes("@")) {
+    setAuthAlert("Please enter your email address to receive a Magic Link.", "error");
+    return;
+  }
+
+  try {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { data, error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+
+    if (error) {
+      setAuthAlert(error.message, "error");
+      return;
+    }
+
+    setAuthAlert("📬 Magic Link sent! Check your inbox to sign in instantly without a password.", "success");
+    showToast("📬 Magic Link sent to your email!");
+  } catch (err) {
+    setAuthAlert(err.message || "Failed to send magic link.", "error");
+  }
+}
+
+async function handleGoogleSignIn() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
+    return;
+  }
+
+  try {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: redirectUrl
+      }
+    });
+
+    if (error) {
+      setAuthAlert(error.message, "error");
+    }
+  } catch (err) {
+    setAuthAlert(err.message || "Google sign in failed.", "error");
+  }
+}
+
+async function handleSignOut() {
+  initSupabaseClient();
+  if (supabaseClient) {
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (e) {
+      console.warn("Sign out warning:", e);
+    }
+  }
+
+  state.authUser = null;
+  state.userProfile = null;
+  closeProfileModal();
+  updateAppShellForMode();
+  renderHeaderProfile();
+  showToast("👋 Signed out of Sports Psychic.");
+  renderApp();
 }
 
 function processLeagueCode(code) {
@@ -4639,11 +5021,16 @@ window.handleBrandClick = handleBrandClick;
 window.updateAppShellForMode = updateAppShellForMode;
 window.openAuthModal = openAuthModal;
 window.closeAuthModal = closeAuthModal;
-window.handleAuthSubmit = handleAuthSubmit;
+window.handleEmailSignIn = handleEmailSignIn;
+window.handleEmailSignUp = handleEmailSignUp;
+window.handleMagicLinkSignIn = handleMagicLinkSignIn;
 window.handleGoogleSignIn = handleGoogleSignIn;
+window.handleSignOut = handleSignOut;
 window.processLeagueCode = processLeagueCode;
 window.handleQuickInviteSubmit = handleQuickInviteSubmit;
 window.openCreateLeagueModal = openCreateLeagueModal;
 window.openJoinLeagueModal = openJoinLeagueModal;
+window.syncLeagueStandingsFromCloud = syncLeagueStandingsFromCloud;
+
 
 
