@@ -4549,18 +4549,25 @@ function renderAccountProfileModal() {
         </div>
       </div>
 
-      <!-- 2. Favorite Team row -->
-      <div class="account-detail-row">
-        <div class="detail-label-col">
-          <span class="detail-icon">🏈</span>
-          <span class="detail-title">Favorite Team</span>
-        </div>
-        <div class="detail-val-col">
-          <div class="fav-team-badge" style="border-left: 3px solid ${favTeam.color};">
-            <span class="fav-team-chip" style="background: ${favTeam.color}; color: ${getTeamContrastColor(favTeam.color)};">${favTeam.code}</span>
-            <span class="fav-team-name">${favTeam.name}</span>
+      <!-- 2. Favorite Team card -->
+      <div class="account-detail-row fav-team-card-row">
+        <div class="fav-team-row-top">
+          <div class="detail-label-col">
+            <span class="detail-icon">🏈</span>
+            <span class="detail-title">Favorite Team</span>
           </div>
-          <button type="button" class="btn-change-team" onclick="openTeamPicker()">Change</button>
+          <button type="button" class="btn-change-team" onclick="openTeamPicker()">
+            <span>Change Team</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+        <div class="fav-team-badge-full" onclick="openTeamPicker()" style="border-left: 4px solid ${favTeam.color};" title="Tap to choose from all 32 NFL teams">
+          <span class="fav-team-chip-lg" style="background: ${favTeam.color}; color: ${getTeamContrastColor(favTeam.color)};">${favTeam.code}</span>
+          <div class="fav-team-text-block">
+            <span class="fav-team-name-lg">${favTeam.name}</span>
+            <span class="fav-team-conf-sub">${favTeam.conf} ${favTeam.div}</span>
+          </div>
+          <span class="fav-team-edit-icon">✏️</span>
         </div>
       </div>
 
