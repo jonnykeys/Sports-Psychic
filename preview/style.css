@@ -5450,44 +5450,129 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   padding: 0 10px;
 }
 
-.auth-input-group {
+.auth-form-fields {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
 }
 
 .auth-input {
-  flex: 1;
-  background: rgba(14, 23, 42, 0.8);
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(14, 23, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   padding: 10px 12px;
   color: #ffffff;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .auth-input:focus {
   border-color: var(--accent-blue);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+  background: rgba(14, 23, 42, 0.95);
 }
 
-.btn-auth-submit {
+.auth-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-auth-primary {
+  flex: 1;
   background: var(--accent-blue);
   border: none;
   border-radius: 10px;
   color: #040711;
   font-weight: 800;
-  font-size: 0.78rem;
-  padding: 0 14px;
+  font-size: 0.82rem;
+  padding: 11px 16px;
   cursor: pointer;
   transition: var(--transition);
-  white-space: nowrap;
+  text-align: center;
 }
 
-.btn-auth-submit:hover {
+.btn-auth-primary:hover {
   background: #7dd3fc;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+}
+
+.btn-auth-secondary {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.btn-auth-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.auth-magic-link-row {
+  text-align: center;
+  margin-top: 2px;
+}
+
+.btn-auth-magic {
+  background: transparent;
+  border: none;
+  color: var(--accent-blue);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 6px;
+  transition: color 0.15s ease;
+}
+
+.btn-auth-magic:hover {
+  color: #bae6fd;
+}
+
+.auth-alert-box {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.auth-alert-box.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.auth-alert-box.success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
 }
 
 .btn-auth-google {
@@ -5556,6 +5641,68 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 
 .btn-invite-text-link:hover {
   color: #ffd700;
+}
+
+.btn-auth-signout {
+  width: 100%;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.btn-auth-signout:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #ffffff;
+}
+
+.auth-account-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.auth-account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--accent-blue);
+}
+
+.auth-account-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-account-name {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.auth-account-email {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Mobile responsive header tweaks */
