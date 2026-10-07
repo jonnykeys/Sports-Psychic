@@ -14,6 +14,7 @@ create table if not exists public.pick_sheets (
   total_picks integer default 0,
   total_points integer default 0,
   accuracy_rate numeric(5,2) default null,
+  picks jsonb default '{}'::jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -40,3 +41,4 @@ create policy "Users can delete own pick sheets"
 
 -- Optional index for fast user query
 create index if not exists idx_pick_sheets_user on public.pick_sheets(user_id, created_at desc);
+

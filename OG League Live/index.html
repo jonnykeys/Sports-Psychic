@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=13.0">
+  <link rel="stylesheet" href="style.css?v=14.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -141,31 +141,39 @@
 
     <!-- SOLO PLAY DASHBOARD (Visible in Solo Mode) -->
     <section id="solo-view" class="solo-view" style="display: none;" aria-label="Solo Psychic Dashboard">
-      <div class="solo-header-card">
-        <div class="solo-header-left">
-          <div class="solo-badge-tag">
-            <span class="solo-badge-dot"></span>
-            <span>SOLO PSYCHIC PLAY</span>
+      <!-- 1. DASHBOARD SUBVIEW (List of Pick Sheets) -->
+      <div id="solo-dashboard-subview">
+        <div class="solo-header-card">
+          <div class="solo-header-left">
+            <div class="solo-badge-tag">
+              <span class="solo-badge-dot"></span>
+              <span>SOLO PSYCHIC PLAY</span>
+            </div>
+            <h2 class="solo-headline">My Pick Sheets</h2>
+            <p class="solo-subtext">
+              Forecast 2026 NFL game scores, lock in your weekly predictions, and track your psychic accuracy across custom sheets.
+            </p>
           </div>
-          <h2 class="solo-headline">My Pick Sheets</h2>
-          <p class="solo-subtext">
-            Forecast 2026 NFL game scores, lock in your weekly predictions, and track your psychic accuracy across custom sheets.
-          </p>
+          <div class="solo-header-actions">
+            <button type="button" class="btn-create-sheet" onclick="openCreateSheetModal()">
+              <span class="btn-create-icon">✨</span>
+              <span>+ Create New Pick Sheet</span>
+            </button>
+          </div>
         </div>
-        <div class="solo-header-actions">
-          <button type="button" class="btn-create-sheet" onclick="openCreateSheetModal()">
-            <span class="btn-create-icon">✨</span>
-            <span>+ Create New Pick Sheet</span>
-          </button>
+
+        <!-- Quick Summary Stats Bar (Dynamic) -->
+        <div id="solo-stats-bar" class="solo-stats-bar" style="display: none;"></div>
+
+        <!-- Sheets Grid Container -->
+        <div id="solo-sheets-grid" class="solo-sheets-grid">
+          <!-- Rendered dynamically by renderSoloView() -->
         </div>
       </div>
 
-      <!-- Quick Summary Stats Bar (Dynamic) -->
-      <div id="solo-stats-bar" class="solo-stats-bar" style="display: none;"></div>
-
-      <!-- Sheets Grid Container -->
-      <div id="solo-sheets-grid" class="solo-sheets-grid">
-        <!-- Rendered dynamically by renderSoloView() -->
+      <!-- 2. SHEET EDITOR SUBVIEW (Active Pick Sheet Filling Layout) -->
+      <div id="solo-sheet-editor-subview" style="display: none;">
+        <!-- Rendered dynamically by renderSoloSheetEditor() -->
       </div>
     </section>
 
@@ -706,6 +714,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=13.0"></script>
+  <script src="app.js?v=14.0"></script>
 </body>
 </html>
