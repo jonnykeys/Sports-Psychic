@@ -5,7 +5,7 @@
 
 create table if not exists public.pick_sheets (
   id text primary key, -- client-generated or uuid
-  user_id uuid references public.profiles(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
   name text not null,
   format text default 'season' not null, -- 'season' (weeks 1-18) | 'weekly'
   season_year integer default 2026 not null,
