@@ -4397,6 +4397,96 @@ function renderHeaderProfile() {
   }
 }
 
+function getFavoriteTeam() {
+  const code = (state.userProfile && state.userProfile.favorite_team) || localStorage.getItem("sp_fav_team") || "KC";
+  return NFL_TEAMS[code] || NFL_TEAMS["KC"];
+}
+
+async function setFavoriteTeam(teamCode) {
+  const norm = normalizeTeamCode(teamCode);
+  if (!norm || !NFL_TEAMS[norm]) return;
+
+  if (!state.userProfile) state.userProfile = {};
+  state.userProfile.favorite_team = norm;
+
+  try {
+    localStorage.setItem("sp_fav_team", norm);
+  } catch (e) {}
+
+  if (supabaseClient && state.authUser) {
+    try {
+      await supabaseClient
+        .from("profiles")
+        .update({ favorite_team: norm })
+        .eq("id", state.authUser.id);
+    } catch (err) {
+      console.warn("Could not save favorite team to Supabase:", err);
+    }
+  }
+
+  showToast(`⭐ Favorite team set to ${NFL_TEAMS[norm].name}!`);
+  closeTeamPicker();
+  renderAccountProfileModal();
+}
+
+function openTeamPicker() {
+  const modal = document.getElementById("team-picker-modal");
+  if (!modal) return;
+  renderTeamPickerGrid();
+  modal.classList.add("open");
+  const searchInput = document.getElementById("team-picker-search");
+  if (searchInput) {
+    searchInput.value = "";
+    setTimeout(() => searchInput.focus(), 150);
+  }
+}
+
+function closeTeamPicker(event) {
+  if (event && event.target && event.target.id !== "team-picker-modal" && !event.target.classList.contains("profile-modal-close") && !event.target.classList.contains("btn-modal-done")) {
+    return;
+  }
+  const modal = document.getElementById("team-picker-modal");
+  if (modal) modal.classList.remove("open");
+}
+
+function renderTeamPickerGrid(filterQuery = "") {
+  const grid = document.getElementById("team-picker-grid");
+  if (!grid) return;
+
+  const currentFav = getFavoriteTeam().code;
+  const q = (filterQuery || "").trim().toLowerCase();
+
+  const sortedTeams = CANONICAL_NFL_TEAMS.map(code => NFL_TEAMS[code]).filter(t => {
+    if (!q) return true;
+    return t.code.toLowerCase().includes(q) ||
+           t.name.toLowerCase().includes(q) ||
+           t.city.toLowerCase().includes(q) ||
+           t.conf.toLowerCase().includes(q) ||
+           t.div.toLowerCase().includes(q);
+  }).sort((a, b) => a.name.localeCompare(b.name));
+
+  grid.innerHTML = sortedTeams.map(t => {
+    const isSelected = (t.code === currentFav);
+    const textColor = getTeamContrastColor(t.color);
+    return `
+      <div class="team-picker-item ${isSelected ? "selected" : ""}" onclick="setFavoriteTeam('${t.code}')">
+        <div class="team-picker-chip" style="background: ${t.color}; color: ${textColor};">
+          ${t.code}
+        </div>
+        <div class="team-picker-details">
+          <div class="team-picker-name">${t.name}</div>
+          <div class="team-picker-meta">${t.conf} ${t.div}</div>
+        </div>
+        ${isSelected ? `<span class="team-picker-check">✓</span>` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+function filterTeamPickerList(query) {
+  renderTeamPickerGrid(query);
+}
+
 function renderAccountProfileModal() {
   const accountCard = document.getElementById("profile-account-card");
   if (!accountCard) return;
@@ -4408,7 +4498,7 @@ function renderAccountProfileModal() {
           <div class="player-avatar" style="width:64px; height:64px; font-size:26px;">👤</div>
         </div>
         <div class="account-name-lg">Browsing as Guest</div>
-        <div class="account-email-sub">Sign in or create an account to track your predictions.</div>
+        <div class="account-email-sub">Sign in or create an account to customize your profile.</div>
       </div>
       <div style="margin-top:16px; text-align:center;">
         <button type="button" class="btn-hero-primary" onclick="closeProfileModal(); openAuthModal();">
@@ -4421,38 +4511,70 @@ function renderAccountProfileModal() {
 
   const email = state.authUser.email || "";
   const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || email.split("@")[0];
-  const isOG = isUserInOGLeague();
+  const favTeam = getFavoriteTeam();
 
-  let statsHtml = "";
-  if (state.myPlayer) {
-    const lb = getSeasonLeaderboard();
-    const pObj = lb.find(p => p.name === state.myPlayer) || { rankDisplay: "-", points: 0 };
-    statsHtml = `
-      <div class="account-stats-grid">
-        <div class="account-stat-box">
-          <span class="stat-box-label">OG LEAGUE RANK</span>
-          <span class="stat-box-val rank-val">#${pObj.rankDisplay || "-"}</span>
-        </div>
-        <div class="account-stat-box">
-          <span class="stat-box-label">SEASON POINTS</span>
-          <span class="stat-box-val pts-val">${pObj.points || 0} PTS</span>
-        </div>
-      </div>
-    `;
+  let memberSinceFormatted = "October 2026";
+  const rawDate = state.userProfile?.created_at || state.authUser?.created_at;
+  if (rawDate) {
+    try {
+      const d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        memberSinceFormatted = d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        });
+      }
+    } catch (e) {}
   }
 
   accountCard.innerHTML = `
     <div class="account-profile-hero">
       <div class="account-avatar-large">
-        ${getUserAvatarHtml(64)}
+        ${getUserAvatarHtml(68)}
       </div>
       <div class="account-name-lg">${displayName}</div>
       <div class="account-email-sub">${email}</div>
-      <div class="account-badge-pill">
-        ${isOG ? "🏆 OG League Member" : "🔮 Solo Psychic Member"}
+    </div>
+
+    <div class="account-details-list">
+      <!-- 1. Username row -->
+      <div class="account-detail-row">
+        <div class="detail-label-col">
+          <span class="detail-icon">👤</span>
+          <span class="detail-title">Username</span>
+        </div>
+        <div class="detail-val-col">
+          <span class="detail-val-text">${displayName}</span>
+        </div>
+      </div>
+
+      <!-- 2. Favorite Team row -->
+      <div class="account-detail-row">
+        <div class="detail-label-col">
+          <span class="detail-icon">🏈</span>
+          <span class="detail-title">Favorite Team</span>
+        </div>
+        <div class="detail-val-col">
+          <div class="fav-team-badge" style="border-left: 3px solid ${favTeam.color};">
+            <span class="fav-team-chip" style="background: ${favTeam.color}; color: ${getTeamContrastColor(favTeam.color)};">${favTeam.code}</span>
+            <span class="fav-team-name">${favTeam.name}</span>
+          </div>
+          <button type="button" class="btn-change-team" onclick="openTeamPicker()">Change</button>
+        </div>
+      </div>
+
+      <!-- 3. Member Since row -->
+      <div class="account-detail-row">
+        <div class="detail-label-col">
+          <span class="detail-icon">📅</span>
+          <span class="detail-title">Member Since</span>
+        </div>
+        <div class="detail-val-col">
+          <span class="detail-val-text">${memberSinceFormatted}</span>
+        </div>
       </div>
     </div>
-    ${statsHtml}
   `;
 }
 
@@ -5173,6 +5295,12 @@ window.handleHubSoloClick = handleHubSoloClick;
 window.renderAccountProfileModal = renderAccountProfileModal;
 window.isUserInOGLeague = isUserInOGLeague;
 window.getUserAvatarHtml = getUserAvatarHtml;
+window.openTeamPicker = openTeamPicker;
+window.closeTeamPicker = closeTeamPicker;
+window.setFavoriteTeam = setFavoriteTeam;
+window.renderTeamPickerGrid = renderTeamPickerGrid;
+window.filterTeamPickerList = filterTeamPickerList;
+window.getFavoriteTeam = getFavoriteTeam;
 
 
 
