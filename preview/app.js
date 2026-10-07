@@ -347,7 +347,10 @@ let state = {
   matchupsFilter: "all",    // "all" | "upcoming" | "live" | "final"
   authUser: null,           // Authenticated Supabase user object
   userProfile: null,        // Profile record from public.profiles
-  cloudStandings: null      // Live Standings directly from Supabase view public.league_standings
+  cloudStandings: null,     // Live Standings directly from Supabase view public.league_standings
+  pickSheets: [],           // User's custom Solo Play Pick Sheets
+  activeSheetId: null,      // Active Pick Sheet selected for viewing/editing
+  createSheetFormat: "season" // Format option in create sheet modal
 };
 
 // Navigation state persistence key for sessionStorage
@@ -424,10 +427,12 @@ function restoreNavState() {
     const rawHash = window.location.hash ? window.location.hash.replace(/^#/, "").trim() : "";
     const savedMode = sessionStorage.getItem("sp_app_mode");
 
-    if (urlParams.has("league")) {
+    if (urlParams.get("mode") === "solo" || urlParams.get("league") === "solo" || rawHash.startsWith("solo") || savedMode === "solo") {
+      detectedMode = "solo";
+      state.activeLeague = "solo";
+    } else if (urlParams.has("league")) {
       detectedMode = "league";
-      const l = urlParams.get("league").toLowerCase();
-      state.activeLeague = (l === "solo" ? "solo" : "OG League");
+      state.activeLeague = "OG League";
     } else if (urlParams.get("tab") === "leaderboard" || urlParams.get("tab") === "players") {
       detectedMode = "league";
     } else if (rawHash.startsWith("leaderboard") || rawHash.startsWith("players") || rawHash.startsWith("league")) {
@@ -2182,7 +2187,11 @@ function parseNFLStandingsCSV(csvText) {
 function renderApp() {
   updateAppShellForMode();
   renderHeaderProfile();
-  switchTab(state.activeTab, false);
+  if (state.appMode === "solo") {
+    loadSoloPickSheets().then(() => renderSoloView());
+  } else {
+    switchTab(state.activeTab, false);
+  }
 }
 
 function renderTabContent() {
@@ -4640,6 +4649,7 @@ document.addEventListener("keydown", (e) => {
     closeProfileModal();
     closeH2HPicker();
     closeAuthModal();
+    closeCreateSheetModal();
   }
   if (e.key === "Enter") {
     const authModal = document.getElementById("auth-modal");
@@ -4648,6 +4658,16 @@ document.addEventListener("keydown", (e) => {
       if (activeEl && (activeEl.id === "auth-username-input" || activeEl.id === "auth-email-input" || activeEl.id === "auth-password-input")) {
         e.preventDefault();
         handleAuthSubmit();
+        return;
+      }
+    }
+    const createSheetModal = document.getElementById("create-sheet-modal");
+    if (createSheetModal && createSheetModal.classList.contains("active")) {
+      const activeEl = document.activeElement;
+      if (activeEl && activeEl.id === "sheet-name-input") {
+        e.preventDefault();
+        handleCreateSheetSubmit();
+        return;
       }
     }
   }
@@ -4691,7 +4711,7 @@ function renderLeagueDrawerContent() {
 
   const isOG = isUserInOGLeague();
   const activeIsOG = (state.activeLeague === "OG League") && (state.appMode === "league");
-  const activeIsSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic") && (state.appMode === "league");
+  const activeIsSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic") && (state.appMode === "solo");
 
   let html = "";
 
@@ -4716,7 +4736,7 @@ function renderLeagueDrawerContent() {
 
   // 2. Solo Psychic Play (Available to all users)
   html += `
-    <div id="drawer-card-solo" class="league-option-card ${activeIsSolo ? "active" : ""}" onclick="selectLeague('solo')">
+    <div id="drawer-card-solo" class="league-option-card ${activeIsSolo ? "active" : ""}" onclick="enterSoloPlay()">
       <div class="league-card-left">
         <div class="league-icon-box icon-solo">🔮</div>
         <div>
@@ -4782,7 +4802,7 @@ function renderLobbyHero() {
         <span class="hero-btn-arrow">→</span>
       </button>
       ` : ""}
-      <button type="button" class="btn-hero-secondary" onclick="enterLeagueView('solo')">
+      <button type="button" class="btn-hero-secondary" onclick="enterSoloPlay()">
         <span>🔮 Enter Solo Play</span>
       </button>
       <button type="button" class="btn-hero-secondary" onclick="openCreateLeagueModal()">
@@ -4801,18 +4821,18 @@ function handleHubLeagueClick() {
 }
 
 function handleHubSoloClick() {
-  if (!state.authUser) {
-    openAuthModal("Sign in or create an account to play Solo Psychic");
-  } else {
-    enterLeagueView("solo");
-  }
+  enterSoloPlay();
 }
 
 function updateAppShellForMode() {
   const isLobby = state.appMode === "lobby";
+  const isSolo = state.appMode === "solo";
+  const isLeague = state.appMode === "league";
   const isAuth = Boolean(state.authUser);
+
   document.body.classList.toggle("is-lobby-mode", isLobby);
-  document.body.classList.toggle("is-league-mode", !isLobby);
+  document.body.classList.toggle("is-solo-mode", isSolo);
+  document.body.classList.toggle("is-league-mode", isLeague);
   document.body.classList.toggle("is-authenticated", isAuth);
   document.body.classList.toggle("is-guest", !isAuth);
 
@@ -4830,17 +4850,15 @@ function updateAppShellForMode() {
         activePill.textContent = "🔮 Solo Play";
       }
     }
+  } else if (isSolo) {
+    if (brandTitle) brandTitle.textContent = "Solo Psychic";
+    if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
+    if (activePill) activePill.textContent = "🔮 Solo Play";
   } else {
-    const isSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic");
-    if (brandTitle) {
-      brandTitle.textContent = isSolo ? "Solo Psychic" : "OG League";
-    }
-    if (brandSub) {
-      brandSub.textContent = "SPORTS PSYCHIC";
-    }
-    if (activePill) {
-      activePill.textContent = isSolo ? "🔮 Solo Play" : "🏆 OG League";
-    }
+    const isOG = (state.activeLeague === "OG League");
+    if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
+    if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
+    if (activePill) activePill.textContent = isOG ? "🏆 OG League" : `🏆 ${state.activeLeague}`;
   }
 
   renderHeaderProfile();
@@ -4848,15 +4866,12 @@ function updateAppShellForMode() {
 }
 
 function selectLeague(leagueId) {
-  state.activeLeague = (leagueId === "solo" ? "solo" : "OG League");
   closeLeagueDrawer();
-  if (state.appMode !== "league") {
-    enterLeagueView(state.activeLeague);
+  if (leagueId === "solo") {
+    enterSoloPlay();
     return;
   }
-  updateAppShellForMode();
-  switchTab(state.activeLeague === "solo" ? "players" : "leaderboard");
-  showToast(leagueId === "solo" ? "🔮 Switched to Solo Psychic" : "🏆 Switched to OG League!");
+  enterLeagueView("OG League");
 }
 
 function enterLeagueView(leagueId = "OG League") {
@@ -4868,19 +4883,35 @@ function enterLeagueView(leagueId = "OG League") {
 
   if (leagueId === "OG League" && !isUserInOGLeague()) {
     showToast("⚠️ OG League is private to official members. Entering Solo Play.");
-    leagueId = "solo";
+    enterSoloPlay();
+    return;
   }
 
   state.appMode = "league";
-  state.activeLeague = (leagueId === "solo" ? "solo" : "OG League");
+  state.activeLeague = "OG League";
   try {
     sessionStorage.setItem("sp_app_mode", "league");
   } catch (e) {}
 
   closeLeagueDrawer();
   updateAppShellForMode();
-  switchTab(state.activeLeague === "solo" ? "players" : "leaderboard");
-  showToast(state.activeLeague === "solo" ? "🔮 Entered Solo Psychic" : "🏆 Welcome to OG League!");
+  switchTab("leaderboard");
+  showToast("🏆 Welcome to OG League!");
+}
+
+async function enterSoloPlay() {
+  state.appMode = "solo";
+  state.activeLeague = "solo";
+  try {
+    sessionStorage.setItem("sp_app_mode", "solo");
+  } catch (e) {}
+
+  closeLeagueDrawer();
+  updateAppShellForMode();
+  await loadSoloPickSheets();
+  renderSoloView();
+  showToast("🔮 Entered Solo Psychic");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function exitToLobby() {
@@ -4892,15 +4923,314 @@ function exitToLobby() {
   updateAppShellForMode();
   switchTab("matchups");
   showToast("🏠 Returned to Home Lobby");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function handleBrandClick() {
-  if (state.appMode === "league") {
+  if (state.appMode === "solo") {
+    renderSoloView();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (state.appMode === "league") {
     switchTab("leaderboard");
   } else {
     switchTab("matchups");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+}
+
+// =========================================================
+// SOLO PSYCHIC PLAY & PICK SHEETS ENGINE
+// =========================================================
+
+async function loadSoloPickSheets() {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  let localSheets = [];
+  try {
+    const raw = localStorage.getItem(`sp_solo_sheets_${userId}`);
+    if (raw) localSheets = JSON.parse(raw);
+  } catch (e) {}
+
+  if (supabaseClient && state.authUser) {
+    try {
+      const { data, error } = await supabaseClient
+        .from("pick_sheets")
+        .select("*")
+        .eq("user_id", state.authUser.id)
+        .order("created_at", { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const map = new Map();
+        data.forEach(s => map.set(s.id, s));
+        localSheets.forEach(s => {
+          if (!map.has(s.id)) map.set(s.id, s);
+        });
+        state.pickSheets = Array.from(map.values());
+        try {
+          localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
+        } catch (e) {}
+        return;
+      }
+    } catch (err) {
+      console.warn("Notice: pick_sheets query falling back to local storage:", err);
+    }
+  }
+
+  state.pickSheets = localSheets;
+}
+
+async function saveSoloPickSheet(sheet) {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  if (!Array.isArray(state.pickSheets)) state.pickSheets = [];
+
+  const existingIdx = state.pickSheets.findIndex(s => s.id === sheet.id);
+  if (existingIdx >= 0) {
+    state.pickSheets[existingIdx] = sheet;
+  } else {
+    state.pickSheets.unshift(sheet);
+  }
+
+  try {
+    localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
+  } catch (e) {}
+
+  if (supabaseClient && state.authUser && sheet.user_id === state.authUser.id) {
+    try {
+      await supabaseClient.from("pick_sheets").upsert(sheet, { onConflict: "id" });
+    } catch (e) {
+      console.warn("Notice: Supabase pick_sheets upsert notice:", e);
+    }
+  }
+}
+
+function renderSoloView() {
+  const grid = document.getElementById("solo-sheets-grid");
+  const statsBar = document.getElementById("solo-stats-bar");
+  if (!grid) return;
+
+  const sheets = Array.isArray(state.pickSheets) ? state.pickSheets : [];
+
+  if (sheets.length === 0) {
+    if (statsBar) statsBar.style.display = "none";
+    grid.innerHTML = `
+      <div class="solo-empty-card">
+        <div class="solo-empty-icon-wrap">
+          <span class="solo-empty-icon">🔮</span>
+          <div class="solo-empty-glow"></div>
+        </div>
+        <h3 class="solo-empty-title">No Pick Sheets Created Yet</h3>
+        <p class="solo-empty-desc">
+          You haven't created any pick sheets yet. Start your first 2026 NFL prediction sheet to forecast weekly matchups, lock in exact scores, and test your psychic instincts!
+        </p>
+        <div class="solo-empty-features">
+          <div class="empty-feature-item">
+            <span class="empty-feature-icon">🎯</span>
+            <span>Predict exact game scores & weekly winners</span>
+          </div>
+          <div class="empty-feature-item">
+            <span class="empty-feature-icon">🔒</span>
+            <span>Select your 3x Lock of the Week</span>
+          </div>
+          <div class="empty-feature-item">
+            <span class="empty-feature-icon">📊</span>
+            <span>Track your accuracy rate & scoring records</span>
+          </div>
+        </div>
+        <button type="button" class="btn-hero-primary solo-empty-btn" onclick="openCreateSheetModal()">
+          <span>✨ Create Your First Pick Sheet</span>
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  // Render Stats Bar
+  if (statsBar) {
+    statsBar.style.display = "grid";
+    const totalPicks = sheets.reduce((acc, s) => acc + (s.total_picks || 0), 0);
+    const totalPoints = sheets.reduce((acc, s) => acc + (s.total_points || 0), 0);
+
+    statsBar.innerHTML = `
+      <div class="solo-stat-card">
+        <span class="solo-stat-label">Active Sheets</span>
+        <span class="solo-stat-value">${sheets.length}</span>
+      </div>
+      <div class="solo-stat-card">
+        <span class="solo-stat-label">Season Campaign</span>
+        <span class="solo-stat-value">2026 NFL</span>
+      </div>
+      <div class="solo-stat-card">
+        <span class="solo-stat-label">Predictions Logged</span>
+        <span class="solo-stat-value">${totalPicks}</span>
+      </div>
+      <div class="solo-stat-card">
+        <span class="solo-stat-label">Total Solo Points</span>
+        <span class="solo-stat-value">${totalPoints} pts</span>
+      </div>
+    `;
+  }
+
+  // Render Sheets Grid
+  grid.innerHTML = sheets.map(sheet => {
+    const isSeason = (sheet.format === "season");
+    const formatBadge = isSeason
+      ? `<span class="sheet-card-badge badge-season">📅 Full Season (Weeks 1-18)</span>`
+      : `<span class="sheet-card-badge badge-weekly">⚡ Week ${sheet.active_week || 5} Slate</span>`;
+
+    let dateStr = "Recent";
+    if (sheet.created_at) {
+      try {
+        const d = new Date(sheet.created_at);
+        dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      } catch (e) {}
+    }
+
+    const safeTitle = (sheet.name || "Untitled Sheet").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    return `
+      <div class="solo-sheet-card" onclick="openPickSheet('${sheet.id}')">
+        <div class="sheet-card-top">
+          ${formatBadge}
+          <div class="sheet-card-menu" onclick="event.stopPropagation()">
+            <button type="button" class="btn-sheet-menu" onclick="deleteSoloSheet('${sheet.id}')" title="Delete sheet" aria-label="Delete sheet">🗑️</button>
+          </div>
+        </div>
+        <div class="sheet-card-title">${safeTitle}</div>
+        <div class="sheet-card-meta">
+          <span>Created ${dateStr}</span>
+          <span>•</span>
+          <span>2026 NFL</span>
+        </div>
+
+        <div class="sheet-card-stats-row">
+          <div class="sheet-stat-pill">
+            <span class="stat-label">Picks Made</span>
+            <span class="stat-val">${sheet.total_picks || 0}</span>
+          </div>
+          <div class="sheet-stat-pill">
+            <span class="stat-label">Score</span>
+            <span class="stat-val">${sheet.total_points || 0} pts</span>
+          </div>
+          <div class="sheet-stat-pill">
+            <span class="stat-label">Accuracy</span>
+            <span class="stat-val">${sheet.accuracy_rate ? sheet.accuracy_rate + "%" : "—"}</span>
+          </div>
+        </div>
+
+        <div class="sheet-card-footer">
+          <button type="button" class="btn-open-sheet" onclick="openPickSheet('${sheet.id}')">
+            <span>Open Sheet</span>
+            <span class="btn-arrow">&rarr;</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openCreateSheetModal() {
+  const modal = document.getElementById("create-sheet-modal");
+  if (!modal) return;
+
+  const nameInput = document.getElementById("sheet-name-input");
+  if (nameInput) {
+    const nextNum = (state.pickSheets ? state.pickSheets.length : 0) + 1;
+    nameInput.value = `My 2026 Prophecy Sheet #${nextNum}`;
+  }
+
+  selectSheetFormat("season");
+
+  const weekSelect = document.getElementById("sheet-target-week");
+  if (weekSelect) weekSelect.value = state.currentWeek || "5";
+
+  modal.classList.add("active");
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+  if (nameInput) setTimeout(() => nameInput.focus(), 150);
+}
+
+function closeCreateSheetModal(event) {
+  if (event && event.target && !event.target.classList.contains("auth-modal-backdrop")) {
+    return;
+  }
+  const modal = document.getElementById("create-sheet-modal");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+  }
+  document.body.style.overflow = "";
+}
+
+function selectSheetFormat(format) {
+  state.createSheetFormat = format;
+  const optSeason = document.getElementById("format-opt-season");
+  const optWeekly = document.getElementById("format-opt-weekly");
+  const weekRow = document.getElementById("sheet-week-select-row");
+
+  if (optSeason) optSeason.classList.toggle("active", format === "season");
+  if (optWeekly) optWeekly.classList.toggle("active", format === "weekly");
+  if (weekRow) weekRow.style.display = (format === "weekly") ? "block" : "none";
+}
+
+async function handleCreateSheetSubmit() {
+  const nameInput = document.getElementById("sheet-name-input");
+  const weekSelect = document.getElementById("sheet-target-week");
+
+  let sheetName = (nameInput && nameInput.value || "").trim();
+  if (!sheetName) {
+    const nextNum = (state.pickSheets ? state.pickSheets.length : 0) + 1;
+    sheetName = `My 2026 Prophecy Sheet #${nextNum}`;
+  }
+
+  const format = state.createSheetFormat || "season";
+  const activeWeek = (format === "weekly" && weekSelect) ? parseInt(weekSelect.value, 10) : (state.currentWeek || 5);
+
+  const newSheet = {
+    id: "sheet_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+    user_id: state.authUser ? state.authUser.id : "guest",
+    name: sheetName,
+    format: format,
+    season_year: 2026,
+    active_week: activeWeek,
+    total_picks: 0,
+    total_points: 0,
+    accuracy_rate: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  await saveSoloPickSheet(newSheet);
+  closeCreateSheetModal();
+  renderSoloView();
+  showToast(`✨ Created "${sheetName}"!`);
+}
+
+function openPickSheet(sheetId) {
+  state.activeSheetId = sheetId;
+  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
+  const name = sheet ? sheet.name : "Pick Sheet";
+  showToast(`🔮 Opened "${name}". Next step: building the interactive pick sheet layout!`);
+}
+
+async function deleteSoloSheet(sheetId) {
+  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
+  const name = sheet ? sheet.name : "this sheet";
+  const confirmed = window.confirm(`Are you sure you want to delete "${name}"?`);
+  if (!confirmed) return;
+
+  state.pickSheets = (state.pickSheets || []).filter(s => s.id !== sheetId);
+  const userId = state.authUser ? state.authUser.id : "guest";
+  try {
+    localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
+  } catch (e) {}
+
+  if (supabaseClient && state.authUser) {
+    try {
+      await supabaseClient.from("pick_sheets").delete().eq("id", sheetId);
+    } catch (e) {}
+  }
+
+  renderSoloView();
+  showToast(`🗑️ Deleted "${name}"`);
 }
 
 // =========================================================
@@ -5670,6 +6000,16 @@ window.toggleAuthMode = toggleAuthMode;
 window.handleAuthSubmit = handleAuthSubmit;
 window.handleUsernameInput = handleUsernameInput;
 window.validateUsernameAvailability = validateUsernameAvailability;
+window.enterSoloPlay = enterSoloPlay;
+window.renderSoloView = renderSoloView;
+window.loadSoloPickSheets = loadSoloPickSheets;
+window.saveSoloPickSheet = saveSoloPickSheet;
+window.openCreateSheetModal = openCreateSheetModal;
+window.closeCreateSheetModal = closeCreateSheetModal;
+window.selectSheetFormat = selectSheetFormat;
+window.handleCreateSheetSubmit = handleCreateSheetSubmit;
+window.openPickSheet = openPickSheet;
+window.deleteSoloSheet = deleteSoloSheet;
 
 
 

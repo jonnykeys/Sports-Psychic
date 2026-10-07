@@ -4969,6 +4969,30 @@ body.is-league-mode #lobby-hero-card {
   display: none !important;
 }
 
+/* Solo Play View Mode Rules */
+body.is-solo-mode #btn-exit-league {
+  display: inline-flex !important;
+}
+
+body.is-solo-mode #lobby-hero-card {
+  display: none !important;
+}
+
+body.is-solo-mode #solo-view {
+  display: block !important;
+}
+
+body.is-solo-mode .week-stepper-container,
+body.is-solo-mode .main-content > .tab-panel,
+body.is-solo-mode .bottom-nav {
+  display: none !important;
+}
+
+body.is-lobby-mode #solo-view,
+body.is-league-mode #solo-view {
+  display: none !important;
+}
+
 /* Hide Lobby Hero & Stepper when viewing NFL standings or Rules */
 body.is-lobby-mode[data-active-tab="nfl"] #lobby-hero-card,
 body.is-lobby-mode[data-active-tab="rules"] #lobby-hero-card,
@@ -6293,5 +6317,453 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   .header-profile-btn {
     padding: 3px 6px;
     font-size: 0.68rem;
+  }
+}
+
+/* =========================================================
+   SOLO PSYCHIC PLAY DASHBOARD & PICK SHEETS
+   ========================================================= */
+
+.solo-view {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 12px 60px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.solo-header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.92));
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 18px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.solo-header-card::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.solo-header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.solo-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.solo-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.solo-headline {
+  font-size: 1.65rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+}
+
+.solo-subtext {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+  max-width: 620px;
+}
+
+.solo-header-actions {
+  flex-shrink: 0;
+}
+
+.btn-create-sheet {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #0b0f19;
+  font-weight: 800;
+  font-size: 0.92rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-create-sheet:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5);
+  background: linear-gradient(135deg, #ffe033, #fbbf24);
+}
+
+.btn-create-icon {
+  font-size: 1rem;
+}
+
+/* Solo Quick Stats Bar */
+.solo-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.solo-stat-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.solo-stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.solo-stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Solo Empty State Card */
+.solo-empty-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px dashed rgba(56, 189, 248, 0.35);
+  border-radius: 20px;
+  padding: 48px 24px;
+  text-align: center;
+  max-width: 600px;
+  margin: 20px auto 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.solo-empty-icon-wrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 50%;
+}
+
+.solo-empty-icon {
+  font-size: 2.2rem;
+}
+
+.solo-empty-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, transparent 70%);
+  animation: pulse 3s infinite ease-in-out;
+}
+
+.solo-empty-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.solo-empty-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 auto 22px;
+  max-width: 460px;
+}
+
+.solo-empty-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+  margin: 0 auto 26px;
+  text-align: left;
+}
+
+.empty-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.empty-feature-icon {
+  font-size: 1rem;
+}
+
+.solo-empty-btn {
+  margin: 0 auto;
+}
+
+/* Pick Sheets Grid & Card */
+.solo-sheets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+.solo-sheet-card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+}
+
+.solo-sheet-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 16px rgba(56, 189, 248, 0.15);
+}
+
+.sheet-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sheet-card-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sheet-card-badge.badge-season {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.sheet-card-badge.badge-weekly {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.btn-sheet-menu {
+  background: transparent;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s ease;
+}
+
+.btn-sheet-menu:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.sheet-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+
+.sheet-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+.sheet-card-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 16px;
+}
+
+.sheet-stat-pill {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.sheet-stat-pill .stat-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.sheet-stat-pill .stat-val {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 2px;
+}
+
+.sheet-card-footer {
+  margin-top: auto;
+}
+
+.btn-open-sheet {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 9px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.solo-sheet-card:hover .btn-open-sheet {
+  background: #38bdf8;
+  color: #0b0f19;
+  border-color: #38bdf8;
+}
+
+/* Create Sheet Format Selector Options */
+.sheet-format-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sheet-format-radio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.sheet-format-radio:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sheet-format-radio.active {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1.5px solid #38bdf8;
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.15);
+}
+
+.format-radio-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.format-radio-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.format-radio-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+.sheet-select {
+  appearance: auto;
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .solo-header-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 16px;
+    gap: 16px;
+  }
+  .btn-create-sheet {
+    width: 100%;
+    justify-content: center;
+  }
+  .solo-headline {
+    font-size: 1.4rem;
+  }
+  .solo-sheets-grid {
+    grid-template-columns: 1fr;
   }
 }
