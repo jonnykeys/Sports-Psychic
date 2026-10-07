@@ -1805,7 +1805,7 @@ function computeTeamRecordsFromGames() {
       if (!wk || !wk.games) return;
       wk.games.forEach(g => {
         if (!g.isFinal) return;
-        const teams = (g.matchup || "").split(" @ ");
+        const teams = (g.matchup || "").split("@").map(s => s.trim());
         if (teams.length < 2) return;
         const away = normalizeTeamCode(teams[0]);
         const home = normalizeTeamCode(teams[1]);
@@ -1818,13 +1818,14 @@ function computeTeamRecordsFromGames() {
         if (records[away]) records[away].diff += (aScore - hScore);
         if (records[home]) records[home].diff += (hScore - aScore);
 
-        if (aScore === hScore || g.winner === "TIE") {
+        const normWinner = normalizeTeamCode(g.winner);
+        if (aScore === hScore || normWinner === "TIE") {
           if (records[away]) records[away].t += 1;
           if (records[home]) records[home].t += 1;
-        } else if (g.winner === away || aScore > hScore) {
+        } else if (normWinner === away || (!normWinner && aScore > hScore) || (normWinner !== home && aScore > hScore)) {
           if (records[away]) records[away].w += 1;
           if (records[home]) records[home].l += 1;
-        } else if (g.winner === home || hScore > aScore) {
+        } else if (normWinner === home || (!normWinner && hScore > aScore) || (normWinner !== away && hScore > aScore)) {
           if (records[home]) records[home].w += 1;
           if (records[away]) records[away].l += 1;
         }
@@ -4402,6 +4403,35 @@ function getFavoriteTeam() {
   return NFL_TEAMS[code] || NFL_TEAMS["KC"];
 }
 
+/**
+ * Calculates a team's actual NFL Win-Loss-Tie record for the current season.
+ * Prioritizes official live synced ESPN standings, falling back to all finalized games in state.data.
+ */
+function getNFLTeamCurrentRecord(teamCode) {
+  const norm = normalizeTeamCode(teamCode);
+  if (!norm) return { wins: 0, losses: 0, ties: 0, text: "0-0", label: "0-0 Record" };
+
+  // 1. Live or cached official ESPN NFL standings
+  if (state.nflStandings && state.nflStandings.teamRecords && state.nflStandings.teamRecords[norm]) {
+    const rec = state.nflStandings.teamRecords[norm];
+    const wins = rec.w || 0;
+    const losses = rec.l || 0;
+    const ties = rec.t || 0;
+    const text = ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+    return { wins, losses, ties, text, label: `${text} Record` };
+  }
+
+  // 2. Computed from all completed season games across all weeks
+  const localRec = getNFLTeamRecord(norm);
+  return {
+    wins: localRec.wins,
+    losses: localRec.losses,
+    ties: localRec.ties,
+    text: localRec.text,
+    label: `${localRec.text} Record`
+  };
+}
+
 async function setFavoriteTeam(teamCode) {
   const norm = normalizeTeamCode(teamCode);
   if (!norm || !NFL_TEAMS[norm]) return;
@@ -4468,6 +4498,7 @@ function renderTeamPickerGrid(filterQuery = "") {
   grid.innerHTML = sortedTeams.map(t => {
     const isSelected = (t.code === currentFav);
     const textColor = getTeamContrastColor(t.color);
+    const rec = getNFLTeamCurrentRecord(t.code);
     return `
       <div class="team-picker-item ${isSelected ? "selected" : ""}" onclick="setFavoriteTeam('${t.code}')">
         <div class="team-picker-chip" style="background: ${t.color}; color: ${textColor};">
@@ -4475,7 +4506,7 @@ function renderTeamPickerGrid(filterQuery = "") {
         </div>
         <div class="team-picker-details">
           <div class="team-picker-name">${t.name}</div>
-          <div class="team-picker-meta">${t.conf} ${t.div}</div>
+          <div class="team-picker-meta">${rec.text} Record • ${t.conf} ${t.div}</div>
         </div>
         ${isSelected ? `<span class="team-picker-check">✓</span>` : ""}
       </div>
@@ -4512,6 +4543,7 @@ function renderAccountProfileModal() {
   const email = state.authUser.email || "";
   const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || email.split("@")[0];
   const favTeam = getFavoriteTeam();
+  const favTeamRec = getNFLTeamCurrentRecord(favTeam.code);
 
   let memberSinceFormatted = "October 2026";
   const rawDate = state.userProfile?.created_at || state.authUser?.created_at;
@@ -4565,7 +4597,7 @@ function renderAccountProfileModal() {
           <span class="fav-team-chip-lg" style="background: ${favTeam.color}; color: ${getTeamContrastColor(favTeam.color)};">${favTeam.code}</span>
           <div class="fav-team-text-block">
             <span class="fav-team-name-lg">${favTeam.name}</span>
-            <span class="fav-team-conf-sub">${favTeam.conf} ${favTeam.div}</span>
+            <span class="fav-team-conf-sub">${favTeamRec.text} Record</span>
           </div>
           <span class="fav-team-edit-icon">✏️</span>
         </div>
@@ -5308,6 +5340,7 @@ window.setFavoriteTeam = setFavoriteTeam;
 window.renderTeamPickerGrid = renderTeamPickerGrid;
 window.filterTeamPickerList = filterTeamPickerList;
 window.getFavoriteTeam = getFavoriteTeam;
+window.getNFLTeamCurrentRecord = getNFLTeamCurrentRecord;
 
 
 
