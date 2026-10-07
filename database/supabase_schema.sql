@@ -508,3 +508,11 @@ create index if not exists idx_picks_league_game on public.picks(league_id, game
 create index if not exists idx_picks_league_player on public.picks(league_id, player_name);
 create index if not exists idx_games_week on public.games(season_year, week_num);
 create index if not exists idx_league_members_points on public.league_members(league_id, total_points desc);
+
+-- ------------------------------------------------------------------------------
+-- 12. ROLE GRANTS (Allow anon and authenticated API access via PostgREST)
+-- ------------------------------------------------------------------------------
+grant usage on schema public to postgres, anon, authenticated, service_role;
+grant all privileges on all tables in schema public to postgres, anon, authenticated, service_role;
+grant all privileges on all functions in schema public to postgres, anon, authenticated, service_role;
+grant all privileges on all sequences in schema public to postgres, anon, authenticated, service_role;
