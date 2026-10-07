@@ -4930,6 +4930,14 @@ body.is-lobby-mode #lobby-hero-card {
   display: block !important;
 }
 
+/* Hide Lobby Hero & Stepper when viewing NFL standings or Rules */
+body.is-lobby-mode[data-active-tab="nfl"] #lobby-hero-card,
+body.is-lobby-mode[data-active-tab="rules"] #lobby-hero-card,
+body.is-lobby-mode[data-active-tab="nfl"] .week-stepper-container,
+body.is-lobby-mode[data-active-tab="rules"] .week-stepper-container {
+  display: none !important;
+}
+
 /* 3-tab layout in Lobby Mode: Standings and Players are hidden */
 body.is-lobby-mode .bottom-nav [data-tab="leaderboard"],
 body.is-lobby-mode .bottom-nav [data-tab="players"] {
