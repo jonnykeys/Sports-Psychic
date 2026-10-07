@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=11.0">
+  <link rel="stylesheet" href="style.css?v=12.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -539,25 +539,28 @@
       <div id="auth-alert" class="auth-alert-box" style="display: none;"></div>
 
       <div class="auth-modal-actions">
-        <!-- Google OAuth (Temporarily hidden until Google Cloud credentials are configured) -->
-        <!--
-        <button type="button" class="btn-auth-google" onclick="handleGoogleSignIn()">
-          <svg width="18" height="18" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"/>
-            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
-            <path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.7s.2-2 .4-2.7L1.6 6.4C.6 8.4 0 10.6 0 13s.6 4.6 1.6 6.6l3.7-2.9z"/>
-            <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16c1.9 3.8 5.8 7 10.4 7z"/>
-          </svg>
-          <span>Continue with Google</span>
-        </button>
-
-        <div class="auth-divider">
-          <span>OR WITH EMAIL</span>
+        <!-- Auth Mode Tabs: Sign In vs Create Account -->
+        <div class="auth-mode-tabs" role="tablist">
+          <button type="button" id="tab-auth-signin" class="auth-mode-tab active" onclick="setAuthMode('signin')">Sign In</button>
+          <button type="button" id="tab-auth-signup" class="auth-mode-tab" onclick="setAuthMode('signup')">Create Account</button>
         </div>
-        -->
 
         <!-- Email & Password Form -->
         <div class="auth-form-fields">
+          <!-- Username Input Row (Active in Create Account mode) -->
+          <div class="auth-field-row" id="auth-username-row" style="display: none;">
+            <div class="auth-label-row">
+              <label class="auth-label" for="auth-username-input">Username</label>
+              <span id="username-char-count" class="auth-char-count">3-20 chars</span>
+            </div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-prefix">@</span>
+              <input type="text" id="auth-username-input" class="auth-input has-prefix" placeholder="Choose a username" autocomplete="username" maxlength="20" oninput="handleUsernameInput(this.value)">
+              <span id="username-status-icon" class="auth-input-status-icon"></span>
+            </div>
+            <div id="username-validation-msg" class="auth-field-feedback"></div>
+          </div>
+
           <div class="auth-field-row">
             <label class="auth-label" for="auth-email-input">Email Address</label>
             <input type="email" id="auth-email-input" class="auth-input" placeholder="you@example.com" autocomplete="email" required>
@@ -568,13 +571,17 @@
             <input type="password" id="auth-password-input" class="auth-input" placeholder="Enter password (min 6 characters)" autocomplete="current-password">
           </div>
 
-          <div class="auth-btn-row">
-            <button type="button" id="btn-auth-signin" class="btn-auth-primary" onclick="handleEmailSignIn()">Sign In</button>
-            <button type="button" id="btn-auth-signup" class="btn-auth-secondary" onclick="handleEmailSignUp()">Create Account</button>
+          <div class="auth-submit-row">
+            <button type="button" id="btn-auth-submit" class="btn-auth-primary" onclick="handleAuthSubmit()">Sign In</button>
           </div>
 
-          <div class="auth-magic-link-row">
+          <div class="auth-magic-link-row" id="auth-magic-row">
             <button type="button" class="btn-auth-magic" onclick="handleMagicLinkSignIn()">✨ Or send a Magic Link to sign in without password</button>
+          </div>
+
+          <div class="auth-switch-mode-prompt" id="auth-switch-prompt">
+            <span id="auth-switch-text">Don't have an account?</span>
+            <button type="button" class="btn-auth-switch-text" id="btn-auth-switch-mode" onclick="toggleAuthMode()">Create one here &rarr;</button>
           </div>
         </div>
       </div>
@@ -590,6 +597,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=11.1"></script>
+  <script src="app.js?v=12.0"></script>
 </body>
 </html>

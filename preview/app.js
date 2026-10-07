@@ -153,7 +153,7 @@ function getUserAvatarHtml(size = 28) {
     return getPlayerAvatarHtml(state.myPlayer, size);
   }
   const photo = state.userProfile?.avatar_url || (state.authUser?.user_metadata && state.authUser.user_metadata.avatar_url);
-  const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || (state.authUser?.email ? state.authUser.email.split("@")[0] : "?");
+  const displayName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser?.user_metadata && state.authUser.user_metadata.username) || (state.authUser?.email ? state.authUser.email.split("@")[0] : "?");
   const initial = displayName ? displayName.charAt(0).toUpperCase() : "?";
   const color = "var(--accent-blue)";
   const borderWidth = size <= 28 ? 1.5 : 2.5;
@@ -4380,7 +4380,7 @@ function renderHeaderProfile() {
   if (!btn) return;
 
   if (state.authUser) {
-    const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Account");
+    const displayName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser.user_metadata && state.authUser.user_metadata.username) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Account");
     btn.className = "header-profile-btn has-user";
     btn.innerHTML = `
       <div class="header-profile-avatar-wrap">
@@ -4541,7 +4541,7 @@ function renderAccountProfileModal() {
   }
 
   const email = state.authUser.email || "";
-  const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || email.split("@")[0];
+  const displayName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser?.user_metadata && state.authUser.user_metadata.username) || email.split("@")[0];
   const favTeam = getFavoriteTeam();
   const favTeamRec = getNFLTeamCurrentRecord(favTeam.code);
 
@@ -4634,11 +4634,22 @@ function closeProfileModal(event) {
   document.body.style.overflow = "";
 }
 
-// Close modals on ESC key
+// Close modals on ESC key & handle Enter on auth modal
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeProfileModal();
     closeH2HPicker();
+    closeAuthModal();
+  }
+  if (e.key === "Enter") {
+    const authModal = document.getElementById("auth-modal");
+    if (authModal && authModal.classList.contains("active")) {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.id === "auth-username-input" || activeEl.id === "auth-email-input" || activeEl.id === "auth-password-input")) {
+        e.preventDefault();
+        handleAuthSubmit();
+      }
+    }
   }
 });
 
@@ -4759,7 +4770,7 @@ function renderLobbyHero() {
   if (guestBlock) guestBlock.style.display = "none";
   if (authBlock) authBlock.style.display = "block";
 
-  const firstName = state.myPlayer || (state.userProfile && state.userProfile.full_name ? state.userProfile.full_name.split(" ")[0] : null) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Psychic");
+  const firstName = state.myPlayer || (state.userProfile && state.userProfile.username) || (state.userProfile && state.userProfile.full_name ? state.userProfile.full_name.split(" ")[0] : null) || (state.authUser.user_metadata && state.authUser.user_metadata.username) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Psychic");
   if (heroName) heroName.textContent = firstName;
 
   if (quickLeagues) {
@@ -4980,6 +4991,34 @@ async function handleUserSession(user) {
       try {
         localStorage.setItem(SAVED_USER_KEY, claimedPlayer);
       } catch (e) {}
+
+      if (!state.userProfile) {
+        state.userProfile = {
+          id: user.id,
+          username: claimedPlayer,
+          full_name: claimedPlayer,
+          email: user.email
+        };
+      } else if (!state.userProfile.username) {
+        state.userProfile.username = claimedPlayer;
+      }
+
+      if (supabaseClient && (!profile || !profile.username)) {
+        try {
+          await supabaseClient
+            .from("profiles")
+            .upsert({
+              id: user.id,
+              username: claimedPlayer,
+              full_name: claimedPlayer,
+              favorite_team: getFavoriteTeam().code || "KC"
+            }, { onConflict: "id" });
+        } catch (e) {}
+      }
+    } else {
+      if (state.userProfile && !state.userProfile.username && user.user_metadata && user.user_metadata.username) {
+        state.userProfile.username = user.user_metadata.username;
+      }
     }
   } catch (err) {
     console.warn("User session handling error:", err);
@@ -5018,7 +5057,233 @@ function setAuthAlert(message, type = "error") {
   alertEl.style.display = "block";
 }
 
-function openAuthModal(contextMsg = "") {
+state.authMode = "signin"; // "signin" | "signup"
+
+function setAuthMode(mode = "signin") {
+  state.authMode = mode;
+  const tabSignIn = document.getElementById("tab-auth-signin");
+  const tabSignUp = document.getElementById("tab-auth-signup");
+  const usernameRow = document.getElementById("auth-username-row");
+  const modalTitle = document.getElementById("auth-modal-title");
+  const modalDesc = document.getElementById("auth-modal-desc");
+  const submitBtn = document.getElementById("btn-auth-submit");
+  const magicRow = document.getElementById("auth-magic-row");
+  const switchText = document.getElementById("auth-switch-text");
+  const switchBtn = document.getElementById("btn-auth-switch-mode");
+  const alertEl = document.getElementById("auth-alert");
+
+  if (alertEl) {
+    alertEl.style.display = "none";
+    alertEl.textContent = "";
+  }
+
+  const isSignUp = (mode === "signup");
+
+  if (tabSignIn) tabSignIn.classList.toggle("active", !isSignUp);
+  if (tabSignUp) tabSignUp.classList.toggle("active", isSignUp);
+
+  if (usernameRow) {
+    usernameRow.style.display = isSignUp ? "flex" : "none";
+  }
+
+  if (modalTitle) {
+    modalTitle.textContent = isSignUp ? "Create Your Account" : "Welcome Back";
+  }
+
+  if (modalDesc) {
+    modalDesc.textContent = isSignUp
+      ? "Choose a unique username to start predicting NFL games and joining leagues."
+      : "Sign in to make your predictions, claim your league picks, and play with friends.";
+  }
+
+  if (submitBtn) {
+    submitBtn.textContent = isSignUp ? "Create Account" : "Sign In";
+  }
+
+  if (magicRow) {
+    magicRow.style.display = isSignUp ? "none" : "block";
+  }
+
+  if (switchText) {
+    switchText.textContent = isSignUp ? "Already have an account?" : "Don't have an account?";
+  }
+
+  if (switchBtn) {
+    switchBtn.innerHTML = isSignUp ? "Sign in here &rarr;" : "Create one here &rarr;";
+  }
+
+  if (isSignUp) {
+    const usernameInput = document.getElementById("auth-username-input");
+    if (usernameInput) setTimeout(() => usernameInput.focus(), 120);
+  } else {
+    const emailInput = document.getElementById("auth-email-input");
+    if (emailInput) setTimeout(() => emailInput.focus(), 120);
+  }
+}
+
+function toggleAuthMode() {
+  setAuthMode(state.authMode === "signup" ? "signin" : "signup");
+}
+
+function handleAuthSubmit() {
+  if (state.authMode === "signup") {
+    handleEmailSignUp();
+  } else {
+    handleEmailSignIn();
+  }
+}
+
+let usernameCheckTimeout = null;
+function handleUsernameInput(val) {
+  const statusIcon = document.getElementById("username-status-icon");
+  const feedback = document.getElementById("username-validation-msg");
+  const count = document.getElementById("username-char-count");
+  const clean = (val || "").trim();
+
+  if (count) {
+    count.textContent = `${clean.length}/20 chars`;
+    count.style.color = (clean.length >= 3 && clean.length <= 20) ? "var(--accent-blue)" : "var(--text-dim)";
+  }
+
+  if (!statusIcon || !feedback) return;
+
+  if (!clean) {
+    statusIcon.textContent = "";
+    feedback.className = "auth-field-feedback";
+    feedback.textContent = "";
+    return;
+  }
+
+  if (clean.length < 3) {
+    statusIcon.textContent = "⚠️";
+    feedback.className = "auth-field-feedback warn";
+    feedback.textContent = "Must be at least 3 characters";
+    return;
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+    statusIcon.textContent = "❌";
+    feedback.className = "auth-field-feedback error";
+    feedback.textContent = "Letters, numbers, and underscores only (no spaces)";
+    return;
+  }
+
+  // Pre-check against OG League reserved names (case-insensitive)
+  const ogMatch = PLAYERS.find(p => p.toLowerCase() === clean.toLowerCase());
+  if (ogMatch) {
+    statusIcon.textContent = "❌";
+    feedback.className = "auth-field-feedback error";
+    feedback.textContent = `❌ Username '${clean}' is already taken`;
+    return;
+  }
+
+  statusIcon.textContent = "⏳";
+  feedback.className = "auth-field-feedback";
+  feedback.textContent = "Checking availability...";
+
+  if (usernameCheckTimeout) clearTimeout(usernameCheckTimeout);
+  usernameCheckTimeout = setTimeout(async () => {
+    const emailInput = document.getElementById("auth-email-input");
+    const email = emailInput ? emailInput.value : "";
+    const check = await validateUsernameAvailability(clean, email);
+
+    const currentInput = document.getElementById("auth-username-input");
+    if (currentInput && currentInput.value.trim().toLowerCase() !== clean.toLowerCase()) return;
+
+    if (check.valid) {
+      statusIcon.textContent = "✓";
+      feedback.className = "auth-field-feedback success";
+      feedback.textContent = `✓ @${clean} is available!`;
+    } else {
+      statusIcon.textContent = "❌";
+      feedback.className = "auth-field-feedback error";
+      feedback.textContent = `❌ ${check.error}`;
+    }
+  }, 280);
+}
+
+async function validateUsernameAvailability(rawUsername, email = "") {
+  const clean = (rawUsername || "").trim();
+
+  if (!clean) {
+    return { valid: false, error: "Please enter a username.", cleanUsername: "" };
+  }
+
+  if (clean.length < 3) {
+    return { valid: false, error: "Username must be at least 3 characters long.", cleanUsername: clean };
+  }
+
+  if (clean.length > 20) {
+    return { valid: false, error: "Username cannot exceed 20 characters.", cleanUsername: clean };
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+    return { valid: false, error: "Username can only contain letters, numbers, and underscores (no spaces).", cleanUsername: clean };
+  }
+
+  const lowerClean = clean.toLowerCase();
+
+  // Rule: OG League members' current names are reserved as their usernames moving forward
+  const ogMatch = PLAYERS.find(p => p.toLowerCase() === lowerClean);
+  if (ogMatch) {
+    const cleanEmail = (email || "").toLowerCase().trim();
+    let isAllowedOGMember = false;
+
+    if (cleanEmail) {
+      if (ogMatch === "Jon" && cleanEmail === "jonnylcolbert@gmail.com") isAllowedOGMember = true;
+      else if (ogMatch === "Alisha" && cleanEmail === "alishaklezmer16@gmail.com") isAllowedOGMember = true;
+      else if (ogMatch === "Carson" && cleanEmail === "thatpkboy@gmail.com") isAllowedOGMember = true;
+
+      if (!isAllowedOGMember && supabaseClient) {
+        try {
+          const { data: invite } = await supabaseClient
+            .from("league_roster_invites")
+            .select("player_name")
+            .ilike("invited_email", cleanEmail)
+            .ilike("player_name", ogMatch)
+            .maybeSingle();
+          if (invite) isAllowedOGMember = true;
+        } catch (e) {}
+      }
+    }
+
+    if (!isAllowedOGMember) {
+      return {
+        valid: false,
+        error: `Username '${clean}' is already taken. Please choose another username.`,
+        cleanUsername: clean
+      };
+    }
+  }
+
+  // Database Uniqueness Check against Supabase public.profiles
+  if (supabaseClient) {
+    try {
+      const { data: existing, error } = await supabaseClient
+        .from("profiles")
+        .select("id, username")
+        .ilike("username", clean)
+        .maybeSingle();
+
+      if (!error && existing) {
+        if (state.authUser && existing.id === state.authUser.id) {
+          return { valid: true, cleanUsername: clean };
+        }
+        return {
+          valid: false,
+          error: `Username '${clean}' is already taken. Please choose another username.`,
+          cleanUsername: clean
+        };
+      }
+    } catch (err) {
+      console.warn("Username database uniqueness query notice:", err);
+    }
+  }
+
+  return { valid: true, cleanUsername: clean };
+}
+
+function openAuthModal(contextMsg = "", defaultMode = null) {
   const modal = document.getElementById("auth-modal");
   if (!modal) return;
 
@@ -5028,21 +5293,40 @@ function openAuthModal(contextMsg = "") {
     alertEl.textContent = "";
   }
 
-  const desc = document.getElementById("auth-modal-desc");
-  if (desc) {
-    desc.textContent = contextMsg || "Sign in to place predictions, create custom leagues with friends, or play solo against community leaderboards.";
+  let mode = defaultMode;
+  if (!mode) {
+    const lower = (contextMsg || "").toLowerCase();
+    if (lower.includes("create") || lower.includes("sign up") || lower.includes("join") || lower.includes("get started")) {
+      mode = "signup";
+    } else {
+      mode = "signin";
+    }
   }
 
+  setAuthMode(mode);
+
+  const desc = document.getElementById("auth-modal-desc");
+  if (desc && contextMsg && !["sign in", "create account", "get started free"].includes(contextMsg.toLowerCase())) {
+    desc.textContent = contextMsg;
+  }
+
+  const usernameInput = document.getElementById("auth-username-input");
   const emailInput = document.getElementById("auth-email-input");
   const passInput = document.getElementById("auth-password-input");
+
+  if (usernameInput) usernameInput.value = "";
   if (emailInput && !emailInput.value && state.authUser) {
     emailInput.value = state.authUser.email || "";
   }
   if (passInput) passInput.value = "";
 
+  const statusIcon = document.getElementById("username-status-icon");
+  const feedback = document.getElementById("username-validation-msg");
+  if (statusIcon) statusIcon.textContent = "";
+  if (feedback) { feedback.className = "auth-field-feedback"; feedback.textContent = ""; }
+
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
-  if (emailInput) setTimeout(() => emailInput.focus(), 150);
 }
 
 function closeAuthModal(event) {
@@ -5063,19 +5347,21 @@ async function handleEmailSignIn() {
 
   const emailInput = document.getElementById("auth-email-input");
   const passInput = document.getElementById("auth-password-input");
-  const email = (emailInput && emailInput.value || "").trim();
+  const email = (emailInput && emailInput.value || "").trim().toLowerCase();
   const password = (passInput && passInput.value || "").trim();
 
   if (!email || !email.includes("@")) {
     setAuthAlert("Please enter a valid email address.", "error");
+    if (emailInput) emailInput.focus();
     return;
   }
   if (!password) {
     setAuthAlert("Please enter your account password.", "error");
+    if (passInput) passInput.focus();
     return;
   }
 
-  const btn = document.getElementById("btn-auth-signin");
+  const btn = document.getElementById("btn-auth-submit");
   const origText = btn ? btn.textContent : "Sign In";
   if (btn) { btn.disabled = true; btn.textContent = "Signing In..."; }
 
@@ -5105,23 +5391,41 @@ async function handleEmailSignUp() {
     return;
   }
 
+  const usernameInput = document.getElementById("auth-username-input");
   const emailInput = document.getElementById("auth-email-input");
   const passInput = document.getElementById("auth-password-input");
-  const email = (emailInput && emailInput.value || "").trim();
+
+  const rawUsername = (usernameInput && usernameInput.value || "").trim();
+  const email = (emailInput && emailInput.value || "").trim().toLowerCase();
   const password = (passInput && passInput.value || "").trim();
 
-  if (!email || !email.includes("@")) {
-    setAuthAlert("Please enter a valid email address.", "error");
-    return;
-  }
-  if (!password || password.length < 6) {
-    setAuthAlert("Password must be at least 6 characters.", "error");
+  // 1. Validate Username
+  const usernameCheck = await validateUsernameAvailability(rawUsername, email);
+  if (!usernameCheck.valid) {
+    setAuthAlert(usernameCheck.error, "error");
+    if (usernameInput) usernameInput.focus();
     return;
   }
 
-  const btn = document.getElementById("btn-auth-signup");
+  // 2. Validate Email
+  if (!email || !email.includes("@")) {
+    setAuthAlert("Please enter a valid email address.", "error");
+    if (emailInput) emailInput.focus();
+    return;
+  }
+
+  // 3. Validate Password
+  if (!password || password.length < 6) {
+    setAuthAlert("Password must be at least 6 characters.", "error");
+    if (passInput) passInput.focus();
+    return;
+  }
+
+  const cleanUsername = usernameCheck.cleanUsername;
+
+  const btn = document.getElementById("btn-auth-submit");
   const origText = btn ? btn.textContent : "Create Account";
-  if (btn) { btn.disabled = true; btn.textContent = "Creating..."; }
+  if (btn) { btn.disabled = true; btn.textContent = "Creating Account..."; }
 
   try {
     const redirectUrl = window.location.origin + window.location.pathname;
@@ -5130,7 +5434,10 @@ async function handleEmailSignUp() {
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { email }
+        data: {
+          username: cleanUsername,
+          full_name: cleanUsername
+        }
       }
     });
 
@@ -5139,15 +5446,32 @@ async function handleEmailSignUp() {
       return;
     }
 
+    try {
+      localStorage.setItem("sp_user_name", cleanUsername);
+    } catch (e) {}
+
+    if (data && data.user) {
+      try {
+        await supabaseClient.from("profiles").upsert({
+          id: data.user.id,
+          username: cleanUsername,
+          full_name: cleanUsername,
+          favorite_team: getFavoriteTeam().code || "KC"
+        }, { onConflict: "id" });
+      } catch (upsertErr) {
+        console.warn("Profile upsert notice:", upsertErr);
+      }
+    }
+
     if (data && data.session) {
       closeAuthModal();
-      showToast("🔮 Welcome! Account created and signed in.");
+      showToast(`🔮 Welcome, @${cleanUsername}! Account created.`);
       if (data.user) {
         await handleUserSession(data.user);
       }
       renderApp();
     } else {
-      setAuthAlert("✨ Account created! Please check your email to confirm your account, then sign in.", "success");
+      setAuthAlert(`✨ Account created for @${cleanUsername}! Please check your email to confirm your account, then sign in.`, "success");
       showToast("✨ Confirmation email sent! Please check your inbox.");
     }
   } catch (err) {
@@ -5341,6 +5665,11 @@ window.renderTeamPickerGrid = renderTeamPickerGrid;
 window.filterTeamPickerList = filterTeamPickerList;
 window.getFavoriteTeam = getFavoriteTeam;
 window.getNFLTeamCurrentRecord = getNFLTeamCurrentRecord;
+window.setAuthMode = setAuthMode;
+window.toggleAuthMode = toggleAuthMode;
+window.handleAuthSubmit = handleAuthSubmit;
+window.handleUsernameInput = handleUsernameInput;
+window.validateUsernameAvailability = validateUsernameAvailability;
 
 
 
