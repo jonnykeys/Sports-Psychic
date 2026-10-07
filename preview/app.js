@@ -4537,7 +4537,7 @@ function updateAppShellForMode() {
 
   if (isLobby) {
     if (brandTitle) brandTitle.textContent = "Sports Psychic";
-    if (brandSub) brandSub.textContent = "KNOW THE GAME";
+    if (brandSub) brandSub.textContent = "Know the Game";
   } else {
     const isSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic");
     if (brandTitle) {
@@ -4596,6 +4596,12 @@ function selectLeague(leagueId) {
 }
 
 function enterLeagueView(leagueId = "OG League") {
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account to enter leagues.");
+    openAuthModal("Sign in or create an account to access leagues");
+    return;
+  }
+
   state.appMode = "league";
   try {
     sessionStorage.setItem("sp_app_mode", "league");
@@ -4640,6 +4646,10 @@ async function initSupabaseAuth() {
     const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
     if (!sessionErr && sessionData && sessionData.session && sessionData.session.user) {
       await handleUserSession(sessionData.session.user);
+    } else {
+      if (state.appMode === "league") {
+        exitToLobby();
+      }
     }
 
     // 2. Subscribe to auth lifecycle changes
@@ -4649,6 +4659,7 @@ async function initSupabaseAuth() {
       } else if (event === "SIGNED_OUT") {
         state.authUser = null;
         state.userProfile = null;
+        exitToLobby();
         updateAppShellForMode();
         renderHeaderProfile();
       }
@@ -4970,6 +4981,12 @@ function processLeagueCode(code) {
   const cleanCode = (code || "").trim().toUpperCase();
   if (!cleanCode) return;
 
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account first.");
+    openAuthModal("Sign in to join a league with your invite code");
+    return;
+  }
+
   if (cleanCode === "OG2026" || cleanCode === "OG") {
     enterLeagueView("OG League");
     if (!state.myPlayer) {
@@ -4986,10 +5003,15 @@ function processLeagueCode(code) {
 }
 
 function handleQuickInviteSubmit() {
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account first.");
+    openAuthModal("Sign in to join a league with your invite code");
+    return;
+  }
   const input = document.getElementById("lobby-quick-code-input");
   const code = (input && input.value) ? input.value.trim().toUpperCase() : "";
   if (!code) {
-    showToast("⚠️ Please enter a 6-digit League Code (e.g. OG2026)");
+    showToast("⚠️ Please enter a 6-digit League Code (e.g. SP2026)");
     return;
   }
   processLeagueCode(code);
@@ -4997,6 +5019,13 @@ function handleQuickInviteSubmit() {
 
 function openCreateLeagueModal() {
   closeLeagueDrawer();
+
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account to create a league.");
+    openAuthModal("Sign in to create your own custom league");
+    return;
+  }
+
   const leagueName = prompt("Enter a name for your new league (e.g. Sunday Pick'em Pool):");
   if (leagueName && leagueName.trim()) {
     showToast(`🏆 League "${leagueName.trim()}" created! Share code: SP${Math.floor(1000 + Math.random() * 9000)}`);
@@ -5006,6 +5035,13 @@ function openCreateLeagueModal() {
 function openJoinLeagueModal() {
   closeLeagueDrawer();
   closeAuthModal();
+
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account to join a league.");
+    openAuthModal("Sign in to join a league with your invite code");
+    return;
+  }
+
   const code = prompt("Enter 6-character League Invite Code (e.g. SP2026):");
   if (code && code.trim()) {
     processLeagueCode(code);

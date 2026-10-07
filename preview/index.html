@@ -34,7 +34,7 @@
       <img src="logo.png?v=3.2" class="brand-logo" alt="Sports Psychic Logo" width="32" height="32">
       <div class="brand-text">
         <h1 id="header-brand-title">Sports Psychic</h1>
-        <div class="subtext" id="header-brand-sub">KNOW THE GAME</div>
+        <div class="subtext" id="header-brand-sub">Know the Game</div>
       </div>
     </div>
 
@@ -85,21 +85,9 @@
           <span>🔮 Get Started Free</span>
           <span class="hero-btn-arrow">→</span>
         </button>
-        <button class="btn-hero-secondary" onclick="openJoinLeagueModal()">
-          <span>🔑 Have an Invite Code?</span>
+        <button class="btn-hero-secondary" onclick="openAuthModal('Sign In')">
+          <span>Sign In</span>
         </button>
-      </div>
-
-      <!-- Quick League Invite Code Box -->
-      <div class="lobby-invite-bar">
-        <div class="invite-bar-header">
-          <span class="invite-icon">🔑</span>
-          <span class="invite-bar-label">Invited by a friend? Enter 6-digit League Code:</span>
-        </div>
-        <div class="invite-input-row">
-          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. SP2026" maxlength="12" autocomplete="off" autocapitalize="characters">
-          <button class="btn-invite-submit" onclick="handleQuickInviteSubmit()">Join League</button>
-        </div>
       </div>
 
       <!-- Ways to Play Hub Cards -->
@@ -573,11 +561,6 @@
           <div class="auth-magic-link-row">
             <button type="button" class="btn-auth-magic" onclick="handleMagicLinkSignIn()">✨ Or send a Magic Link to sign in without password</button>
           </div>
-        </div>
-
-        <div class="auth-invite-link-row">
-          <span>Have a friend's League Code?</span>
-          <button type="button" class="btn-invite-text-link" onclick="closeAuthModal(); openJoinLeagueModal();">Enter Code →</button>
         </div>
       </div>
 
