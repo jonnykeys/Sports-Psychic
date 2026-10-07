@@ -148,6 +148,33 @@ function getPlayerAvatarHtml(playerName, size = 36) {
   `;
 }
 
+function getUserAvatarHtml(size = 28) {
+  if (state.myPlayer && PLAYER_AVATARS[state.myPlayer]) {
+    return getPlayerAvatarHtml(state.myPlayer, size);
+  }
+  const photo = state.userProfile?.avatar_url || (state.authUser?.user_metadata && state.authUser.user_metadata.avatar_url);
+  const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || (state.authUser?.email ? state.authUser.email.split("@")[0] : "?");
+  const initial = displayName ? displayName.charAt(0).toUpperCase() : "?";
+  const color = "var(--accent-blue)";
+  const borderWidth = size <= 28 ? 1.5 : 2.5;
+  const shadow = `0 1px 4px rgba(0, 0, 0, 0.4)`;
+
+  if (photo) {
+    return `
+      <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border: ${borderWidth}px solid ${color}; box-shadow: ${shadow};">
+        <img src="${photo}" alt="${displayName}" class="player-avatar-img" onerror="this.parentElement.classList.remove('has-photo'); this.remove();" />
+        <span class="player-avatar-fallback" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(9, Math.round(size * 0.42))}px;">${initial}</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="player-avatar" style="width:${size}px; height:${size}px; min-width:${size}px; background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(9, Math.round(size * 0.42))}px; border:${borderWidth}px solid ${color};">
+      ${initial}
+    </div>
+  `;
+}
+
 // Official NFL Team Colors and Metadata (matching Main Project & Spreadsheet)
 const NFL_TEAMS = {
   KC:  { code: 'KC',  name: 'Kansas City Chiefs',     city: 'Kansas City', conf: 'AFC', div: 'West',  color: '#E31837', alt: '#FFB81C' },
@@ -3329,10 +3356,11 @@ function renderPlayers() {
         <span class="action-btn-icon">⚔️</span>
         <span>Compare Players</span>
       </button>
-      <button type="button" class="btn-hero-action btn-hero-profile ${isMyProfile ? "is-active" : ""}" onclick="toggleMyProfile('${state.selectedPlayer}')" title="${isMyProfile ? 'You are remembered as this player' : 'Remember me as this player'}">
-        <span class="action-btn-icon">${isMyProfile ? "★" : "☆"}</span>
-        <span>${isMyProfile ? "Active Profile" : "Set as Me"}</span>
-      </button>
+      ${isMyProfile ? `
+      <div class="badge-my-roster-tag" title="This is your official authenticated roster profile">
+        <span>⭐ Your Roster Profile</span>
+      </div>
+      ` : ""}
     </div>
 
     <div class="player-stats-row">
@@ -4331,128 +4359,107 @@ function showToast(msg) {
 }
 
 // =========================================================
-// PERSONALIZATION & "REMEMBER ME" ENGINE
+// AUTHENTICATED USER PROFILE & HEADER ENGINE
 // =========================================================
+
+function isUserInOGLeague() {
+  if (!state.authUser) return false;
+  if (state.myPlayer && PLAYERS.includes(state.myPlayer)) return true;
+  const email = (state.authUser.email || "").toLowerCase().trim();
+  const ogEmails = [
+    "jonnylcolbert@gmail.com",
+    "alishaklezmer16@gmail.com",
+    "thatpkboy@gmail.com"
+  ];
+  return ogEmails.includes(email);
+}
+
 function renderHeaderProfile() {
   const btn = document.getElementById("btn-header-profile");
   if (!btn) return;
 
-  if (state.myPlayer) {
+  if (state.authUser) {
+    const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Account");
     btn.className = "header-profile-btn has-user";
     btn.innerHTML = `
       <div class="header-profile-avatar-wrap">
-        ${getPlayerAvatarHtml(state.myPlayer, 26)}
+        ${getUserAvatarHtml(26)}
       </div>
       <div class="header-profile-text-wrap">
-        <span class="header-profile-name">${state.myPlayer}</span>
-        <span class="header-profile-tag">YOU</span>
+        <span class="header-profile-name">${displayName}</span>
       </div>
     `;
-    btn.title = `Remembered as ${state.myPlayer} (Tap to change)`;
+    btn.title = `Signed in as ${state.authUser.email} (Click for Account Profile)`;
+    btn.style.display = "inline-flex";
   } else {
     btn.className = "header-profile-btn not-set";
-    btn.innerHTML = `
-      <span class="header-profile-icon">👤</span>
-      <span class="header-profile-text">Set Me</span>
+    btn.style.display = "none";
+  }
+}
+
+function renderAccountProfileModal() {
+  const accountCard = document.getElementById("profile-account-card");
+  if (!accountCard) return;
+
+  if (!state.authUser) {
+    accountCard.innerHTML = `
+      <div class="account-profile-hero">
+        <div class="account-avatar-large">
+          <div class="player-avatar" style="width:64px; height:64px; font-size:26px;">👤</div>
+        </div>
+        <div class="account-name-lg">Browsing as Guest</div>
+        <div class="account-email-sub">Sign in or create an account to track your predictions.</div>
+      </div>
+      <div style="margin-top:16px; text-align:center;">
+        <button type="button" class="btn-hero-primary" onclick="closeProfileModal(); openAuthModal();">
+          <span>🔮 Sign In / Join Free</span>
+        </button>
+      </div>
     `;
-    btn.title = "Personalize: Choose your profile on this device";
-  }
-}
-
-function setMyPlayer(playerName) {
-  if (playerName && PLAYERS.includes(playerName)) {
-    state.myPlayer = playerName;
-    state.selectedPlayer = playerName;
-    try {
-      localStorage.setItem(SAVED_USER_KEY, playerName);
-    } catch (e) {
-      console.warn("Could not save to localStorage:", e);
-    }
-    showToast(`⭐ Remembered as ${playerName}! Your picks are highlighted.`);
-  } else {
-    state.myPlayer = null;
-    try {
-      localStorage.removeItem(SAVED_USER_KEY);
-    } catch (e) {
-      console.warn("Could not remove from localStorage:", e);
-    }
-    showToast("👤 Profile cleared (Browsing as Guest)");
+    return;
   }
 
-  closeProfileModal();
-  renderApp();
-}
+  const email = state.authUser.email || "";
+  const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || email.split("@")[0];
+  const isOG = isUserInOGLeague();
 
-function toggleMyProfile(playerName) {
-  if (state.myPlayer === playerName) {
-    openProfileModal();
-  } else {
-    setMyPlayer(playerName);
+  let statsHtml = "";
+  if (state.myPlayer) {
+    const lb = getSeasonLeaderboard();
+    const pObj = lb.find(p => p.name === state.myPlayer) || { rankDisplay: "-", points: 0 };
+    statsHtml = `
+      <div class="account-stats-grid">
+        <div class="account-stat-box">
+          <span class="stat-box-label">OG LEAGUE RANK</span>
+          <span class="stat-box-val rank-val">#${pObj.rankDisplay || "-"}</span>
+        </div>
+        <div class="account-stat-box">
+          <span class="stat-box-label">SEASON POINTS</span>
+          <span class="stat-box-val pts-val">${pObj.points || 0} PTS</span>
+        </div>
+      </div>
+    `;
   }
+
+  accountCard.innerHTML = `
+    <div class="account-profile-hero">
+      <div class="account-avatar-large">
+        ${getUserAvatarHtml(64)}
+      </div>
+      <div class="account-name-lg">${displayName}</div>
+      <div class="account-email-sub">${email}</div>
+      <div class="account-badge-pill">
+        ${isOG ? "🏆 OG League Member" : "🔮 Solo Psychic Member"}
+      </div>
+    </div>
+    ${statsHtml}
+  `;
 }
 
 function openProfileModal() {
   const modal = document.getElementById("profile-modal");
-  const grid = document.getElementById("profile-modal-grid");
-  if (!modal || !grid) return;
-
-  const lb = getSeasonLeaderboard();
-
-  grid.innerHTML = PLAYERS.map(pName => {
-    const isCurrent = Boolean(state.myPlayer && state.myPlayer === pName);
-    const playerRankObj = lb.find(p => p.name === pName) || { rankDisplay: "-", points: 0 };
-    const rankLabel = playerRankObj.rankDisplay ? (String(playerRankObj.rankDisplay).startsWith("T-") ? `T-#${String(playerRankObj.rankDisplay).slice(2)}` : `#${playerRankObj.rankDisplay}`) : "#-";
-    return `
-      <div class="profile-choice-card ${isCurrent ? "active" : ""}" onclick="setMyPlayer('${pName}')">
-        <div class="choice-avatar">
-          ${getPlayerAvatarHtml(pName, 40)}
-        </div>
-        <div class="choice-info">
-          <div class="choice-name">
-            <span>${pName}</span>
-            ${isCurrent ? `<span class="choice-current-badge">YOU</span>` : ""}
-          </div>
-          <div class="choice-stats">Rank ${rankLabel} • ${playerRankObj.points} PTS</div>
-        </div>
-        <div class="choice-action">
-          ${isCurrent ? `<span class="choice-check">✓</span>` : `<span class="choice-select-btn">Select</span>`}
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  const clearBtn = document.getElementById("btn-clear-profile");
-  if (clearBtn) {
-    clearBtn.style.display = state.myPlayer ? "inline-block" : "none";
-  }
-
-  // Render signed-in account details banner if authenticated
-  const accountCard = document.getElementById("profile-account-card");
-  const signoutContainer = document.getElementById("profile-signout-container");
-  if (accountCard) {
-    if (state.authUser) {
-      const email = state.authUser.email || "";
-      const name = state.myPlayer || (state.userProfile && state.userProfile.full_name) || email.split("@")[0];
-      accountCard.style.display = "block";
-      accountCard.innerHTML = `
-        <div class="auth-account-badge">
-          <div class="header-profile-avatar-wrap">
-            ${getPlayerAvatarHtml(state.myPlayer || "Jon", 32)}
-          </div>
-          <div class="auth-account-details">
-            <div class="auth-account-name">Signed In: ${name}</div>
-            <div class="auth-account-email">${email}</div>
-          </div>
-        </div>
-      `;
-    } else {
-      accountCard.style.display = "none";
-    }
-  }
-  if (signoutContainer) {
-    signoutContainer.style.display = state.authUser ? "block" : "none";
-  }
-
+  if (!modal) return;
+  renderAccountProfileModal();
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
 }
@@ -4506,10 +4513,60 @@ window.addEventListener("hashchange", () => {
 
 state.activeLeague = "OG League"; // "OG League" | "solo"
 
+function renderLeagueDrawerContent() {
+  const container = document.getElementById("drawer-leagues-list");
+  if (!container) return;
+
+  const isOG = isUserInOGLeague();
+  const activeIsOG = (state.activeLeague === "OG League") && (state.appMode === "league");
+  const activeIsSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic") && (state.appMode === "league");
+
+  let html = "";
+
+  // 1. OG League Option (Only shown if user has OG League access)
+  if (isOG) {
+    html += `
+      <div id="drawer-card-og" class="league-option-card ${activeIsOG ? "active" : ""}" onclick="selectLeague('OG League')">
+        <div class="league-card-left">
+          <div class="league-icon-box">🏆</div>
+          <div>
+            <div class="league-title-row">
+              <span class="league-name">OG League</span>
+              ${activeIsOG ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+            </div>
+            <div class="league-meta-row">12 Members • 2026 NFL Season</div>
+          </div>
+        </div>
+        ${activeIsOG ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+      </div>
+    `;
+  }
+
+  // 2. Solo Psychic Play (Available to all users)
+  html += `
+    <div id="drawer-card-solo" class="league-option-card ${activeIsSolo ? "active" : ""}" onclick="selectLeague('solo')">
+      <div class="league-card-left">
+        <div class="league-icon-box icon-solo">🔮</div>
+        <div>
+          <div class="league-title-row">
+            <span class="league-name">Solo Psychic Play</span>
+            ${activeIsSolo ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+          </div>
+          <div class="league-meta-row">Personal Full-Season Forecasting & Accuracies</div>
+        </div>
+      </div>
+      ${activeIsSolo ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
 function openLeagueDrawer() {
   const drawer = document.getElementById("league-drawer");
   const btn = document.getElementById("btn-league-switcher");
   if (!drawer) return;
+  renderLeagueDrawerContent();
   drawer.classList.add("open");
   if (btn) btn.classList.add("open");
   document.body.style.overflow = "hidden";
@@ -4526,10 +4583,66 @@ function closeLeagueDrawer(event) {
   document.body.style.overflow = "";
 }
 
+function renderLobbyHero() {
+  const guestBlock = document.getElementById("hero-guest-block");
+  const authBlock = document.getElementById("hero-auth-block");
+  const heroName = document.getElementById("hero-user-name");
+  const quickLeagues = document.getElementById("hero-auth-quick-leagues");
+
+  if (!state.authUser) {
+    if (guestBlock) guestBlock.style.display = "block";
+    if (authBlock) authBlock.style.display = "none";
+    return;
+  }
+
+  if (guestBlock) guestBlock.style.display = "none";
+  if (authBlock) authBlock.style.display = "block";
+
+  const firstName = state.myPlayer || (state.userProfile && state.userProfile.full_name ? state.userProfile.full_name.split(" ")[0] : null) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Psychic");
+  if (heroName) heroName.textContent = firstName;
+
+  if (quickLeagues) {
+    const isOG = isUserInOGLeague();
+    quickLeagues.innerHTML = `
+      ${isOG ? `
+      <button type="button" class="btn-hero-primary" onclick="enterLeagueView('OG League')">
+        <span>🏆 Enter OG League</span>
+        <span class="hero-btn-arrow">→</span>
+      </button>
+      ` : ""}
+      <button type="button" class="btn-hero-secondary" onclick="enterLeagueView('solo')">
+        <span>🔮 Enter Solo Play</span>
+      </button>
+      <button type="button" class="btn-hero-secondary" onclick="openCreateLeagueModal()">
+        <span>➕ Create a League</span>
+      </button>
+    `;
+  }
+}
+
+function handleHubLeagueClick() {
+  if (!state.authUser) {
+    openAuthModal("Sign in or create an account to play in leagues");
+  } else {
+    openLeagueDrawer();
+  }
+}
+
+function handleHubSoloClick() {
+  if (!state.authUser) {
+    openAuthModal("Sign in or create an account to play Solo Psychic");
+  } else {
+    enterLeagueView("solo");
+  }
+}
+
 function updateAppShellForMode() {
   const isLobby = state.appMode === "lobby";
+  const isAuth = Boolean(state.authUser);
   document.body.classList.toggle("is-lobby-mode", isLobby);
   document.body.classList.toggle("is-league-mode", !isLobby);
+  document.body.classList.toggle("is-authenticated", isAuth);
+  document.body.classList.toggle("is-guest", !isAuth);
 
   const brandTitle = document.getElementById("header-brand-title");
   const brandSub = document.getElementById("header-brand-sub");
@@ -4538,6 +4651,13 @@ function updateAppShellForMode() {
   if (isLobby) {
     if (brandTitle) brandTitle.textContent = "Sports Psychic";
     if (brandSub) brandSub.textContent = "Know the Game";
+    if (activePill) {
+      if (isUserInOGLeague()) {
+        activePill.textContent = (state.activeLeague === "solo") ? "🔮 Solo Play" : "🏆 OG League";
+      } else {
+        activePill.textContent = "🔮 Solo Play";
+      }
+    }
   } else {
     const isSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic");
     if (brandTitle) {
@@ -4551,48 +4671,20 @@ function updateAppShellForMode() {
     }
   }
 
-  // Update header sign in button based on authentication status
-  const signInBtn = document.getElementById("btn-header-signin");
-  if (signInBtn) {
-    if (state.authUser) {
-      const displayName = state.myPlayer || (state.userProfile && state.userProfile.full_name) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Account");
-      signInBtn.innerHTML = `
-        <span class="signin-sparkle">👤</span>
-        <span>${displayName}</span>
-      `;
-      signInBtn.onclick = () => openProfileModal();
-      signInBtn.title = `Signed in as ${state.authUser.email} (Click for Account Profile)`;
-    } else {
-      signInBtn.innerHTML = `
-        <span class="signin-sparkle">🔮</span>
-        <span>Sign In</span>
-      `;
-      signInBtn.onclick = () => openAuthModal();
-      signInBtn.title = "Sign In or Join Free";
-    }
-  }
+  renderHeaderProfile();
+  renderLobbyHero();
 }
 
 function selectLeague(leagueId) {
   state.activeLeague = (leagueId === "solo" ? "solo" : "OG League");
-  const cardOg = document.getElementById("drawer-card-og");
-  const cardSolo = document.getElementById("drawer-card-solo");
-
-  if (state.activeLeague === "solo") {
-    if (cardOg) cardOg.classList.remove("active");
-    if (cardSolo) cardSolo.classList.add("active");
-    showToast("🔮 Switched to Solo Psychic Mode!");
-    closeLeagueDrawer();
-    updateAppShellForMode();
-    switchTab("players");
-  } else {
-    if (cardOg) cardOg.classList.add("active");
-    if (cardSolo) cardSolo.classList.remove("active");
-    showToast("🏆 Switched to OG League!");
-    closeLeagueDrawer();
-    updateAppShellForMode();
-    renderTabContent();
+  closeLeagueDrawer();
+  if (state.appMode !== "league") {
+    enterLeagueView(state.activeLeague);
+    return;
   }
+  updateAppShellForMode();
+  switchTab(state.activeLeague === "solo" ? "players" : "leaderboard");
+  showToast(leagueId === "solo" ? "🔮 Switched to Solo Psychic" : "🏆 Switched to OG League!");
 }
 
 function enterLeagueView(leagueId = "OG League") {
@@ -4602,15 +4694,21 @@ function enterLeagueView(leagueId = "OG League") {
     return;
   }
 
+  if (leagueId === "OG League" && !isUserInOGLeague()) {
+    showToast("⚠️ OG League is private to official members. Entering Solo Play.");
+    leagueId = "solo";
+  }
+
   state.appMode = "league";
+  state.activeLeague = (leagueId === "solo" ? "solo" : "OG League");
   try {
     sessionStorage.setItem("sp_app_mode", "league");
   } catch (e) {}
 
-  selectLeague(leagueId === "solo" ? "solo" : "OG League");
+  closeLeagueDrawer();
   updateAppShellForMode();
-  switchTab("leaderboard");
-  showToast(leagueId === "solo" ? "🔮 Entered Solo Psychic" : "🏆 Welcome to OG League!");
+  switchTab(state.activeLeague === "solo" ? "players" : "leaderboard");
+  showToast(state.activeLeague === "solo" ? "🔮 Entered Solo Psychic" : "🏆 Welcome to OG League!");
 }
 
 function exitToLobby() {
@@ -5068,6 +5166,13 @@ window.handleQuickInviteSubmit = handleQuickInviteSubmit;
 window.openCreateLeagueModal = openCreateLeagueModal;
 window.openJoinLeagueModal = openJoinLeagueModal;
 window.syncLeagueStandingsFromCloud = syncLeagueStandingsFromCloud;
+window.renderLeagueDrawerContent = renderLeagueDrawerContent;
+window.renderLobbyHero = renderLobbyHero;
+window.handleHubLeagueClick = handleHubLeagueClick;
+window.handleHubSoloClick = handleHubSoloClick;
+window.renderAccountProfileModal = renderAccountProfileModal;
+window.isUserInOGLeague = isUserInOGLeague;
+window.getUserAvatarHtml = getUserAvatarHtml;
 
 
 

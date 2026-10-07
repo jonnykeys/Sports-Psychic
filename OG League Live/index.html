@@ -77,22 +77,47 @@
 
     <!-- LOBBY HERO & NEW USER ONBOARDING (Visible in Lobby Mode) -->
     <div id="lobby-hero-card" class="lobby-hero-card">
-      <h2 class="hero-headline">Predict NFL Games.<br><span class="hero-glow">Prove You're Psychic.</span></h2>
-      <p class="hero-subtext">Lock in score predictions, challenge friends in custom weekly or full-season leagues, and compete against the world in Solo Play.</p>
-      
-      <div class="hero-cta-group">
-        <button class="btn-hero-primary" onclick="openAuthModal('Get Started Free')">
-          <span>🔮 Get Started Free</span>
-          <span class="hero-btn-arrow">→</span>
-        </button>
-        <button class="btn-hero-secondary" onclick="openAuthModal('Sign In')">
-          <span>Sign In</span>
-        </button>
+      <!-- GUEST STATE (Visible when not signed in) -->
+      <div id="hero-guest-block" class="hero-guest-block">
+        <h2 class="hero-headline">Predict NFL Games.<br><span class="hero-glow">Prove You're Psychic.</span></h2>
+        <p class="hero-subtext">Lock in score predictions, challenge friends in custom weekly or full-season leagues, and compete against the world in Solo Play.</p>
+        
+        <div class="hero-cta-group">
+          <button class="btn-hero-primary" onclick="openAuthModal('Get Started Free')">
+            <span>🔮 Get Started Free</span>
+            <span class="hero-btn-arrow">→</span>
+          </button>
+          <button class="btn-hero-secondary" onclick="openAuthModal('Sign In')">
+            <span>Sign In</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AUTHENTICATED STATE (Visible when signed in) -->
+      <div id="hero-auth-block" class="hero-auth-block" style="display: none;">
+        <h2 class="hero-headline">Welcome Back, <span id="hero-user-name" class="hero-glow">Psychic</span>!</h2>
+        <p class="hero-subtext">Ready to make your predictions? Join a league with an invite code or jump straight into your leagues below.</p>
+
+        <!-- Quick League Invite Code Box for Signed-In Users -->
+        <div class="lobby-invite-bar">
+          <div class="invite-bar-header">
+            <span class="invite-icon">🔑</span>
+            <span class="invite-bar-label">Have a League Code? Enter 6-digit Code:</span>
+          </div>
+          <div class="invite-input-row">
+            <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. SP2026" maxlength="12" autocomplete="off" autocapitalize="characters">
+            <button class="btn-invite-submit" onclick="handleQuickInviteSubmit()">Join League</button>
+          </div>
+        </div>
+
+        <div id="hero-auth-quick-leagues" class="hero-auth-quick-leagues">
+          <!-- Dynamically populated -->
+        </div>
       </div>
 
       <!-- Ways to Play Hub Cards -->
       <div class="lobby-hub-grid">
-        <div class="hub-card" onclick="openAuthModal('Custom Leagues')">
+        <div class="hub-card" onclick="handleHubLeagueClick()">
           <div class="hub-card-header">
             <span class="hub-icon">🏆</span>
             <span class="hub-badge league-tag">PLAY WITH FRIENDS</span>
@@ -102,7 +127,7 @@
           <div class="hub-card-action">Create League →</div>
         </div>
 
-        <div class="hub-card" onclick="openAuthModal('Solo Psychic')">
+        <div class="hub-card" onclick="handleHubSoloClick()">
           <div class="hub-card-header">
             <span class="hub-icon">🔮</span>
             <span class="hub-badge solo-tag">GLOBAL COMMUNITY</span>
@@ -358,34 +383,8 @@
         <span class="season-badge-pill">2026 Season</span>
       </div>
 
-      <!-- Option 1: OG League (Active) -->
-      <div id="drawer-card-og" class="league-option-card active" onclick="selectLeague('OG League')">
-        <div class="league-card-left">
-          <div class="league-icon-box">🏆</div>
-          <div>
-            <div class="league-title-row">
-              <span class="league-name">OG League</span>
-              <span class="league-status-tag">ACTIVE</span>
-            </div>
-            <div class="league-meta-row" id="drawer-og-meta">12 Members • 2026 NFL Season</div>
-          </div>
-        </div>
-        <span class="league-check-icon">✓</span>
-      </div>
-
-      <!-- Option 2: Solo Psychic Play -->
-      <div id="drawer-card-solo" class="league-option-card" onclick="selectLeague('solo')">
-        <div class="league-card-left">
-          <div class="league-icon-box icon-solo">🔮</div>
-          <div>
-            <div class="league-title-row">
-              <span class="league-name">Solo Psychic Play</span>
-            </div>
-            <div class="league-meta-row">Personal Full-Season Forecasting & Accuracies</div>
-          </div>
-        </div>
-        <span class="league-switch-arrow">Switch &rarr;</span>
-      </div>
+      <!-- Dynamic List of Leagues Rendered by renderLeagueDrawerContent() -->
+      <div id="drawer-leagues-list" class="drawer-leagues-list"></div>
 
       <div class="drawer-divider"></div>
 
@@ -465,32 +464,24 @@
     </button>
   </nav>
 
-  <!-- PROFILE PERSONALIZATION MODAL -->
+  <!-- USER ACCOUNT PROFILE MODAL -->
   <div id="profile-modal" class="profile-modal-backdrop" onclick="closeProfileModal(event)">
-    <div class="profile-modal-dialog" onclick="event.stopPropagation()">
+    <div class="profile-modal-dialog profile-account-dialog" onclick="event.stopPropagation()">
       <div class="profile-modal-header">
         <div class="profile-modal-title-row">
           <span class="profile-modal-icon">👤</span>
-          <h3>Personalize Your Profile</h3>
+          <h3 id="profile-modal-title">Account Profile</h3>
         </div>
         <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Close">&times;</button>
       </div>
 
-      <!-- Authenticated Account Banner (Rendered dynamically if signed in) -->
-      <div id="profile-account-card" style="display: none;"></div>
+      <div id="profile-account-card" class="account-card-body">
+        <!-- Dynamically rendered by renderAccountProfileModal() -->
+      </div>
 
-      <p class="profile-modal-desc">
-        Select who you are on this device to highlight your picks across all 16 games and jump straight to your scorecard.
-      </p>
-      <div id="profile-modal-grid" class="profile-modal-grid">
-        <!-- Rendered dynamically -->
-      </div>
       <div class="profile-modal-footer">
-        <button id="btn-clear-profile" class="btn-clear-profile" onclick="setMyPlayer(null)">Clear Profile (Guest Mode)</button>
-        <button class="btn-modal-done" onclick="closeProfileModal()">Done</button>
-      </div>
-      <div id="profile-signout-container" style="display: none; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 12px;">
         <button type="button" id="btn-auth-signout" class="btn-auth-signout" onclick="handleSignOut()">Sign Out of Account</button>
+        <button class="btn-modal-done" onclick="closeProfileModal()">Close</button>
       </div>
     </div>
   </div>
