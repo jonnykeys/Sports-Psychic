@@ -486,6 +486,28 @@
     </div>
   </div>
 
+  <!-- 32-TEAM NFL PICKER MODAL -->
+  <div id="team-picker-modal" class="profile-modal-backdrop" onclick="closeTeamPicker(event)" style="z-index: 600;">
+    <div class="profile-modal-dialog team-picker-dialog" onclick="event.stopPropagation()">
+      <div class="profile-modal-header">
+        <div class="profile-modal-title-row">
+          <span class="profile-modal-icon">🏈</span>
+          <h3>Select Favorite Team</h3>
+        </div>
+        <button class="profile-modal-close" onclick="closeTeamPicker()" aria-label="Close">&times;</button>
+      </div>
+      <div class="team-picker-search-wrap">
+        <input type="text" id="team-picker-search" class="team-picker-search-input" placeholder="Search 32 NFL teams..." oninput="filterTeamPickerList(this.value)" autocomplete="off">
+      </div>
+      <div id="team-picker-grid" class="team-picker-grid">
+        <!-- Rendered dynamically by renderTeamPickerGrid() -->
+      </div>
+      <div class="profile-modal-footer">
+        <button type="button" class="btn-modal-done" onclick="closeTeamPicker()" style="width: 100%;">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- H2H PLAYER SELECTION MODAL -->
   <div id="h2h-picker-modal" class="h2h-picker-modal" onclick="closeH2HPicker(event)">
     <div class="h2h-picker-card" onclick="event.stopPropagation()">

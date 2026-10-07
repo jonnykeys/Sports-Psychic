@@ -5038,58 +5038,246 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   word-break: break-all;
 }
 
-.account-badge-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: rgba(245, 184, 0, 0.14);
-  border: 1px solid rgba(245, 184, 0, 0.4);
-  color: #ffd700;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-top: 10px;
-}
-
-.account-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* Account Details List in Profile Modal */
+.account-details-list {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  margin-top: 14px;
+  padding: 14px 4px 6px;
 }
 
-.account-stat-box {
+.account-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 12px 10px;
-  text-align: center;
 }
 
-.stat-box-label {
-  display: block;
-  font-size: 0.64rem;
-  font-weight: 800;
+.detail-label-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-icon {
+  font-size: 1rem;
+}
+
+.detail-title {
+  font-size: 0.74rem;
+  font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.stat-box-val {
-  display: block;
-  font-size: 1.15rem;
+.detail-val-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-val-text {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.fav-team-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 10px 4px 8px;
+  border-radius: 8px;
+  max-width: 175px;
+}
+
+.fav-team-chip {
+  font-size: 0.68rem;
   font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
-.stat-box-val.rank-val {
-  color: var(--accent-gold);
+.fav-team-name {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.stat-box-val.pts-val {
-  color: var(--accent-blue);
+.btn-change-team {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-change-team:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+/* Account Profile Modal Footer - Fixed Side-by-Side (No Overlap) */
+.profile-account-dialog .profile-modal-footer {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 14px 18px !important;
+}
+
+.profile-account-dialog .btn-auth-signout {
+  flex: 1 1 50% !important;
+  width: auto !important;
+  margin-top: 0 !important;
+  padding: 10px 14px !important;
+  text-align: center !important;
+}
+
+.profile-account-dialog .btn-modal-done {
+  flex: 1 1 50% !important;
+  width: auto !important;
+  margin-left: 0 !important;
+  padding: 10px 14px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  text-align: center !important;
+}
+
+.profile-account-dialog .btn-modal-done:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* 32-Team Picker Modal */
+.team-picker-dialog {
+  max-width: 480px !important;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.team-picker-search-wrap {
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.team-picker-search-input {
+  width: 100%;
+  background: rgba(5, 9, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 9px 14px;
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.team-picker-search-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.team-picker-grid {
+  padding: 12px 18px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 460px) {
+  .team-picker-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.team-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.team-picker-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.team-picker-item.selected {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.18);
+}
+
+.team-picker-chip {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.team-picker-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-picker-name {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-picker-meta {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.team-picker-check {
+  color: #38bdf8;
+  font-weight: 900;
+  font-size: 0.95rem;
+  flex-shrink: 0;
 }
 
 .badge-my-roster-tag {
@@ -5331,16 +5519,18 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   text-decoration: underline;
 }
 
-/* Quick Invite Code Bar */
+/* Quick Invite Code Bar (Optimized for iPhone & Mobile) */
 .lobby-invite-bar {
-  background: rgba(12, 20, 44, 0.7);
-  border: 1px dashed rgba(245, 184, 0, 0.3);
-  border-radius: 12px;
-  padding: 10px 14px;
+  background: rgba(12, 20, 44, 0.75);
+  border: 1px dashed rgba(245, 184, 0, 0.35);
+  border-radius: 14px;
+  padding: 10px 12px;
   margin-bottom: 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .invite-bar-header {
@@ -5362,14 +5552,20 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 .invite-input-row {
   display: flex;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
 }
 
 .lobby-quick-code-input {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  height: 38px;
   background: rgba(5, 9, 20, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-  padding: 6px 10px;
+  border-radius: 999px;
+  padding: 0 14px;
   color: #ffffff;
   font-size: 0.82rem;
   font-weight: 800;
@@ -5377,6 +5573,7 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   text-transform: uppercase;
   outline: none;
   font-family: inherit;
+  box-sizing: border-box;
   transition: border-color 0.15s ease;
 }
 
@@ -5386,20 +5583,27 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 }
 
 .btn-invite-submit {
-  background: linear-gradient(135deg, rgba(245, 184, 0, 0.2), rgba(217, 119, 6, 0.3));
-  border: 1px solid rgba(245, 184, 0, 0.45);
+  flex: 0 0 auto;
+  height: 38px;
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.25), rgba(217, 119, 6, 0.35));
+  border: 1.5px solid rgba(245, 184, 0, 0.55);
   color: #ffd700;
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 800;
-  border-radius: 8px;
-  padding: 0 12px;
+  border-radius: 999px;
+  padding: 0 14px;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  box-sizing: border-box;
+  box-shadow: 0 0 10px rgba(245, 184, 0, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-invite-submit:hover {
-  background: linear-gradient(135deg, rgba(245, 184, 0, 0.35), rgba(217, 119, 6, 0.45));
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.4), rgba(217, 119, 6, 0.5));
   border-color: #ffd700;
   color: #ffffff;
 }
