@@ -5903,6 +5903,114 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   background: rgba(14, 23, 42, 0.95);
 }
 
+/* Auth Mode Tabs (Sign In vs Create Account) */
+.auth-mode-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.auth-mode-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  text-align: center;
+}
+
+.auth-mode-tab:hover {
+  color: #ffffff;
+}
+
+.auth-mode-tab.active {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  font-weight: 800;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.auth-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.auth-char-count {
+  font-size: 0.64rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.auth-input-prefix {
+  position: absolute;
+  left: 12px;
+  font-weight: 800;
+  color: var(--accent-blue);
+  font-size: 0.88rem;
+  pointer-events: none;
+}
+
+.auth-input.has-prefix {
+  padding-left: 28px !important;
+  padding-right: 36px !important;
+}
+
+.auth-input-status-icon {
+  position: absolute;
+  right: 12px;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.auth-field-feedback {
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 3px;
+  min-height: 16px;
+  line-height: 1.3;
+}
+
+.auth-field-feedback.success {
+  color: #4ade80;
+}
+
+.auth-field-feedback.error {
+  color: #f87171;
+}
+
+.auth-field-feedback.warn {
+  color: #fbbf24;
+}
+
+.auth-submit-row {
+  margin-top: 6px;
+}
+
+.auth-submit-row .btn-auth-primary {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.86rem;
+}
+
 .auth-btn-row {
   display: flex;
   gap: 10px;
@@ -5945,6 +6053,32 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 .btn-auth-secondary:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.4);
+}
+
+.auth-switch-mode-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.btn-auth-switch-text {
+  background: none;
+  border: none;
+  color: var(--accent-gold);
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.btn-auth-switch-text:hover {
+  color: #ffd700;
 }
 
 .auth-magic-link-row {
