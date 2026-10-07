@@ -4907,27 +4907,66 @@ body {
 }
 
 /* ---------------------------------------------------------
-   MODE-SPECIFIC VISIBILITY TOGGLES
+/* ---------------------------------------------------------
+   AUTHENTICATION & MODE-SPECIFIC VISIBILITY TOGGLES
    --------------------------------------------------------- */
-/* When in LOBBY MODE (Unauthenticated / Public Home) */
+/* Header Controls Visibility based on Authentication State */
+body.is-authenticated #btn-header-signin {
+  display: none !important;
+}
+
+body.is-authenticated #btn-header-profile {
+  display: inline-flex !important;
+}
+
+body.is-authenticated #btn-league-switcher {
+  display: inline-flex !important;
+}
+
+body.is-guest #btn-header-signin {
+  display: inline-flex !important;
+}
+
+body.is-guest #btn-header-profile {
+  display: none !important;
+}
+
+body.is-guest #btn-league-switcher {
+  display: none !important;
+}
+
+/* Home Hero Card Guest vs Authenticated State */
+body.is-authenticated #hero-guest-block {
+  display: none !important;
+}
+
+body.is-authenticated #hero-auth-block {
+  display: block !important;
+}
+
+body.is-guest #hero-guest-block {
+  display: block !important;
+}
+
+body.is-guest #hero-auth-block {
+  display: none !important;
+}
+
+/* Header League View Mode: Exit Button & Main Hero */
 body.is-lobby-mode #btn-exit-league {
   display: none !important;
 }
 
-body.is-lobby-mode #btn-league-switcher {
-  display: none !important;
+body.is-lobby-mode #lobby-hero-card {
+  display: block !important;
 }
 
-body.is-lobby-mode #btn-header-profile {
-  display: none !important;
-}
-
-body.is-lobby-mode #btn-header-signin {
+body.is-league-mode #btn-exit-league {
   display: inline-flex !important;
 }
 
-body.is-lobby-mode #lobby-hero-card {
-  display: block !important;
+body.is-league-mode #lobby-hero-card {
+  display: none !important;
 }
 
 /* Hide Lobby Hero & Stepper when viewing NFL standings or Rules */
@@ -4944,31 +4983,127 @@ body.is-lobby-mode .bottom-nav [data-tab="players"] {
   display: none !important;
 }
 
-/* When in LEAGUE VIEW MODE (Inside a specific league like OG League or Solo) */
-body.is-league-mode #btn-exit-league {
-  display: inline-flex !important;
-}
-
-body.is-league-mode #btn-league-switcher {
-  display: inline-flex !important;
-}
-
-body.is-league-mode #btn-header-profile {
-  display: inline-flex !important;
-}
-
-body.is-league-mode #btn-header-signin {
-  display: none !important;
-}
-
-body.is-league-mode #lobby-hero-card {
-  display: none !important;
-}
-
 /* 5-tab layout in League Mode */
 body.is-league-mode .bottom-nav [data-tab="leaderboard"],
 body.is-league-mode .bottom-nav [data-tab="players"] {
   display: flex !important;
+}
+
+/* Authenticated Hero Quick League Buttons */
+.hero-auth-quick-leagues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Account Profile Modal Dialog */
+.profile-account-dialog {
+  max-width: 440px !important;
+}
+
+.account-card-body {
+  padding: 10px 18px 16px 18px;
+}
+
+.account-profile-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 4px 14px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-avatar-large {
+  margin-bottom: 12px;
+}
+
+.account-avatar-large .player-avatar {
+  border-width: 3px !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.4);
+}
+
+.account-name-lg {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.account-email-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  word-break: break-all;
+}
+
+.account-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(245, 184, 0, 0.14);
+  border: 1px solid rgba(245, 184, 0, 0.4);
+  color: #ffd700;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.account-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.account-stat-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.stat-box-label {
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.stat-box-val {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.stat-box-val.rank-val {
+  color: var(--accent-gold);
+}
+
+.stat-box-val.pts-val {
+  color: var(--accent-blue);
+}
+
+.badge-my-roster-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1.5px solid rgba(56, 189, 248, 0.45);
+  border-radius: 999px;
+  color: #38bdf8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 /* ---------------------------------------------------------
