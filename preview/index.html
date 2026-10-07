@@ -34,7 +34,7 @@
       <img src="logo.png?v=3.2" class="brand-logo" alt="Sports Psychic Logo" width="32" height="32">
       <div class="brand-text">
         <h1 id="header-brand-title">Sports Psychic</h1>
-        <div class="subtext" id="header-brand-sub">PREDICT NFL GAMES</div>
+        <div class="subtext" id="header-brand-sub">KNOW THE GAME</div>
       </div>
     </div>
 
@@ -74,6 +74,57 @@
 
   <!-- MAIN VIEWPORT -->
   <main class="main-content">
+
+    <!-- LOBBY HERO & NEW USER ONBOARDING (Visible in Lobby Mode) -->
+    <div id="lobby-hero-card" class="lobby-hero-card">
+      <h2 class="hero-headline">Predict NFL Games.<br><span class="hero-glow">Prove You're Psychic.</span></h2>
+      <p class="hero-subtext">Lock in score predictions, challenge friends in custom weekly or full-season leagues, and compete against the world in Solo Play.</p>
+      
+      <div class="hero-cta-group">
+        <button class="btn-hero-primary" onclick="openAuthModal('Get Started Free')">
+          <span>🔮 Get Started Free</span>
+          <span class="hero-btn-arrow">→</span>
+        </button>
+        <button class="btn-hero-secondary" onclick="openJoinLeagueModal()">
+          <span>🔑 Have an Invite Code?</span>
+        </button>
+      </div>
+
+      <!-- Quick League Invite Code Box -->
+      <div class="lobby-invite-bar">
+        <div class="invite-bar-header">
+          <span class="invite-icon">🔑</span>
+          <span class="invite-bar-label">Invited by a friend? Enter 6-digit League Code:</span>
+        </div>
+        <div class="invite-input-row">
+          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. SP2026" maxlength="12" autocomplete="off" autocapitalize="characters">
+          <button class="btn-invite-submit" onclick="handleQuickInviteSubmit()">Join League</button>
+        </div>
+      </div>
+
+      <!-- Ways to Play Hub Cards -->
+      <div class="lobby-hub-grid">
+        <div class="hub-card" onclick="openAuthModal('Custom Leagues')">
+          <div class="hub-card-header">
+            <span class="hub-icon">🏆</span>
+            <span class="hub-badge league-tag">PLAY WITH FRIENDS</span>
+          </div>
+          <div class="hub-card-title">Custom Leagues</div>
+          <div class="hub-card-desc">Weekly rolling locks or full-season lock. Custom scoring & 3x multipliers with your crew.</div>
+          <div class="hub-card-action">Create League →</div>
+        </div>
+
+        <div class="hub-card" onclick="openAuthModal('Solo Psychic')">
+          <div class="hub-card-header">
+            <span class="hub-icon">🔮</span>
+            <span class="hub-badge solo-tag">GLOBAL COMMUNITY</span>
+          </div>
+          <div class="hub-card-title">Solo Psychic Play</div>
+          <div class="hub-card-desc">Craft custom Prophecy slates and rank on Global Community Leaderboards.</div>
+          <div class="hub-card-action">Play Solo →</div>
+        </div>
+      </div>
+    </div>
 
     <!-- WEEK SELECTOR STEPPER & DROPDOWN -->
     <section class="week-stepper-container" aria-label="Week Selector">
@@ -166,58 +217,6 @@
 
     <!-- TAB 2: MATCHUPS & PICKS (Or Public NFL Schedule in Lobby Mode) -->
     <section id="tab-matchups" class="tab-view" role="tabpanel">
-      <!-- LOBBY HERO & NEW USER ONBOARDING (Visible in Lobby Mode) -->
-      <div id="lobby-hero-card" class="lobby-hero-card">
-        <div class="hero-badge">🏈 2026 NFL SEASON • PREDICTION ARENA</div>
-        <h2 class="hero-headline">Predict NFL Games.<br><span class="hero-glow">Prove You're Psychic.</span></h2>
-        <p class="hero-subtext">Lock in score predictions, challenge friends in custom weekly or full-season leagues, and compete against the world in Solo Play.</p>
-        
-        <div class="hero-cta-group">
-          <button class="btn-hero-primary" onclick="openAuthModal('Get Started Free')">
-            <span>🔮 Get Started Free</span>
-            <span class="hero-btn-arrow">→</span>
-          </button>
-          <button class="btn-hero-secondary" onclick="openJoinLeagueModal()">
-            <span>🔑 Have an Invite Code?</span>
-          </button>
-        </div>
-
-        <!-- Quick League Invite Code Box -->
-        <div class="lobby-invite-bar">
-          <div class="invite-bar-header">
-            <span class="invite-icon">🔑</span>
-            <span class="invite-bar-label">Invited by a friend? Enter 6-digit League Code:</span>
-          </div>
-          <div class="invite-input-row">
-            <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. OG2026" maxlength="12" autocomplete="off" autocapitalize="characters">
-            <button class="btn-invite-submit" onclick="handleQuickInviteSubmit()">Join League</button>
-          </div>
-        </div>
-
-        <!-- Ways to Play Hub Cards -->
-        <div class="lobby-hub-grid">
-          <div class="hub-card" onclick="openAuthModal('Custom Leagues')">
-            <div class="hub-card-header">
-              <span class="hub-icon">🏆</span>
-              <span class="hub-badge league-tag">PLAY WITH FRIENDS</span>
-            </div>
-            <div class="hub-card-title">Custom Leagues</div>
-            <div class="hub-card-desc">Weekly rolling locks or full-season lock. Custom scoring & 3x multipliers with your crew.</div>
-            <div class="hub-card-action">Create League →</div>
-          </div>
-
-          <div class="hub-card" onclick="openAuthModal('Solo Psychic')">
-            <div class="hub-card-header">
-              <span class="hub-icon">🔮</span>
-              <span class="hub-badge solo-tag">GLOBAL COMMUNITY</span>
-            </div>
-            <div class="hub-card-title">Solo Psychic Play</div>
-            <div class="hub-card-desc">Craft custom Prophecy slates and rank on Global Community Leaderboards.</div>
-            <div class="hub-card-action">Play Solo →</div>
-          </div>
-        </div>
-      </div>
-
       <div id="matchups-week-banner" class="week-summary-banner">
         <div class="week-summary-left">
           <span id="matchup-banner-title" class="week-summary-title">Week 4 Matchups</span>

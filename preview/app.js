@@ -1077,6 +1077,7 @@ function switchTab(tabId, smoothScroll = true) {
   }
 
   state.activeTab = tabId;
+  document.body.setAttribute("data-active-tab", tabId);
   closeWeekDropdown();
   
   // Update nav buttons
@@ -4536,7 +4537,7 @@ function updateAppShellForMode() {
 
   if (isLobby) {
     if (brandTitle) brandTitle.textContent = "Sports Psychic";
-    if (brandSub) brandSub.textContent = "PREDICT NFL GAMES";
+    if (brandSub) brandSub.textContent = "KNOW THE GAME";
   } else {
     const isSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic");
     if (brandTitle) {
@@ -5005,7 +5006,7 @@ function openCreateLeagueModal() {
 function openJoinLeagueModal() {
   closeLeagueDrawer();
   closeAuthModal();
-  const code = prompt("Enter 6-character League Invite Code (e.g. OG2026):");
+  const code = prompt("Enter 6-character League Invite Code (e.g. SP2026):");
   if (code && code.trim()) {
     processLeagueCode(code);
   }
