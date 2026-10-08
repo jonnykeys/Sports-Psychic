@@ -6180,7 +6180,15 @@ async function handleUserSession(user) {
   renderHeaderProfile();
   syncLeagueStandingsFromCloud();
 
-  if (state.postAuthAction === "solo") {
+  if (state.pendingJoinLeague) {
+    const pending = state.pendingJoinLeague;
+    state.pendingJoinLeague = null;
+    if (pending.name === "OG League" || pending.join_code === "OG2026") {
+      enterLeagueView("OG League");
+    } else {
+      enterLeagueView(pending.name);
+    }
+  } else if (state.postAuthAction === "solo") {
     state.postAuthAction = null;
     enterSoloPlay();
   }
@@ -6739,44 +6747,224 @@ async function handleSignOut() {
   renderApp();
 }
 
-function processLeagueCode(code) {
-  const cleanCode = (code || "").trim().toUpperCase();
-  if (!cleanCode) return;
+function handleLobbyCodeInput(val) {
+  const input = document.getElementById("lobby-quick-code-input");
+  const btn = document.getElementById("btn-lobby-join-league") || document.querySelector(".btn-invite-submit");
+  const feedback = document.getElementById("lobby-code-feedback");
 
-  if (!state.authUser) {
-    showToast("🔮 Please sign in or create an account first.");
-    openAuthModal("Sign in to join a league with your invite code");
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+    feedback.className = "lobby-code-feedback";
+  }
+  if (input) {
+    input.classList.remove("input-error");
+  }
+
+  const clean = (val || "").trim().toUpperCase();
+  const hasSix = clean.length === 6;
+
+  if (btn) {
+    if (hasSix) {
+      btn.removeAttribute("disabled");
+      btn.classList.remove("disabled");
+      btn.setAttribute("aria-disabled", "false");
+    } else {
+      btn.setAttribute("disabled", "true");
+      btn.classList.add("disabled");
+      btn.setAttribute("aria-disabled", "true");
+    }
+  }
+}
+
+async function handleQuickInviteSubmit() {
+  const input = document.getElementById("lobby-quick-code-input");
+  const btn = document.getElementById("btn-lobby-join-league") || document.querySelector(".btn-invite-submit");
+  const feedback = document.getElementById("lobby-code-feedback");
+  const code = (input && input.value) ? input.value.trim().toUpperCase() : "";
+
+  // Requirement: Button should not be accessible until 6 digits are typed
+  if (!code || code.length !== 6) {
+    if (btn) {
+      btn.setAttribute("disabled", "true");
+      btn.classList.add("disabled");
+      btn.setAttribute("aria-disabled", "true");
+    }
     return;
   }
 
-  if (cleanCode === "OG2026" || cleanCode === "OG") {
+  // Loading state
+  if (btn) {
+    btn.setAttribute("disabled", "true");
+    btn.classList.add("disabled");
+    btn.innerHTML = `<span>Checking...</span>`;
+  }
+
+  try {
+    let matchedLeague = null;
+
+    // 1. Check built-in OG League code
+    if (code === "OG2026") {
+      matchedLeague = {
+        name: "OG League",
+        join_code: "OG2026"
+      };
+    }
+
+    // 2. Query Supabase for league matching this join code
+    initSupabaseClient();
+    if (!matchedLeague && supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from("leagues")
+          .select("id, name, join_code, scoring_format, season_year")
+          .eq("join_code", code)
+          .maybeSingle();
+
+        if (data && !error && data.name) {
+          matchedLeague = data;
+        }
+      } catch (err) {
+        console.warn("Error looking up league code:", err);
+      }
+    }
+
+    // If there is no league that matches the code entered
+    if (!matchedLeague) {
+      // Notification toast
+      showToast(`⚠️ League code "${code}" does not exist.`);
+
+      // Inline notification below the search bar
+      if (feedback) {
+        feedback.innerHTML = `<span>⚠️ League code "<strong>${code}</strong>" does not exist. Please check your 6-digit code and try again.</span>`;
+        feedback.className = "lobby-code-feedback error";
+        feedback.style.display = "flex";
+      }
+
+      // Input visual highlight with shake animation
+      if (input) {
+        input.classList.remove("input-error");
+        void input.offsetWidth;
+        input.classList.add("input-error");
+        input.focus();
+      }
+
+      return;
+    }
+
+    // League found! Clear feedback
+    if (feedback) {
+      feedback.textContent = "";
+      feedback.style.display = "none";
+    }
+    if (input) {
+      input.classList.remove("input-error");
+    }
+
+    // Require sign-in to join league
+    if (!state.authUser) {
+      state.pendingJoinLeague = matchedLeague;
+      showToast(`🔮 Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
+      openAuthModal(`Sign in to join ${matchedLeague.name}`);
+      return;
+    }
+
+    // Authenticated user joins league
+    if (matchedLeague.name === "OG League" || matchedLeague.join_code === "OG2026") {
+      enterLeagueView("OG League");
+      if (!state.myPlayer) {
+        setTimeout(() => {
+          showToast("👋 Welcome to OG League! Select your name to claim your picks:");
+          openProfileModal();
+        }, 500);
+      } else {
+        showToast("🏆 Welcome to OG League!");
+      }
+    } else {
+      state.activeLeague = matchedLeague.name;
+      showToast(`🏆 Welcome to ${matchedLeague.name}!`);
+      enterLeagueView(matchedLeague.name);
+    }
+
+    if (input) {
+      input.value = "";
+      handleLobbyCodeInput("");
+    }
+  } finally {
+    if (btn) {
+      btn.innerHTML = `<span>Join League</span>`;
+      const cur = (input && input.value) ? input.value.trim() : "";
+      if (cur.length === 6) {
+        btn.removeAttribute("disabled");
+        btn.classList.remove("disabled");
+        btn.setAttribute("aria-disabled", "false");
+      } else {
+        btn.setAttribute("disabled", "true");
+        btn.classList.add("disabled");
+        btn.setAttribute("aria-disabled", "true");
+      }
+    }
+  }
+}
+
+async function processLeagueCode(code) {
+  const cleanCode = (code || "").trim().toUpperCase();
+  if (!cleanCode) return;
+
+  if (cleanCode.length !== 6) {
+    showToast("⚠️ League codes must be 6 digits (e.g. OG2026).");
+    return;
+  }
+
+  let matchedLeague = null;
+  if (cleanCode === "OG2026") {
+    matchedLeague = { name: "OG League", join_code: "OG2026" };
+  }
+
+  initSupabaseClient();
+  if (!matchedLeague && supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from("leagues")
+        .select("id, name, join_code")
+        .eq("join_code", cleanCode)
+        .maybeSingle();
+
+      if (data && !error && data.name) {
+        matchedLeague = data;
+      }
+    } catch (e) {
+      console.warn("League lookup error:", e);
+    }
+  }
+
+  if (!matchedLeague) {
+    showToast(`⚠️ League code "${cleanCode}" does not exist.`);
+    return;
+  }
+
+  if (!state.authUser) {
+    state.pendingJoinLeague = matchedLeague;
+    showToast(`🔮 Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
+    openAuthModal(`Sign in to join ${matchedLeague.name}`);
+    return;
+  }
+
+  if (matchedLeague.name === "OG League" || matchedLeague.join_code === "OG2026") {
     enterLeagueView("OG League");
     if (!state.myPlayer) {
       setTimeout(() => {
         showToast("👋 Welcome to OG League! Select your name to claim your picks:");
         openProfileModal();
       }, 500);
+    } else {
+      showToast("🏆 Welcome to OG League!");
     }
-  } else if (cleanCode === "SOLO") {
-    enterLeagueView("solo");
   } else {
-    showToast(`🔑 Joined League with code: ${cleanCode}`);
+    state.activeLeague = matchedLeague.name;
+    showToast(`🏆 Welcome to ${matchedLeague.name}!`);
+    enterLeagueView(matchedLeague.name);
   }
-}
-
-function handleQuickInviteSubmit() {
-  if (!state.authUser) {
-    showToast("🔮 Please sign in or create an account first.");
-    openAuthModal("Sign in to join a league with your invite code");
-    return;
-  }
-  const input = document.getElementById("lobby-quick-code-input");
-  const code = (input && input.value) ? input.value.trim().toUpperCase() : "";
-  if (!code) {
-    showToast("⚠️ Please enter a 6-digit League Code (e.g. SP2026)");
-    return;
-  }
-  processLeagueCode(code);
 }
 
 function openCreateLeagueModal() {
@@ -6827,6 +7015,7 @@ window.handleGoogleSignIn = handleGoogleSignIn;
 window.handleSignOut = handleSignOut;
 window.processLeagueCode = processLeagueCode;
 window.handleQuickInviteSubmit = handleQuickInviteSubmit;
+window.handleLobbyCodeInput = handleLobbyCodeInput;
 window.openCreateLeagueModal = openCreateLeagueModal;
 window.openJoinLeagueModal = openJoinLeagueModal;
 window.syncLeagueStandingsFromCloud = syncLeagueStandingsFromCloud;
