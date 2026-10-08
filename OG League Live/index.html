@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=15.0">
+  <link rel="stylesheet" href="style.css?v=15.1">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -187,10 +187,9 @@
           </svg>
         </button>
         <button id="week-dropdown-trigger" class="week-stepper-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" title="Choose NFL Week">
-          <span id="week-trigger-title" class="week-trigger-title">Week 4</span>
-          <span id="week-trigger-badge" class="week-trigger-badge badge-live">
-            <span class="pulse-dot"></span>
-            <span id="week-badge-text">LIVE</span>
+          <span id="week-trigger-title" class="week-trigger-title">Week 5</span>
+          <span id="week-trigger-badge" class="week-trigger-badge badge-current">
+            <span id="week-badge-text">CURRENT WEEK</span>
           </span>
           <svg id="week-trigger-chevron" class="week-trigger-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="6 9 12 15 18 9"></polyline>
@@ -208,7 +207,7 @@
         <div class="week-dropdown-topbar">
           <span class="week-dropdown-heading">Select NFL Week</span>
           <button id="btn-jump-current-week" class="btn-jump-current-week" type="button" title="Jump to current active week">
-            <span class="pulse-dot"></span>
+            <span class="current-dot"></span>
             <span>Current Week</span>
           </button>
         </div>
@@ -781,6 +780,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=15.0"></script>
+  <script src="app.js?v=15.1"></script>
 </body>
 </html>
