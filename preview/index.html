@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=14.4">
+  <link rel="stylesheet" href="style.css?v=14.5">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -98,21 +98,22 @@
         <h2 class="hero-headline">Welcome Back, <span id="hero-user-name" class="hero-glow">Psychic</span>!</h2>
         <p class="hero-subtext">Ready to make your predictions? Join a league with an invite code or jump straight into your leagues below.</p>
 
-        <!-- Quick League Invite Code Box for Signed-In Users -->
-        <div class="lobby-invite-bar">
-          <div class="invite-bar-header">
-            <span class="invite-icon">🔑</span>
-            <span class="invite-bar-label">Have a League Code? Enter 6-digit Code:</span>
-          </div>
-          <div class="invite-input-row">
-            <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. SP2026" maxlength="12" autocomplete="off" autocapitalize="characters">
-            <button class="btn-invite-submit" onclick="handleQuickInviteSubmit()">Join League</button>
-          </div>
-        </div>
-
         <div id="hero-auth-quick-leagues" class="hero-auth-quick-leagues">
           <!-- Dynamically populated -->
         </div>
+      </div>
+
+      <!-- Quick League Invite Code Box (Search Bar) -->
+      <div class="lobby-invite-bar">
+        <div class="invite-bar-header">
+          <span class="invite-icon">🔑</span>
+          <span class="invite-bar-label">Have a League Code? Enter 6-digit Code:</span>
+        </div>
+        <div class="invite-input-row">
+          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. OG2026" maxlength="6" autocomplete="off" autocapitalize="characters" oninput="handleLobbyCodeInput(this.value)" onkeydown="if(event.key === 'Enter' && this.value.trim().length === 6) handleQuickInviteSubmit()">
+          <button type="button" id="btn-lobby-join-league" class="btn-invite-submit disabled" onclick="handleQuickInviteSubmit()" disabled aria-disabled="true">Join League</button>
+        </div>
+        <div id="lobby-code-feedback" class="lobby-code-feedback" style="display: none;"></div>
       </div>
 
       <!-- Ways to Play Hub Cards -->
@@ -714,6 +715,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=14.4"></script>
+  <script src="app.js?v=14.5"></script>
 </body>
 </html>
