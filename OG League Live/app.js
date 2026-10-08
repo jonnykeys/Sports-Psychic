@@ -6396,7 +6396,7 @@ async function handleEmailSignUp() {
         passInput.value = "";
         setTimeout(() => passInput.focus(), 150);
       }
-      setAuthAlert("ℹ️ An account with this email already exists. We've switched you to Sign In — please enter your password to continue.", "info");
+      setAuthAlert("⚠️ <strong>Account Already Exists</strong><br>An account is already registered with this email. We've switched you to Sign In — enter your password to continue.", "warning");
       showToast("Account already exists. Please sign in.");
       return;
     }
