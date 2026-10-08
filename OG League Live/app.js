@@ -350,7 +350,13 @@ let state = {
   cloudStandings: null,     // Live Standings directly from Supabase view public.league_standings
   pickSheets: [],           // User's custom Solo Play Pick Sheets
   activeSheetId: null,      // Active Pick Sheet selected for viewing/editing
-  createSheetFormat: "season" // Format option in create sheet modal
+  createSheetFormat: "season", // Format option in create sheet modal
+  userLeagues: [],          // Custom leagues user owns or is a member of
+  activeLeagueData: null,   // Full league record if active league is custom
+  customLeagueMembers: [],  // Roster of members in active custom league
+  customLeaguePicks: {},    // Picks submitted by members in active custom league
+  myCustomLeaguePicks: {},  // Current user's picks in active custom league: { [gameId]: { winner, awayScore, homeScore, multiplier } }
+  createLeagueScoring: "classic_proximity" // Scoring option in create league modal
 };
 
 // Navigation state persistence key for sessionStorage
@@ -2408,6 +2414,10 @@ function getWeeklyRankMovements(weekNum = state.currentWeek) {
 }
 
 function renderLeaderboard() {
+  if (state.activeLeagueData) {
+    renderCustomLeagueLeaderboard();
+    return;
+  }
   const podiumEl = document.getElementById("podium-container");
   const listEl = document.getElementById("leaderboard-list");
   const sectionTitleEl = document.getElementById("leaderboard-section-title");
@@ -3214,7 +3224,11 @@ function renderMatchups() {
           </div>
         </div>
 
-        ${isLobby ? renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo) : `
+        ${isLobby
+          ? renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
+          : (state.activeLeagueData
+              ? renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
+              : `
           <!-- League Pick Consensus Bar -->
           ${totalPicks > 0 ? `
             <div class="matchup-consensus-container" aria-label="League pick consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
@@ -3281,7 +3295,7 @@ function renderMatchups() {
               <span class="unpicked-names">${unpicked.map(u => u.name).join(", ")}</span>
             </div>
           ` : ""}
-        `}
+        `)}
       </article>
     `;
   }).join("");
@@ -4889,7 +4903,7 @@ function renderLeagueDrawerContent() {
 
   const isOG = isUserInOGLeague();
   const activeIsHome = (state.appMode === "lobby");
-  const activeIsOG = (state.activeLeague === "OG League") && (state.appMode === "league");
+  const activeIsOG = (state.activeLeague === "OG League") && (state.appMode === "league") && !state.activeLeagueData;
   const activeIsSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic") && (state.appMode === "solo");
 
   let html = "";
@@ -4930,7 +4944,35 @@ function renderLeagueDrawerContent() {
     `;
   }
 
-  // 3. Solo Psychic Play (Available to all users)
+  // 3. User's Custom Leagues
+  if (state.authUser && Array.isArray(state.userLeagues) && state.userLeagues.length > 0) {
+    state.userLeagues.forEach(l => {
+      const isCurrentActive = Boolean(state.activeLeagueData && state.activeLeagueData.id === l.id && state.appMode === "league");
+      const isCommish = l.role === "commissioner" || (state.authUser && l.commissioner_id === state.authUser.id);
+      const formatLabel = l.scoring_format === "winner_only" ? "Winner Only" : "Classic Proximity";
+
+      html += `
+        <div id="drawer-card-league-${l.id}" class="league-option-card ${isCurrentActive ? "active" : ""}" onclick="selectLeague('${l.id}')">
+          <div class="league-card-left">
+            <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">🏆</div>
+            <div>
+              <div class="league-title-row">
+                <span class="league-name">${l.name}</span>
+                <span class="league-role-tag ${isCommish ? "commissioner" : "member"}">${isCommish ? "COMMISH" : "MEMBER"}</span>
+                ${isCurrentActive ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+              </div>
+              <div class="league-meta-row">
+                <span class="league-join-code-tag">🔑 ${l.join_code}</span> • ${formatLabel}
+              </div>
+            </div>
+          </div>
+          ${isCurrentActive ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+        </div>
+      `;
+    });
+  }
+
+  // 4. Solo Psychic Play (Available to all users)
   html += `
     <div id="drawer-card-solo" class="league-option-card ${activeIsSolo ? "active" : ""}" onclick="enterSoloPlay()">
       <div class="league-card-left">
@@ -4990,8 +5032,17 @@ function renderLobbyHero() {
   if (heroName) heroName.textContent = firstName;
 
   if (quickLeagues) {
+    let pills = "";
+    if (Array.isArray(state.userLeagues) && state.userLeagues.length > 0) {
+      pills = state.userLeagues.map(l => `
+        <button type="button" class="btn-hero-secondary" onclick="selectLeague('${l.id}')" style="margin-right: 8px; margin-bottom: 8px;">
+          <span>🏆 ${l.name}</span>
+        </button>
+      `).join("");
+    }
     quickLeagues.innerHTML = `
-      <button type="button" class="btn-hero-secondary" onclick="openCreateLeagueModal()">
+      ${pills}
+      <button type="button" class="btn-hero-secondary" onclick="openCreateLeagueModal()" style="margin-bottom: 8px;">
         <span>➕ Create a League</span>
       </button>
     `;
@@ -5000,9 +5051,9 @@ function renderLobbyHero() {
 
 function handleHubLeagueClick() {
   if (!state.authUser) {
-    openAuthModal("Sign in or create an account to play in leagues");
+    openAuthModal("Sign in or create an account to create and join leagues");
   } else {
-    openLeagueDrawer();
+    openCreateLeagueModal();
   }
 }
 
@@ -5045,11 +5096,21 @@ function updateAppShellForMode() {
       activePill.textContent = "Solo Play";
     }
   } else {
-    const isOG = (state.activeLeague === "OG League");
-    if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
-    if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
-    if (activePill) {
-      activePill.textContent = isOG ? "OG League" : (state.activeLeague || "League");
+    if (state.activeLeagueData) {
+      if (brandTitle) brandTitle.textContent = state.activeLeagueData.name;
+      if (brandSub) {
+        brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('${state.activeLeagueData.join_code}')" title="Click to copy invite code">🔑 ${state.activeLeagueData.join_code}</span>`;
+      }
+      if (activePill) {
+        activePill.textContent = state.activeLeagueData.name;
+      }
+    } else {
+      const isOG = (state.activeLeague === "OG League");
+      if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
+      if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
+      if (activePill) {
+        activePill.textContent = isOG ? "OG League" : (state.activeLeague || "League");
+      }
     }
   }
 
@@ -5067,32 +5128,115 @@ function selectLeague(leagueId) {
     enterSoloPlay();
     return;
   }
-  enterLeagueView("OG League");
+  if (leagueId === "OG League") {
+    state.activeLeagueData = null;
+    enterLeagueView("OG League");
+    return;
+  }
+  enterCustomLeague(leagueId);
 }
 
 function enterLeagueView(leagueId = "OG League") {
+  if (leagueId !== "OG League") {
+    enterCustomLeague(leagueId);
+    return;
+  }
+
   if (!state.authUser) {
     showToast("🔮 Please sign in or create an account to enter leagues.");
     openAuthModal("Sign in or create an account to access leagues");
     return;
   }
 
-  if (leagueId === "OG League" && !isUserInOGLeague()) {
+  if (!isUserInOGLeague()) {
     showToast("⚠️ OG League is private to official members. Entering Solo Play.");
     enterSoloPlay();
     return;
   }
 
+  state.activeLeagueData = null;
   state.appMode = "league";
   state.activeLeague = "OG League";
   try {
     sessionStorage.setItem("sp_app_mode", "league");
+    sessionStorage.removeItem("sp_active_league_id");
   } catch (e) {}
 
   closeLeagueDrawer();
   updateAppShellForMode();
   switchTab("leaderboard");
   showToast("🏆 Welcome to OG League!");
+}
+
+async function enterCustomLeague(leagueId) {
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account to enter leagues.");
+    openAuthModal("Sign in or create an account to access leagues");
+    return;
+  }
+
+  initSupabaseClient();
+  let leagueObj = null;
+
+  if (Array.isArray(state.userLeagues)) {
+    leagueObj = state.userLeagues.find(l => l.id === leagueId || l.join_code === leagueId || l.name === leagueId);
+  }
+
+  if (!leagueObj && supabaseClient) {
+    try {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leagueId);
+      const query = supabaseClient.from("leagues").select("*");
+      const { data } = isUuid ? await query.eq("id", leagueId).maybeSingle() : await query.eq("join_code", leagueId).maybeSingle();
+      if (data) leagueObj = data;
+    } catch (e) {
+      console.warn("Failed fetching league:", e);
+    }
+  }
+
+  if (!leagueObj) {
+    showToast("⚠️ Could not load league details.");
+    return;
+  }
+
+  // Ensure user is in league_members
+  if (supabaseClient && state.authUser) {
+    try {
+      const { data: mem } = await supabaseClient
+        .from("league_members")
+        .select("role")
+        .eq("league_id", leagueObj.id)
+        .eq("user_id", state.authUser.id)
+        .maybeSingle();
+
+      if (!mem) {
+        await supabaseClient
+          .from("league_members")
+          .insert({
+            league_id: leagueObj.id,
+            user_id: state.authUser.id,
+            role: "member"
+          });
+        await loadUserLeagues();
+      }
+    } catch (err) {
+      console.warn("Error verifying league membership:", err);
+    }
+  }
+
+  state.activeLeagueData = leagueObj;
+  state.activeLeague = leagueObj.name;
+  state.appMode = "league";
+  try {
+    sessionStorage.setItem("sp_app_mode", "league");
+    sessionStorage.setItem("sp_active_league_id", leagueObj.id);
+  } catch (e) {}
+
+  closeLeagueDrawer();
+  updateAppShellForMode();
+  await loadCustomLeagueData(leagueObj.id);
+  switchTab("matchups");
+  showToast(`🏆 Welcome to ${leagueObj.name}!`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function enterSoloPlay() {
@@ -5121,9 +5265,11 @@ async function enterSoloPlay() {
 
 function exitToLobby() {
   state.appMode = "lobby";
+  state.activeLeagueData = null;
   state.activeSheetId = null;
   try {
     sessionStorage.setItem("sp_app_mode", "lobby");
+    sessionStorage.removeItem("sp_active_league_id");
   } catch (e) {}
 
   updateAppShellForMode();
@@ -6188,6 +6334,7 @@ async function handleUserSession(user) {
   }
 
   await loadSoloPickSheets();
+  await loadUserLeagues();
   updateAppShellForMode();
   renderHeaderProfile();
   syncLeagueStandingsFromCloud();
@@ -6198,7 +6345,7 @@ async function handleUserSession(user) {
     if (pending.name === "OG League" || pending.join_code === "OG2026") {
       enterLeagueView("OG League");
     } else {
-      enterLeagueView(pending.name);
+      await enterCustomLeague(pending.id || pending.join_code || pending.name);
     }
   } else if (state.postAuthAction === "solo") {
     state.postAuthAction = null;
@@ -6883,6 +7030,7 @@ async function handleQuickInviteSubmit() {
 
     // Authenticated user joins league
     if (matchedLeague.name === "OG League" || matchedLeague.join_code === "OG2026") {
+      state.activeLeagueData = null;
       enterLeagueView("OG League");
       if (!state.myPlayer) {
         setTimeout(() => {
@@ -6893,9 +7041,31 @@ async function handleQuickInviteSubmit() {
         showToast("🏆 Welcome to OG League!");
       }
     } else {
-      state.activeLeague = matchedLeague.name;
+      if (supabaseClient && state.authUser) {
+        try {
+          const { data: existingMem } = await supabaseClient
+            .from("league_members")
+            .select("id")
+            .eq("league_id", matchedLeague.id)
+            .eq("user_id", state.authUser.id)
+            .maybeSingle();
+
+          if (!existingMem) {
+            await supabaseClient
+              .from("league_members")
+              .insert({
+                league_id: matchedLeague.id,
+                user_id: state.authUser.id,
+                role: "member"
+              });
+            await loadUserLeagues();
+          }
+        } catch (err) {
+          console.warn("Error registering league membership:", err);
+        }
+      }
       showToast(`🏆 Welcome to ${matchedLeague.name}!`);
-      enterLeagueView(matchedLeague.name);
+      await enterCustomLeague(matchedLeague.id);
     }
 
     if (input) {
@@ -6930,7 +7100,7 @@ async function processLeagueCode(code) {
 
   let matchedLeague = null;
   if (cleanCode === "OG2026") {
-    matchedLeague = { name: "OG League", join_code: "OG2026" };
+    matchedLeague = { id: "e0000000-0000-0000-0000-000000000001", name: "OG League", join_code: "OG2026" };
   }
 
   initSupabaseClient();
@@ -6938,7 +7108,7 @@ async function processLeagueCode(code) {
     try {
       const { data, error } = await supabaseClient
         .from("leagues")
-        .select("id, name, join_code")
+        .select("id, name, join_code, scoring_format, season_year, commissioner_id")
         .eq("join_code", cleanCode)
         .maybeSingle();
 
@@ -6963,6 +7133,7 @@ async function processLeagueCode(code) {
   }
 
   if (matchedLeague.name === "OG League" || matchedLeague.join_code === "OG2026") {
+    state.activeLeagueData = null;
     enterLeagueView("OG League");
     if (!state.myPlayer) {
       setTimeout(() => {
@@ -6973,14 +7144,76 @@ async function processLeagueCode(code) {
       showToast("🏆 Welcome to OG League!");
     }
   } else {
-    state.activeLeague = matchedLeague.name;
+    if (supabaseClient && state.authUser) {
+      try {
+        const { data: existingMem } = await supabaseClient
+          .from("league_members")
+          .select("id")
+          .eq("league_id", matchedLeague.id)
+          .eq("user_id", state.authUser.id)
+          .maybeSingle();
+
+        if (!existingMem) {
+          await supabaseClient
+            .from("league_members")
+            .insert({
+              league_id: matchedLeague.id,
+              user_id: state.authUser.id,
+              role: "member"
+            });
+          await loadUserLeagues();
+        }
+      } catch (err) {
+        console.warn("Error registering league membership:", err);
+      }
+    }
     showToast(`🏆 Welcome to ${matchedLeague.name}!`);
-    enterLeagueView(matchedLeague.name);
+    await enterCustomLeague(matchedLeague.id);
   }
+}
+
+function copyLeagueCode(code) {
+  if (!code) return;
+  if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showToast(`📋 Copied league code "${code}" to clipboard!`);
+    }).catch(() => {
+      prompt("League Invite Code (Ctrl+C to copy):", code);
+    });
+  } else {
+    prompt("League Invite Code (Ctrl+C to copy):", code);
+  }
+}
+
+function generateNewLeagueCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let rand = "SP";
+  for (let i = 0; i < 4; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  const input = document.getElementById("league-code-input");
+  if (input) {
+    input.value = rand;
+  }
+  const feedback = document.getElementById("league-code-feedback");
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+  }
+  return rand;
+}
+
+function selectLeagueScoring(format) {
+  state.createLeagueScoring = format;
+  const prox = document.getElementById("league-scoring-proximity");
+  const win = document.getElementById("league-scoring-winner");
+  if (prox) prox.classList.toggle("active", format === "classic_proximity");
+  if (win) win.classList.toggle("active", format === "winner_only");
 }
 
 function openCreateLeagueModal() {
   closeLeagueDrawer();
+  closeAuthModal();
 
   if (!state.authUser) {
     showToast("🔮 Please sign in or create an account to create a league.");
@@ -6988,9 +7221,156 @@ function openCreateLeagueModal() {
     return;
   }
 
-  const leagueName = prompt("Enter a name for your new league (e.g. Sunday Pick'em Pool):");
-  if (leagueName && leagueName.trim()) {
-    showToast(`🏆 League "${leagueName.trim()}" created! Share code: SP${Math.floor(1000 + Math.random() * 9000)}`);
+  const modal = document.getElementById("create-league-modal");
+  const nameInput = document.getElementById("league-name-input");
+  const feedback = document.getElementById("league-code-feedback");
+
+  if (nameInput) nameInput.value = "";
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+  }
+
+  generateNewLeagueCode();
+  selectLeagueScoring("classic_proximity");
+
+  if (modal) {
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  if (nameInput) {
+    setTimeout(() => nameInput.focus(), 100);
+  }
+}
+
+function closeCreateLeagueModal(event) {
+  if (event && event.target && event.target.id !== "create-league-modal") {
+    return;
+  }
+  const modal = document.getElementById("create-league-modal");
+  if (modal) {
+    modal.classList.remove("open");
+  }
+  document.body.style.overflow = "";
+}
+
+async function handleCreateLeagueSubmit() {
+  if (!state.authUser) {
+    closeCreateLeagueModal();
+    openAuthModal("Sign in or create an account to create your custom league");
+    return;
+  }
+
+  const nameInput = document.getElementById("league-name-input");
+  const codeInput = document.getElementById("league-code-input");
+  const feedback = document.getElementById("league-code-feedback");
+  const btn = document.getElementById("btn-submit-create-league");
+
+  const leagueName = (nameInput?.value || "").trim();
+  const joinCode = (codeInput?.value || "").trim().toUpperCase();
+  const scoringFormat = state.createLeagueScoring || "classic_proximity";
+
+  if (!leagueName || leagueName.length < 3) {
+    if (feedback) {
+      feedback.textContent = "Please enter a league name (at least 3 characters).";
+      feedback.className = "auth-field-feedback error";
+      feedback.style.display = "block";
+    }
+    if (nameInput) nameInput.focus();
+    return;
+  }
+
+  if (!joinCode || joinCode.length !== 6 || !/^[A-Z0-9]{6}$/.test(joinCode)) {
+    if (feedback) {
+      feedback.textContent = "6-digit code must be 6 letters or numbers (e.g. SP2026).";
+      feedback.className = "auth-field-feedback error";
+      feedback.style.display = "block";
+    }
+    if (codeInput) codeInput.focus();
+    return;
+  }
+
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+  }
+
+  const origBtnText = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>Creating League...</span>`;
+  }
+
+  try {
+    initSupabaseClient();
+    if (!supabaseClient) throw new Error("Supabase connection unavailable.");
+
+    // Check if code is already taken
+    const { data: existing } = await supabaseClient
+      .from("leagues")
+      .select("id")
+      .eq("join_code", joinCode)
+      .maybeSingle();
+
+    if (existing) {
+      if (feedback) {
+        feedback.textContent = `Code "${joinCode}" is already taken. Try randomizing another code!`;
+        feedback.className = "auth-field-feedback error";
+        feedback.style.display = "block";
+      }
+      return;
+    }
+
+    // Insert new league
+    const { data: newLeague, error: leagueErr } = await supabaseClient
+      .from("leagues")
+      .insert({
+        name: leagueName,
+        join_code: joinCode,
+        commissioner_id: state.authUser.id,
+        scoring_format: scoringFormat,
+        season_year: 2026,
+        is_public: false,
+        lock_type: "rolling_kickoff",
+        require_scores: scoringFormat !== "winner_only"
+      })
+      .select()
+      .single();
+
+    if (leagueErr || !newLeague) {
+      throw new Error(leagueErr?.message || "Failed to create league.");
+    }
+
+    // Insert commissioner membership
+    await supabaseClient
+      .from("league_members")
+      .insert({
+        league_id: newLeague.id,
+        user_id: state.authUser.id,
+        role: "commissioner"
+      });
+
+    // Refresh user leagues
+    await loadUserLeagues();
+
+    closeCreateLeagueModal();
+    showToast(`🏆 League "${newLeague.name}" created! Join code: ${newLeague.join_code}`);
+
+    // Immediately enter the newly created league!
+    await enterCustomLeague(newLeague.id);
+
+  } catch (err) {
+    console.error("League creation error:", err);
+    if (feedback) {
+      feedback.textContent = err.message || "Failed to create league. Please try again.";
+      feedback.className = "auth-field-feedback error";
+      feedback.style.display = "block";
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
+    }
   }
 }
 
@@ -7006,8 +7386,715 @@ function openJoinLeagueModal() {
 
   const code = prompt("Enter 6-character League Invite Code (e.g. SP2026):");
   if (code && code.trim()) {
-    processLeagueCode(code);
+    processLeagueCode(code.trim());
   }
+}
+
+// ---------------------------------------------------------
+// CUSTOM LEAGUE DATA & IN-LEAGUE PICKS ENGINE (OPTION A)
+// ---------------------------------------------------------
+
+async function loadUserLeagues() {
+  if (!state.authUser) {
+    state.userLeagues = [];
+    return;
+  }
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("league_members")
+      .select("league_id, role, joined_at, leagues:league_id(id, name, join_code, scoring_format, season_year, commissioner_id)")
+      .eq("user_id", state.authUser.id);
+
+    if (!error && Array.isArray(data)) {
+      state.userLeagues = data
+        .filter(row => row.leagues && row.leagues.name)
+        .map(row => ({
+          id: row.leagues.id,
+          name: row.leagues.name,
+          join_code: row.leagues.join_code,
+          scoring_format: row.leagues.scoring_format || "classic_proximity",
+          season_year: row.leagues.season_year || 2026,
+          commissioner_id: row.leagues.commissioner_id,
+          role: row.role || "member",
+          joined_at: row.joined_at
+        }));
+
+      try {
+        localStorage.setItem(`sp_user_leagues_${state.authUser.id}`, JSON.stringify(state.userLeagues));
+      } catch (e) {}
+    } else {
+      try {
+        const cached = localStorage.getItem(`sp_user_leagues_${state.authUser.id}`);
+        if (cached) state.userLeagues = JSON.parse(cached);
+      } catch (e) {}
+    }
+  } catch (e) {
+    try {
+      const cached = localStorage.getItem(`sp_user_leagues_${state.authUser.id}`);
+      if (cached) state.userLeagues = JSON.parse(cached);
+    } catch (err) {}
+  }
+
+  renderLobbyHero();
+}
+
+async function loadCustomLeagueData(leagueId) {
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    // 1. Fetch roster members with profiles
+    const { data: members, error: memErr } = await supabaseClient
+      .from("league_members")
+      .select("id, league_id, user_id, role, total_points, season_correct, season_closest, season_exact, joined_at, profiles:user_id(id, username, full_name, avatar_url, favorite_team)")
+      .eq("league_id", leagueId);
+
+    if (!memErr && Array.isArray(members)) {
+      state.customLeagueMembers = members.map(m => {
+        const prof = m.profiles || {};
+        const displayName = prof.full_name || prof.username || (m.role === "commissioner" ? "Commissioner" : "Member");
+        return {
+          id: m.id,
+          userId: m.user_id,
+          role: m.role || "member",
+          username: prof.username || displayName,
+          fullName: prof.full_name || displayName,
+          displayName: displayName,
+          avatarUrl: prof.avatar_url || "",
+          favoriteTeam: prof.favorite_team || "",
+          totalPoints: m.total_points || 0,
+          seasonCorrect: m.season_correct || 0,
+          seasonClosest: m.season_closest || 0,
+          seasonExact: m.season_exact || 0,
+          joinedAt: m.joined_at
+        };
+      });
+    }
+
+    // 2. Fetch all picks for this custom league
+    const { data: picks, error: picksErr } = await supabaseClient
+      .from("picks")
+      .select("*")
+      .eq("league_id", leagueId);
+
+    if (!picksErr && Array.isArray(picks)) {
+      const picksByGame = {};
+      const myPicks = {};
+
+      picks.forEach(p => {
+        if (!picksByGame[p.game_id]) {
+          picksByGame[p.game_id] = [];
+        }
+        picksByGame[p.game_id].push(p);
+
+        if (state.authUser && p.user_id === state.authUser.id) {
+          myPicks[p.game_id] = {
+            winner: p.picked_winner,
+            awayScore: p.predicted_away,
+            homeScore: p.predicted_home,
+            multiplier: Boolean(p.is_multiplier),
+            points: p.points_earned,
+            bonusPoints: p.bonus_points,
+            isClosest: p.is_closest,
+            isExact: p.is_exact
+          };
+        }
+      });
+
+      state.customLeaguePicks = picksByGame;
+      state.myCustomLeaguePicks = myPicks;
+    }
+
+    if (state.activeTab === "matchups") {
+      renderMatchups();
+    } else if (state.activeTab === "leaderboard") {
+      renderLeaderboard();
+    }
+  } catch (err) {
+    console.warn("Error loading custom league data:", err);
+  }
+}
+
+async function setCustomLeaguePick(gameId, winnerTeam) {
+  if (!state.activeLeagueData || !state.authUser) return;
+  const game = findGameById(gameId);
+  if (!game || isGameLockedForPicking(game, state.currentWeek)) {
+    showToast("🔒 Picks are locked for this game (kickoff passed).");
+    return;
+  }
+
+  const cur = state.myCustomLeaguePicks[gameId] || {
+    awayScore: 24,
+    homeScore: 21,
+    multiplier: false
+  };
+
+  cur.winner = winnerTeam;
+  state.myCustomLeaguePicks[gameId] = cur;
+
+  updateCustomPickBarUI(gameId);
+  saveCustomLeaguePickToCloud(gameId);
+}
+
+async function stepCustomLeagueScore(gameId, side, delta) {
+  if (!state.activeLeagueData || !state.authUser) return;
+  const game = findGameById(gameId);
+  if (!game || isGameLockedForPicking(game, state.currentWeek)) {
+    showToast("🔒 Picks are locked for this game.");
+    return;
+  }
+
+  const cur = state.myCustomLeaguePicks[gameId] || {
+    winner: null,
+    awayScore: 24,
+    homeScore: 21,
+    multiplier: false
+  };
+
+  if (side === "away") {
+    cur.awayScore = Math.max(0, Math.min(99, (Number(cur.awayScore) || 0) + delta));
+  } else {
+    cur.homeScore = Math.max(0, Math.min(99, (Number(cur.homeScore) || 0) + delta));
+  }
+
+  const parts = (game.matchup || "").split("@").map(s => s.trim());
+  const awayTeam = parts[0] || "AWAY";
+  const homeTeam = parts[1] || "HOME";
+  if (!cur.winner) {
+    if (cur.awayScore > cur.homeScore) cur.winner = awayTeam;
+    else if (cur.homeScore > cur.awayScore) cur.winner = homeTeam;
+  }
+
+  state.myCustomLeaguePicks[gameId] = cur;
+  updateCustomPickBarUI(gameId);
+  saveCustomLeaguePickToCloud(gameId);
+}
+
+async function toggleCustomLeagueMultiplier(gameId, weekNum = state.currentWeek) {
+  if (!state.activeLeagueData || !state.authUser) return;
+  const game = findGameById(gameId);
+  if (!game || isGameLockedForPicking(game, weekNum)) {
+    showToast("🔒 Multiplier locked: kickoff has passed.");
+    return;
+  }
+
+  const cur = state.myCustomLeaguePicks[gameId] || {
+    winner: null,
+    awayScore: 24,
+    homeScore: 21,
+    multiplier: false
+  };
+
+  const willBeActive = !cur.multiplier;
+
+  if (willBeActive) {
+    const weekKey = `Week ${weekNum}`;
+    const weekGames = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) || [];
+    weekGames.forEach(g => {
+      if (g.id !== gameId && state.myCustomLeaguePicks[g.id] && state.myCustomLeaguePicks[g.id].multiplier) {
+        state.myCustomLeaguePicks[g.id].multiplier = false;
+        updateCustomPickBarUI(g.id);
+        saveCustomLeaguePickToCloud(g.id);
+      }
+    });
+    cur.multiplier = true;
+    showToast("⭐ 3X Lock of the Week activated!");
+  } else {
+    cur.multiplier = false;
+    showToast("⭐ 3X Lock removed.");
+  }
+
+  state.myCustomLeaguePicks[gameId] = cur;
+  updateCustomPickBarUI(gameId);
+  saveCustomLeaguePickToCloud(gameId);
+}
+
+const customPickSaveTimers = new Map();
+
+function saveCustomLeaguePickToCloud(gameId) {
+  if (!state.activeLeagueData || !state.authUser || !supabaseClient) return;
+
+  if (customPickSaveTimers.has(gameId)) {
+    clearTimeout(customPickSaveTimers.get(gameId));
+  }
+
+  const timer = setTimeout(async () => {
+    customPickSaveTimers.delete(gameId);
+    const pick = state.myCustomLeaguePicks[gameId];
+    if (!pick || !pick.winner) return;
+
+    const playerName = state.myPlayer ||
+      (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) ||
+      (state.authUser.user_metadata && state.authUser.user_metadata.username) ||
+      (state.authUser.email ? state.authUser.email.split("@")[0] : "Psychic");
+
+    try {
+      const awaySc = (pick.awayScore !== null && pick.awayScore !== undefined) ? Number(pick.awayScore) : 0;
+      const homeSc = (pick.homeScore !== null && pick.homeScore !== undefined) ? Number(pick.homeScore) : 0;
+
+      const { error } = await supabaseClient
+        .from("picks")
+        .upsert({
+          league_id: state.activeLeagueData.id,
+          user_id: state.authUser.id,
+          player_name: playerName,
+          game_id: gameId,
+          week_num: state.currentWeek,
+          picked_winner: pick.winner,
+          predicted_away: awaySc,
+          predicted_home: homeSc,
+          is_multiplier: Boolean(pick.multiplier),
+          updated_at: new Date().toISOString()
+        }, { onConflict: "league_id, player_name, game_id" });
+
+      if (error) {
+        console.warn("Error saving custom pick to Supabase:", error);
+      } else {
+        if (!state.customLeaguePicks[gameId]) {
+          state.customLeaguePicks[gameId] = [];
+        }
+        const existingIdx = state.customLeaguePicks[gameId].findIndex(p => p.user_id === state.authUser.id);
+        const record = {
+          league_id: state.activeLeagueData.id,
+          user_id: state.authUser.id,
+          player_name: playerName,
+          game_id: gameId,
+          week_num: state.currentWeek,
+          picked_winner: pick.winner,
+          predicted_away: awaySc,
+          predicted_home: homeSc,
+          is_multiplier: Boolean(pick.multiplier),
+          points_earned: pick.points || 0,
+          bonus_points: pick.bonusPoints || 0,
+          is_closest: Boolean(pick.isClosest),
+          is_exact: Boolean(pick.isExact)
+        };
+        if (existingIdx >= 0) {
+          state.customLeaguePicks[gameId][existingIdx] = record;
+        } else {
+          state.customLeaguePicks[gameId].push(record);
+        }
+      }
+    } catch (e) {
+      console.warn("Exception saving custom pick:", e);
+    }
+  }, 400);
+
+  customPickSaveTimers.set(gameId, timer);
+}
+
+function updateCustomPickBarUI(gameId) {
+  const bar = document.getElementById(`cl-pick-bar-${gameId}`);
+  if (!bar) {
+    renderMatchups();
+    return;
+  }
+  const game = findGameById(gameId);
+  if (!game) return;
+  const parts = (game.matchup || "").split("@").map(s => s.trim());
+  const awayTeam = parts[0] || "AWAY";
+  const homeTeam = parts[1] || "HOME";
+
+  const awayInfo = NFL_TEAMS[awayTeam] || NFL_TEAMS[normalizeTeamCode(awayTeam)] || { color: '#2a3b50' };
+  const homeInfo = NFL_TEAMS[homeTeam] || NFL_TEAMS[normalizeTeamCode(homeTeam)] || { color: '#2a3b50' };
+
+  const temp = document.createElement("div");
+  temp.innerHTML = renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo);
+  const newBar = temp.querySelector(`#cl-pick-bar-${gameId}`);
+  if (newBar) {
+    bar.innerHTML = newBar.innerHTML;
+    bar.className = newBar.className;
+  }
+}
+
+function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo) {
+  const lockStatus = getGameLockStatus(game, state.currentWeek);
+  const isLocked = lockStatus.isLocked;
+  const isWinnerOnly = state.activeLeagueData && state.activeLeagueData.scoring_format === "winner_only";
+
+  const myPick = state.myCustomLeaguePicks[game.id] || {};
+  const selectedWinner = (myPick.winner || "").toUpperCase().trim();
+  const awaySelected = (selectedWinner === awayTeam);
+  const homeSelected = (selectedWinner === homeTeam);
+  const awayScore = (myPick.awayScore !== undefined && myPick.awayScore !== null) ? myPick.awayScore : 24;
+  const homeScore = (myPick.homeScore !== undefined && myPick.homeScore !== null) ? myPick.homeScore : 21;
+  const isMultiplier = Boolean(myPick.multiplier);
+
+  const allGamePicks = state.customLeaguePicks[game.id] || [];
+  const totalSubmitted = allGamePicks.length;
+  const totalMembers = (state.customLeagueMembers && state.customLeagueMembers.length) || 1;
+
+  let memberPicksHtml = "";
+  if (isLocked) {
+    const awayPicks = [];
+    const homePicks = [];
+
+    allGamePicks.forEach(p => {
+      const pName = p.player_name || "Member";
+      const isMe = Boolean(state.authUser && p.user_id === state.authUser.id);
+      const pickWin = (p.picked_winner || "").toUpperCase().trim();
+      const scoreDisplay = (!isWinnerOnly && p.predicted_away !== null && p.predicted_home !== null)
+        ? `${p.predicted_away}-${p.predicted_home}`
+        : "";
+
+      let chipClass = isMe ? "is-me" : "";
+      let ptsBadge = "";
+
+      if (game.isFinal) {
+        if (p.is_exact) {
+          chipClass += " exact";
+          ptsBadge = `<span class="chip-pts-badge pts-exact">🔮 +${p.points_earned || 50}</span>`;
+        } else if (p.is_closest) {
+          chipClass += " closest";
+          ptsBadge = `<span class="chip-pts-badge pts-closest">🎯 +${p.points_earned || 20}</span>`;
+        } else if ((p.points_earned || 0) > 0) {
+          chipClass += " correct";
+          ptsBadge = `<span class="chip-pts-badge pts-win">+${p.points_earned}</span>`;
+        } else {
+          chipClass += " wrong";
+          ptsBadge = `<span class="chip-pts-badge pts-zero">0</span>`;
+        }
+      }
+
+      const pData = {
+        name: pName,
+        isMe,
+        multiplier: p.is_multiplier,
+        scoreDisplay,
+        chipClass: chipClass.trim(),
+        ptsBadge
+      };
+
+      if (pickWin === awayTeam) awayPicks.push(pData);
+      else if (pickWin === homeTeam) homePicks.push(pData);
+    });
+
+    const totalPicks = awayPicks.length + homePicks.length;
+    let awayPct = 50;
+    let homePct = 50;
+    if (totalPicks > 0) {
+      awayPct = Math.round((awayPicks.length / totalPicks) * 100);
+      homePct = 100 - awayPct;
+    }
+
+    const renderChip = (p) => `
+      <div class="split-pick-chip ${p.chipClass}" title="${p.name}'s prediction">
+        <div class="chip-avatar-col">
+          ${getUserAvatarHtml(26)}
+        </div>
+        <div class="chip-body">
+          <div class="chip-row-top">
+            <span class="chip-player-name">${p.name}</span>
+            <div class="chip-badges-group">
+              ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+            </div>
+          </div>
+          <div class="chip-row-bottom">
+            <span class="chip-predicted-score">${p.scoreDisplay}</span>
+            ${p.ptsBadge}
+          </div>
+        </div>
+      </div>
+    `;
+
+    memberPicksHtml = `
+      ${totalPicks > 0 ? `
+        <div class="matchup-consensus-container" aria-label="Consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
+          <div class="consensus-header-row">
+            <div class="consensus-side away">
+              <span class="consensus-dot" style="background-color: ${awayInfo.color};"></span>
+              <span class="consensus-team-code">${awayTeam}</span>
+              <span class="consensus-pct" style="color: ${awayInfo.color};">${awayPct}%</span>
+              <span class="consensus-count">(${awayPicks.length})</span>
+            </div>
+            <div class="consensus-side home">
+              <span class="consensus-dot" style="background-color: ${homeInfo.color};"></span>
+              <span class="consensus-team-code">${homeTeam}</span>
+              <span class="consensus-pct" style="color: ${homeInfo.color};">${homePct}%</span>
+              <span class="consensus-count">(${homePicks.length})</span>
+            </div>
+          </div>
+          <div class="consensus-bar-track">
+            <div class="consensus-bar-fill away" style="width: ${awayPct}%; background-color: ${awayInfo.color};"></div>
+            <div class="consensus-bar-fill home" style="width: ${homePct}%; background-color: ${homeInfo.color};"></div>
+          </div>
+        </div>
+      ` : ""}
+
+      <div class="matchup-split-picks">
+        <div class="picks-column away-picks">
+          <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
+            <div class="column-team-label">
+              <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
+              <span>${awayTeam} Picks</span>
+            </div>
+            <span class="column-count-badge">${awayPicks.length}</span>
+          </div>
+          <div class="picks-list">
+            ${awayPicks.length > 0 ? awayPicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+          </div>
+        </div>
+
+        <div class="picks-column home-picks">
+          <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
+            <span class="column-count-badge">${homePicks.length}</span>
+            <div class="column-team-label">
+              <span>${homeTeam} Picks</span>
+              <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+            </div>
+          </div>
+          <div class="picks-list">
+            ${homePicks.length > 0 ? homePicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    memberPicksHtml = `
+      <div class="cl-pending-privacy-box">
+        <span>🔒</span>
+        <span>Member predictions reveal at kickoff. <strong>${totalSubmitted} of ${totalMembers}</strong> members locked in.</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="custom-league-pick-bar ${isLocked ? "is-locked" : ""}" id="cl-pick-bar-${game.id}">
+      <div class="cl-pick-header">
+        <div class="cl-pick-title">Your League Prediction</div>
+        <span class="${isLocked ? "cl-locked-tag" : "cl-open-tag"}">${isLocked ? "🔒 Locked" : "🟢 Open for Picks"}</span>
+      </div>
+
+      <div class="cl-team-pick-btns">
+        <button type="button" class="btn-cl-pick-team ${awaySelected ? "selected" : ""}"
+          ${isLocked ? "disabled" : ""}
+          onclick="setCustomLeaguePick('${game.id}', '${awayTeam}')">
+          <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
+        </button>
+        <span class="cl-pick-vs">VS</span>
+        <button type="button" class="btn-cl-pick-team ${homeSelected ? "selected" : ""}"
+          ${isLocked ? "disabled" : ""}
+          onclick="setCustomLeaguePick('${game.id}', '${homeTeam}')">
+          <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
+        </button>
+      </div>
+
+      ${!isWinnerOnly ? `
+        <div class="cl-score-stepper-row">
+          <div class="cl-score-box">
+            <span class="cl-score-lbl">${awayTeam}</span>
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'away', -1)">-</button>
+            <span class="cl-score-val" id="cl-score-away-${game.id}">${awayScore}</span>
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'away', 1)">+</button>
+          </div>
+          <span class="cl-score-divider">-</span>
+          <div class="cl-score-box">
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'home', -1)">-</button>
+            <span class="cl-score-val" id="cl-score-home-${game.id}">${homeScore}</span>
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'home', 1)">+</button>
+            <span class="cl-score-lbl">${homeTeam}</span>
+          </div>
+        </div>
+      ` : ""}
+
+      <button type="button" class="btn-cl-multiplier ${isMultiplier ? "active" : ""}"
+        ${isLocked ? "disabled" : ""}
+        onclick="toggleCustomLeagueMultiplier('${game.id}', ${state.currentWeek})">
+        <span>${isMultiplier ? "⭐ 3X LOCK OF THE WEEK ACTIVE" : "⭐ Select as 3X Lock of the Week"}</span>
+      </button>
+    </div>
+
+    ${memberPicksHtml}
+  `;
+}
+
+function renderCustomLeagueLeaderboard() {
+  const podiumEl = document.getElementById("podium-container");
+  const listEl = document.getElementById("leaderboard-list");
+  const sectionTitleEl = document.getElementById("leaderboard-section-title");
+  const labelWeeklyBtn = document.getElementById("label-toggle-weekly");
+  const btnSeason = document.getElementById("btn-toggle-season");
+  const btnWeekly = document.getElementById("btn-toggle-weekly");
+  if (!podiumEl || !listEl) return;
+
+  const isWeekly = state.leaderboardMode === "weekly";
+  if (btnSeason) btnSeason.classList.toggle("active", !isWeekly);
+  if (btnWeekly) btnWeekly.classList.toggle("active", isWeekly);
+  if (labelWeeklyBtn) labelWeeklyBtn.textContent = `Week ${state.currentWeek} Standings`;
+  if (sectionTitleEl) {
+    sectionTitleEl.textContent = isWeekly
+      ? `${state.activeLeagueData.name} • Week ${state.currentWeek}`
+      : `${state.activeLeagueData.name} • Season Standings`;
+  }
+
+  const members = state.customLeagueMembers || [];
+  const memberScores = members.map(m => {
+    let pts = 0;
+    let wins = 0;
+    let losses = 0;
+    let weekPts = 0;
+
+    const weeksToScan = isWeekly ? [`Week ${state.currentWeek}`] : Object.keys(state.data?.weeks || {});
+
+    weeksToScan.forEach(wkKey => {
+      const gList = state.data?.weeks?.[wkKey]?.games || [];
+      gList.forEach(g => {
+        const gamePicks = state.customLeaguePicks[g.id] || [];
+        const mPick = gamePicks.find(p => p.user_id === m.userId);
+        if (mPick && g.isFinal && g.winner) {
+          const isCorrect = (mPick.picked_winner === g.winner);
+          if (isCorrect) wins++; else losses++;
+          const mult = mPick.is_multiplier ? 3 : 1;
+          let earned = (mPick.points_earned || (isCorrect ? 10 * mult : 0));
+          pts += earned;
+          if (wkKey === `Week ${state.currentWeek}`) {
+            weekPts += earned;
+          }
+        }
+      });
+    });
+
+    const isMe = Boolean(state.authUser && m.userId === state.authUser.id);
+
+    return {
+      id: m.id,
+      userId: m.userId,
+      name: m.displayName,
+      role: m.role,
+      isMe,
+      points: pts,
+      weekPts,
+      rec: {
+        wins,
+        losses,
+        label: `${wins}-${losses} W-L`
+      }
+    };
+  });
+
+  memberScores.sort((a, b) => b.points - a.points || b.rec.wins - a.rec.wins);
+
+  memberScores.forEach((m, idx) => {
+    if (idx > 0 && m.points === memberScores[idx - 1].points) {
+      m.numericRank = memberScores[idx - 1].numericRank;
+      m.rankDisplay = `T-${m.numericRank}`;
+    } else {
+      m.numericRank = idx + 1;
+      m.rankDisplay = String(idx + 1);
+    }
+  });
+
+  const rank1 = memberScores[0] || { name: "No Members Yet", points: 0, rankDisplay: "1", rec: { label: "0-0" } };
+  const rank2 = memberScores[1] || { name: "-", points: 0, rankDisplay: "2", rec: { label: "0-0" } };
+  const rank3 = memberScores[2] || { name: "-", points: 0, rankDisplay: "3", rec: { label: "0-0" } };
+
+  podiumEl.innerHTML = `
+    <!-- 2nd Place Pedestal -->
+    <div class="podium-card rank-2 ${rank2.isMe ? "is-my-rank" : ""}">
+      <div class="podium-pedestal-header">
+        <div class="podium-avatar-frame frame-silver">
+          ${getUserAvatarHtml(44)}
+          <div class="podium-rank-badge badge-silver">2</div>
+        </div>
+      </div>
+      <div class="podium-body">
+        <div class="podium-name">${rank2.name}${rank2.isMe ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points-wrap rank-2-pts">
+          <span class="podium-pts-val">${rank2.points}</span>
+          <span class="podium-pts-lbl">PTS</span>
+        </div>
+        <div class="podium-footer-row">
+          <div class="podium-record-pill">${rank2.rec.label}</div>
+        </div>
+      </div>
+      <div class="podium-base-pedestal base-silver">
+        <span class="pedestal-rank-num">2ND</span>
+      </div>
+    </div>
+
+    <!-- 1st Place Pedestal -->
+    <div class="podium-card rank-1 ${rank1.isMe ? "is-my-rank" : ""}">
+      <div class="podium-pedestal-header">
+        <div class="podium-avatar-frame frame-gold">
+          ${getUserAvatarHtml(56)}
+          <div class="podium-rank-badge badge-gold">1</div>
+        </div>
+      </div>
+      <div class="podium-body">
+        <div class="podium-name">${rank1.name}${rank1.isMe ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points-wrap rank-1-pts">
+          <span class="podium-pts-val">${rank1.points}</span>
+          <span class="podium-pts-lbl">PTS</span>
+        </div>
+        <div class="podium-footer-row">
+          <div class="podium-record-pill">${rank1.rec.label}</div>
+        </div>
+      </div>
+      <div class="podium-base-pedestal base-gold">
+        <span class="pedestal-rank-num">1ST</span>
+      </div>
+    </div>
+
+    <!-- 3rd Place Pedestal -->
+    <div class="podium-card rank-3 ${rank3.isMe ? "is-my-rank" : ""}">
+      <div class="podium-pedestal-header">
+        <div class="podium-avatar-frame frame-bronze">
+          ${getUserAvatarHtml(42)}
+          <div class="podium-rank-badge badge-bronze">3</div>
+        </div>
+      </div>
+      <div class="podium-body">
+        <div class="podium-name">${rank3.name}${rank3.isMe ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points-wrap rank-3-pts">
+          <span class="podium-pts-val">${rank3.points}</span>
+          <span class="podium-pts-lbl">PTS</span>
+        </div>
+        <div class="podium-footer-row">
+          <div class="podium-record-pill">${rank3.rec.label}</div>
+        </div>
+      </div>
+      <div class="podium-base-pedestal base-bronze">
+        <span class="pedestal-rank-num">3RD</span>
+      </div>
+    </div>
+  `;
+
+  listEl.innerHTML = memberScores.map(m => {
+    let rankBadgeClass = "";
+    if (m.numericRank === 1) rankBadgeClass = "top1";
+    else if (m.numericRank === 2) rankBadgeClass = "top2";
+    else if (m.numericRank === 3) rankBadgeClass = "top3";
+
+    return `
+      <div class="leaderboard-row ${m.isMe ? "is-my-row" : ""}">
+        <div class="leader-left">
+          <div class="rank-badge ${rankBadgeClass}">${m.rankDisplay}</div>
+          <div class="leader-avatar-wrap">
+            ${getUserAvatarHtml(38)}
+          </div>
+          <div class="leader-name-col">
+            <div class="leader-name-row">
+              <span class="leader-player-name">${m.name}</span>
+              ${m.isMe ? `<span class="you-badge">YOU</span>` : ""}
+              ${m.role === "commissioner" ? `<span class="league-role-tag commissioner">COMMISH</span>` : ""}
+            </div>
+            <div class="leader-rec-sub">${m.rec.label}</div>
+          </div>
+        </div>
+        <div class="leader-right">
+          <div class="leader-points-wrap pts-season">
+            <span class="leader-pts-val">${m.points}</span>
+            <span class="leader-pts-lbl">PTS</span>
+          </div>
+          ${!isWeekly ? `<div class="leader-sub-pill pill-emerald">+${m.weekPts} Wk ${state.currentWeek}</div>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 // Global window bindings for inline HTML handlers
@@ -7015,6 +8102,7 @@ window.openLeagueDrawer = openLeagueDrawer;
 window.closeLeagueDrawer = closeLeagueDrawer;
 window.selectLeague = selectLeague;
 window.enterLeagueView = enterLeagueView;
+window.enterCustomLeague = enterCustomLeague;
 window.exitToLobby = exitToLobby;
 window.handleBrandClick = handleBrandClick;
 window.updateAppShellForMode = updateAppShellForMode;
@@ -7026,9 +8114,14 @@ window.handleMagicLinkSignIn = handleMagicLinkSignIn;
 window.handleGoogleSignIn = handleGoogleSignIn;
 window.handleSignOut = handleSignOut;
 window.processLeagueCode = processLeagueCode;
+window.copyLeagueCode = copyLeagueCode;
 window.handleQuickInviteSubmit = handleQuickInviteSubmit;
 window.handleLobbyCodeInput = handleLobbyCodeInput;
 window.openCreateLeagueModal = openCreateLeagueModal;
+window.closeCreateLeagueModal = closeCreateLeagueModal;
+window.generateNewLeagueCode = generateNewLeagueCode;
+window.selectLeagueScoring = selectLeagueScoring;
+window.handleCreateLeagueSubmit = handleCreateLeagueSubmit;
 window.openJoinLeagueModal = openJoinLeagueModal;
 window.syncLeagueStandingsFromCloud = syncLeagueStandingsFromCloud;
 window.renderLeagueDrawerContent = renderLeagueDrawerContent;
@@ -7069,6 +8162,15 @@ window.toggleSoloPickMultiplier = toggleSoloPickMultiplier;
 window.isGameLockedForPicking = isGameLockedForPicking;
 window.getGameLockStatus = getGameLockStatus;
 window.deleteSoloSheet = deleteSoloSheet;
+window.loadUserLeagues = loadUserLeagues;
+window.loadCustomLeagueData = loadCustomLeagueData;
+window.setCustomLeaguePick = setCustomLeaguePick;
+window.stepCustomLeagueScore = stepCustomLeagueScore;
+window.toggleCustomLeagueMultiplier = toggleCustomLeagueMultiplier;
+window.saveCustomLeaguePickToCloud = saveCustomLeaguePickToCloud;
+window.updateCustomPickBarUI = updateCustomPickBarUI;
+window.renderCustomLeagueMatchupSection = renderCustomLeagueMatchupSection;
+window.renderCustomLeagueLeaderboard = renderCustomLeagueLeaderboard;
 
 
 

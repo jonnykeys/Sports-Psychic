@@ -7501,3 +7501,284 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   margin-top: 8px;
   text-align: center;
 }
+
+/* ---------------------------------------------------------
+   CUSTOM MULTI-LEAGUE STYLES & IN-LEAGUE PICKS BAR
+   --------------------------------------------------------- */
+.btn-refresh-code {
+  background: none;
+  border: none;
+  color: var(--accent-cyan);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.btn-refresh-code:hover {
+  text-decoration: underline;
+  color: #ffffff;
+}
+
+.league-role-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.league-role-tag.commissioner {
+  background: rgba(245, 184, 0, 0.18);
+  color: #ffd700;
+  border: 1px solid rgba(245, 184, 0, 0.4);
+}
+
+.league-role-tag.member {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.league-join-code-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+  letter-spacing: 0.06em;
+}
+
+/* Custom League In-Line Matchup Pick Bar (Option A) */
+.custom-league-pick-bar {
+  background: rgba(15, 23, 42, 0.75);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.custom-league-pick-bar.is-locked {
+  background: rgba(10, 15, 30, 0.85);
+  border-top-color: rgba(239, 68, 68, 0.2);
+}
+
+.cl-pick-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cl-pick-title {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cl-open-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.cl-locked-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.cl-team-pick-btns {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.cl-pick-vs {
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.btn-cl-pick-team {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-cl-pick-team:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-cl-pick-team.selected {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.28), rgba(59, 130, 246, 0.35));
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+}
+
+.btn-cl-pick-team:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cl-score-stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(5, 9, 20, 0.65);
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cl-score-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cl-score-lbl {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.btn-cl-step {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.14s ease;
+}
+
+.btn-cl-step:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+}
+
+.btn-cl-step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cl-score-val {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #ffffff;
+  min-width: 22px;
+  text-align: center;
+}
+
+.cl-score-divider {
+  font-weight: 900;
+  color: var(--text-dim);
+}
+
+.btn-cl-multiplier {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.btn-cl-multiplier:hover:not(:disabled) {
+  border-color: rgba(245, 184, 0, 0.5);
+  color: #ffd700;
+}
+
+.btn-cl-multiplier.active {
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.22), rgba(217, 119, 6, 0.32));
+  border-color: #ffd700;
+  color: #ffd700;
+  box-shadow: 0 0 12px rgba(245, 184, 0, 0.3);
+}
+
+.btn-cl-multiplier:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cl-pending-privacy-box {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.73rem;
+  color: var(--text-muted);
+}
+
+.cl-pending-privacy-box strong {
+  color: #ffffff;
+}
+
+.cl-code-copy-pill {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 184, 0, 0.15);
+  border: 1px solid rgba(245, 184, 0, 0.35);
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: #ffd700;
+  font-weight: 800;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+}
+
+.cl-code-copy-pill:hover {
+  background: rgba(245, 184, 0, 0.25);
+  border-color: #ffd700;
+}
