@@ -2711,6 +2711,193 @@ function getByeTeamsForWeek(weekNum) {
   return uniqueCodes.map(code => NFL_TEAMS[code] || { code, name: code, color: '#38bdf8' });
 }
 
+function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo) {
+  const userSheets = (state.authUser && Array.isArray(state.pickSheets)) ? state.pickSheets : [];
+  const hasSheets = userSheets.length > 0;
+  const awayNorm = normalizeTeamCode(awayTeam);
+  const homeNorm = normalizeTeamCode(homeTeam);
+  const awayColor = awayInfo.color || "#06b6d4";
+  const homeColor = homeInfo.color || "#3b82f6";
+
+  if (!hasSheets) {
+    const actionOnClick = state.authUser
+      ? "openCreateSheetModal()"
+      : `openAuthModal('Predict ${awayTeam} @ ${homeTeam}', 'signin')`;
+    const actionBtnText = state.authUser ? "+ Predict in Solo Play" : "🔮 Sign In to Predict";
+    const subText = state.authUser
+      ? "You haven't made a pick for this game. Start a Pick Sheet in Solo Play to forecast winners and exact scores!"
+      : "Sign in to start custom Pick Sheets, predict game scores, and test your psychic instincts.";
+
+    return `
+      <div class="lobby-no-picks-card">
+        <div class="lobby-no-picks-content">
+          <div class="lobby-no-picks-icon-wrap">
+            <span class="lobby-no-picks-icon">🔮</span>
+          </div>
+          <div class="lobby-no-picks-text-block">
+            <div class="lobby-no-picks-title">No Predictions Yet</div>
+            <div class="lobby-no-picks-desc">${subText}</div>
+          </div>
+        </div>
+        <button type="button" class="btn-lobby-predict-cta" onclick="${actionOnClick}">
+          <span>${actionBtnText}</span>
+        </button>
+      </div>
+    `;
+  }
+
+  // User has sheets! Group picks by team
+  const awaySheetPicks = [];
+  const homeSheetPicks = [];
+  const unpickedSheets = [];
+
+  userSheets.forEach(sheet => {
+    const pk = sheet.picks && sheet.picks[game.id];
+    if (pk && pk.winner) {
+      const normWinner = normalizeTeamCode(pk.winner);
+      const hasAwayScore = (pk.awayScore !== null && pk.awayScore !== undefined && !isNaN(pk.awayScore));
+      const hasHomeScore = (pk.homeScore !== null && pk.homeScore !== undefined && !isNaN(pk.homeScore));
+      const scoreStr = (hasAwayScore && hasHomeScore) ? `${pk.awayScore} - ${pk.homeScore}` : "";
+
+      const sheetPickData = {
+        sheetId: sheet.id,
+        sheetName: sheet.name || "Pick Sheet",
+        winner: pk.winner,
+        scoreDisplay: scoreStr,
+        multiplier: Boolean(pk.multiplier)
+      };
+
+      if (normWinner === awayNorm) {
+        awaySheetPicks.push(sheetPickData);
+      } else if (normWinner === homeNorm) {
+        homeSheetPicks.push(sheetPickData);
+      }
+    } else {
+      unpickedSheets.push(sheet);
+    }
+  });
+
+  const totalMyPicks = awaySheetPicks.length + homeSheetPicks.length;
+
+  if (totalMyPicks === 0) {
+    const targetSheetId = userSheets[0].id;
+    return `
+      <div class="lobby-no-picks-card">
+        <div class="lobby-no-picks-content">
+          <div class="lobby-no-picks-icon-wrap">
+            <span class="lobby-no-picks-icon">🔮</span>
+          </div>
+          <div class="lobby-no-picks-text-block">
+            <div class="lobby-no-picks-title">No Predictions Logged</div>
+            <div class="lobby-no-picks-desc">
+              You have ${userSheets.length} active sheet${userSheets.length > 1 ? "s" : ""}, but haven't picked a winner for this game yet.
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-lobby-predict-cta" onclick="openPickSheet('${targetSheetId}')">
+          <span>+ Predict in Solo Play</span>
+        </button>
+      </div>
+    `;
+  }
+
+  const myAwayPct = Math.round((awaySheetPicks.length / totalMyPicks) * 100);
+  const myHomePct = 100 - myAwayPct;
+
+  const renderSheetChip = (sp) => {
+    const safeName = (sp.sheetName || "Sheet").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `
+      <div class="player-pick-chip is-sheet-pick ${sp.multiplier ? "has-multiplier" : ""}"
+        onclick="openPickSheet('${sp.sheetId}')" role="button" tabindex="0"
+        title="Open & edit ${safeName}">
+        <div class="chip-row-top">
+          <span class="sheet-chip-icon">📋</span>
+          <span class="chip-name" style="font-size:0.75rem; font-weight:800; color:#ffffff;">${safeName}</span>
+          ${sp.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+        </div>
+        ${sp.scoreDisplay ? `
+          <div class="chip-row-bottom">
+            <span class="chip-predicted-score">${sp.scoreDisplay}</span>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  };
+
+  const targetSheetId = userSheets[0].id;
+
+  return `
+    <!-- Mini Consensus Bar for My Sheets -->
+    <div class="matchup-consensus-container my-sheets-consensus" aria-label="My sheets consensus: ${awayTeam} ${myAwayPct}%, ${homeTeam} ${myHomePct}%">
+      <div class="consensus-header-row">
+        <div class="consensus-side away">
+          <span class="consensus-dot" style="background-color: ${awayColor};"></span>
+          <span class="consensus-team-code">${awayTeam}</span>
+          <span class="consensus-pct" style="color: ${awayColor};">${myAwayPct}%</span>
+          <span class="consensus-count">(${awaySheetPicks.length})</span>
+        </div>
+
+        <span class="consensus-badge my-sheets-tag">My Pick Sheets</span>
+
+        <div class="consensus-side home">
+          <span class="consensus-dot" style="background-color: ${homeColor};"></span>
+          <span class="consensus-team-code">${homeTeam}</span>
+          <span class="consensus-pct" style="color: ${homeColor};">${myHomePct}%</span>
+          <span class="consensus-count">(${homeSheetPicks.length})</span>
+        </div>
+      </div>
+
+      <div class="consensus-bar-track">
+        <div class="consensus-bar-fill away" style="width: ${myAwayPct}%; background-color: ${awayColor};"></div>
+        <div class="consensus-bar-fill home" style="width: ${myHomePct}%; background-color: ${homeColor};"></div>
+      </div>
+    </div>
+
+    <!-- Dual Column Split Picks for My Sheets -->
+    <div class="matchup-split-picks my-sheets-split">
+      <!-- Left Side: Away Team Picks -->
+      <div class="picks-column away-picks">
+        <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
+          <div class="column-team-label">
+            <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
+            <span>${awayTeam} Picks</span>
+          </div>
+          <span class="column-count-badge">${awaySheetPicks.length}</span>
+        </div>
+        <div class="picks-list">
+          ${awaySheetPicks.length > 0 ? awaySheetPicks.map(renderSheetChip).join("") : `<div class="no-picks-muted">No sheet picks</div>`}
+        </div>
+      </div>
+
+      <!-- Right Side: Home Team Picks -->
+      <div class="picks-column home-picks">
+        <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
+          <span class="column-count-badge">${homeSheetPicks.length}</span>
+          <div class="column-team-label">
+            <span>${homeTeam} Picks</span>
+            <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+          </div>
+        </div>
+        <div class="picks-list">
+          ${homeSheetPicks.length > 0 ? homeSheetPicks.map(renderSheetChip).join("") : `<div class="no-picks-muted">No sheet picks</div>`}
+        </div>
+      </div>
+    </div>
+
+    <div class="my-sheets-matchup-footer">
+      ${unpickedSheets.length > 0 ? `
+        <div class="unpicked-footer" style="margin-top:0; padding:0; background:none; border:none;">
+          <span class="unpicked-label">Unpicked (${unpickedSheets.length}):</span>
+          <span class="unpicked-names">${unpickedSheets.map(s => (s.name || "Sheet").replace(/</g, "&lt;").replace(/>/g, "&gt;")).join(", ")}</span>
+        </div>
+      ` : `<span></span>`}
+      <button type="button" class="btn-lobby-edit-sheet" onclick="openPickSheet('${targetSheetId}')">
+        <span>✏️ Edit in Solo Play &rarr;</span>
+      </button>
+    </div>
+  `;
+}
+
 function renderMatchups() {
   const container = document.getElementById("matchups-list");
   const filterBar = document.getElementById("matchups-filter-bar");
@@ -3027,16 +3214,7 @@ function renderMatchups() {
           </div>
         </div>
 
-        ${isLobby ? `
-          <div class="lobby-pick-cta-row">
-            <div class="lobby-pick-teaser-text">
-              🔒 Member predictions reveal after kickoff
-            </div>
-            <button type="button" class="btn-make-pick-teaser" onclick="openAuthModal('Predict ${awayTeam} @ ${homeTeam}')">
-              <span>🔮 Make Pick</span>
-            </button>
-          </div>
-        ` : `
+        ${isLobby ? renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo) : `
           <!-- League Pick Consensus Bar -->
           ${totalPicks > 0 ? `
             <div class="matchup-consensus-container" aria-label="League pick consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
@@ -5997,6 +6175,7 @@ async function handleUserSession(user) {
     console.warn("User session handling error:", err);
   }
 
+  await loadSoloPickSheets();
   updateAppShellForMode();
   renderHeaderProfile();
   syncLeagueStandingsFromCloud();
