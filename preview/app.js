@@ -5991,7 +5991,7 @@ function setAuthAlert(message, type = "error") {
   const alertEl = document.getElementById("auth-alert");
   if (!alertEl) return;
   alertEl.className = `auth-alert-box ${type}`;
-  alertEl.textContent = message;
+  alertEl.innerHTML = message;
   alertEl.style.display = "block";
 }
 
@@ -6378,6 +6378,28 @@ async function handleEmailSignUp() {
         }
       }
     });
+
+    // Detect if user account already exists:
+    // 1. Error message indicates existing registration
+    // 2. Or Supabase returns a user with empty identities array (email enumeration prevention)
+    const isAlreadyRegistered = (
+      (error && /already\s+(registered|exists|in use)/i.test(error.message || "")) ||
+      (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0)
+    );
+
+    if (isAlreadyRegistered) {
+      setAuthMode("signin");
+      const emailInput = document.getElementById("auth-email-input");
+      const passInput = document.getElementById("auth-password-input");
+      if (emailInput) emailInput.value = email;
+      if (passInput) {
+        passInput.value = "";
+        setTimeout(() => passInput.focus(), 150);
+      }
+      setAuthAlert("ℹ️ An account with this email already exists. We've switched you to Sign In — please enter your password to continue.", "info");
+      showToast("Account already exists. Please sign in.");
+      return;
+    }
 
     if (error) {
       setAuthAlert(error.message, "error");
