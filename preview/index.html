@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=14.6">
+  <link rel="stylesheet" href="style.css?v=14.7">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -710,11 +710,77 @@
     </div>
   </div>
 
+  <!-- CREATE CUSTOM LEAGUE MODAL -->
+  <div id="create-league-modal" class="auth-modal-backdrop" onclick="closeCreateLeagueModal(event)">
+    <div class="auth-modal-dialog" onclick="event.stopPropagation()">
+      <div class="auth-modal-header">
+        <div class="auth-modal-title-row">
+          <span class="auth-modal-icon">🏆</span>
+          <h3 id="create-league-modal-title">Create Custom League</h3>
+        </div>
+        <button class="profile-modal-close" onclick="closeCreateLeagueModal()" aria-label="Close">&times;</button>
+      </div>
+      <p class="auth-modal-desc">
+        Set up a private league for your friends, family, or coworkers. Share your 6-digit invite code to let members join.
+      </p>
+
+      <div class="auth-form-fields" style="margin-top: 14px;">
+        <div class="auth-field-row">
+          <label class="auth-label" for="league-name-input">League Name</label>
+          <input type="text" id="league-name-input" class="auth-input" placeholder="e.g. Sunday Pick'em Pool" maxlength="35" autocomplete="off">
+        </div>
+
+        <div class="auth-field-row">
+          <div class="auth-label-row" style="display: flex; justify-content: space-between; align-items: center;">
+            <label class="auth-label" for="league-code-input" style="margin-bottom: 0;">6-Digit Join Code</label>
+            <button type="button" class="btn-refresh-code" onclick="generateNewLeagueCode()" title="Generate Random Code">🎲 Randomize</button>
+          </div>
+          <div class="auth-input-wrap" style="margin-top: 6px;">
+            <input type="text" id="league-code-input" class="auth-input has-prefix" placeholder="e.g. SP2026" maxlength="6" autocomplete="off" autocapitalize="characters" style="text-transform: uppercase; font-weight: 800; letter-spacing: 0.12em;">
+          </div>
+          <div id="league-code-feedback" class="auth-field-feedback"></div>
+        </div>
+
+        <div class="auth-field-row">
+          <label class="auth-label">Scoring Format</label>
+          <div class="sheet-format-options">
+            <div class="sheet-format-radio active" id="league-scoring-proximity" onclick="selectLeagueScoring('classic_proximity')">
+              <input type="radio" name="league-scoring-val" value="classic_proximity" checked style="display: none;">
+              <div class="format-radio-icon">🎯</div>
+              <div class="format-radio-text">
+                <div class="format-radio-title">Classic Proximity (OG Rules)</div>
+                <div class="format-radio-desc">Winner (10 pts) + Closest Score bonus (10 pts) + Exact (50 pts) + 3X Lock</div>
+              </div>
+            </div>
+            <div class="sheet-format-radio" id="league-scoring-winner" onclick="selectLeagueScoring('winner_only')">
+              <input type="radio" name="league-scoring-val" value="winner_only" style="display: none;">
+              <div class="format-radio-icon">🏈</div>
+              <div class="format-radio-text">
+                <div class="format-radio-title">Winner Only (Straight Up)</div>
+                <div class="format-radio-desc">Simple winner picks (10 pts per correct pick) + 3X Lock of the Week</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-submit-row" style="margin-top: 14px;">
+          <button type="button" class="btn-auth-primary" id="btn-submit-create-league" onclick="handleCreateLeagueSubmit()">
+            <span>🏆 Create League & Get Code</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-modal-footer">
+        <button type="button" class="btn-auth-cancel" onclick="closeCreateLeagueModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div id="toast-notice" class="toast-notice" role="alert"></div>
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=14.6"></script>
+  <script src="app.js?v=14.7"></script>
 </body>
 </html>
