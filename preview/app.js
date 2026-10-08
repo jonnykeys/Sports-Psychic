@@ -4888,12 +4888,30 @@ function renderLeagueDrawerContent() {
   if (!container) return;
 
   const isOG = isUserInOGLeague();
+  const activeIsHome = (state.appMode === "lobby");
   const activeIsOG = (state.activeLeague === "OG League") && (state.appMode === "league");
   const activeIsSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic") && (state.appMode === "solo");
 
   let html = "";
 
-  // 1. OG League Option (Only shown if user has OG League access)
+  // 1. Home Option
+  html += `
+    <div id="drawer-card-home" class="league-option-card ${activeIsHome ? "active" : ""}" onclick="closeLeagueDrawer(); exitToLobby();">
+      <div class="league-card-left">
+        <div class="league-icon-box" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);">🏠</div>
+        <div>
+          <div class="league-title-row">
+            <span class="league-name">Home</span>
+            ${activeIsHome ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+          </div>
+          <div class="league-meta-row">Game Matchups, NFL Scores & Ways to Play</div>
+        </div>
+      </div>
+      ${activeIsHome ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Go &rarr;</span>`}
+    </div>
+  `;
+
+  // 2. OG League Option (Only shown if user has OG League access)
   if (isOG) {
     html += `
       <div id="drawer-card-og" class="league-option-card ${activeIsOG ? "active" : ""}" onclick="selectLeague('OG League')">
@@ -4912,7 +4930,7 @@ function renderLeagueDrawerContent() {
     `;
   }
 
-  // 2. Solo Psychic Play (Available to all users)
+  // 3. Solo Psychic Play (Available to all users)
   html += `
     <div id="drawer-card-solo" class="league-option-card ${activeIsSolo ? "active" : ""}" onclick="enterSoloPlay()">
       <div class="league-card-left">
@@ -4972,17 +4990,7 @@ function renderLobbyHero() {
   if (heroName) heroName.textContent = firstName;
 
   if (quickLeagues) {
-    const isOG = isUserInOGLeague();
     quickLeagues.innerHTML = `
-      ${isOG ? `
-      <button type="button" class="btn-hero-primary" onclick="enterLeagueView('OG League')">
-        <span>🏆 Enter OG League</span>
-        <span class="hero-btn-arrow">→</span>
-      </button>
-      ` : ""}
-      <button type="button" class="btn-hero-secondary" onclick="enterSoloPlay()">
-        <span>🔮 Enter Solo Play</span>
-      </button>
       <button type="button" class="btn-hero-secondary" onclick="openCreateLeagueModal()">
         <span>➕ Create a League</span>
       </button>
@@ -5028,21 +5036,21 @@ function updateAppShellForMode() {
     if (brandTitle) brandTitle.textContent = "Sports Psychic";
     if (brandSub) brandSub.textContent = "Know the Game";
     if (activePill) {
-      if (isUserInOGLeague()) {
-        activePill.textContent = (state.activeLeague === "solo") ? "🔮 Solo Play" : "🏆 OG League";
-      } else {
-        activePill.textContent = "🔮 Solo Play";
-      }
+      activePill.textContent = "Home";
     }
   } else if (isSolo) {
     if (brandTitle) brandTitle.textContent = "Solo Psychic";
     if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
-    if (activePill) activePill.textContent = "🔮 Solo Play";
+    if (activePill) {
+      activePill.textContent = "Solo Play";
+    }
   } else {
     const isOG = (state.activeLeague === "OG League");
     if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
     if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
-    if (activePill) activePill.textContent = isOG ? "🏆 OG League" : `🏆 ${state.activeLeague}`;
+    if (activePill) {
+      activePill.textContent = isOG ? "OG League" : (state.activeLeague || "League");
+    }
   }
 
   renderHeaderProfile();
@@ -5051,6 +5059,10 @@ function updateAppShellForMode() {
 
 function selectLeague(leagueId) {
   closeLeagueDrawer();
+  if (leagueId === "home" || leagueId === "lobby") {
+    exitToLobby();
+    return;
+  }
   if (leagueId === "solo") {
     enterSoloPlay();
     return;
