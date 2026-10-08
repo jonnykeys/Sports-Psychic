@@ -1129,12 +1129,31 @@ function getWeekDateLabel(w) {
   return `${monthNames[m]} ${d}`;
 }
 
+function isWeekActivelyLive(w) {
+  if (!state.data || !state.data.weeks) return false;
+  const weekData = state.data.weeks[`Week ${w}`];
+  if (!weekData || !weekData.games || !Array.isArray(weekData.games)) return false;
+  return weekData.games.some(g => {
+    if (g.isFinal) return false;
+    if (g.isLive) return true;
+    const hasScores = (g.awayScore !== null && g.awayScore !== "" && !isNaN(g.awayScore)) &&
+                      (g.homeScore !== null && g.homeScore !== "" && !isNaN(g.homeScore));
+    return hasScores;
+  });
+}
+
 function getWeekStatusInfo(w) {
   const currentNFL = getCurrentNFLWeek();
-  if (w < currentNFL) {
-    return { label: "Final", type: "final", isLive: false };
-  } else if (w === currentNFL) {
+  const isLive = isWeekActivelyLive(w);
+
+  if (isLive) {
     return { label: "Live", type: "live", isLive: true };
+  }
+
+  if (w === currentNFL) {
+    return { label: "Current Week", type: "current", isLive: false };
+  } else if (w < currentNFL) {
+    return { label: "Final", type: "final", isLive: false };
   } else {
     return { label: getWeekDateLabel(w), type: "upcoming", isLive: false };
   }
@@ -1206,9 +1225,10 @@ function setupWeekStrip() {
     grid.innerHTML = "";
     for (let w = 1; w <= 18; w++) {
       const status = getWeekStatusInfo(w);
+      const isCurrent = (w === currentNFL);
       const cell = document.createElement("button");
       cell.type = "button";
-      cell.className = `week-cell-btn strip-pill ${w === state.currentWeek ? "active-cell active" : ""}`;
+      cell.className = `week-cell-btn strip-pill ${w === state.currentWeek ? "active-cell active" : ""} ${isCurrent ? "is-current-nfl-week" : ""}`;
       cell.setAttribute("data-week", w);
 
       const statusHtml = status.isLive
@@ -1304,6 +1324,8 @@ function updateStripButtons() {
     badgeEl.className = `week-trigger-badge badge-${status.type}`;
     if (status.isLive) {
       badgeEl.innerHTML = `<span class="pulse-dot"></span><span id="week-badge-text">LIVE</span>`;
+    } else if (status.type === "current") {
+      badgeEl.innerHTML = `<span id="week-badge-text">CURRENT WEEK</span>`;
     } else if (status.type === "final") {
       badgeEl.innerHTML = `<span id="week-badge-text">FINAL</span>`;
     } else {
@@ -1311,12 +1333,38 @@ function updateStripButtons() {
     }
   }
 
-  // Highlight active week cell in popover
+  // Update jump button in dropdown
+  const jumpBtn = document.getElementById("btn-jump-current-week");
+  if (jumpBtn) {
+    const currentNFL = getCurrentNFLWeek();
+    const currStatus = getWeekStatusInfo(currentNFL);
+    if (currStatus.isLive) {
+      jumpBtn.classList.add("is-live");
+      jumpBtn.innerHTML = `<span class="pulse-dot"></span><span>Current Week (Live)</span>`;
+    } else {
+      jumpBtn.classList.remove("is-live");
+      jumpBtn.innerHTML = `<span class="current-dot"></span><span>Current Week</span>`;
+    }
+  }
+
+  // Highlight active week cell in popover & update status labels
+  const currentNFL = getCurrentNFLWeek();
   document.querySelectorAll(".week-cell-btn, .strip-pill").forEach(p => {
     const w = parseInt(p.getAttribute("data-week"), 10);
     const isActive = w === state.currentWeek;
     p.classList.toggle("active-cell", isActive);
     p.classList.toggle("active", isActive);
+    if (!isNaN(w)) {
+      p.classList.toggle("is-current-nfl-week", w === currentNFL);
+      const statusEl = p.querySelector(".week-cell-status");
+      if (statusEl) {
+        const status = getWeekStatusInfo(w);
+        statusEl.className = `week-cell-status status-${status.type}`;
+        statusEl.innerHTML = status.isLive
+          ? `<span class="pulse-dot"></span><span>${status.label}</span>`
+          : `<span>${status.label}</span>`;
+      }
+    }
   });
 }
 
@@ -1754,6 +1802,7 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     } catch (e) {}
 
     renderTabContent();
+    updateStripButtons();
   } catch (err) {
     console.warn("Live ESPN sync notice (offline or network restricted):", err);
     if (syncLabel) syncLabel.textContent = "Offline";
