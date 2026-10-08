@@ -4821,6 +4821,12 @@ function handleHubLeagueClick() {
 }
 
 function handleHubSoloClick() {
+  if (!state.authUser) {
+    state.postAuthAction = "solo";
+    showToast("🔮 Please sign in to access Solo Play.");
+    openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
+    return;
+  }
   enterSoloPlay();
 }
 
@@ -4900,6 +4906,14 @@ function enterLeagueView(leagueId = "OG League") {
 }
 
 async function enterSoloPlay() {
+  if (!state.authUser) {
+    state.postAuthAction = "solo";
+    closeLeagueDrawer();
+    showToast("🔮 Please sign in to access Solo Play.");
+    openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
+    return;
+  }
+
   state.appMode = "solo";
   state.activeLeague = "solo";
   state.activeSheetId = null;
@@ -5185,6 +5199,13 @@ function updateSheetEditorStats(sheet) {
 }
 
 function renderSoloView() {
+  if (!state.authUser) {
+    exitToLobby();
+    showToast("🔮 Please sign in to access Solo Play.");
+    openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
+    return;
+  }
+
   const dashSubview = document.getElementById("solo-dashboard-subview");
   const editorSubview = document.getElementById("solo-sheet-editor-subview");
 
@@ -5325,6 +5346,13 @@ function renderSoloView() {
 }
 
 function openCreateSheetModal() {
+  if (!state.authUser) {
+    state.postAuthAction = "solo";
+    showToast("🔮 Please sign in to create a pick sheet.");
+    openAuthModal("Sign in or create an account to create custom pick sheets", "signin");
+    return;
+  }
+
   const modal = document.getElementById("create-sheet-modal");
   if (!modal) return;
 
@@ -5402,6 +5430,13 @@ async function handleCreateSheetSubmit() {
 }
 
 function openPickSheet(sheetId) {
+  if (!state.authUser) {
+    state.postAuthAction = "solo";
+    showToast("🔮 Please sign in to open pick sheets.");
+    openAuthModal("Sign in to view and fill out your pick sheets", "signin");
+    return;
+  }
+
   state.activeSheetId = sheetId;
   const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
   if (sheet) {
@@ -5855,7 +5890,7 @@ async function initSupabaseAuth() {
     if (!sessionErr && sessionData && sessionData.session && sessionData.session.user) {
       await handleUserSession(sessionData.session.user);
     } else {
-      if (state.appMode === "league") {
+      if (state.appMode === "league" || state.appMode === "solo") {
         exitToLobby();
       }
     }
@@ -5965,6 +6000,11 @@ async function handleUserSession(user) {
   updateAppShellForMode();
   renderHeaderProfile();
   syncLeagueStandingsFromCloud();
+
+  if (state.postAuthAction === "solo") {
+    state.postAuthAction = null;
+    enterSoloPlay();
+  }
 }
 
 async function syncLeagueStandingsFromCloud() {
