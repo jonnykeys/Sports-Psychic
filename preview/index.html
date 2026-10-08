@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=14.9">
+  <link rel="stylesheet" href="style.css?v=15.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -110,7 +110,7 @@
           <span class="invite-bar-label">Have a League Code? Enter 6-digit Code:</span>
         </div>
         <div class="invite-input-row">
-          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="e.g. OG2026" maxlength="6" autocomplete="off" autocapitalize="characters" oninput="handleLobbyCodeInput(this.value)" onkeydown="if(event.key === 'Enter' && this.value.trim().length === 6) handleQuickInviteSubmit()">
+          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="Enter code here" maxlength="6" autocomplete="off" autocapitalize="characters" oninput="handleLobbyCodeInput(this.value)" onkeydown="if(event.key === 'Enter' && this.value.trim().length === 6) handleQuickInviteSubmit()">
           <button type="button" id="btn-lobby-join-league" class="btn-invite-submit disabled" onclick="handleQuickInviteSubmit()" disabled aria-disabled="true">Join League</button>
         </div>
         <div id="lobby-code-feedback" class="lobby-code-feedback" style="display: none;"></div>
@@ -781,6 +781,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=14.9"></script>
+  <script src="app.js?v=15.0"></script>
 </body>
 </html>

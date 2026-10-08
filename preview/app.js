@@ -7067,7 +7067,7 @@ async function processLeagueCode(code) {
   if (!cleanCode) return;
 
   if (cleanCode.length !== 6) {
-    showToast("⚠️ League codes must be 6 digits (e.g. OG2026).");
+    showToast("⚠️ League codes must be 6 characters.");
     return;
   }
 
