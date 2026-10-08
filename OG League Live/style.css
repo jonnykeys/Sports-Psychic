@@ -6146,6 +6146,18 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   color: #86efac;
 }
 
+.auth-alert-box.info {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #7dd3fc;
+}
+
+.auth-alert-box.warning {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
 .btn-auth-google {
   width: 100%;
   display: flex;
