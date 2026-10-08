@@ -1,36 +1,12 @@
 /**
- * OG LEAGUE LIVE - Standalone View-Only Mobile Engine
- * Real-time sync with Google Sheets, mobile navigation, week switching,
+ * SPORTS PSYCHIC - Unified Engine & Multi-League Platform
+ * Real-time sync with ESPN Scoreboard & Standings API, Supabase Cloud Storage,
  * player scorecards, live standings, split matchups, and closest score bonus calculations.
  */
 
 // =========================================================
 // CONFIGURATION & CONSTANTS
 // =========================================================
-const SPREADSHEET_ID = "1BkP2oqUWAo5U8b0AItv5Y6kR8kttj3jREvmkx9Sk8B4";
-
-const WEEK_GIDS = {
-  1: "0",
-  2: "1638561232",
-  3: "1384709317",
-  4: "2071520596",
-  5: "1478203859",
-  6: "2011037307",
-  7: "1916327315",
-  8: "1228224528",
-  9: "104523996",
-  10: "1729015843",
-  11: "1716385848",
-  12: "1546765721",
-  13: "405391307",
-  14: "671043818",
-  15: "1109040338",
-  16: "62232532",
-  17: "297779354",
-  18: "657231217"
-};
-
-const NFL_STANDINGS_GID = "497949847";
 
 /**
  * Official 2026 NFL Regular Season Week Start Dates.
@@ -1750,7 +1726,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
 }
 
 // =========================================================
-// GOOGLE SHEETS LIVE DATA SYNC
+// LIVE ESPN DATA & SCORING ENGINE SYNC
 // =========================================================
 async function syncWeek(weekNum, silent = false, forceNotice = false) {
   if (!weekNum || weekNum < 1 || weekNum > 18) return;
@@ -1764,17 +1740,9 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
   }
 
   state.isSyncing = true;
-  const sheetParam = encodeURIComponent(`Week ${weekNum}`);
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetParam}&t=${Date.now()}`;
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const csvText = await res.text();
-    
-    parseWeekCSV(weekNum, csvText);
-
-    // Sync real-time live NFL scores from ESPN scoreboard
+    // Sync real-time live NFL scores, clocks, and situations directly from ESPN scoreboard API
     await syncLiveNFLScores(weekNum, silent);
 
     state.lastUpdated = new Date();
@@ -1787,13 +1755,7 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
 
     renderTabContent();
   } catch (err) {
-    console.warn("Live sync error (offline or network restricted):", err);
-    // If sheets failed, attempt ESPN sync directly so live game day updates still function
-    try {
-      await syncLiveNFLScores(weekNum, silent);
-      renderTabContent();
-    } catch (e2) {}
-
+    console.warn("Live ESPN sync notice (offline or network restricted):", err);
     if (syncLabel) syncLabel.textContent = "Offline";
   } finally {
     state.isSyncing = false;
@@ -1936,22 +1898,7 @@ async function syncNFLStandings(forceNotice = false) {
     console.warn("ESPN Live Standings API sync notice:", err);
   }
 
-  // 2. Secondary fallback: Google Sheet NFL Standings tab
-  if (!synced) {
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid=${NFL_STANDINGS_GID}&t=${Date.now()}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const csv = await res.text();
-        parseNFLStandingsCSV(csv);
-        synced = true;
-      }
-    } catch (e) {
-      console.warn("Google Sheet NFL Standings fallback notice:", e);
-    }
-  }
-
-  // 3. Fallback: dynamically compute from all finalized season games if team records missing
+  // 2. Offline fallback: dynamically compute from all finalized season games if team records missing
   if (!state.nflStandings || !state.nflStandings.teamRecords) {
     const computed = computeTeamRecordsFromGames();
     if (!state.nflStandings) state.nflStandings = {};
