@@ -4901,10 +4901,18 @@ function renderLeagueDrawerContent() {
   const container = document.getElementById("drawer-leagues-list");
   if (!container) return;
 
-  const isOG = isUserInOGLeague();
   const activeIsHome = (state.appMode === "lobby");
   const activeIsOG = (state.activeLeague === "OG League") && (state.appMode === "league") && !state.activeLeagueData;
   const activeIsSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic") && (state.appMode === "solo");
+
+  // Check if user has OG League access (either historic member or member in Supabase)
+  const ogLeagueRecord = (state.userLeagues || []).find(l => 
+    l.name === "OG League" || 
+    l.join_code === "OG2026" || 
+    l.id === "e0000000-0000-0000-0000-000000000001"
+  );
+  const hasOG = isUserInOGLeague() || Boolean(ogLeagueRecord);
+  const isOGCommish = Boolean(ogLeagueRecord && (ogLeagueRecord.role === "commissioner" || (state.authUser && ogLeagueRecord.commissioner_id === state.authUser.id)));
 
   let html = "";
 
@@ -4925,18 +4933,21 @@ function renderLeagueDrawerContent() {
     </div>
   `;
 
-  // 2. OG League Option (Only shown if user has OG League access)
-  if (isOG) {
+  // 2. ONE Unified OG League Option
+  if (hasOG) {
     html += `
       <div id="drawer-card-og" class="league-option-card ${activeIsOG ? "active" : ""}" onclick="selectLeague('OG League')">
         <div class="league-card-left">
-          <div class="league-icon-box">🏆</div>
+          <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">🏆</div>
           <div>
             <div class="league-title-row">
               <span class="league-name">OG League</span>
+              ${isOGCommish ? `<span class="league-role-tag commissioner">COMMISH</span>` : ""}
               ${activeIsOG ? `<span class="league-status-tag">ACTIVE</span>` : ""}
             </div>
-            <div class="league-meta-row">12 Members • 2026 NFL Season</div>
+            <div class="league-meta-row">
+              <span class="league-join-code-tag">🔑 OG2026</span> • 12 Members • 2026 NFL Season
+            </div>
           </div>
         </div>
         ${activeIsOG ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
@@ -4944,9 +4955,15 @@ function renderLeagueDrawerContent() {
     `;
   }
 
-  // 3. User's Custom Leagues
-  if (state.authUser && Array.isArray(state.userLeagues) && state.userLeagues.length > 0) {
-    state.userLeagues.forEach(l => {
+  // 3. User's Custom Leagues (Excluding OG League!)
+  const customLeaguesOnly = (state.userLeagues || []).filter(l => 
+    l.name !== "OG League" && 
+    l.join_code !== "OG2026" && 
+    l.id !== "e0000000-0000-0000-0000-000000000001"
+  );
+
+  if (state.authUser && customLeaguesOnly.length > 0) {
+    customLeaguesOnly.forEach(l => {
       const isCurrentActive = Boolean(state.activeLeagueData && state.activeLeagueData.id === l.id && state.appMode === "league");
       const isCommish = l.role === "commissioner" || (state.authUser && l.commissioner_id === state.authUser.id);
       const formatLabel = l.scoring_format === "winner_only" ? "Winner Only" : "Classic Proximity";
@@ -5032,16 +5049,7 @@ function renderLobbyHero() {
   if (heroName) heroName.textContent = firstName;
 
   if (quickLeagues) {
-    let pills = "";
-    if (Array.isArray(state.userLeagues) && state.userLeagues.length > 0) {
-      pills = state.userLeagues.map(l => `
-        <button type="button" class="btn-hero-secondary" onclick="selectLeague('${l.id}')" style="margin-right: 8px; margin-bottom: 8px;">
-          <span>🏆 ${l.name}</span>
-        </button>
-      `).join("");
-    }
     quickLeagues.innerHTML = `
-      ${pills}
       <button type="button" class="btn-hero-secondary" onclick="openCreateLeagueModal()" style="margin-bottom: 8px;">
         <span>➕ Create a League</span>
       </button>
@@ -5050,11 +5058,7 @@ function renderLobbyHero() {
 }
 
 function handleHubLeagueClick() {
-  if (!state.authUser) {
-    openAuthModal("Sign in or create an account to create and join leagues");
-  } else {
-    openCreateLeagueModal();
-  }
+  openLeagueDrawer();
 }
 
 function handleHubSoloClick() {
@@ -5107,7 +5111,13 @@ function updateAppShellForMode() {
     } else {
       const isOG = (state.activeLeague === "OG League");
       if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
-      if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
+      if (brandSub) {
+        if (isOG) {
+          brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('OG2026')" title="Click to copy invite code">🔑 OG2026</span>`;
+        } else {
+          brandSub.textContent = "SPORTS PSYCHIC";
+        }
+      }
       if (activePill) {
         activePill.textContent = isOG ? "OG League" : (state.activeLeague || "League");
       }
@@ -5128,7 +5138,7 @@ function selectLeague(leagueId) {
     enterSoloPlay();
     return;
   }
-  if (leagueId === "OG League") {
+  if (leagueId === "OG League" || leagueId === "OG2026" || leagueId === "e0000000-0000-0000-0000-000000000001") {
     state.activeLeagueData = null;
     enterLeagueView("OG League");
     return;
@@ -5137,7 +5147,7 @@ function selectLeague(leagueId) {
 }
 
 function enterLeagueView(leagueId = "OG League") {
-  if (leagueId !== "OG League") {
+  if (leagueId !== "OG League" && leagueId !== "OG2026" && leagueId !== "e0000000-0000-0000-0000-000000000001") {
     enterCustomLeague(leagueId);
     return;
   }
@@ -5148,7 +5158,13 @@ function enterLeagueView(leagueId = "OG League") {
     return;
   }
 
-  if (!isUserInOGLeague()) {
+  const ogLeagueRecord = (state.userLeagues || []).find(l => 
+    l.name === "OG League" || 
+    l.join_code === "OG2026" || 
+    l.id === "e0000000-0000-0000-0000-000000000001"
+  );
+
+  if (!isUserInOGLeague() && !ogLeagueRecord) {
     showToast("⚠️ OG League is private to official members. Entering Solo Play.");
     enterSoloPlay();
     return;
@@ -5169,6 +5185,11 @@ function enterLeagueView(leagueId = "OG League") {
 }
 
 async function enterCustomLeague(leagueId) {
+  if (leagueId === "OG League" || leagueId === "OG2026" || leagueId === "e0000000-0000-0000-0000-000000000001") {
+    enterLeagueView("OG League");
+    return;
+  }
+
   if (!state.authUser) {
     showToast("🔮 Please sign in or create an account to enter leagues.");
     openAuthModal("Sign in or create an account to access leagues");
@@ -5195,6 +5216,11 @@ async function enterCustomLeague(leagueId) {
 
   if (!leagueObj) {
     showToast("⚠️ Could not load league details.");
+    return;
+  }
+
+  if (leagueObj.name === "OG League" || leagueObj.join_code === "OG2026" || leagueObj.id === "e0000000-0000-0000-0000-000000000001") {
+    enterLeagueView("OG League");
     return;
   }
 
