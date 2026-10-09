@@ -269,6 +269,7 @@ function normalizeTeamCode(code) {
 // APPLICATION STATE
 // =========================================================
 const SAVED_USER_KEY = "og_league_my_player";
+const CACHE_KEY = "og_league_cache_v10";
 let initialSavedPlayer = null;
 try {
   const stored = localStorage.getItem(SAVED_USER_KEY);
@@ -835,7 +836,9 @@ document.addEventListener("DOMContentLoaded", () => {
   renderApp();
   
   // Background live sync
-  syncWeek(state.currentWeek);
+  syncWeek(state.currentWeek).then(() => {
+    catchUpPastWeeks();
+  });
   syncNFLStandings();
 
   // Auto-sync every 60 seconds (snappy live NFL score updates)
@@ -849,6 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && !state.isSyncing) {
       syncWeek(state.currentWeek, true);
+      catchUpPastWeeks();
     }
   });
 });
@@ -897,9 +901,11 @@ function initData() {
   try {
     localStorage.removeItem("og_league_cache");
     localStorage.removeItem("og_league_cache_v6");
+    localStorage.removeItem("og_league_cache_v8");
+    localStorage.removeItem("og_league_cache_v9");
   } catch (e) {}
 
-  const cached = localStorage.getItem("og_league_cache_v9") || localStorage.getItem("og_league_cache_v8");
+  const cached = localStorage.getItem(CACHE_KEY);
   if (cached) {
     try {
       state.data = JSON.parse(cached);
@@ -917,7 +923,7 @@ function initData() {
     sanitizeData(state.data);
     recalculateAllWeeksPoints(state.data);
     try {
-      localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
     } catch (e) {}
   }
 
@@ -1282,7 +1288,8 @@ async function triggerScoresRefresh() {
   try {
     await Promise.all([
       syncWeek(state.currentWeek, false, false),
-      syncNFLStandings(false)
+      syncNFLStandings(false),
+      catchUpPastWeeks()
     ]);
   } catch (err) {
     console.warn("Scores refresh error:", err);
@@ -1639,7 +1646,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
     if (updatedCount > 0) {
       recalculateAllWeeksPoints(state.data);
       try {
-        localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
       } catch (e) {}
     }
   } catch (err) {
@@ -1680,7 +1687,7 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     
     // Save state cache
     try {
-      localStorage.setItem("og_league_cache_v9", JSON.stringify(state.data));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
     } catch (e) {}
 
     renderTabContent();
@@ -1698,6 +1705,88 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
   } finally {
     state.isSyncing = false;
     if (refreshBtn) refreshBtn.classList.remove("spinning");
+  }
+}
+
+let isCatchingUpPastWeeks = false;
+
+/**
+ * Audits all past weeks (Week 1 through currentWeek - 1).
+ * Detects any week cached with unfinalized games, missing scores, or incomplete status
+ * (e.g. if the user visited mid-week and didn't open the app again for several weeks).
+ * Automatically fetches the official final scores in the background,
+ * recalculates points and season standings, and saves the verified state.
+ */
+async function catchUpPastWeeks() {
+  if (isCatchingUpPastWeeks) return;
+  if (!state.data || !state.data.weeks) return;
+
+  const currentNFL = (typeof getCurrentNFLWeek === "function") ? getCurrentNFLWeek() : (state.currentWeek || 1);
+  if (currentNFL <= 1) return;
+
+  const weeksToCatchUp = [];
+
+  for (let w = 1; w < currentNFL; w++) {
+    const wKey = `Week ${w}`;
+    const wData = state.data.weeks[wKey];
+    if (!wData || !wData.games || wData.games.length === 0) {
+      weeksToCatchUp.push(w);
+      continue;
+    }
+
+    // Check if any game in a past week has missing scores or is not final
+    const hasUnfinalized = wData.games.some(g => {
+      if (!g || !g.matchup || !g.matchup.includes("@")) return false;
+      return !g.isFinal || g.awayScore === null || g.homeScore === null;
+    });
+
+    if (hasUnfinalized) {
+      weeksToCatchUp.push(w);
+    }
+  }
+
+  // Also always verify the immediately preceding week (currentNFL - 1) on startup/resume
+  // to ensure late Monday night games, stat corrections, or overtime finals are 100% captured
+  const prevWeek = currentNFL - 1;
+  if (prevWeek >= 1 && !weeksToCatchUp.includes(prevWeek)) {
+    if (!state._verifiedPastWeeks || !state._verifiedPastWeeks[prevWeek]) {
+      weeksToCatchUp.push(prevWeek);
+    }
+  }
+
+  if (weeksToCatchUp.length === 0) return;
+
+  isCatchingUpPastWeeks = true;
+  if (!state._verifiedPastWeeks) state._verifiedPastWeeks = {};
+
+  try {
+    for (const w of weeksToCatchUp) {
+      try {
+        await syncWeek(w, true, false);
+        state._verifiedPastWeeks[w] = true;
+      } catch (err) {
+        console.warn(`[catchUpPastWeeks] Could not sync Week ${w}:`, err);
+      }
+    }
+
+    // Recalculate dynamic season leaderboard across all weeks
+    if (typeof recalculateAllWeeksPoints === "function") {
+      recalculateAllWeeksPoints(state.data);
+    }
+
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
+    } catch (e) {}
+
+    // Update UI
+    if (typeof renderTabContent === "function") {
+      renderTabContent();
+    }
+    if (typeof updateStripButtons === "function") {
+      updateStripButtons();
+    }
+  } finally {
+    isCatchingUpPastWeeks = false;
   }
 }
 
