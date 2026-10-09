@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Scratch & Temporary Diagnostic Scripts
+scratch/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor & IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
