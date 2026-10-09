@@ -1,0 +1,24 @@
+name: CI Test Suite
+
+on:
+  push:
+    branches: [ main, feature/unified-app ]
+  pull_request:
+    branches: [ main, feature/unified-app ]
+
+jobs:
+  test:
+    name: Run Mathematical Engine Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Execute Automated Test Suite
+        run: node tests/run.js
