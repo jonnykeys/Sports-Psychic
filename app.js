@@ -634,14 +634,28 @@ function computeSeasonLeaderboard(dataObj, throughWeek = null) {
     };
   });
 
-  // Sort descending by points
-  list.sort((a, b) => b.points - a.points);
+  // Sort descending by points (primary), then exact Win-Loss percentage (secondary tie-breaker)
+  list.sort((a, b) => {
+    if (b.points !== a.points) {
+      return b.points - a.points;
+    }
+    const aWinRate = a.rec && a.rec.total > 0 ? (a.rec.wins / a.rec.total) : 0;
+    const bWinRate = b.rec && b.rec.total > 0 ? (b.rec.wins / b.rec.total) : 0;
+    return bWinRate - aWinRate;
+  });
 
-  // Assign shared ranks based off of points only
+  // Assign ranks: players share a tied rank (T-#) ONLY if points AND Win-Loss percentage are identical
   let currentRank = 1;
   for (let i = 0; i < list.length; i++) {
-    if (i > 0 && list[i].points < list[i - 1].points) {
-      currentRank = i + 1;
+    if (i > 0) {
+      const prev = list[i - 1];
+      const curr = list[i];
+      const prevWinRate = prev.rec && prev.rec.total > 0 ? (prev.rec.wins / prev.rec.total) : 0;
+      const currWinRate = curr.rec && curr.rec.total > 0 ? (curr.rec.wins / curr.rec.total) : 0;
+      const isExactTie = (curr.points === prev.points && currWinRate === prevWinRate);
+      if (!isExactTie) {
+        currentRank = i + 1;
+      }
     }
     list[i].numericRank = currentRank;
   }
@@ -2248,14 +2262,28 @@ function getWeeklyLeaderboard(weekNum) {
     };
   });
 
-  // Sort descending by points
-  list.sort((a, b) => b.points - a.points);
+  // Sort descending by points (primary), then exact single-week Win-Loss percentage (secondary tie-breaker)
+  list.sort((a, b) => {
+    if (b.points !== a.points) {
+      return b.points - a.points;
+    }
+    const aWinRate = a.rec && a.rec.total > 0 ? (a.rec.wins / a.rec.total) : 0;
+    const bWinRate = b.rec && b.rec.total > 0 ? (b.rec.wins / b.rec.total) : 0;
+    return bWinRate - aWinRate;
+  });
 
-  // Assign shared ranks based off of points only
+  // Assign shared ranks based off points and single-week Win-Loss percentage
   let currentRank = 1;
   for (let i = 0; i < list.length; i++) {
-    if (i > 0 && list[i].points < list[i - 1].points) {
-      currentRank = i + 1;
+    if (i > 0) {
+      const prev = list[i - 1];
+      const curr = list[i];
+      const prevWinRate = prev.rec && prev.rec.total > 0 ? (prev.rec.wins / prev.rec.total) : 0;
+      const currWinRate = curr.rec && curr.rec.total > 0 ? (curr.rec.wins / curr.rec.total) : 0;
+      const isExactTie = (curr.points === prev.points && currWinRate === prevWinRate);
+      if (!isExactTie) {
+        currentRank = i + 1;
+      }
     }
     list[i].numericRank = currentRank;
   }
@@ -2306,65 +2334,15 @@ function getWeeklyRankMovements(weekNum = state.currentWeek) {
     return result;
   }
 
-  // Pre-week rank: points accumulated strictly in prior weeks (weeks 1 to weekNum - 1)
-  const preWeekList = PLAYERS.map(pName => {
-    let pts = 0;
-    if (state.data && state.data.weeks) {
-      for (let w = 1; w < weekNum; w++) {
-        const wk = state.data.weeks[`Week ${w}`];
-        if (wk && wk.games && Array.isArray(wk.games)) {
-          wk.games.forEach(g => {
-            const pk = g.picks ? g.picks[pName] : null;
-            if (pk && typeof pk.points === "number") {
-              pts += pk.points;
-            }
-          });
-        }
-      }
-    }
-    return { name: pName, points: pts };
-  });
-
-  preWeekList.sort((a, b) => b.points - a.points);
-  let preRank = 1;
-  for (let i = 0; i < preWeekList.length; i++) {
-    if (i > 0 && preWeekList[i].points < preWeekList[i - 1].points) {
-      preRank = i + 1;
-    }
-    preWeekList[i].numericRank = preRank;
-  }
+  // Pre-week rank: standings strictly accumulated in prior weeks (weeks 1 to weekNum - 1)
+  const preWeekList = computeSeasonLeaderboard(state.data, weekNum - 1);
   const preRankMap = {};
   preWeekList.forEach(p => {
     preRankMap[p.name] = p.numericRank;
   });
 
-  // Current rank: points accumulated through weekNum (weeks 1 to weekNum)
-  const currWeekList = PLAYERS.map(pName => {
-    let pts = 0;
-    if (state.data && state.data.weeks) {
-      for (let w = 1; w <= weekNum; w++) {
-        const wk = state.data.weeks[`Week ${w}`];
-        if (wk && wk.games && Array.isArray(wk.games)) {
-          wk.games.forEach(g => {
-            const pk = g.picks ? g.picks[pName] : null;
-            if (pk && typeof pk.points === "number") {
-              pts += pk.points;
-            }
-          });
-        }
-      }
-    }
-    return { name: pName, points: pts };
-  });
-
-  currWeekList.sort((a, b) => b.points - a.points);
-  let currRank = 1;
-  for (let i = 0; i < currWeekList.length; i++) {
-    if (i > 0 && currWeekList[i].points < currWeekList[i - 1].points) {
-      currRank = i + 1;
-    }
-    currWeekList[i].numericRank = currRank;
-  }
+  // Current rank: standings accumulated through weekNum (weeks 1 to weekNum)
+  const currWeekList = computeSeasonLeaderboard(state.data, weekNum);
   const currRankMap = {};
   currWeekList.forEach(p => {
     currRankMap[p.name] = p.numericRank;
