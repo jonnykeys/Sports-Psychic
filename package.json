@@ -1,0 +1,27 @@
+{
+  "name": "sports-psychic",
+  "version": "1.0.0",
+  "description": "Real-time NFL Pick'em & Social Gaming Platform featuring live scoreboards, custom scoring algorithms, and self-healing state reconciliation.",
+  "author": "Jonny Keys",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonnykeys/Sports-Psychic.git"
+  },
+  "keywords": [
+    "nfl",
+    "pickem",
+    "sports-betting",
+    "pwa",
+    "real-time",
+    "espn-api",
+    "supabase",
+    "state-reconciliation",
+    "scoring-engine"
+  ],
+  "main": "src/engine/scoring.js",
+  "scripts": {
+    "test": "node tests/run.js",
+    "test:native": "node --test tests/*.test.js"
+  }
+}
