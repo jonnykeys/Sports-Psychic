@@ -1,5 +1,6 @@
 # Sports Psychic — Competitive Sports Forecasting Platform
 
+[![CI](https://github.com/jonnykeys/Sports-Psychic/actions/workflows/test.yml/badge.svg)](https://github.com/jonnykeys/Sports-Psychic/actions)
 [![Automated Tests](https://img.shields.io/badge/tests-10%2F10%20passing-brightgreen.svg)](tests/)
 [![Architecture](https://img.shields.io/badge/architecture-decoupled%20engine%20%7C%20PWA-blue.svg)](docs/ARCHITECTURE.md)
 [![Database](https://img.shields.io/badge/database-Supabase%20%7C%20PostgreSQL%20RLS-3ECF8E.svg)](database/)

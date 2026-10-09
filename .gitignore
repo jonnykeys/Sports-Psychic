@@ -2,7 +2,12 @@
 node_modules/
 package-lock.json
 
-# Scratch & Temporary Diagnostic Scripts
+# Binary Office & Spreadsheets
+*.xlsx
+*.xls
+
+# Prototypes & Scratch Folders
+Practice/
 scratch/
 
 # Operating System Files
