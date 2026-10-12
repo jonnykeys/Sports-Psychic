@@ -152,6 +152,7 @@ node tests/run.js
 Sports Psychic/
 ├── docs/
 │   ├── ARCHITECTURE.md       # Full Technical Architecture & System Specifications
+│   ├── INTERVIEW_GUIDE.md    # Technical Interview Prep & System Defense Guide
 │   └── PROFILE_README.md     # Public Developer Portfolio Template
 ├── src/
 │   ├── api/
