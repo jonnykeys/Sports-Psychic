@@ -1,7 +1,7 @@
 {
   "appId": "com.sportspsychic.app",
   "appName": "Sports Psychic",
-  "webDir": "OG League Live",
+  "webDir": "apps/og-league",
   "bundledWebRuntime": false,
   "backgroundColor": "#080c14",
   "server": {
