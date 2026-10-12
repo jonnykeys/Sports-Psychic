@@ -166,3 +166,4 @@ if (typeof window !== "undefined") {
     getTeamsByDivision
   };
 }
+

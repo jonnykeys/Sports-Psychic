@@ -1,7 +1,7 @@
 # Sports Psychic — Competitive Sports Forecasting Platform
 
 [![CI](https://github.com/jonnykeys/Sports-Psychic/actions/workflows/test.yml/badge.svg)](https://github.com/jonnykeys/Sports-Psychic/actions)
-[![Automated Tests](https://img.shields.io/badge/tests-4%20suites%20passing-brightgreen.svg)](tests/)
+[![Automated Tests](https://img.shields.io/badge/tests-6%20suites%20passing-brightgreen.svg)](tests/)
 [![Architecture](https://img.shields.io/badge/architecture-decoupled%20engine%20%7C%20PWA-blue.svg)](docs/ARCHITECTURE.md)
 [![Database](https://img.shields.io/badge/database-Supabase%20%7C%20PostgreSQL%20RLS-3ECF8E.svg)](database/)
 [![Live Scoreboard](https://img.shields.io/badge/live%20ingestion-ESPN%20Scoreboard%20REST%20API-CC0000.svg)](https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard)
@@ -158,16 +158,23 @@ Sports Psychic/
 │   │   └── espn.js           # Decoupled ESPN REST API Ingestion & Telemetry Parser
 │   ├── engine/
 │   │   └── scoring.js        # Decoupled, Pure Mathematical Scoring & Ranking Engine
+│   ├── services/
+│   │   └── supabase.js       # Supabase Auth, League Membership & Pick Sheet Persistence
+│   ├── ui/
+│   │   ├── matchups.js       # NFL Matchup Cards, Kickoff Lockouts & Pick Steppers
+│   │   └── standings.js      # Leaderboard Row, Rank Badges & Win-Loss Record Pills
 │   └── utils/
 │       ├── dates.js          # NFL Calendar, Wednesday Rollover & Lockout Logic
 │       └── teams.js          # 32-Team Directory, Colors, Logos & Abbreviation Normalizer
 ├── tests/
-│   ├── run.js                # Zero-dependency Node.js test runner (4 suites)
-│   ├── run_tests.ps1         # Native Windows PowerShell test runner
+│   ├── run.js                # Zero-dependency Node.js test runner (6 suites)
+│   ├── run_tests.ps1         # Native Windows PowerShell test runner (24 assertions)
 │   ├── scoring.test.js       # Core scoring, multipliers & tie-breaker assertions
 │   ├── dates.test.js         # Schedule boundaries, rollover & lockout assertions
 │   ├── teams.test.js         # 32-team metadata & normalization assertions
-│   └── espn.test.js          # Scoreboard & live telemetry parser assertions
+│   ├── espn.test.js          # Scoreboard & live telemetry parser assertions
+│   ├── services.test.js      # Auth, league query & pick sheet persistence assertions
+│   └── ui.test.js            # Standings & matchup component renderer assertions
 ├── OG League Live/           # Production Live Progressive Web App
 │   ├── app.js                # Live client state machine & ESPN API orchestrator
 │   ├── index.html            # Production responsive UI shell
