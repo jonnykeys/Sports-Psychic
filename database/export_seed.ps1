@@ -2,9 +2,12 @@
 # Extracts all 272 games and 3,264 verified picks from data.js into turnkey SQL & JSON
 param()
 
-$dataFilePath = Join-Path $PSScriptRoot "..\OG League Live\data.js"
+$dataFilePath = Join-Path $PSScriptRoot "..\apps\og-league\data.js"
 if (-not (Test-Path $dataFilePath)) {
-    Write-Error "Could not find $dataFilePath"
+    $dataFilePath = Join-Path $PSScriptRoot "..\OG League Live\data.js"
+}
+if (-not (Test-Path $dataFilePath)) {
+    Write-Error "Could not find data.js in apps/og-league or OG League Live"
     exit 1
 }
 

@@ -176,11 +176,13 @@ Sports Psychic/
 │   ├── espn.test.js          # Scoreboard & live telemetry parser assertions
 │   ├── services.test.js      # Auth, league query & pick sheet persistence assertions
 │   └── ui.test.js            # Standings & matchup component renderer assertions
-├── OG League Live/           # Production Live Progressive Web App
-│   ├── app.js                # Live client state machine & ESPN API orchestrator
-│   ├── index.html            # Production responsive UI shell
-│   └── styles.css            # Custom CSS design system
-├── preview/                  # Next-Gen Modern Preview App (v15+)
+├── apps/
+│   └── og-league/            # Production Live Progressive Web App
+│       ├── app.js            # Client state machine & ESPN API orchestrator
+│       ├── index.html        # Production responsive UI shell
+│       └── styles.css        # Custom CSS design system
+├── archive/
+│   └── prototype/            # Historical early prototype
 ├── database/                 # Supabase PostgreSQL schema, migrations & RLS policies
 ├── package.json              # Package metadata and test scripts
 └── README.md                 # Engineering showcase and system overview

@@ -243,3 +243,4 @@ $$\Delta = |S_{\text{away}} - \hat{S}_{\text{away}}| + |S_{\text{home}} - \hat{S
 * **Key RCA**: Temporal State Desynchronization during NFL calendar rollover (610 vs. 630 PTS).
 * **Formula**: $\Delta = |S_{\text{away}} - \hat{S}_{\text{away}}| + |S_{\text{home}} - \hat{S}_{\text{home}}|$.
 * **Tie-Breaker**: Primary Points $\rightarrow$ Secondary Exact Unrounded Win Rate $\frac{W}{W + L}$.
+
