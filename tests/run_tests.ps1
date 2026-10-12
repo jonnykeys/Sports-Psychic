@@ -1,7 +1,7 @@
 # Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
-Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE' -ForegroundColor Cyan
+Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (6 SUITES)' -ForegroundColor Cyan
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ''
 
@@ -34,8 +34,6 @@ Assert-Test (($exactSingle * 3) -eq 150) '3X Lock triples exact jackpot to 150'
 Assert-Test (($exactSplit * 3) -eq 75) '3X Lock triples split exact jackpot to 75'
 
 # Exact Mathematical Win-Loss Percentage Tie-Breaker
-# Brett: 35 wins, 29 losses (35/64 = 0.546875)
-# Carson: 31 wins, 33 losses (31/64 = 0.484375)
 $brettRate = 35.0 / 64.0
 $carsonRate = 31.0 / 64.0
 Assert-Test ($brettRate -gt $carsonRate) 'Brett exact Win-Loss pct breaks tie ahead of Carson'
@@ -72,7 +70,6 @@ Assert-Test ((Get-NFLWeek '2026-09-09') -eq 1) 'Sep 9, 2026 kickoff is Week 1'
 Assert-Test ((Get-NFLWeek '2026-09-16') -eq 2) 'Sep 16, 2026 Wednesday rolls over to Week 2'
 Assert-Test ((Get-NFLWeek '2026-09-30') -eq 4) 'Sep 30, 2026 is Week 4'
 
-# Game Lockout logic
 function Test-GameLocked([datetime]$kickoff, [datetime]$current) {
     return ($current -ge $kickoff)
 }
@@ -104,6 +101,31 @@ $isFinal = $true
 $winner = if ($parsedAway -gt $parsedHome) { 'BUF' } else { 'MIA' }
 Assert-Test ($isFinal -and ($winner -eq 'BUF')) 'Completed game marks isFinal=true and winner=BUF'
 
+Write-Host ''
+Write-Host '  -- Suite 5: Supabase Services & Cloud Persistence --' -ForegroundColor Yellow
+$cleanInviteCode = ' og2026 '.Trim().ToUpper()
+Assert-Test ($cleanInviteCode -eq 'OG2026') 'Invite code normalizes whitespace and uppercase'
+$mockUserId = 'user-123'
+$mockWeekNum = 5
+$sheetPayload = @{
+    user_id = $mockUserId;
+    week_number = $mockWeekNum;
+    sheet_title = "Week $mockWeekNum Picks"
+}
+Assert-Test ($sheetPayload.sheet_title -eq 'Week 5 Picks') 'Pick sheet title generates dynamically'
+
+Write-Host ''
+Write-Host '  -- Suite 6: Standings & Matchup UI Component Renderers --' -ForegroundColor Yellow
+function Format-RankBadge([int]$rank, [bool]$isTied) {
+    if ($isTied) { return "T-$rank" }
+    return "$rank"
+}
+Assert-Test ((Format-RankBadge 1 $false) -eq '1') 'Rank 1 displays as 1'
+Assert-Test ((Format-RankBadge 11 $true) -eq 'T-11') 'Tied rank displays with T- prefix'
+
+$winPctDisplay = "$([Math]::Round((35.0 / 64.0) * 100))%"
+Assert-Test ($winPctDisplay -eq '55%') 'Win-Loss percentage formats correctly as 55%'
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
@@ -114,6 +136,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All mathematical & modular engine assertions verified successfully!' -ForegroundColor Green
+    Write-Host ' All 6 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }

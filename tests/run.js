@@ -7,6 +7,8 @@ const { runAllTests: runScoringTests } = require("./scoring.test.js");
 const { runDatesTests } = require("./dates.test.js");
 const { runTeamsTests } = require("./teams.test.js");
 const { runEspnTests } = require("./espn.test.js");
+const { runServicesTests } = require("./services.test.js");
+const { runUiTests } = require("./ui.test.js");
 
 const results = [];
 let passCount = 0;
@@ -48,40 +50,49 @@ console.log("========================================================\n");
 const startTime = Date.now();
 
 try {
-  console.log("  [Suite 1/4] Core Scoring & Multipliers");
+  console.log("  [Suite 1/6] Core Scoring & Multipliers");
   runScoringTests(assert);
 
-  console.log("  [Suite 2/4] NFL Dates & Rollover Schedule");
+  console.log("  [Suite 2/6] NFL Dates & Rollover Schedule");
   runDatesTests(assert);
 
-  console.log("  [Suite 3/4] 32-Team Directory & Aliases");
+  console.log("  [Suite 3/6] 32-Team Directory & Aliases");
   runTeamsTests(assert);
 
-  console.log("  [Suite 4/4] ESPN REST Telemetry & Game Parser\n");
+  console.log("  [Suite 4/6] ESPN REST Telemetry & Game Parser");
   runEspnTests(assert);
+
+  console.log("  [Suite 5/6] Supabase Auth & Persistence Services");
+  runServicesTests(assert);
+
+  console.log("  [Suite 6/6] Standings & Matchup UI Renderers\n");
+  runUiTests(assert);
 } catch (err) {
   console.error("FATAL TEST EXCEPTION:", err);
   process.exit(1);
 }
 
-const elapsed = Date.now() - startTime;
+// Give async promises a brief tick to finalize before summary
+setTimeout(() => {
+  const elapsed = Date.now() - startTime;
 
-results.forEach(res => {
-  if (res.pass) {
-    console.log(`  \x1b[32m✔ PASS\x1b[0m ${res.message}`);
+  results.forEach(res => {
+    if (res.pass) {
+      console.log(`  \x1b[32m✔ PASS\x1b[0m ${res.message}`);
+    } else {
+      console.log(`  \x1b[31m✖ FAIL\x1b[0m ${res.message}`);
+    }
+  });
+
+  console.log("\n--------------------------------------------------------");
+  console.log(` Total Assertions: ${results.length} | Passed: \x1b[32m${passCount}\x1b[0m | Failed: ${failCount > 0 ? `\x1b[31m${failCount}\x1b[0m` : "0"}`);
+  console.log(` Duration: ${elapsed}ms`);
+  console.log("--------------------------------------------------------\n");
+
+  if (failCount > 0) {
+    process.exit(1);
   } else {
-    console.log(`  \x1b[31m✖ FAIL\x1b[0m ${res.message}`);
+    console.log(" \x1b[32mAll 6 test suites passed successfully!\x1b[0m\n");
+    process.exit(0);
   }
-});
-
-console.log("\n--------------------------------------------------------");
-console.log(` Total Assertions: ${results.length} | Passed: \x1b[32m${passCount}\x1b[0m | Failed: ${failCount > 0 ? `\x1b[31m${failCount}\x1b[0m` : "0"}`);
-console.log(` Duration: ${elapsed}ms`);
-console.log("--------------------------------------------------------\n");
-
-if (failCount > 0) {
-  process.exit(1);
-} else {
-  console.log(" \x1b[32mAll test suites passed successfully!\x1b[0m\n");
-  process.exit(0);
-}
+}, 50);
