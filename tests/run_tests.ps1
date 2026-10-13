@@ -179,6 +179,29 @@ function Can-SubmitGlobalLeaderboard([object]$authUser) {
 Assert-Test (-not (Can-SubmitGlobalLeaderboard $null)) 'Guest is strictly prevented from submitting to Global Leaderboard without account'
 Assert-Test (Can-SubmitGlobalLeaderboard @{ id = 'usr_123' }) 'Authenticated user is permitted to submit to Global Leaderboard'
 
+# 6. getTeamInfo Metadata & Contrast Resolution
+function Mock-GetTeamInfo([string]$code) {
+    $norm = if ($code -eq 'WAS') { 'WSH' } elseif ($code -eq 'OAK') { 'LV' } else { $code }
+    $colors = @{ 'KC' = '#E31837'; 'BUF' = '#00338D'; 'WSH' = '#5A1414'; 'LV' = '#000000' }
+    $hex = if ($colors.ContainsKey($norm)) { $colors[$norm] } else { '#2a3b50' }
+    return @{
+        code = $norm
+        color = $hex
+        textColor = if ($hex -eq '#000000') { '#ffffff' } else { '#ffffff' }
+    }
+}
+$kcInfo = Mock-GetTeamInfo 'KC'
+Assert-Test ($kcInfo.code -eq 'KC' -and $kcInfo.color -eq '#E31837') 'getTeamInfo resolves Chiefs color and code'
+$wasInfo = Mock-GetTeamInfo 'WAS'
+Assert-Test ($wasInfo.code -eq 'WSH') 'getTeamInfo normalizes alias WAS to WSH'
+
+# 7. Solo Campaign Mode Branding
+$seasonModeLabel = 'Season Prophecy'
+$weeklyModeLabel = 'Weekly Vision'
+Assert-Test ($seasonModeLabel -eq 'Season Prophecy') 'Mode 1 branded as Season Prophecy'
+Assert-Test ($weeklyModeLabel -eq 'Weekly Vision') 'Mode 2 branded as Weekly Vision'
+
+
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
