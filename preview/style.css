@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    OG LEAGUE LIVE - Standalone View-Only Mobile Experience
    Mobile-First, Sports-Grade Dark Theme
    ========================================================= */
@@ -6527,6 +6527,211 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   animation: fadeIn 0.25s ease-out;
 }
 
+/* Solo Campaign Selector Bar */
+.solo-campaign-selector-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .solo-campaign-selector-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.solo-campaign-toggle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #ffffff;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.solo-campaign-toggle:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: translateY(-1px);
+}
+
+.solo-campaign-toggle.active {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), inset 0 0 12px rgba(56, 189, 248, 0.08);
+}
+
+.solo-campaign-toggle.active#btn-campaign-weekly {
+  border-color: #f59e0b;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25), inset 0 0 12px rgba(245, 158, 11, 0.08);
+}
+
+.campaign-toggle-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.campaign-toggle-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.campaign-toggle-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.campaign-toggle-desc {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.solo-campaign-toggle.active .campaign-toggle-title {
+  color: #38bdf8;
+}
+
+.solo-campaign-toggle.active#btn-campaign-weekly .campaign-toggle-title {
+  color: #fbbf24;
+}
+
+/* Season Campaign Actions & Locked Banners */
+.sheet-season-lock-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.08));
+  border: 1.5px solid rgba(245, 158, 11, 0.35);
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.season-lock-action-info {
+  flex: 1;
+  min-width: 240px;
+}
+
+.season-lock-action-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 2px;
+}
+
+.season-lock-action-sub {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.btn-lock-season {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #0b0f19;
+  font-weight: 900;
+  font-size: 0.88rem;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  white-space: nowrap;
+}
+
+.btn-lock-season:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45);
+}
+
+.sheet-season-locked-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(180, 83, 9, 0.1));
+  border: 1.5px solid rgba(245, 158, 11, 0.45);
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+}
+
+.season-lock-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sheet-weekly-sprint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.06));
+  border: 1.5px solid rgba(245, 158, 11, 0.3);
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.weekly-sprint-info {
+  flex: 1;
+  min-width: 240px;
+}
+
+.weekly-sprint-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 2px;
+}
+
+.weekly-sprint-sub {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.weekly-sprint-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 .solo-header-card {
   display: flex;
   justify-content: space-between;
@@ -7391,7 +7596,7 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 
 .btn-score-step {
   width: 24px;
-  height: 24px;
+  height: 26px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -7413,6 +7618,21 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 .btn-score-step:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.btn-score-step-10 {
+  width: 32px;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.28);
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.btn-score-step-10:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #ffffff;
 }
 
 .score-input {
