@@ -2290,6 +2290,7 @@ function parseNFLStandingsCSV(csvText) {
 // UI RENDERING - APP MASTER
 // =========================================================
 function renderApp() {
+  loadSoloPickSheets().catch(() => {});
   updateAppShellForMode();
   renderHeaderProfile();
   if (state.appMode === "solo") {
@@ -2785,7 +2786,7 @@ function getByeTeamsForWeek(weekNum) {
 }
 
 function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo) {
-  const userSheets = (state.authUser && Array.isArray(state.pickSheets)) ? state.pickSheets : [];
+  const userSheets = Array.isArray(state.pickSheets) ? state.pickSheets : [];
   const hasSheets = userSheets.length > 0;
   const awayNorm = normalizeTeamCode(awayTeam);
   const homeNorm = normalizeTeamCode(homeTeam);
@@ -2793,14 +2794,6 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
   const homeColor = homeInfo.color || "#3b82f6";
 
   if (!hasSheets) {
-    const actionOnClick = state.authUser
-      ? "openCreateSheetModal()"
-      : `openAuthModal('Predict ${awayTeam} @ ${homeTeam}', 'signin')`;
-    const actionBtnText = state.authUser ? "+ Predict in Solo Play" : "🔮 Sign In to Predict";
-    const subText = state.authUser
-      ? "You haven't made a pick for this game. Start a Pick Sheet in Solo Play to forecast winners and exact scores!"
-      : "Sign in to start custom Pick Sheets, predict game scores, and test your psychic instincts.";
-
     return `
       <div class="lobby-no-picks-card">
         <div class="lobby-no-picks-content">
@@ -2809,11 +2802,11 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
           </div>
           <div class="lobby-no-picks-text-block">
             <div class="lobby-no-picks-title">No Predictions Yet</div>
-            <div class="lobby-no-picks-desc">${subText}</div>
+            <div class="lobby-no-picks-desc">Forecast winners, point totals & your 3X Lock of the Week in Solo Play!</div>
           </div>
         </div>
-        <button type="button" class="btn-lobby-predict-cta" onclick="${actionOnClick}">
-          <span>${actionBtnText}</span>
+        <button type="button" class="btn-lobby-predict-cta" onclick="enterSoloPlay()">
+          <span>+ Predict in Solo Play</span>
         </button>
       </div>
     `;
@@ -2834,7 +2827,7 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
 
       const sheetPickData = {
         sheetId: sheet.id,
-        sheetName: sheet.name || "Pick Sheet",
+        sheetName: sheet.name || "Master Pick Sheet",
         winner: pk.winner,
         scoreDisplay: scoreStr,
         multiplier: Boolean(pk.multiplier)
@@ -2853,7 +2846,6 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
   const totalMyPicks = awaySheetPicks.length + homeSheetPicks.length;
 
   if (totalMyPicks === 0) {
-    const targetSheetId = userSheets[0].id;
     return `
       <div class="lobby-no-picks-card">
         <div class="lobby-no-picks-content">
@@ -2863,11 +2855,11 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
           <div class="lobby-no-picks-text-block">
             <div class="lobby-no-picks-title">No Predictions Logged</div>
             <div class="lobby-no-picks-desc">
-              You have ${userSheets.length} active sheet${userSheets.length > 1 ? "s" : ""}, but haven't picked a winner for this game yet.
+              You haven't predicted a winner for this game yet.
             </div>
           </div>
         </div>
-        <button type="button" class="btn-lobby-predict-cta" onclick="openPickSheet('${targetSheetId}')">
+        <button type="button" class="btn-lobby-predict-cta" onclick="enterSoloPlay()">
           <span>+ Predict in Solo Play</span>
         </button>
       </div>
@@ -3234,16 +3226,18 @@ function renderMatchups() {
       </div>
     `;
 
-    const isLobby = state.appMode === "lobby";
-    const isCollapsed = !isLobby && state.collapsedMatchups && state.collapsedMatchups.has(game.id);
+    const isCustomLeague = (state.appMode === "league" && Boolean(state.activeLeagueData));
+    const isOGLeague = (state.appMode === "league" && (state.activeLeague === "OG League" || !state.activeLeagueData));
+    const isLeagueMode = isCustomLeague || isOGLeague;
+    const isCollapsed = isLeagueMode && state.collapsedMatchups && state.collapsedMatchups.has(game.id);
 
     return `
       <article class="matchup-card ${isCollapsed ? "collapsed" : ""} ${isLive ? "is-live" : ""}" id="${game.id}">
-        <div class="matchup-card-header" ${!isLobby ? `onclick="toggleMatchupCollapse('${game.id}', event)"` : ""}>
+        <div class="matchup-card-header" ${isLeagueMode ? `onclick="toggleMatchupCollapse('${game.id}', event)"` : ""}>
           <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
           <div class="matchup-header-actions">
             <span class="matchup-badge ${badgeClass}">${badgeText}</span>
-            ${!isLobby ? `
+            ${isLeagueMode ? `
             <button type="button" class="matchup-collapse-btn ${isCollapsed ? "collapsed" : ""}" aria-label="${isCollapsed ? "Expand picks" : "Collapse picks"}" title="${isCollapsed ? "Expand picks" : "Collapse picks"}">
               <svg class="collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"></polyline>
@@ -3287,11 +3281,10 @@ function renderMatchups() {
           </div>
         </div>
 
-        ${isLobby
-          ? renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
-          : (state.activeLeagueData
-              ? renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
-              : `
+        ${isCustomLeague
+          ? renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
+          : (isOGLeague
+              ? `
           <!-- League Pick Consensus Bar -->
           ${totalPicks > 0 ? `
             <div class="matchup-consensus-container" aria-label="League pick consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
@@ -3358,7 +3351,10 @@ function renderMatchups() {
               <span class="unpicked-names">${unpicked.map(u => u.name).join(", ")}</span>
             </div>
           ` : ""}
-        `)}
+        `
+              : renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
+            )
+        }
       </article>
     `;
   }).join("");
@@ -5125,12 +5121,6 @@ function handleHubLeagueClick() {
 }
 
 function handleHubSoloClick() {
-  if (!state.authUser) {
-    state.postAuthAction = "solo";
-    showToast("🔮 Please sign in to access Solo Play.");
-    openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
-    return;
-  }
   enterSoloPlay();
 }
 
@@ -5329,14 +5319,6 @@ async function enterCustomLeague(leagueId) {
 }
 
 async function enterSoloPlay() {
-  if (!state.authUser) {
-    state.postAuthAction = "solo";
-    closeLeagueDrawer();
-    showToast("🔮 Please sign in to access Solo Play.");
-    openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
-    return;
-  }
-
   state.appMode = "solo";
   state.activeLeague = "solo";
   state.activeSheetId = null;
@@ -5708,6 +5690,12 @@ function setSoloCampaignMode(mode) {
 }
 
 function openSeasonLockModal() {
+  if (!state.authUser) {
+    state.postAuthAction = "lock_season";
+    showToast("🔒 Create an account or sign in to submit to the Global Leaderboard.");
+    openAuthModal("Create an account or sign in to submit your predictions to the official Global Leaderboard!", "signup");
+    return;
+  }
   const modal = document.getElementById("season-lock-modal");
   if (modal) {
     modal.classList.add("active");
@@ -5729,6 +5717,12 @@ function closeSeasonLockModal(event) {
 }
 
 async function confirmSeasonLockSubmit() {
+  if (!state.authUser) {
+    state.postAuthAction = "lock_season";
+    showToast("🔒 Create an account or sign in to submit to the Global Leaderboard.");
+    openAuthModal("Create an account or sign in to submit your predictions to the official Global Leaderboard!", "signup");
+    return;
+  }
   const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
 
@@ -5789,13 +5783,6 @@ function updateSoloStatsHeader(sheet) {
 }
 
 function renderSoloView() {
-  if (!state.authUser) {
-    exitToLobby();
-    showToast("🔮 Please sign in to access Solo Play.");
-    openAuthModal("Sign in or create an account to access Solo Psychic and manage your Master Pick Sheet", "signin");
-    return;
-  }
-
   const container = document.getElementById("solo-sheet-container");
   if (!container) return;
 
@@ -5856,7 +5843,7 @@ function renderSoloView() {
           <div class="season-lock-action-info">
             <div class="season-lock-action-title">📅 Full Season Championship Prophecy</div>
             <div class="season-lock-action-sub">
-              Forecast all 18 weeks (272 games). Once locked, your season forecast is permanently registered into the official Global Leaderboard.
+              Forecast all 18 weeks (272 games). Once locked, your season forecast is permanently registered into the official Global Leaderboard. ${state.authUser ? "" : "<span style='color: #fbbf24; font-weight: 700;'>(Free account required to submit)</span>"}
             </div>
           </div>
           <button type="button" class="btn-lock-season" onclick="openSeasonLockModal()">
@@ -6128,10 +6115,17 @@ function renderSoloView() {
         </div>
 
         <div class="sheet-editor-top-right">
-          <div class="sheet-save-indicator">
-            <span>✓</span>
-            <span>Cloud Synced</span>
-          </div>
+          ${state.authUser ? `
+            <div class="sheet-save-indicator">
+              <span>✓</span>
+              <span>Cloud Synced</span>
+            </div>
+          ` : `
+            <div class="sheet-save-indicator guest-save-indicator" onclick="openAuthModal('Sign in to sync your Solo Master sheet to the cloud across devices!', 'signin')" style="cursor: pointer; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; border-radius: 8px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" title="Saved locally on this device. Click to sign in and back up to cloud.">
+              <span>💾</span>
+              <span>Saved Locally (Sign in to sync)</span>
+            </div>
+          `}
         </div>
       </div>
 
@@ -6494,6 +6488,32 @@ async function handleUserSession(user) {
     console.warn("User session handling error:", err);
   }
 
+  // Adopt guest solo picks if user just signed up / signed in
+  try {
+    const guestRaw = localStorage.getItem("sp_solo_sheets_guest");
+    if (guestRaw) {
+      const guestSheets = JSON.parse(guestRaw);
+      if (Array.isArray(guestSheets) && guestSheets.length > 0) {
+        const guestMaster = guestSheets.find(s => s.is_master || s.id === "master_guest");
+        if (guestMaster && guestMaster.picks && Object.keys(guestMaster.picks).length > 0) {
+          await loadSoloPickSheets();
+          const userMaster = getOrCreateMasterPickSheet();
+          userMaster.picks = Object.assign({}, guestMaster.picks, userMaster.picks || {});
+          if (guestMaster.is_season_locked) {
+            userMaster.is_season_locked = true;
+            userMaster.season_locked_at = guestMaster.season_locked_at;
+            userMaster.season_picks = Object.assign({}, guestMaster.season_picks || guestMaster.picks, userMaster.season_picks || {});
+          }
+          calculateSheetStats(userMaster);
+          await saveSoloPickSheet(userMaster);
+          localStorage.removeItem("sp_solo_sheets_guest");
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Notice: guest sheet adoption notice:", err);
+  }
+
   await loadSoloPickSheets();
   await loadUserLeagues();
   updateAppShellForMode();
@@ -6508,6 +6528,12 @@ async function handleUserSession(user) {
     } else {
       await enterCustomLeague(pending.id || pending.join_code || pending.name);
     }
+  } else if (state.postAuthAction === "lock_season") {
+    state.postAuthAction = null;
+    await enterSoloPlay();
+    setTimeout(() => {
+      openSeasonLockModal();
+    }, 250);
   } else if (state.postAuthAction === "solo") {
     state.postAuthAction = null;
     enterSoloPlay();

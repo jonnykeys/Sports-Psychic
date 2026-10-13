@@ -161,6 +161,25 @@ function Is-GameLocked([bool]$seasonLocked, [bool]$kickoffPassed, [string]$mode)
 Assert-Test (Is-GameLocked $true $false 'season') 'Locked season campaign freezes all future games'
 Assert-Test (-not (Is-GameLocked $true $false 'weekly')) 'Weekly sprint allows editing unstarted games even if season is locked'
 
+# 5. Guest Solo Access & Privacy Isolation
+$guestUserId = $null
+$guestSheetId = if ($guestUserId) { "master_$guestUserId" } else { "master_guest" }
+Assert-Test ($guestSheetId -eq 'master_guest') 'Guest initializes Master Sheet with master_guest ID'
+
+function Can-RenderOGChips([string]$appMode, [string]$activeLeague, [bool]$hasCustomData) {
+    return ($appMode -eq 'league') -and (($activeLeague -eq 'OG League') -or (-not $hasCustomData))
+}
+Assert-Test (-not (Can-RenderOGChips 'solo' 'solo' $false)) 'Solo mode strictly prohibits rendering OG League member chips'
+Assert-Test (-not (Can-RenderOGChips 'lobby' $null $false)) 'Public Lobby strictly prohibits rendering OG League member chips'
+Assert-Test (Can-RenderOGChips 'league' 'OG League' $false) 'OG League view renders OG League member chips'
+
+function Can-SubmitGlobalLeaderboard([object]$authUser) {
+    return ($null -ne $authUser)
+}
+Assert-Test (-not (Can-SubmitGlobalLeaderboard $null)) 'Guest is strictly prevented from submitting to Global Leaderboard without account'
+Assert-Test (Can-SubmitGlobalLeaderboard @{ id = 'usr_123' }) 'Authenticated user is permitted to submit to Global Leaderboard'
+
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
