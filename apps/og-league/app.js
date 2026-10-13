@@ -5623,186 +5623,104 @@ function updateSheetEditorStats(sheet) {
   }
 }
 
-function renderSoloView() {
-  if (!state.authUser) {
-    exitToLobby();
-    showToast("🔮 Please sign in to access Solo Play.");
-    openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
-    return;
-  }
+// =========================================================
+// SOLO PSYCHIC MASTER PICK SHEET CONTROLLER
+// =========================================================
 
-  const dashSubview = document.getElementById("solo-dashboard-subview");
-  const editorSubview = document.getElementById("solo-sheet-editor-subview");
+let _soloSaveTimer = null;
+function debouncedSaveSoloPickSheet(sheet) {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  try {
+    localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
+  } catch (e) {}
 
-  if (state.activeSheetId) {
-    if (dashSubview) dashSubview.style.display = "none";
-    if (editorSubview) {
-      editorSubview.style.display = "block";
-      renderSoloSheetEditor();
-    }
-    return;
-  }
-
-  if (dashSubview) dashSubview.style.display = "block";
-  if (editorSubview) editorSubview.style.display = "none";
-
-  const grid = document.getElementById("solo-sheets-grid");
-  const statsBar = document.getElementById("solo-stats-bar");
-  if (!grid) return;
-
-  const sheets = Array.isArray(state.pickSheets) ? state.pickSheets : [];
-
-  if (sheets.length === 0) {
-    if (statsBar) statsBar.style.display = "none";
-    grid.innerHTML = `
-      <div class="solo-empty-card">
-        <div class="solo-empty-icon-wrap">
-          <span class="solo-empty-icon">🔮</span>
-          <div class="solo-empty-glow"></div>
-        </div>
-        <h3 class="solo-empty-title">No Pick Sheets Created Yet</h3>
-        <p class="solo-empty-desc">
-          You haven't created any pick sheets yet. Start your first 2026 NFL prediction sheet to forecast weekly matchups, lock in exact scores, and test your psychic instincts!
-        </p>
-        <div class="solo-empty-features">
-          <div class="empty-feature-item">
-            <span class="empty-feature-icon">🎯</span>
-            <span>Predict exact game scores & weekly winners</span>
-          </div>
-          <div class="empty-feature-item">
-            <span class="empty-feature-icon">🔒</span>
-            <span>Select your 3x Lock of the Week</span>
-          </div>
-          <div class="empty-feature-item">
-            <span class="empty-feature-icon">📊</span>
-            <span>Track your accuracy rate & scoring records</span>
-          </div>
-        </div>
-        <button type="button" class="btn-hero-primary solo-empty-btn" onclick="openCreateSheetModal()">
-          <span>✨ Create Your First Pick Sheet</span>
-        </button>
-      </div>
-    `;
-    return;
-  }
-
-  // Render Stats Bar
-  if (statsBar) {
-    statsBar.style.display = "grid";
-    const totalPicks = sheets.reduce((acc, s) => acc + (s.total_picks || 0), 0);
-    const totalPoints = sheets.reduce((acc, s) => acc + (s.total_points || 0), 0);
-
-    statsBar.innerHTML = `
-      <div class="solo-stat-card">
-        <span class="solo-stat-label">Active Sheets</span>
-        <span class="solo-stat-value">${sheets.length}</span>
-      </div>
-      <div class="solo-stat-card">
-        <span class="solo-stat-label">Season Campaign</span>
-        <span class="solo-stat-value">2026 NFL</span>
-      </div>
-      <div class="solo-stat-card">
-        <span class="solo-stat-label">Predictions Logged</span>
-        <span class="solo-stat-value">${totalPicks}</span>
-      </div>
-      <div class="solo-stat-card">
-        <span class="solo-stat-label">Total Solo Points</span>
-        <span class="solo-stat-value">${totalPoints} pts</span>
-      </div>
-    `;
-  }
-
-  // Render Sheets Grid
-  grid.innerHTML = sheets.map(sheet => {
-    const isSeason = (sheet.format === "season");
-    const formatBadge = isSeason
-      ? `<span class="sheet-card-badge badge-season">📅 Full Season (Weeks 1-18)</span>`
-      : `<span class="sheet-card-badge badge-weekly">⚡ Week ${sheet.active_week || 5} Slate</span>`;
-
-    let dateStr = "Recent";
-    if (sheet.created_at) {
+  clearTimeout(_soloSaveTimer);
+  _soloSaveTimer = setTimeout(async () => {
+    if (supabaseClient && state.authUser && sheet.user_id === state.authUser.id) {
       try {
-        const d = new Date(sheet.created_at);
-        dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-      } catch (e) {}
+        await supabaseClient.from("pick_sheets").upsert(sheet, { onConflict: "id" });
+      } catch (e) {
+        console.warn("Supabase pick_sheets upsert notice:", e);
+      }
     }
-
-    const safeTitle = (sheet.name || "Untitled Sheet").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    return `
-      <div class="solo-sheet-card" onclick="openPickSheet('${sheet.id}')">
-        <div class="sheet-card-top">
-          ${formatBadge}
-          <div class="sheet-card-menu" onclick="event.stopPropagation()">
-            <button type="button" class="btn-sheet-menu" onclick="deleteSoloSheet('${sheet.id}')" title="Delete sheet" aria-label="Delete sheet">🗑️</button>
-          </div>
-        </div>
-        <div class="sheet-card-title">${safeTitle}</div>
-        <div class="sheet-card-meta">
-          <span>Created ${dateStr}</span>
-          <span>•</span>
-          <span>2026 NFL</span>
-        </div>
-
-        <div class="sheet-card-stats-row">
-          <div class="sheet-stat-pill">
-            <span class="stat-label">Picks Made</span>
-            <span class="stat-val">${sheet.total_picks || 0}</span>
-          </div>
-          <div class="sheet-stat-pill">
-            <span class="stat-label">Score</span>
-            <span class="stat-val">${sheet.total_points || 0} pts</span>
-          </div>
-          <div class="sheet-stat-pill">
-            <span class="stat-label">Accuracy</span>
-            <span class="stat-val">${sheet.accuracy_rate ? sheet.accuracy_rate + "%" : "—"}</span>
-          </div>
-        </div>
-
-        <div class="sheet-card-footer">
-          <button type="button" class="btn-open-sheet" onclick="openPickSheet('${sheet.id}')">
-            <span>Open Sheet</span>
-            <span class="btn-arrow">&rarr;</span>
-          </button>
-        </div>
-      </div>
-    `;
-  }).join("");
+  }, 400);
 }
 
-function openCreateSheetModal() {
-  if (!state.authUser) {
-    state.postAuthAction = "solo";
-    showToast("🔮 Please sign in to create a pick sheet.");
-    openAuthModal("Sign in or create an account to create custom pick sheets", "signin");
-    return;
+/**
+ * Retrieves the user's single Master Pick Sheet, or initializes one if none exists.
+ */
+function getOrCreateMasterPickSheet() {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  if (!Array.isArray(state.pickSheets)) state.pickSheets = [];
+
+  let master = state.pickSheets.find(s => s.id === `master_${userId}` || s.is_master);
+  if (!master) {
+    if (state.pickSheets.length > 0) {
+      master = state.pickSheets[0];
+      master.id = `master_${userId}`;
+      master.is_master = true;
+      master.name = "Master Pick Sheet";
+      if (master.is_season_locked === undefined) master.is_season_locked = false;
+      if (!master.season_picks && master.is_season_locked) {
+        master.season_picks = JSON.parse(JSON.stringify(master.picks || {}));
+      }
+    } else {
+      master = {
+        id: `master_${userId}`,
+        user_id: userId,
+        name: "Master Pick Sheet",
+        format: "season",
+        season_year: 2026,
+        active_week: state.currentWeek || 5,
+        is_master: true,
+        is_season_locked: false,
+        season_locked_at: null,
+        picks: {},
+        season_picks: {},
+        total_picks: 0,
+        total_points: 0,
+        accuracy_rate: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      state.pickSheets.unshift(master);
+    }
+    saveSoloPickSheet(master);
   }
-
-  const modal = document.getElementById("create-sheet-modal");
-  if (!modal) return;
-
-  const nameInput = document.getElementById("sheet-name-input");
-  if (nameInput) {
-    const nextNum = (state.pickSheets ? state.pickSheets.length : 0) + 1;
-    nameInput.value = `My 2026 Prophecy Sheet #${nextNum}`;
-  }
-
-  selectSheetFormat("season");
-
-  const weekSelect = document.getElementById("sheet-target-week");
-  if (weekSelect) weekSelect.value = state.currentWeek || "5";
-
-  modal.classList.add("active");
-  modal.style.display = "flex";
-  document.body.style.overflow = "hidden";
-  if (nameInput) setTimeout(() => nameInput.focus(), 150);
+  return master;
 }
 
-function closeCreateSheetModal(event) {
+/**
+ * Switches Solo campaign mode between 'season' (Full 18-week slate) and 'weekly' (Current week sprint).
+ */
+function setSoloCampaignMode(mode) {
+  state.soloCampaignMode = mode;
+  const currentNFLWk = getCurrentNFLWeek();
+  if (mode === "weekly") {
+    state.selectedSheetWeek = currentNFLWk;
+  } else {
+    if (!state.selectedSheetWeek) {
+      state.selectedSheetWeek = currentNFLWk;
+    }
+  }
+  renderSoloView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function openSeasonLockModal() {
+  const modal = document.getElementById("season-lock-modal");
+  if (modal) {
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeSeasonLockModal(event) {
   if (event && event.target && !event.target.classList.contains("auth-modal-backdrop")) {
     return;
   }
-  const modal = document.getElementById("create-sheet-modal");
+  const modal = document.getElementById("season-lock-modal");
   if (modal) {
     modal.classList.remove("active");
     modal.style.display = "none";
@@ -5810,115 +5728,160 @@ function closeCreateSheetModal(event) {
   document.body.style.overflow = "";
 }
 
-function selectSheetFormat(format) {
-  state.createSheetFormat = format;
-  const optSeason = document.getElementById("format-opt-season");
-  const optWeekly = document.getElementById("format-opt-weekly");
-  const weekRow = document.getElementById("sheet-week-select-row");
+async function confirmSeasonLockSubmit() {
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
 
-  if (optSeason) optSeason.classList.toggle("active", format === "season");
-  if (optWeekly) optWeekly.classList.toggle("active", format === "weekly");
-  if (weekRow) weekRow.style.display = (format === "weekly") ? "block" : "none";
-}
+  sheet.is_season_locked = true;
+  sheet.season_locked_at = new Date().toISOString();
+  sheet.season_picks = JSON.parse(JSON.stringify(sheet.picks || {}));
 
-async function handleCreateSheetSubmit() {
-  const nameInput = document.getElementById("sheet-name-input");
-  const weekSelect = document.getElementById("sheet-target-week");
+  calculateSheetStats(sheet);
+  await saveSoloPickSheet(sheet);
 
-  let sheetName = (nameInput && nameInput.value || "").trim();
-  if (!sheetName) {
-    const nextNum = (state.pickSheets ? state.pickSheets.length : 0) + 1;
-    sheetName = `My 2026 Prophecy Sheet #${nextNum}`;
-  }
-
-  const format = state.createSheetFormat || "season";
-  const activeWeek = (format === "weekly" && weekSelect) ? parseInt(weekSelect.value, 10) : (state.currentWeek || 5);
-
-  const newSheet = {
-    id: "sheet_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
-    user_id: state.authUser ? state.authUser.id : "guest",
-    name: sheetName,
-    format: format,
-    season_year: 2026,
-    active_week: activeWeek,
-    total_picks: 0,
-    total_points: 0,
-    accuracy_rate: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
-
-  await saveSoloPickSheet(newSheet);
-  closeCreateSheetModal();
+  closeSeasonLockModal();
   renderSoloView();
-  showToast(`✨ Created "${sheetName}"!`);
-}
-
-function openPickSheet(sheetId) {
-  if (!state.authUser) {
-    state.postAuthAction = "solo";
-    showToast("🔮 Please sign in to open pick sheets.");
-    openAuthModal("Sign in to view and fill out your pick sheets", "signin");
-    return;
-  }
-
-  state.activeSheetId = sheetId;
-  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
-  if (sheet) {
-    if (sheet.format === "weekly") {
-      state.selectedSheetWeek = sheet.active_week || state.currentWeek || 5;
-    } else {
-      if (!state.selectedSheetWeek) {
-        state.selectedSheetWeek = sheet.active_week || state.currentWeek || 5;
-      }
-    }
-  }
-  renderSoloView();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function closePickSheetEditor() {
-  state.activeSheetId = null;
-  renderSoloView();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  showToast("🏆 Season Prophecy Locked! Registered into Global Championship.");
 }
 
 function selectSoloSheetWeek(weekNum) {
   const w = parseInt(weekNum, 10);
   if (isNaN(w) || w < 1 || w > 18) return;
   state.selectedSheetWeek = w;
-  const sheet = (state.pickSheets || []).find(s => s.id === state.activeSheetId);
+  const sheet = getOrCreateMasterPickSheet();
   if (sheet) {
     sheet.active_week = w;
-    saveSoloPickSheet(sheet);
+    debouncedSaveSoloPickSheet(sheet);
   }
-  renderSoloSheetEditor();
+  renderSoloView();
   const weekKey = `Week ${w}`;
   if (!state.data || !state.data.weeks || !state.data.weeks[weekKey]) {
     syncWeek(w, true).then(() => {
-      if (state.activeSheetId) renderSoloSheetEditor();
+      renderSoloView();
     });
   }
 }
 
-function renderSoloSheetEditor() {
-  const container = document.getElementById("solo-sheet-editor-subview");
-  if (!container) return;
+function updateSoloCardWinnerUI(gameId, winnerTeam) {
+  const card = document.getElementById(`sheet-card-${gameId}`);
+  if (!card) return;
+  const btnAway = card.querySelector(".btn-pick-away");
+  const btnHome = card.querySelector(".btn-pick-home");
+  if (btnAway) {
+    const isAway = (winnerTeam && btnAway.dataset.team === winnerTeam);
+    btnAway.classList.toggle("selected", Boolean(isAway));
+    const span = btnAway.querySelector("span");
+    if (span) span.textContent = `${isAway ? "✓ " : ""}${btnAway.dataset.team}`;
+  }
+  if (btnHome) {
+    const isHome = (winnerTeam && btnHome.dataset.team === winnerTeam);
+    btnHome.classList.toggle("selected", Boolean(isHome));
+    const span = btnHome.querySelector("span");
+    if (span) span.textContent = `${isHome ? "✓ " : ""}${btnHome.dataset.team}`;
+  }
+}
 
-  const sheet = (state.pickSheets || []).find(s => s.id === state.activeSheetId);
-  if (!sheet) {
-    closePickSheetEditor();
+function updateSoloStatsHeader(sheet) {
+  const subtitleEl = document.getElementById("solo-sheet-stats-subtitle");
+  if (subtitleEl && sheet) {
+    subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points`;
+  }
+}
+
+function renderSoloView() {
+  if (!state.authUser) {
+    exitToLobby();
+    showToast("🔮 Please sign in to access Solo Play.");
+    openAuthModal("Sign in or create an account to access Solo Psychic and manage your Master Pick Sheet", "signin");
     return;
   }
 
-  const isSeason = (sheet.format === "season");
+  const container = document.getElementById("solo-sheet-container");
+  if (!container) return;
+
+  const sheet = getOrCreateMasterPickSheet();
+  state.activeSheetId = sheet.id;
+
+  const mode = state.soloCampaignMode || "season";
+  state.soloCampaignMode = mode;
+
+  const btnSeason = document.getElementById("btn-campaign-season");
+  const btnWeekly = document.getElementById("btn-campaign-weekly");
+  if (btnSeason) btnSeason.classList.toggle("active", mode === "season");
+  if (btnWeekly) btnWeekly.classList.toggle("active", mode === "weekly");
+
   const currentNFLWk = getCurrentNFLWeek();
-  const selectedWk = state.selectedSheetWeek || sheet.active_week || currentNFLWk;
+  const selectedWk = (mode === "weekly")
+    ? currentNFLWk
+    : (state.selectedSheetWeek || currentNFLWk);
   state.selectedSheetWeek = selectedWk;
+
+  const isSeason = (mode === "season");
+  const isSeasonLocked = Boolean(sheet.is_season_locked);
+  const activePicks = (isSeason && isSeasonLocked)
+    ? (sheet.season_picks || sheet.picks || {})
+    : (sheet.picks || {});
 
   calculateSheetStats(sheet);
 
-  // 1. Week strip (only for Full Season sheets)
+  // 1. Campaign Mode Top Banner
+  let campaignBannerHtml = "";
+  if (isSeason) {
+    if (isSeasonLocked) {
+      let lockedDateFormatted = "Official Entry";
+      if (sheet.season_locked_at) {
+        try {
+          lockedDateFormatted = new Date(sheet.season_locked_at).toLocaleDateString("en-US", {
+            month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"
+          });
+        } catch (e) {}
+      }
+      campaignBannerHtml = `
+        <div class="sheet-season-locked-banner">
+          <div style="font-size: 1.6rem;">🔒</div>
+          <div style="flex: 1;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+              <span>Full Season Campaign Locked</span>
+              <span class="season-lock-status-badge">Official Entry Registered</span>
+            </div>
+            <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 3px; line-height: 1.4;">
+              Submitted on ${lockedDateFormatted}. Picks for all 18 weeks are permanently locked to preserve competitive integrity for the <strong>Global Season Championship</strong>.
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      campaignBannerHtml = `
+        <div class="sheet-season-lock-action-bar">
+          <div class="season-lock-action-info">
+            <div class="season-lock-action-title">📅 Full Season Championship Prophecy</div>
+            <div class="season-lock-action-sub">
+              Forecast all 18 weeks (272 games). Once locked, your season forecast is permanently registered into the official Global Leaderboard.
+            </div>
+          </div>
+          <button type="button" class="btn-lock-season" onclick="openSeasonLockModal()">
+            <span>🔒 Lock In Season Prophecy</span>
+          </button>
+        </div>
+      `;
+    }
+  } else {
+    campaignBannerHtml = `
+      <div class="sheet-weekly-sprint-bar">
+        <div class="weekly-sprint-info">
+          <div class="weekly-sprint-title">⚡ Week ${currentNFLWk} Sprint • Weekly Crown</div>
+          <div class="weekly-sprint-sub">
+            Rolling Kickoff Locks active. You can adjust your predictions right up until each game kicks off!
+          </div>
+        </div>
+        <div class="weekly-sprint-badge">
+          <span>🏆 Weekly Slate</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // 2. Week Strip (only in Season mode)
   let weekStripHtml = "";
   if (isSeason) {
     const pills = [];
@@ -5928,7 +5891,7 @@ function renderSoloSheetEditor() {
       const label = isPast ? `🔒 Wk ${w}` : `Wk ${w}`;
       pills.push(`
         <button type="button" class="sheet-week-pill ${isActive ? "active" : ""} ${isPast ? "locked" : ""}"
-          onclick="selectSoloSheetWeek(${w})" title="${isPast ? `Week ${w} (Concluded - Locked)` : `Week ${w}`}">
+          onclick="selectSoloSheetWeek(${w})" title="${isPast ? `Week ${w} (Concluded)` : `Week ${w}`}">
           <span>${label}</span>
         </button>
       `);
@@ -5942,7 +5905,7 @@ function renderSoloSheetEditor() {
     `;
   }
 
-  // 2. Fetch games for selected week
+  // 3. Matchup Data for Selected Week
   const weekKey = `Week ${selectedWk}`;
   let games = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
     ? state.data.weeks[weekKey].games
@@ -5952,26 +5915,27 @@ function renderSoloSheetEditor() {
     games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
   }
 
-  // Determine active 3X Lock in this week
-  const picks = sheet.picks || {};
+  // Active 3X Lock team for this week
   let currentLockTeam = null;
   games.forEach(g => {
-    const pk = picks[g.id];
+    const pk = activePicks[g.id];
     if (pk && pk.multiplier && pk.winner) {
       currentLockTeam = pk.winner;
     }
   });
 
   const isWeekPast = (selectedWk < currentNFLWk);
-  const weekBannerLockStatus = isWeekPast
-    ? `<span class="sheet-week-banner-lock-status">🔒 Concluded Week • All Picks Locked</span>`
-    : `<span class="sheet-week-banner-lock-status">⚡ Rolling Kickoff Locks Active</span>`;
+  const weekBannerLockStatus = (isSeason && isSeasonLocked)
+    ? `<span class="sheet-week-banner-lock-status" style="color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">🔒 Season Locked</span>`
+    : (isWeekPast
+      ? `<span class="sheet-week-banner-lock-status">🔒 Concluded Week</span>`
+      : `<span class="sheet-week-banner-lock-status">⚡ Rolling Kickoff Locks Active</span>`);
 
   const lockStatusCallout = currentLockTeam
     ? `<span style="font-size:0.75rem; font-weight:800; color:var(--accent-gold);">⭐ 3X Lock: <strong>${currentLockTeam}</strong></span>`
     : `<span style="font-size:0.75rem; color:var(--text-dim);">⭐ 3X Lock: None Selected</span>`;
 
-  // 3. Build Games Grid
+  // 4. Build Matchup Cards
   const gamesHtml = games.map((game, idx) => {
     const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
     const awayTeam = parts[0] || "AWAY";
@@ -5982,10 +5946,22 @@ function renderSoloSheetEditor() {
     const awayRec = getNFLTeamRecord(awayTeam, selectedWk);
     const homeRec = getNFLTeamRecord(homeTeam, selectedWk);
 
-    const lockStatus = getGameLockStatus(game, selectedWk);
-    const isLocked = lockStatus.isLocked;
+    let isGameLocked = false;
+    let badgeClass = "badge-upcoming";
+    let badgeText = "Upcoming";
 
-    const pick = picks[game.id] || {};
+    if (isSeason && isSeasonLocked) {
+      isGameLocked = true;
+      badgeClass = "badge-final";
+      badgeText = "🔒 SEASON LOCKED";
+    } else {
+      const lockStatus = getGameLockStatus(game, selectedWk);
+      isGameLocked = lockStatus.isLocked;
+      badgeClass = lockStatus.badgeClass;
+      badgeText = lockStatus.badgeText;
+    }
+
+    const pick = activePicks[game.id] || {};
     const pickWinner = (pick.winner || "").toUpperCase().trim();
     const awaySelected = (pickWinner === awayTeam);
     const homeSelected = (pickWinner === homeTeam);
@@ -6006,24 +5982,23 @@ function renderSoloSheetEditor() {
       `;
     }
 
-    // Notice if locked and no pick was made prior to kickoff
     let lockedNoticeHtml = "";
-    if (isLocked && !pickWinner) {
+    if (isGameLocked && !pickWinner) {
       lockedNoticeHtml = `
         <div class="game-locked-notice">
-          🔒 Kickoff has passed. No pick was submitted prior to game start.
+          🔒 Game locked. No pick was submitted prior to kickoff.
         </div>
       `;
     }
 
-    const cardClass = isLocked ? "is-locked-game" : "is-open-game";
+    const cardClass = isGameLocked ? "is-locked-game" : "is-open-game";
 
     return `
       <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
         <!-- Top Status & Kickoff Bar -->
         <div class="game-card-top-status">
-          <span class="game-lock-badge ${lockStatus.badgeClass}">
-            ${lockStatus.badgeText}
+          <span class="game-lock-badge ${badgeClass}">
+            ${badgeText}
           </span>
           <span class="game-kickoff-time">${game.dateTime || `Game ${idx + 1}`}</span>
         </div>
@@ -6057,34 +6032,41 @@ function renderSoloSheetEditor() {
 
         <!-- Winner Picker Buttons -->
         <div class="game-winner-picker">
-          <button type="button" class="btn-pick-winner ${awaySelected ? "selected" : ""}"
-            ${isLocked ? "disabled" : ""}
-            onclick="setSoloPickWinner('${sheet.id}', '${game.id}', '${awayTeam}', ${isLocked})"
-            title="${isLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
+          <button type="button" class="btn-pick-winner btn-pick-away ${awaySelected ? "selected" : ""}"
+            data-team="${awayTeam}"
+            ${isGameLocked ? "disabled" : ""}
+            onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
             <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
           </button>
-          <button type="button" class="btn-pick-winner ${homeSelected ? "selected" : ""}"
-            ${isLocked ? "disabled" : ""}
-            onclick="setSoloPickWinner('${sheet.id}', '${game.id}', '${homeTeam}', ${isLocked})"
-            title="${isLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
+          <button type="button" class="btn-pick-winner btn-pick-home ${homeSelected ? "selected" : ""}"
+            data-team="${homeTeam}"
+            ${isGameLocked ? "disabled" : ""}
+            onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
             <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
           </button>
         </div>
 
-        <!-- Exact Score Prediction Row -->
+        <!-- Exact Score Prediction Row with Dual-Speed Steppers ([-10] [-1] [Score] [+1] [+10]) -->
         <div class="game-scores-row">
           <div class="score-col-item">
             <span class="score-col-label">${awayTeam}</span>
             <div class="score-input-wrap">
-              <button type="button" class="btn-score-step" ${isLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${sheet.id}', '${game.id}', 'away', -1, ${isLocked})">-</button>
-              <input type="number" min="0" max="99" class="score-input"
-                value="${pickAwayScore}" ${isLocked ? "disabled" : ""} placeholder="—"
-                onchange="handleSoloScoreInput('${sheet.id}', '${game.id}', 'away', this.value, ${isLocked})"
-                oninput="handleSoloScoreInput('${sheet.id}', '${game.id}', 'away', this.value, ${isLocked})"
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
+              <input type="number" min="0" max="99" class="score-input" id="score-away-${game.id}"
+                value="${pickAwayScore !== undefined && pickAwayScore !== null ? pickAwayScore : ""}"
+                ${isGameLocked ? "disabled" : ""} placeholder="—"
+                onchange="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
+                oninput="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
                 aria-label="${awayTeam} Predicted Score" />
-              <button type="button" class="btn-score-step" ${isLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${sheet.id}', '${game.id}', 'away', 1, ${isLocked})">+</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})" title="Increase by 1">+1</button>
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 10, ${isGameLocked})" title="Increase by 10">+10</button>
             </div>
           </div>
 
@@ -6092,15 +6074,20 @@ function renderSoloSheetEditor() {
 
           <div class="score-col-item">
             <div class="score-input-wrap">
-              <button type="button" class="btn-score-step" ${isLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${sheet.id}', '${game.id}', 'home', -1, ${isLocked})">-</button>
-              <input type="number" min="0" max="99" class="score-input"
-                value="${pickHomeScore}" ${isLocked ? "disabled" : ""} placeholder="—"
-                onchange="handleSoloScoreInput('${sheet.id}', '${game.id}', 'home', this.value, ${isLocked})"
-                oninput="handleSoloScoreInput('${sheet.id}', '${game.id}', 'home', this.value, ${isLocked})"
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
+              <input type="number" min="0" max="99" class="score-input" id="score-home-${game.id}"
+                value="${pickHomeScore !== undefined && pickHomeScore !== null ? pickHomeScore : ""}"
+                ${isGameLocked ? "disabled" : ""} placeholder="—"
+                onchange="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
+                oninput="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
                 aria-label="${homeTeam} Predicted Score" />
-              <button type="button" class="btn-score-step" ${isLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${sheet.id}', '${game.id}', 'home', 1, ${isLocked})">+</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})" title="Increase by 1">+1</button>
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 10, ${isGameLocked})" title="Increase by 10">+10</button>
             </div>
             <span class="score-col-label">${homeTeam}</span>
           </div>
@@ -6109,9 +6096,9 @@ function renderSoloSheetEditor() {
         <!-- 3X Lock of the Week Toggle -->
         <div class="game-multiplier-row">
           <button type="button" class="btn-toggle-multiplier ${isMultiplier ? "active" : ""}"
-            ${isLocked ? "disabled" : ""}
-            onclick="toggleSoloPickMultiplier('${sheet.id}', '${game.id}', ${selectedWk}, ${isLocked})"
-            title="${isLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
+            ${isGameLocked ? "disabled" : ""}
+            onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
             <span>${isMultiplier ? "⭐ 3X LOCK OF THE WEEK ACTIVE" : "⭐ Select as 3X Lock of the Week"}</span>
           </button>
         </div>
@@ -6122,24 +6109,19 @@ function renderSoloSheetEditor() {
   }).join("");
 
   const formatPillClass = isSeason ? "pill-season" : "pill-weekly";
-  const formatPillText = isSeason ? "Full Season (Weeks 1-18)" : `Week ${selectedWk} Slate`;
-  const safeTitle = (sheet.name || "Untitled Sheet").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const formatPillText = isSeason ? "Full Season (Weeks 1–18)" : `Week ${selectedWk} Slate`;
 
   container.innerHTML = `
     <div class="sheet-editor-container">
-      <!-- Topbar Navigation -->
+      <!-- Topbar Title & Stats -->
       <div class="sheet-editor-topbar">
         <div class="sheet-editor-top-left">
-          <button type="button" class="btn-sheet-back" onclick="closePickSheetEditor()" aria-label="Back to pick sheets">
-            <span class="btn-back-arrow">&larr;</span>
-            <span>Back to My Sheets</span>
-          </button>
           <div class="sheet-editor-title-wrap">
             <div class="sheet-editor-title-row">
-              <h2 class="sheet-editor-title">${safeTitle}</h2>
+              <h2 class="sheet-editor-title">Master Pick Sheet</h2>
               <span class="sheet-editor-meta-pill ${formatPillClass}">${formatPillText}</span>
             </div>
-            <div class="sheet-editor-subtitle" id="sheet-editor-stats-subtitle">
+            <div class="sheet-editor-subtitle" id="solo-sheet-stats-subtitle">
               ${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points
             </div>
           </div>
@@ -6148,10 +6130,13 @@ function renderSoloSheetEditor() {
         <div class="sheet-editor-top-right">
           <div class="sheet-save-indicator">
             <span>✓</span>
-            <span>Auto-Saved to Cloud</span>
+            <span>Cloud Synced</span>
           </div>
         </div>
       </div>
+
+      <!-- Campaign Banner / Season Lock Action -->
+      ${campaignBannerHtml}
 
       <!-- Week Strip (if season sheet) -->
       ${weekStripHtml}
@@ -6170,7 +6155,7 @@ function renderSoloSheetEditor() {
         </div>
       </div>
 
-      <!-- Games Grid -->
+      <!-- Matchup Cards Grid -->
       <div class="sheet-games-grid">
         ${gamesHtml}
       </div>
@@ -6178,12 +6163,23 @@ function renderSoloSheetEditor() {
   `;
 }
 
-async function setSoloPickWinner(sheetId, gameId, winnerTeam, isLocked) {
+async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
+  let gameId, winnerTeam, isLocked;
+  if (typeof arg3 === "boolean" || arg4 === undefined) {
+    gameId = arg1;
+    winnerTeam = arg2;
+    isLocked = Boolean(arg3);
+  } else {
+    gameId = arg2;
+    winnerTeam = arg3;
+    isLocked = Boolean(arg4);
+  }
+
   if (isLocked) {
     showToast("🔒 Picks are locked for this game");
     return;
   }
-  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
+  const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
   if (!sheet.picks) sheet.picks = {};
   if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
@@ -6195,16 +6191,30 @@ async function setSoloPickWinner(sheetId, gameId, winnerTeam, isLocked) {
   }
 
   calculateSheetStats(sheet);
-  await saveSoloPickSheet(sheet);
-  renderSoloSheetEditor();
+  debouncedSaveSoloPickSheet(sheet);
+  updateSoloCardWinnerUI(gameId, sheet.picks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
 }
 
-async function stepSoloPickScore(sheetId, gameId, teamSide, delta, isLocked) {
+async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
+  let gameId, teamSide, delta, isLocked;
+  if (typeof arg3 === "number") {
+    gameId = arg1;
+    teamSide = arg2;
+    delta = arg3;
+    isLocked = Boolean(arg4);
+  } else {
+    gameId = arg2;
+    teamSide = arg3;
+    delta = arg4;
+    isLocked = Boolean(arg5);
+  }
+
   if (isLocked) {
     showToast("🔒 Scores are locked for this game");
     return;
   }
-  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
+  const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
   if (!sheet.picks) sheet.picks = {};
   if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
@@ -6212,21 +6222,55 @@ async function stepSoloPickScore(sheetId, gameId, teamSide, delta, isLocked) {
   const key = (teamSide === "away") ? "awayScore" : "homeScore";
   let cur = sheet.picks[gameId][key];
   if (cur === undefined || cur === null || isNaN(cur) || cur === "") {
-    cur = delta > 0 ? 20 : 0;
+    cur = delta > 0 ? delta : 0;
   } else {
     cur = parseInt(cur, 10) + delta;
   }
   cur = Math.max(0, Math.min(99, cur));
   sheet.picks[gameId][key] = cur;
 
+  // Auto-pick winner if scores are unequal
+  const awaySc = sheet.picks[gameId].awayScore;
+  const homeSc = sheet.picks[gameId].homeScore;
+  const game = findGameById(gameId);
+  if (game && awaySc !== undefined && awaySc !== null && homeSc !== undefined && homeSc !== null) {
+    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+    const awayTeam = parts[0];
+    const homeTeam = parts[1];
+    if (awaySc > homeSc) {
+      sheet.picks[gameId].winner = awayTeam;
+    } else if (homeSc > awaySc) {
+      sheet.picks[gameId].winner = homeTeam;
+    }
+  }
+
   calculateSheetStats(sheet);
-  await saveSoloPickSheet(sheet);
-  renderSoloSheetEditor();
+  debouncedSaveSoloPickSheet(sheet);
+
+  // Directly update input value and winner UI in DOM for immediate response
+  const inputEl = document.getElementById(`score-${teamSide}-${gameId}`);
+  if (inputEl) inputEl.value = cur;
+
+  updateSoloCardWinnerUI(gameId, sheet.picks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
 }
 
-async function handleSoloScoreInput(sheetId, gameId, teamSide, valStr, isLocked) {
+async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
+  let gameId, teamSide, valStr, isLocked;
+  if (typeof arg4 === "boolean" || arg5 === undefined) {
+    gameId = arg1;
+    teamSide = arg2;
+    valStr = arg3;
+    isLocked = Boolean(arg4);
+  } else {
+    gameId = arg2;
+    teamSide = arg3;
+    valStr = arg4;
+    isLocked = Boolean(arg5);
+  }
+
   if (isLocked) return;
-  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
+  const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
   if (!sheet.picks) sheet.picks = {};
   if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
@@ -6239,17 +6283,44 @@ async function handleSoloScoreInput(sheetId, gameId, teamSide, valStr, isLocked)
     sheet.picks[gameId][key] = Math.max(0, Math.min(99, parseInt(cleaned, 10)));
   }
 
+  // Auto-pick winner if scores are unequal
+  const awaySc = sheet.picks[gameId].awayScore;
+  const homeSc = sheet.picks[gameId].homeScore;
+  const game = findGameById(gameId);
+  if (game && awaySc !== undefined && awaySc !== null && homeSc !== undefined && homeSc !== null) {
+    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+    const awayTeam = parts[0];
+    const homeTeam = parts[1];
+    if (awaySc > homeSc) {
+      sheet.picks[gameId].winner = awayTeam;
+    } else if (homeSc > awaySc) {
+      sheet.picks[gameId].winner = homeTeam;
+    }
+  }
+
   calculateSheetStats(sheet);
-  await saveSoloPickSheet(sheet);
-  updateSheetEditorStats(sheet);
+  debouncedSaveSoloPickSheet(sheet);
+  updateSoloCardWinnerUI(gameId, sheet.picks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
 }
 
-async function toggleSoloPickMultiplier(sheetId, gameId, weekNum, isLocked) {
+async function toggleSoloPickMultiplier(arg1, arg2, arg3, arg4) {
+  let gameId, weekNum, isLocked;
+  if (typeof arg3 === "boolean" || arg4 === undefined) {
+    gameId = arg1;
+    weekNum = arg2;
+    isLocked = Boolean(arg3);
+  } else {
+    gameId = arg2;
+    weekNum = arg3;
+    isLocked = Boolean(arg4);
+  }
+
   if (isLocked) {
     showToast("🔒 3X multiplier is locked for this game");
     return;
   }
-  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
+  const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
   if (!sheet.picks) sheet.picks = {};
   if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
@@ -6260,9 +6331,18 @@ async function toggleSoloPickMultiplier(sheetId, gameId, weekNum, isLocked) {
     showToast("Removed 3X Lock of the Week");
   } else {
     // Clear 3X multiplier on all other games in this same week
+    const weekKey = `Week ${weekNum}`;
+    let weekGames = [];
+    if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
+      weekGames = state.data.weeks[weekKey].games;
+    } else if (typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+      weekGames = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
+    }
+    const weekGameIds = new Set(weekGames.map(g => g.id));
     const weekPrefix = `Week ${weekNum}_`;
+
     for (const [k, p] of Object.entries(sheet.picks)) {
-      if (k.startsWith(weekPrefix) && p && p.multiplier) {
+      if ((weekGameIds.has(k) || k.startsWith(weekPrefix)) && p && p.multiplier) {
         p.multiplier = false;
       }
     }
@@ -6271,35 +6351,27 @@ async function toggleSoloPickMultiplier(sheetId, gameId, weekNum, isLocked) {
   }
 
   calculateSheetStats(sheet);
-  await saveSoloPickSheet(sheet);
-  renderSoloSheetEditor();
-}
-
-async function deleteSoloSheet(sheetId) {
-  const sheet = (state.pickSheets || []).find(s => s.id === sheetId);
-  const name = sheet ? sheet.name : "this sheet";
-  const confirmed = window.confirm(`Are you sure you want to delete "${name}"?`);
-  if (!confirmed) return;
-
-  if (state.activeSheetId === sheetId) {
-    state.activeSheetId = null;
-  }
-
-  state.pickSheets = (state.pickSheets || []).filter(s => s.id !== sheetId);
-  const userId = state.authUser ? state.authUser.id : "guest";
-  try {
-    localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
-  } catch (e) {}
-
-  if (supabaseClient && state.authUser) {
-    try {
-      await supabaseClient.from("pick_sheets").delete().eq("id", sheetId);
-    } catch (e) {}
-  }
-
+  debouncedSaveSoloPickSheet(sheet);
   renderSoloView();
-  showToast(`🗑️ Deleted "${name}"`);
 }
+
+// Backwards-compatible stubs for legacy calls
+function openCreateSheetModal() {
+  enterSoloPlay();
+}
+function closeCreateSheetModal() {}
+function selectSheetFormat() {}
+function handleCreateSheetSubmit() {}
+function openPickSheet() {
+  enterSoloPlay();
+}
+function closePickSheetEditor() {
+  exitToLobby();
+}
+function renderSoloSheetEditor() {
+  renderSoloView();
+}
+function deleteSoloSheet() {}
 
 // =========================================================
 // SUPABASE AUTHENTICATION & CLOUD SYNC ENGINE
@@ -8282,7 +8354,11 @@ window.stepCustomLeagueScore = stepCustomLeagueScore;
 window.toggleCustomLeagueMultiplier = toggleCustomLeagueMultiplier;
 window.saveCustomLeaguePickToCloud = saveCustomLeaguePickToCloud;
 window.updateCustomPickBarUI = updateCustomPickBarUI;
-window.renderCustomLeagueMatchupSection = renderCustomLeagueMatchupSection;
+window.setSoloCampaignMode = setSoloCampaignMode;
+window.openSeasonLockModal = openSeasonLockModal;
+window.closeSeasonLockModal = closeSeasonLockModal;
+window.confirmSeasonLockSubmit = confirmSeasonLockSubmit;
+window.getOrCreateMasterPickSheet = getOrCreateMasterPickSheet;
 window.renderCustomLeagueLeaderboard = renderCustomLeagueLeaderboard;
 
 

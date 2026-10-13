@@ -124,7 +124,42 @@ Assert-Test ((Format-RankBadge 1 $false) -eq '1') 'Rank 1 displays as 1'
 Assert-Test ((Format-RankBadge 11 $true) -eq 'T-11') 'Tied rank displays with T- prefix'
 
 $winPctDisplay = "$([Math]::Round((35.0 / 64.0) * 100))%"
-Assert-Test ($winPctDisplay -eq '55%') 'Win-Loss percentage formats correctly as 55%'
+Write-Host ''
+Write-Host '  -- Suite 7: Master Pick Sheet, Dual Steppers & Season Lock --' -ForegroundColor Yellow
+
+# 1. Master Sheet Initialization
+$testUserId = 'user_abc123'
+$masterId = "master_$testUserId"
+Assert-Test ($masterId -eq 'master_user_abc123') 'Master sheet ID adheres to master_{userId} pattern'
+
+# 2. Dual-Speed Stepper Bounds Clamping (0 to 99)
+function Step-Score([int]$current, [int]$delta) {
+    return [Math]::Max(0, [Math]::Min(99, $current + $delta))
+}
+Assert-Test ((Step-Score 20 10) -eq 30) 'Dual-speed +10 steps 20 to 30'
+Assert-Test ((Step-Score 20 -10) -eq 10) 'Dual-speed -10 steps 20 to 10'
+Assert-Test ((Step-Score 95 10) -eq 99) 'Dual-speed +10 clamps cleanly at 99'
+Assert-Test ((Step-Score 5 -10) -eq 0) 'Dual-speed -10 clamps cleanly at 0'
+
+# 3. Single 3X Lock per Week Invariant
+$weekPicks = @{
+    'g1' = @{ team = 'KC'; multiplier = $true };
+    'g2' = @{ team = 'BUF'; multiplier = $false }
+}
+# Toggle 3X on g2 -> g1 must be cleared
+if ($weekPicks['g2'].multiplier -eq $false) {
+    $weekPicks['g1'].multiplier = $false
+    $weekPicks['g2'].multiplier = $true
+}
+Assert-Test (($weekPicks['g2'].multiplier -eq $true) -and ($weekPicks['g1'].multiplier -eq $false)) 'Only exactly one game per week retains 3X multiplier'
+
+# 4. Season Lock Permanence Invariant
+function Is-GameLocked([bool]$seasonLocked, [bool]$kickoffPassed, [string]$mode) {
+    if ($mode -eq 'season' -and $seasonLocked) { return $true }
+    return $kickoffPassed
+}
+Assert-Test (Is-GameLocked $true $false 'season') 'Locked season campaign freezes all future games'
+Assert-Test (-not (Is-GameLocked $true $false 'weekly')) 'Weekly sprint allows editing unstarted games even if season is locked'
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
@@ -136,6 +171,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 6 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 7 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }

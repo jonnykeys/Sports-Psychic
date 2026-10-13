@@ -142,39 +142,27 @@
 
     <!-- SOLO PLAY DASHBOARD (Visible in Solo Mode) -->
     <section id="solo-view" class="solo-view" style="display: none;" aria-label="Solo Psychic Dashboard">
-      <!-- 1. DASHBOARD SUBVIEW (List of Pick Sheets) -->
-      <div id="solo-dashboard-subview">
-        <div class="solo-header-card">
-          <div class="solo-header-left">
-            <div class="solo-badge-tag">
-              <span class="solo-badge-dot"></span>
-              <span>SOLO PSYCHIC PLAY</span>
-            </div>
-            <h2 class="solo-headline">My Pick Sheets</h2>
-            <p class="solo-subtext">
-              Forecast 2026 NFL game scores, lock in your weekly predictions, and track your psychic accuracy across custom sheets.
-            </p>
+      <!-- 1. CAMPAIGN MODE TOGGLE BAR (Season vs Weekly) -->
+      <div class="solo-campaign-selector-bar">
+        <button type="button" class="solo-campaign-toggle active" id="btn-campaign-season" onclick="setSoloCampaignMode('season')">
+          <span class="campaign-toggle-icon">📅</span>
+          <div class="campaign-toggle-content">
+            <span class="campaign-toggle-title">Full Season Campaign</span>
+            <span class="campaign-toggle-desc">Weeks 1–18 Slate • Global Championship</span>
           </div>
-          <div class="solo-header-actions">
-            <button type="button" class="btn-create-sheet" onclick="openCreateSheetModal()">
-              <span class="btn-create-icon">✨</span>
-              <span>+ Create New Pick Sheet</span>
-            </button>
+        </button>
+        <button type="button" class="solo-campaign-toggle" id="btn-campaign-weekly" onclick="setSoloCampaignMode('weekly')">
+          <span class="campaign-toggle-icon">⚡</span>
+          <div class="campaign-toggle-content">
+            <span class="campaign-toggle-title">Weekly Sprint</span>
+            <span class="campaign-toggle-desc">Current Week Only • Weekly Crown</span>
           </div>
-        </div>
-
-        <!-- Quick Summary Stats Bar (Dynamic) -->
-        <div id="solo-stats-bar" class="solo-stats-bar" style="display: none;"></div>
-
-        <!-- Sheets Grid Container -->
-        <div id="solo-sheets-grid" class="solo-sheets-grid">
-          <!-- Rendered dynamically by renderSoloView() -->
-        </div>
+        </button>
       </div>
 
-      <!-- 2. SHEET EDITOR SUBVIEW (Active Pick Sheet Filling Layout) -->
-      <div id="solo-sheet-editor-subview" style="display: none;">
-        <!-- Rendered dynamically by renderSoloSheetEditor() -->
+      <!-- 2. MASTER PICK SHEET CONTAINER -->
+      <div id="solo-sheet-container" class="solo-sheet-container">
+        <!-- Header, Week Strip, and Matchup Cards rendered dynamically by renderSoloView() -->
       </div>
     </section>
 
@@ -630,81 +618,33 @@
     </div>
   </div>
 
-  <!-- CREATE PICK SHEET MODAL -->
-  <div id="create-sheet-modal" class="auth-modal-backdrop" onclick="closeCreateSheetModal(event)">
+  <!-- LOCK IN SEASON PROPHECY CONFIRMATION MODAL -->
+  <div id="season-lock-modal" class="auth-modal-backdrop" onclick="closeSeasonLockModal(event)">
     <div class="auth-modal-dialog" onclick="event.stopPropagation()">
       <div class="auth-modal-header">
         <div class="auth-modal-title-row">
-          <span class="auth-modal-icon">📋</span>
-          <h3 id="create-sheet-modal-title">Create New Pick Sheet</h3>
+          <span class="auth-modal-icon">🔒</span>
+          <h3 id="season-lock-modal-title">Lock In Season Prophecy</h3>
         </div>
-        <button class="profile-modal-close" onclick="closeCreateSheetModal()" aria-label="Close">&times;</button>
+        <button class="profile-modal-close" onclick="closeSeasonLockModal()" aria-label="Close">&times;</button>
       </div>
-      <p class="auth-modal-desc">
-        Set up a new prediction sheet. You can create multiple sheets to test different strategies (models, gut picks, underdog specials).
+      <p class="auth-modal-desc" style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.5; margin-top: 8px;">
+        Are you ready to submit your predictions to the <strong style="color: #f59e0b;">Global Season Championship</strong>?
       </p>
-
-      <div class="auth-form-fields" style="margin-top: 14px;">
-        <div class="auth-field-row">
-          <label class="auth-label" for="sheet-name-input">Sheet Name</label>
-          <input type="text" id="sheet-name-input" class="auth-input" placeholder="e.g. 2026 Master Forecaster" maxlength="40" autocomplete="off">
-        </div>
-
-        <div class="auth-field-row">
-          <label class="auth-label">Forecast Format</label>
-          <div class="sheet-format-options">
-            <div class="sheet-format-radio active" id="format-opt-season" onclick="selectSheetFormat('season')">
-              <input type="radio" name="sheet-format-val" value="season" checked style="display: none;">
-              <div class="format-radio-icon">📅</div>
-              <div class="format-radio-text">
-                <div class="format-radio-title">Full Season Campaign</div>
-                <div class="format-radio-desc">Predict all 18 NFL weeks (272 games) with cumulative season scoring</div>
-              </div>
-            </div>
-            <div class="sheet-format-radio" id="format-opt-weekly" onclick="selectSheetFormat('weekly')">
-              <input type="radio" name="sheet-format-val" value="weekly" style="display: none;">
-              <div class="format-radio-icon">⚡</div>
-              <div class="format-radio-text">
-                <div class="format-radio-title">Single Week Slate</div>
-                <div class="format-radio-desc">Focus predictions strictly on a specific week (e.g. Week 5)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="auth-field-row" id="sheet-week-select-row" style="display: none;">
-          <label class="auth-label" for="sheet-target-week">Target NFL Week</label>
-          <select id="sheet-target-week" class="auth-input sheet-select">
-            <option value="1">Week 1</option>
-            <option value="2">Week 2</option>
-            <option value="3">Week 3</option>
-            <option value="4">Week 4</option>
-            <option value="5" selected>Week 5 (Current)</option>
-            <option value="6">Week 6</option>
-            <option value="7">Week 7</option>
-            <option value="8">Week 8</option>
-            <option value="9">Week 9</option>
-            <option value="10">Week 10</option>
-            <option value="11">Week 11</option>
-            <option value="12">Week 12</option>
-            <option value="13">Week 13</option>
-            <option value="14">Week 14</option>
-            <option value="15">Week 15</option>
-            <option value="16">Week 16</option>
-            <option value="17">Week 17</option>
-            <option value="18">Week 18</option>
-          </select>
-        </div>
-
-        <div class="auth-submit-row" style="margin-top: 14px;">
-          <button type="button" class="btn-auth-primary" id="btn-submit-create-sheet" onclick="handleCreateSheetSubmit()">
-            <span>✨ Create Pick Sheet</span>
-          </button>
+      <div class="season-lock-warning-card" style="margin-top: 14px; padding: 12px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="font-size: 1.2rem;">⚠️</span>
+        <div style="font-size: 0.8rem; color: #fef3c7; line-height: 1.4;">
+          <strong style="color: #f59e0b; display: block; margin-bottom: 2px;">Permanent Submission Notice:</strong>
+          Once locked, your Season-Long picks are permanently frozen and cannot be edited. Your predictions for all available weeks will be recorded into the official Global Leaderboard.
         </div>
       </div>
-
-      <div class="auth-modal-footer">
-        <button type="button" class="btn-auth-cancel" onclick="closeCreateSheetModal()">Cancel</button>
+      <div class="auth-submit-row" style="margin-top: 18px; display: flex; gap: 10px;">
+        <button type="button" class="btn-auth-secondary" onclick="closeSeasonLockModal()" style="flex: 1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-weight: 700; cursor: pointer;">
+          Keep Editing
+        </button>
+        <button type="button" class="btn-auth-primary" id="btn-confirm-season-lock" onclick="confirmSeasonLockSubmit()" style="flex: 1.3; padding: 10px; border-radius: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 900; border: none; cursor: pointer;">
+          🔒 Yes, Lock In
+        </button>
       </div>
     </div>
   </div>
