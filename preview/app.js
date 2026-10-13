@@ -268,6 +268,25 @@ function normalizeTeamCode(code) {
   return TEAM_ALIASES[cleaned] || cleaned;
 }
 
+/**
+ * Resolves full team metadata, styling colors, and contrast text for any team code or alias.
+ */
+function getTeamInfo(code) {
+  if (!code) return { code: "", name: "", city: "", color: "#2a3b50", textColor: "#ffffff" };
+  const norm = normalizeTeamCode(code);
+  const info = (typeof NFL_TEAMS !== "undefined" && (NFL_TEAMS[norm] || NFL_TEAMS[code]))
+    ? (NFL_TEAMS[norm] || NFL_TEAMS[code])
+    : { code, name: code, city: code, color: "#2a3b50" };
+  const textColor = getTeamContrastColor(info.color || "#2a3b50");
+  return {
+    code: info.code || norm || code,
+    name: info.name || code,
+    city: info.city || info.name || code,
+    color: info.color || "#2a3b50",
+    textColor: textColor
+  };
+}
+
 // =========================================================
 // APPLICATION STATE
 // =========================================================
@@ -5828,7 +5847,7 @@ function renderSoloView() {
           <div style="font-size: 1.6rem;">🔒</div>
           <div style="flex: 1;">
             <div style="font-size: 0.95rem; font-weight: 800; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
-              <span>Full Season Campaign Locked</span>
+              <span>Season Prophecy Locked</span>
               <span class="season-lock-status-badge">Official Entry Registered</span>
             </div>
             <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 3px; line-height: 1.4;">
@@ -5841,9 +5860,9 @@ function renderSoloView() {
       campaignBannerHtml = `
         <div class="sheet-season-lock-action-bar">
           <div class="season-lock-action-info">
-            <div class="season-lock-action-title">📅 Full Season Championship Prophecy</div>
+            <div class="season-lock-action-title">🔮 Season Prophecy Championship</div>
             <div class="season-lock-action-sub">
-              Forecast all 18 weeks (272 games). Once locked, your season forecast is permanently registered into the official Global Leaderboard. ${state.authUser ? "" : "<span style='color: #fbbf24; font-weight: 700;'>(Free account required to submit)</span>"}
+              Forecast all 18 weeks (272 games). Once locked, your season prophecy is permanently registered into the official Global Leaderboard. ${state.authUser ? "" : "<span style='color: #fbbf24; font-weight: 700;'>(Free account required to submit)</span>"}
             </div>
           </div>
           <button type="button" class="btn-lock-season" onclick="openSeasonLockModal()">
@@ -5856,13 +5875,13 @@ function renderSoloView() {
     campaignBannerHtml = `
       <div class="sheet-weekly-sprint-bar">
         <div class="weekly-sprint-info">
-          <div class="weekly-sprint-title">⚡ Week ${currentNFLWk} Sprint • Weekly Crown</div>
+          <div class="weekly-sprint-title">⚡ Week ${currentNFLWk} Vision • Race for the Weekly Crown</div>
           <div class="weekly-sprint-sub">
             Rolling Kickoff Locks active. You can adjust your predictions right up until each game kicks off!
           </div>
         </div>
         <div class="weekly-sprint-badge">
-          <span>🏆 Weekly Slate</span>
+          <span>🏆 Weekly Crown Slate</span>
         </div>
       </div>
     `;
@@ -6096,7 +6115,7 @@ function renderSoloView() {
   }).join("");
 
   const formatPillClass = isSeason ? "pill-season" : "pill-weekly";
-  const formatPillText = isSeason ? "Full Season (Weeks 1–18)" : `Week ${selectedWk} Slate`;
+  const formatPillText = isSeason ? "🔮 Season Prophecy (Weeks 1–18)" : `⚡ Weekly Vision (Week ${selectedWk})`;
 
   container.innerHTML = `
     <div class="sheet-editor-container">
