@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Sports Psychic">
   <meta name="description" content="Live view-only scores, player predictions, and season standings for the OG League">
-  <title>Sports Psychic - OG League ≡ƒÅê</title>
+  <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css?v=15.3">
@@ -49,13 +49,13 @@
 
       <!-- Profile Button (shown in League View) -->
       <button id="btn-header-profile" class="header-profile-btn not-set" onclick="openProfileModal()" aria-label="Personalize profile" title="Personalize / Remember Me">
-        <span class="header-profile-icon">≡ƒæñ</span>
+        <span class="header-profile-icon">👤</span>
         <span class="header-profile-text">Set Me</span>
       </button>
 
       <!-- Sign In / Join Free Button (shown in Lobby Mode) -->
       <button id="btn-header-signin" class="btn-header-signin" onclick="openAuthModal()" aria-label="Sign In or Join Free" title="Sign In or Join Free">
-        <span class="signin-sparkle">≡ƒö«</span>
+        <span class="signin-sparkle">🔮</span>
         <span>Sign In</span>
       </button>
     </div>
@@ -65,7 +65,7 @@
   <div id="ptr-indicator" class="ptr-indicator" aria-hidden="true">
     <div class="ptr-pill">
       <div class="ptr-icon-wrap">
-        <span class="ptr-arrow">Γåô</span>
+        <span class="ptr-arrow">↓</span>
         <div class="ptr-spinner"></div>
       </div>
       <span class="ptr-text">Pull to refresh</span>
@@ -84,8 +84,8 @@
         
         <div class="hero-cta-group">
           <button class="btn-hero-primary" onclick="openAuthModal('Get Started Free')">
-            <span>≡ƒö« Get Started Free</span>
-            <span class="hero-btn-arrow">ΓåÆ</span>
+            <span>🔮 Get Started Free</span>
+            <span class="hero-btn-arrow">→</span>
           </button>
           <button class="btn-hero-secondary" onclick="openAuthModal('Sign In')">
             <span>Sign In</span>
@@ -106,7 +106,7 @@
       <!-- Quick League Invite Code Box (Search Bar) -->
       <div class="lobby-invite-bar">
         <div class="invite-bar-header">
-          <span class="invite-icon">≡ƒöæ</span>
+          <span class="invite-icon">🔑</span>
           <span class="invite-bar-label">Have a League Code? Enter 6-digit Code:</span>
         </div>
         <div class="invite-input-row">
@@ -120,22 +120,22 @@
       <div class="lobby-hub-grid">
         <div class="hub-card" onclick="handleHubLeagueClick()">
           <div class="hub-card-header">
-            <span class="hub-icon">≡ƒÅå</span>
+            <span class="hub-icon">🏆</span>
             <span class="hub-badge league-tag">PLAY WITH FRIENDS</span>
           </div>
           <div class="hub-card-title">Custom Leagues</div>
           <div class="hub-card-desc">Weekly rolling locks or full-season lock. Custom scoring & 3x multipliers with your crew.</div>
-          <div class="hub-card-action">View Leagues ΓåÆ</div>
+          <div class="hub-card-action">View Leagues →</div>
         </div>
 
         <div class="hub-card" onclick="handleHubSoloClick()">
           <div class="hub-card-header">
-            <span class="hub-icon">≡ƒö«</span>
+            <span class="hub-icon">🔮</span>
             <span class="hub-badge solo-tag">GLOBAL COMMUNITY</span>
           </div>
           <div class="hub-card-title">Solo Psychic Play</div>
           <div class="hub-card-desc">Craft custom Prophecy slates and rank on Global Community Leaderboards.</div>
-          <div class="hub-card-action">Play Solo ΓåÆ</div>
+          <div class="hub-card-action">Play Solo →</div>
         </div>
       </div>
     </div>
@@ -145,17 +145,17 @@
       <!-- 1. CAMPAIGN MODE TOGGLE BAR (Season vs Weekly) -->
       <div class="solo-campaign-selector-bar">
         <button type="button" class="solo-campaign-toggle active" id="btn-campaign-season" onclick="setSoloCampaignMode('season')">
-          <span class="campaign-toggle-icon">≡ƒôà</span>
+          <span class="campaign-toggle-icon">📅</span>
           <div class="campaign-toggle-content">
             <span class="campaign-toggle-title">Full Season Campaign</span>
-            <span class="campaign-toggle-desc">Weeks 1ΓÇô18 Slate ΓÇó Global Championship</span>
+            <span class="campaign-toggle-desc">Weeks 1–18 Slate • Global Championship</span>
           </div>
         </button>
         <button type="button" class="solo-campaign-toggle" id="btn-campaign-weekly" onclick="setSoloCampaignMode('weekly')">
-          <span class="campaign-toggle-icon">ΓÜí</span>
+          <span class="campaign-toggle-icon">⚡</span>
           <div class="campaign-toggle-content">
             <span class="campaign-toggle-title">Weekly Sprint</span>
-            <span class="campaign-toggle-desc">Current Week Only ΓÇó Weekly Crown</span>
+            <span class="campaign-toggle-desc">Current Week Only • Weekly Crown</span>
           </div>
         </button>
       </div>
@@ -331,12 +331,12 @@
 
     <!-- TAB 4: NFL STANDINGS -->
     <section id="tab-nfl" class="tab-view" role="tabpanel">
-      <div class="nfl-section-header">≡ƒÅê Playoff Picture</div>
+      <div class="nfl-section-header">🏈 Playoff Picture</div>
       <div id="nfl-playoff-container" class="playoff-picture-container">
         <!-- Rendered by app.js -->
       </div>
 
-      <div class="nfl-section-header">≡ƒôè Division Standings</div>
+      <div class="nfl-section-header">📊 Division Standings</div>
       <div id="nfl-divisions-container" class="divisions-grid">
         <!-- Rendered by app.js -->
       </div>
@@ -347,7 +347,7 @@
       <div class="rules-container">
         <div class="rule-card">
           <div class="rule-card-title">
-            <span>≡ƒÅê Correct Winner</span>
+            <span>🏈 Correct Winner</span>
             <span class="rule-badge-pts pts-winner">+10 PTS</span>
           </div>
           <p class="rule-desc">
@@ -357,20 +357,20 @@
 
         <div class="rule-card">
           <div class="rule-card-title">
-            <span>≡ƒÄ» Closest Score Bonus</span>
+            <span>🎯 Closest Score Bonus</span>
             <span class="rule-badge-pts pts-closest">+10 PTS</span>
           </div>
           <p class="rule-desc">
             Contenders who pick the winning team compete for the Closest Score Bonus. The winning picker whose predicted score has the lowest absolute difference to the final score receives an additional <strong>+10 bonus points</strong> (or triples to <strong>+30 PTS</strong> if a 3X multiplier is used).
           </p>
           <div class="rule-tip">
-            ≡ƒÆí If contenders tie for the closest score, the bonus is split evenly (e.g. +5 PTS each).
+            💡 If contenders tie for the closest score, the bonus is split evenly (e.g. +5 PTS each).
           </div>
         </div>
 
         <div class="rule-card">
           <div class="rule-card-title">
-            <span>≡ƒö« Exact Score Prediction</span>
+            <span>🔮 Exact Score Prediction</span>
             <span class="rule-badge-pts pts-exact">+50 PTS</span>
           </div>
           <p class="rule-desc">
@@ -380,14 +380,14 @@
 
         <div class="rule-card">
           <div class="rule-card-title">
-            <span>Γ¡É Weekly Multiplier (3x)</span>
+            <span>⭐ Weekly Multiplier (3x)</span>
             <span class="rule-badge-pts pts-mult">3X MULTIPLIER</span>
           </div>
           <p class="rule-desc">
             Each player designates one game per week as their confidence multiplier. If your pick wins, your winner points and closest/exact bonuses for that game are tripled!
           </p>
           <div class="rule-tip">
-            ≡ƒÆí <strong>Max Payout:</strong> (10 base + 10 closest) &times; 3 = <strong>60 PTS</strong>, or (10 base + 50 exact) &times; 3 = <strong>180 PTS</strong>!
+            💡 <strong>Max Payout:</strong> (10 base + 10 closest) &times; 3 = <strong>60 PTS</strong>, or (10 base + 50 exact) &times; 3 = <strong>180 PTS</strong>!
           </div>
         </div>
       </div>
@@ -416,15 +416,15 @@
 
       <!-- Action Buttons -->
       <button class="btn-create-league" onclick="openCreateLeagueModal()">
-        <span>Γ₧ò</span>
+        <span>➕</span>
         <span>Create a New League</span>
       </button>
       <button class="btn-join-league" onclick="openJoinLeagueModal()">
-        <span>≡ƒöæ</span>
+        <span>🔑</span>
         <span>Join League with Invite Code</span>
       </button>
       <button class="btn-exit-drawer" onclick="closeLeagueDrawer(); exitToLobby();">
-        <span>≡ƒÅá</span>
+        <span>🏠</span>
         <span>Return to Home Lobby</span>
       </button>
     </div>
@@ -495,7 +495,7 @@
     <div class="profile-modal-dialog profile-account-dialog" onclick="event.stopPropagation()">
       <div class="profile-modal-header">
         <div class="profile-modal-title-row">
-          <span class="profile-modal-icon">≡ƒæñ</span>
+          <span class="profile-modal-icon">👤</span>
           <h3 id="profile-modal-title">Account Profile</h3>
         </div>
         <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Close">&times;</button>
@@ -517,7 +517,7 @@
     <div class="profile-modal-dialog team-picker-dialog" onclick="event.stopPropagation()">
       <div class="profile-modal-header">
         <div class="profile-modal-title-row">
-          <span class="profile-modal-icon">≡ƒÅê</span>
+          <span class="profile-modal-icon">🏈</span>
           <h3>Select Favorite Team</h3>
         </div>
         <button class="profile-modal-close" onclick="closeTeamPicker()" aria-label="Close">&times;</button>
@@ -552,7 +552,7 @@
     <div class="auth-modal-dialog" onclick="event.stopPropagation()">
       <div class="auth-modal-header">
         <div class="auth-modal-title-row">
-          <span class="auth-modal-icon">≡ƒö«</span>
+          <span class="auth-modal-icon">🔮</span>
           <h3 id="auth-modal-title">Join Sports Psychic</h3>
         </div>
         <button class="profile-modal-close" onclick="closeAuthModal()" aria-label="Close">&times;</button>
@@ -602,7 +602,7 @@
           </div>
 
           <div class="auth-magic-link-row" id="auth-magic-row">
-            <button type="button" class="btn-auth-magic" onclick="handleMagicLinkSignIn()">Γ£¿ Or send a Magic Link to sign in without password</button>
+            <button type="button" class="btn-auth-magic" onclick="handleMagicLinkSignIn()">✨ Or send a Magic Link to sign in without password</button>
           </div>
 
           <div class="auth-switch-mode-prompt" id="auth-switch-prompt">
@@ -623,7 +623,7 @@
     <div class="auth-modal-dialog" onclick="event.stopPropagation()">
       <div class="auth-modal-header">
         <div class="auth-modal-title-row">
-          <span class="auth-modal-icon">≡ƒöÆ</span>
+          <span class="auth-modal-icon">🔒</span>
           <h3 id="season-lock-modal-title">Lock In Season Prophecy</h3>
         </div>
         <button class="profile-modal-close" onclick="closeSeasonLockModal()" aria-label="Close">&times;</button>
@@ -632,7 +632,7 @@
         Are you ready to submit your predictions to the <strong style="color: #f59e0b;">Global Season Championship</strong>?
       </p>
       <div class="season-lock-warning-card" style="margin-top: 14px; padding: 12px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; gap: 10px; align-items: flex-start;">
-        <span style="font-size: 1.2rem;">ΓÜá∩╕Å</span>
+        <span style="font-size: 1.2rem;">⚠️</span>
         <div style="font-size: 0.8rem; color: #fef3c7; line-height: 1.4;">
           <strong style="color: #f59e0b; display: block; margin-bottom: 2px;">Permanent Submission Notice:</strong>
           Once locked, your Season-Long picks are permanently frozen and cannot be edited. Your predictions for all available weeks will be recorded into the official Global Leaderboard.
@@ -643,7 +643,7 @@
           Keep Editing
         </button>
         <button type="button" class="btn-auth-primary" id="btn-confirm-season-lock" onclick="confirmSeasonLockSubmit()" style="flex: 1.3; padding: 10px; border-radius: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 900; border: none; cursor: pointer;">
-          ≡ƒöÆ Yes, Lock In
+          🔒 Yes, Lock In
         </button>
       </div>
     </div>
@@ -654,7 +654,7 @@
     <div class="auth-modal-dialog" onclick="event.stopPropagation()">
       <div class="auth-modal-header">
         <div class="auth-modal-title-row">
-          <span class="auth-modal-icon">≡ƒÅå</span>
+          <span class="auth-modal-icon">🏆</span>
           <h3 id="create-league-modal-title">Create Custom League</h3>
         </div>
         <button class="profile-modal-close" onclick="closeCreateLeagueModal()" aria-label="Close">&times;</button>
@@ -672,7 +672,7 @@
         <div class="auth-field-row">
           <div class="auth-label-row" style="display: flex; justify-content: space-between; align-items: center;">
             <label class="auth-label" for="league-code-input" style="margin-bottom: 0;">6-Digit Join Code</label>
-            <button type="button" class="btn-refresh-code" onclick="generateNewLeagueCode()" title="Generate Random Code">≡ƒÄ▓ Randomize</button>
+            <button type="button" class="btn-refresh-code" onclick="generateNewLeagueCode()" title="Generate Random Code">🎲 Randomize</button>
           </div>
           <div class="auth-input-wrap" style="margin-top: 6px;">
             <input type="text" id="league-code-input" class="auth-input has-prefix" placeholder="e.g. SP2026" maxlength="6" autocomplete="off" autocapitalize="characters" style="text-transform: uppercase; font-weight: 800; letter-spacing: 0.12em;">
@@ -685,7 +685,7 @@
           <div class="sheet-format-options">
             <div class="sheet-format-radio active" id="league-scoring-proximity" onclick="selectLeagueScoring('classic_proximity')">
               <input type="radio" name="league-scoring-val" value="classic_proximity" checked style="display: none;">
-              <div class="format-radio-icon">≡ƒÄ»</div>
+              <div class="format-radio-icon">🎯</div>
               <div class="format-radio-text">
                 <div class="format-radio-title">Classic Proximity (OG Rules)</div>
                 <div class="format-radio-desc">Winner (10 pts) + Closest Score bonus (10 pts) + Exact (50 pts) + 3X Lock</div>
@@ -693,7 +693,7 @@
             </div>
             <div class="sheet-format-radio" id="league-scoring-winner" onclick="selectLeagueScoring('winner_only')">
               <input type="radio" name="league-scoring-val" value="winner_only" style="display: none;">
-              <div class="format-radio-icon">≡ƒÅê</div>
+              <div class="format-radio-icon">🏈</div>
               <div class="format-radio-text">
                 <div class="format-radio-title">Winner Only (Straight Up)</div>
                 <div class="format-radio-desc">Simple winner picks (10 pts per correct pick) + 3X Lock of the Week</div>
@@ -704,7 +704,7 @@
 
         <div class="auth-submit-row" style="margin-top: 14px;">
           <button type="button" class="btn-auth-primary" id="btn-submit-create-league" onclick="handleCreateLeagueSubmit()">
-            <span>≡ƒÅå Create League & Get Code</span>
+            <span>🏆 Create League & Get Code</span>
           </button>
         </div>
       </div>

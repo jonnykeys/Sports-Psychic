@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SPORTS PSYCHIC - Unified Engine & Multi-League Platform
  * Real-time sync with ESPN Scoreboard & Standings API, Supabase Cloud Storage,
  * player scorecards, live standings, split matchups, and closest score bonus calculations.
@@ -1444,7 +1444,7 @@ async function triggerScoresRefresh() {
   if (indicator) {
     indicator.classList.remove("is-refreshing");
     indicator.classList.add("is-success");
-    if (textEl) textEl.textContent = "Γ£ô Updated!";
+    if (textEl) textEl.textContent = "✓ Updated!";
 
     setTimeout(() => {
       indicator.classList.remove("is-success");
@@ -1563,7 +1563,7 @@ function setupPullToRefresh() {
 // =========================================================
 /**
  * Formats game quarter references to clean, compact notation (Q1, Q2, Q3, Q4)
- * to avoid confusion with down & distance text (e.g. "12:14 - Q2 ΓÇó 2nd & 7").
+ * to avoid confusion with down & distance text (e.g. "12:14 - Q2 • 2nd & 7").
  */
 function formatQuarterStatus(text) {
   if (!text || typeof text !== "string") return text || "";
@@ -1583,7 +1583,7 @@ function formatQuarterStatus(text) {
 }
 
 /**
- * Formats ESPN event date and kickoff time in a clean, user-friendly format (e.g. "Thu 10/1 ΓÇó 7:15 PM").
+ * Formats ESPN event date and kickoff time in a clean, user-friendly format (e.g. "Thu 10/1 • 7:15 PM").
  * Prioritizes ESPN's official ISO timestamp converted to local time, with fallback to ESPN's shortDetail.
  */
 function formatEspnGameTime(event) {
@@ -1600,7 +1600,7 @@ function formatEspnGameTime(event) {
         const minutes = String(d.getMinutes()).padStart(2, "0");
         const ampm = hours >= 12 ? "PM" : "AM";
         hours = hours % 12 || 12;
-        return `${day} ${month}/${date} ΓÇó ${hours}:${minutes} ${ampm}`;
+        return `${day} ${month}/${date} • ${hours}:${minutes} ${ampm}`;
       }
     } catch (e) {}
   }
@@ -1608,7 +1608,7 @@ function formatEspnGameTime(event) {
     return formatQuarterStatus(event.status.type.detail);
   }
   if (event.status?.type?.shortDetail) {
-    return formatQuarterStatus(event.status.type.shortDetail.replace(" - ", " ΓÇó "));
+    return formatQuarterStatus(event.status.type.shortDetail.replace(" - ", " • "));
   }
   return "";
 }
@@ -2411,14 +2411,14 @@ function getWeeklyLeaderboard(weekNum) {
  * against live rank in the week (points summed for weeks <= weekNum).
  *
  * If weekNum <= 1 (Week 1 of the season), or if no games in the week
- * have reached a final score yet, all players show a neutral dash (ΓÇö) with delta 0.
+ * have reached a final score yet, all players show a neutral dash (—) with delta 0.
  */
 function getWeeklyRankMovements(weekNum = state.currentWeek) {
   const result = {};
   PLAYERS.forEach(p => {
     result[p] = {
       delta: 0,
-      html: '<span class="rank-shift-pill shift-neutral">ΓÇö</span>'
+      html: '<span class="rank-shift-pill shift-neutral">—</span>'
     };
   });
 
@@ -2458,11 +2458,11 @@ function getWeeklyRankMovements(weekNum = state.currentWeek) {
     // Lower numeric rank is better (e.g. rank 6 -> rank 2 is +4 improvement)
     const delta = prior - current;
 
-    let html = '<span class="rank-shift-pill shift-neutral">ΓÇö</span>';
+    let html = '<span class="rank-shift-pill shift-neutral">—</span>';
     if (delta > 0) {
-      html = `<span class="rank-shift-pill shift-up"><span class="shift-arrow">Γû▓</span>${delta}</span>`;
+      html = `<span class="rank-shift-pill shift-up"><span class="shift-arrow">▲</span>${delta}</span>`;
     } else if (delta < 0) {
-      html = `<span class="rank-shift-pill shift-down"><span class="shift-arrow">Γû╝</span>${Math.abs(delta)}</span>`;
+      html = `<span class="rank-shift-pill shift-down"><span class="shift-arrow">▼</span>${Math.abs(delta)}</span>`;
     }
 
     result[pName] = {
@@ -2555,7 +2555,7 @@ function renderLeaderboard() {
     podiumEl.innerHTML = `
       <div style="grid-column: 1 / -1; width: 100%;">
         <div class="week-empty-banner">
-          <span class="week-empty-icon">ΓÅ│</span>
+          <span class="week-empty-icon">⏳</span>
           <div class="week-empty-body">
             <div class="week-empty-title">Week ${state.currentWeek} Games In Progress / Upcoming</div>
             <div class="week-empty-desc">No final scores recorded yet for Week ${state.currentWeek}. Standings and the podium will update live as games conclude!</div>
@@ -2661,7 +2661,7 @@ function renderLeaderboard() {
 
     const isMe = Boolean(state.myPlayer && player.name === state.myPlayer);
     const rec = player.rec || { wins: 0, losses: 0, pct: "0.0", label: "0-0" };
-    const movementHtml = rankMovements[player.name]?.html || '<span class="rank-shift-pill shift-neutral">ΓÇö</span>';
+    const movementHtml = rankMovements[player.name]?.html || '<span class="rank-shift-pill shift-neutral">—</span>';
 
     let rightSideHtml = "";
     if (!isWeekly) {
@@ -2709,7 +2709,7 @@ function renderLeaderboard() {
             </div>
             <div class="leader-rec-capsule">
               <span>${rec.wins}-${rec.losses}</span>
-              <span class="rec-dot">ΓÇó</span>
+              <span class="rec-dot">•</span>
               <span>${Math.round(parseFloat(rec.pct) || 0)}%</span>
             </div>
           </div>
@@ -2796,7 +2796,7 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
     const actionOnClick = state.authUser
       ? "openCreateSheetModal()"
       : `openAuthModal('Predict ${awayTeam} @ ${homeTeam}', 'signin')`;
-    const actionBtnText = state.authUser ? "+ Predict in Solo Play" : "≡ƒö« Sign In to Predict";
+    const actionBtnText = state.authUser ? "+ Predict in Solo Play" : "🔮 Sign In to Predict";
     const subText = state.authUser
       ? "You haven't made a pick for this game. Start a Pick Sheet in Solo Play to forecast winners and exact scores!"
       : "Sign in to start custom Pick Sheets, predict game scores, and test your psychic instincts.";
@@ -2805,7 +2805,7 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
       <div class="lobby-no-picks-card">
         <div class="lobby-no-picks-content">
           <div class="lobby-no-picks-icon-wrap">
-            <span class="lobby-no-picks-icon">≡ƒö«</span>
+            <span class="lobby-no-picks-icon">🔮</span>
           </div>
           <div class="lobby-no-picks-text-block">
             <div class="lobby-no-picks-title">No Predictions Yet</div>
@@ -2858,7 +2858,7 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
       <div class="lobby-no-picks-card">
         <div class="lobby-no-picks-content">
           <div class="lobby-no-picks-icon-wrap">
-            <span class="lobby-no-picks-icon">≡ƒö«</span>
+            <span class="lobby-no-picks-icon">🔮</span>
           </div>
           <div class="lobby-no-picks-text-block">
             <div class="lobby-no-picks-title">No Predictions Logged</div>
@@ -2884,9 +2884,9 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
         onclick="openPickSheet('${sp.sheetId}')" role="button" tabindex="0"
         title="Open & edit ${safeName}">
         <div class="chip-row-top">
-          <span class="sheet-chip-icon">≡ƒôï</span>
+          <span class="sheet-chip-icon">📋</span>
           <span class="chip-name" style="font-size:0.75rem; font-weight:800; color:#ffffff;">${safeName}</span>
-          ${sp.multiplier ? `<span class="chip-mult-tag">Γ¡É 3X</span>` : ""}
+          ${sp.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
         </div>
         ${sp.scoreDisplay ? `
           <div class="chip-row-bottom">
@@ -2965,7 +2965,7 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
         </div>
       ` : `<span></span>`}
       <button type="button" class="btn-lobby-edit-sheet" onclick="openPickSheet('${targetSheetId}')">
-        <span>Γ£Å∩╕Å Edit in Solo Play &rarr;</span>
+        <span>✏️ Edit in Solo Play &rarr;</span>
       </button>
     </div>
   `;
@@ -3013,7 +3013,7 @@ function renderMatchups() {
   const liveCount = liveGamesList.length;
   const upcomingCount = upcomingGamesList.length;
 
-  bannerStat.innerHTML = `${totalGames}&nbsp;Games ΓÇó ${finalsCount}&nbsp;Final${liveCount > 0 ? ` ΓÇó <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
+  bannerStat.innerHTML = `${totalGames}&nbsp;Games • ${finalsCount}&nbsp;Final${liveCount > 0 ? ` • <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
 
   // Render Concept 2 Bye Week Ticker Strip
   const byeTeams = getByeTeamsForWeek(state.currentWeek);
@@ -3028,7 +3028,7 @@ function renderMatchups() {
 
       byeStripEl.innerHTML = `
         <div class="bye-strip-left">
-          <span class="bye-strip-icon">Γÿò</span>
+          <span class="bye-strip-icon">☕</span>
           <span class="bye-strip-label">BYE:</span>
         </div>
         <div class="bye-strip-chips">
@@ -3117,10 +3117,10 @@ function renderMatchups() {
     } else if (isLive) {
       let liveText = formatQuarterStatus(game.statusDetail) || "LIVE";
       if (game.downDistance) {
-        liveText += ` ΓÇó ${game.downDistance}`;
+        liveText += ` • ${game.downDistance}`;
       }
       if (game.isRedZone) {
-        liveText += ` ΓÇó <span class="redzone-tag">≡ƒö┤ RZ</span>`;
+        liveText += ` • <span class="redzone-tag">🔴 RZ</span>`;
       }
       badgeText = `<span class="live-pulse-dot"></span> ${liveText}`;
       badgeClass = "live";
@@ -3154,10 +3154,10 @@ function renderMatchups() {
       if (isFinal) {
         if (pick.exact) {
           chipClass += " exact";
-          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">≡ƒö« +${pick.points}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">🔮 +${pick.points}</span>`;
         } else if (pick.isClosest) {
           chipClass += " closest";
-          ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">≡ƒÄ» +${pick.points}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
         } else if (pick.points > 0) {
           chipClass += " correct";
           ptsBadge = `<span class="chip-pts-badge pts-win">+${pick.points}</span>`;
@@ -3223,7 +3223,7 @@ function renderMatchups() {
             <span class="chip-player-name">${p.name}</span>
             <div class="chip-badges-group">
               ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
-              ${p.multiplier ? `<span class="chip-mult-tag">Γ¡É 3X</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
             </div>
           </div>
           <div class="chip-row-bottom">
@@ -3259,7 +3259,7 @@ function renderMatchups() {
             <div class="team-details">
               <div class="team-code">
                 <span>${awayTeam}</span>
-                ${isLive && game.possession === 'away' ? '<span class="possession-football" title="Possession: ' + awayTeam + '">≡ƒÅê</span>' : ''}
+                ${isLive && game.possession === 'away' ? '<span class="possession-football" title="Possession: ' + awayTeam + '">🏈</span>' : ''}
               </div>
               <div class="team-name-sub">${awayInfo.city || awayInfo.name || ""}</div>
               <div class="team-record-sub">${awayRecord.text}</div>
@@ -3277,7 +3277,7 @@ function renderMatchups() {
             <div class="team-badge" style="background-color: ${homeInfo.color}; color: ${homeTextColor};">${homeTeam}</div>
             <div class="team-details">
               <div class="team-code">
-                ${isLive && game.possession === 'home' ? '<span class="possession-football" title="Possession: ' + homeTeam + '">≡ƒÅê</span>' : ''}
+                ${isLive && game.possession === 'home' ? '<span class="possession-football" title="Possession: ' + homeTeam + '">🏈</span>' : ''}
                 <span>${homeTeam}</span>
               </div>
               <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
@@ -3303,8 +3303,8 @@ function renderMatchups() {
                   <span class="consensus-count">(${awayPicks.length})</span>
                 </div>
 
-                ${isUnanimous ? `<span class="consensus-badge unanimous">≡ƒöÑ Unanimous</span>` :
-                  isDeadHeat ? `<span class="consensus-badge split">ΓÜí 50/50 Split</span>` : ""}
+                ${isUnanimous ? `<span class="consensus-badge unanimous">🔥 Unanimous</span>` :
+                  isDeadHeat ? `<span class="consensus-badge split">⚡ 50/50 Split</span>` : ""}
 
                 <div class="consensus-side home">
                   <span class="consensus-dot" style="background-color: ${homeColor};"></span>
@@ -3524,7 +3524,7 @@ function renderPlayers() {
   if (!pillsContainer || !heroContainer || !picksContainer) return;
 
   const weekKey = `Week ${state.currentWeek}`;
-  if (weekTitle) weekTitle.textContent = `${state.selectedPlayer}ΓÇÖs ${weekKey} Picks`;
+  if (weekTitle) weekTitle.textContent = `${state.selectedPlayer}’s ${weekKey} Picks`;
 
   // Render Horizontal Filter Pills
   pillsContainer.innerHTML = PLAYERS.map(pName => {
@@ -3578,7 +3578,7 @@ function renderPlayers() {
   const finalCount = finalGames.length;
   const pickPct = finalCount > 0 ? Math.round((correctCount / finalCount) * 100) : 0;
   const pickUnitText = finalCount > 0 ? `/ ${finalCount}` : `/ 0`;
-  const pickPillText = finalCount > 0 ? `${pickPct}% Accuracy` : `ΓÇö% Accuracy`;
+  const pickPillText = finalCount > 0 ? `${pickPct}% Accuracy` : `—% Accuracy`;
 
   const weeklyLb = getWeeklyLeaderboard(state.currentWeek);
   const weekRankObj = weeklyLb.find(p => p.name === state.selectedPlayer) || { rankDisplay: "-" };
@@ -3618,12 +3618,12 @@ function renderPlayers() {
 
     <div class="player-hero-actions-bar">
       <button type="button" class="btn-hero-action btn-hero-compare" onclick="startH2HComparison('${state.selectedPlayer}')" title="Compare against another player in Head-to-Head">
-        <span class="action-btn-icon">ΓÜö∩╕Å</span>
+        <span class="action-btn-icon">⚔️</span>
         <span>Compare Players</span>
       </button>
       ${isMyProfile ? `
       <div class="badge-my-roster-tag" title="This is your official authenticated roster profile">
-        <span>Γ¡É Your Roster Profile</span>
+        <span>⭐ Your Roster Profile</span>
       </div>
       ` : ""}
     </div>
@@ -3665,7 +3665,7 @@ function renderPlayers() {
   if (games.length === 0) {
     picksContainer.innerHTML = `
       <div class="loading-box"><p>No picks recorded for ${weekKey}</p></div>
-      <button class="btn-back-bottom" onclick="switchTab('leaderboard')">ΓåÉ Back to Standings</button>
+      <button class="btn-back-bottom" onclick="switchTab('leaderboard')">← Back to Standings</button>
     `;
     return;
   }
@@ -3710,7 +3710,7 @@ function renderPlayers() {
       </div>
       <div style="margin-top:16px; margin-bottom:8px;">
         <button class="btn-back-bottom" onclick="switchTab('leaderboard')">
-          ΓåÉ Back to Standings
+          ← Back to Standings
         </button>
       </div>
     `;
@@ -3741,7 +3741,7 @@ function renderPlayers() {
                 <td>
                   <div style="font-weight:800; color:#fff; display:flex; align-items:center; gap:3px;">
                     <span>${g.matchup}</span>
-                    <span class="matchup-link-icon" title="View on Matchups tab">Γåù</span>
+                    <span class="matchup-link-icon" title="View on Matchups tab">↗</span>
                   </div>
                   <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime || ""}</div>
                 </td>
@@ -3764,16 +3764,16 @@ function renderPlayers() {
             let resLabel = "LOST";
             if (pk.exact) {
               resPillClass = "res-exact";
-              resLabel = `≡ƒö« EXACT (+${pk.bonusPoints})`;
+              resLabel = `🔮 EXACT (+${pk.bonusPoints})`;
             } else if (pk.isClosest) {
               resPillClass = "res-closest";
-              resLabel = `≡ƒÄ» CLOSEST (+${pk.bonusPoints})`;
+              resLabel = `🎯 CLOSEST (+${pk.bonusPoints})`;
             } else if (pk.points > 0) {
               resPillClass = "res-won";
-              resLabel = "Γ£à WON";
+              resLabel = "✅ WON";
             } else {
               resPillClass = "res-lost";
-              resLabel = "Γ¥î LOST";
+              resLabel = "❌ LOST";
             }
 
             outcomeHtml = `
@@ -3794,7 +3794,7 @@ function renderPlayers() {
             const possAway = g.possession === 'away';
             const possHome = g.possession === 'home';
             const scoreDisplay = g.awayScore !== null
-              ? `${possAway ? '<span class="possession-football-sm" title="Possession">≡ƒÅê</span> ' : ''}${g.awayScore} - ${g.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">≡ƒÅê</span>' : ''}`
+              ? `${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.awayScore} - ${g.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}`
               : '';
 
             outcomeHtml = `
@@ -3809,16 +3809,16 @@ function renderPlayers() {
                 ${(g.downDistance || g.isRedZone) ? `
                   <div style="font-size:0.62rem; color:var(--text-muted); margin-top:2px; display:inline-flex; align-items:center; justify-content:center; gap:3px; font-weight:600; white-space:nowrap;">
                     ${g.downDistance ? `<span>${g.downDistance}</span>` : ''}
-                    ${g.isRedZone ? `<span class="redzone-tag" style="font-size:0.6rem;">≡ƒö┤ RZ</span>` : ''}
+                    ${g.isRedZone ? `<span class="redzone-tag" style="font-size:0.6rem;">🔴 RZ</span>` : ''}
                   </div>
                 ` : ''}
               </div>
             `;
 
-            ptsHtml = `<span class="pts-score-pill pts-pending" title="In progress">ΓÇö</span>`;
+            ptsHtml = `<span class="pts-score-pill pts-pending" title="In progress">—</span>`;
           } else {
             outcomeHtml = `<span class="res-outcome-pill res-pending">Upcoming</span>`;
-            ptsHtml = `<span class="pts-score-pill pts-pending">ΓÇö</span>`;
+            ptsHtml = `<span class="pts-score-pill pts-pending">—</span>`;
           }
 
           const hasPredScores = pk.awayScore !== null && pk.awayScore !== "" && !isNaN(pk.awayScore);
@@ -3828,14 +3828,14 @@ function renderPlayers() {
               <td>
                 <div style="font-weight:800; color:#fff; display:flex; align-items:center; gap:3px;">
                   <span>${g.matchup}</span>
-                  <span class="matchup-link-icon" title="View on Matchups tab">Γåù</span>
+                  <span class="matchup-link-icon" title="View on Matchups tab">↗</span>
                 </div>
                 <div style="font-size:0.68rem; color:var(--text-dim);">${g.dateTime || ""}</div>
               </td>
               <td style="text-align:center;">
                 <div style="display:inline-flex; flex-direction:column; align-items:center; gap:3px;">
                   <span class="team-badge-sm" style="background-color: ${winTeamInfo.color}; color: ${winTeamText};">${pk.winner}</span>
-                  ${pk.multiplier ? `<span class="chip-mult" style="font-size:0.60rem; padding:1px 4px; border-radius:3px;">Γ¡É 3X</span>` : ""}
+                  ${pk.multiplier ? `<span class="chip-mult" style="font-size:0.60rem; padding:1px 4px; border-radius:3px;">⭐ 3X</span>` : ""}
                 </div>
               </td>
               <td style="text-align:center;">
@@ -3857,7 +3857,7 @@ function renderPlayers() {
 
     <div style="margin-top:16px; margin-bottom:8px;">
       <button class="btn-back-bottom" onclick="switchTab('leaderboard')">
-        ΓåÉ Back to Standings
+        ← Back to Standings
       </button>
     </div>
   `;
@@ -3991,10 +3991,10 @@ function openH2HPicker(slot) {
             ${isMe ? `<span style="font-size:0.6rem; background:rgba(56,189,248,0.25); color:var(--accent-cyan); padding:1px 4px; border-radius:4px; font-weight:800;">YOU</span>` : ""}
           </div>
           <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-top:2px;">
-            Rank #${pObj.rankDisplay} ΓÇó ${pObj.points} pts
+            Rank #${pObj.rankDisplay} • ${pObj.points} pts
           </div>
         </div>
-        ${isSelected ? `<span style="color:var(--accent-cyan); font-weight:900;">Γ£ô</span>` : isOther ? `<span style="font-size:0.65rem; color:var(--text-dim);">(Slot ${slot === 'A' ? 'B' : 'A'})</span>` : ""}
+        ${isSelected ? `<span style="color:var(--accent-cyan); font-weight:900;">✓</span>` : isOther ? `<span style="font-size:0.65rem; color:var(--text-dim);">(Slot ${slot === 'A' ? 'B' : 'A'})</span>` : ""}
       </div>
     `;
   }).join("");
@@ -4134,12 +4134,12 @@ function renderH2H() {
         <button type="button" class="h2h-select-btn" onclick="openH2HPicker('A')" title="Change Player A">
           ${getPlayerAvatarHtml(playerA, 28)}
           <span class="h2h-select-name">${playerA}${isMeA ? " (You)" : ""}</span>
-          <span class="h2h-select-arrow">Γû╝</span>
+          <span class="h2h-select-arrow">▼</span>
         </button>
       </div>
 
       <button type="button" class="h2h-swap-btn" onclick="swapH2HPlayers()" title="Swap Player A and Player B" aria-label="Swap Player A and Player B">
-        Γçä
+        ⇄
       </button>
 
       <div class="h2h-player-select-wrap">
@@ -4147,7 +4147,7 @@ function renderH2H() {
         <button type="button" class="h2h-select-btn" onclick="openH2HPicker('B')" title="Change Player B">
           ${getPlayerAvatarHtml(playerB, 28)}
           <span class="h2h-select-name">${playerB}${isMeB ? " (You)" : ""}</span>
-          <span class="h2h-select-arrow">Γû╝</span>
+          <span class="h2h-select-arrow">▼</span>
         </button>
       </div>
     </div>
@@ -4175,7 +4175,7 @@ function renderH2H() {
 
         <!-- Center Clash & Net Differentials -->
         <div class="h2h-center-clash">
-          <div class="h2h-vs-badge">ΓÜö∩╕Å VS ΓÜö∩╕Å</div>
+          <div class="h2h-vs-badge">⚔️ VS ⚔️</div>
           <div class="h2h-lead-chip lead-season">
             <span class="lead-chip-tag">SEASON</span>
             <span class="lead-chip-val">${seasonDiff > 0 ? `+${seasonDiff} ${playerA}` : seasonDiff < 0 ? `+${Math.abs(seasonDiff)} ${playerB}` : "TIED"}</span>
@@ -4222,22 +4222,22 @@ function renderH2H() {
       </div>
       <div style="font-size:0.72rem; color:var(--text-muted); margin-top:6px; text-align:center;">
         ${swingGamesCount === 0
-          ? `≡ƒñ¥ Full Consensus ΓÇö Both players made identical winner predictions for all games in ${weekKey}!`
-          : `ΓÜí <strong>${swingGamesCount}</strong> game${swingGamesCount === 1 ? '' : 's'} where picks differ will determine this matchup in ${weekKey}.`}
+          ? `🤝 Full Consensus — Both players made identical winner predictions for all games in ${weekKey}!`
+          : `⚡ <strong>${swingGamesCount}</strong> game${swingGamesCount === 1 ? '' : 's'} where picks differ will determine this matchup in ${weekKey}.`}
       </div>
     </div>
 
     <!-- 4. FILTER PILLS: SWING GAMES VS AGREED VS ALL GAMES -->
     <div class="h2h-filter-row">
       <div style="font-size:0.78rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.5px;">
-        ${filter === "swing" ? `ΓÜí Swing Games (${swingGamesCount})` : filter === "agreed" ? `≡ƒñ¥ Agreed Picks (${agreedGamesCount})` : `≡ƒôï All Games (${games.length})`}
+        ${filter === "swing" ? `⚡ Swing Games (${swingGamesCount})` : filter === "agreed" ? `🤝 Agreed Picks (${agreedGamesCount})` : `📋 All Games (${games.length})`}
       </div>
       <div class="h2h-filter-group">
         <button type="button" class="h2h-filter-btn ${filter === "swing" ? "active" : ""}" onclick="setH2HFilter('swing')">
-          ΓÜí Swings (${swingGamesCount})
+          ⚡ Swings (${swingGamesCount})
         </button>
         <button type="button" class="h2h-filter-btn ${filter === "agreed" ? "active" : ""}" onclick="setH2HFilter('agreed')">
-          ≡ƒñ¥ Agreed (${agreedGamesCount})
+          🤝 Agreed (${agreedGamesCount})
         </button>
         <button type="button" class="h2h-filter-btn ${filter === "all" ? "active" : ""}" onclick="setH2HFilter('all')">
           All (${games.length})
@@ -4250,22 +4250,22 @@ function renderH2H() {
   if (filter === "swing" && swingGamesCount === 0) {
     html += `
       <div class="loading-box" style="padding:28px 16px; text-align:center; background:var(--bg-card); border-radius:var(--border-radius); border:1px solid var(--border-color); margin-bottom:14px;">
-        <div style="font-size:2.2rem; margin-bottom:8px;">≡ƒñ¥</div>
+        <div style="font-size:2.2rem; margin-bottom:8px;">🤝</div>
         <div style="font-size:0.95rem; font-weight:900; color:#fff; margin-bottom:4px;">No Swing Games in ${weekKey}</div>
         <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">Both ${playerA} and ${playerB} submitted identical winner picks for every game this week!</div>
         <button type="button" class="h2h-filter-btn active" onclick="setH2HFilter('all')" style="padding:6px 14px; font-size:0.76rem;">
-          ≡ƒôï View All ${games.length} Games
+          📋 View All ${games.length} Games
         </button>
       </div>
     `;
   } else if (filter === "agreed" && agreedGamesCount === 0) {
     html += `
       <div class="loading-box" style="padding:28px 16px; text-align:center; background:var(--bg-card); border-radius:var(--border-radius); border:1px solid var(--border-color); margin-bottom:14px;">
-        <div style="font-size:2.2rem; margin-bottom:8px;">ΓÜí</div>
+        <div style="font-size:2.2rem; margin-bottom:8px;">⚡</div>
         <div style="font-size:0.95rem; font-weight:900; color:#fff; margin-bottom:4px;">No Agreed Games in ${weekKey}</div>
         <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">Total divergence! ${playerA} and ${playerB} picked different winners on every single game this week.</div>
         <button type="button" class="h2h-filter-btn active" onclick="setH2HFilter('all')" style="padding:6px 14px; font-size:0.76rem;">
-          ≡ƒôï View All ${games.length} Games
+          📋 View All ${games.length} Games
         </button>
       </div>
     `;
@@ -4301,16 +4301,16 @@ function renderH2H() {
 
         if (isFinal) {
           if (pk.exact) {
-            outcomeText = `≡ƒö« EXACT (+${pk.points})`;
+            outcomeText = `🔮 EXACT (+${pk.points})`;
             outcomeClass = "win";
           } else if (pk.isClosest) {
-            outcomeText = `≡ƒÄ» CLOSEST (+${pk.points})`;
+            outcomeText = `🎯 CLOSEST (+${pk.points})`;
             outcomeClass = "win";
           } else if (pk.points > 0) {
-            outcomeText = `≡ƒÄ» WON (+${pk.points})`;
+            outcomeText = `🎯 WON (+${pk.points})`;
             outcomeClass = "win";
           } else {
-            outcomeText = `Γ¥î MISSED`;
+            outcomeText = `❌ MISSED`;
             outcomeClass = "loss";
           }
         }
@@ -4343,12 +4343,12 @@ function renderH2H() {
         `;
       } else if (isLive) {
         let liveDetail = formatQuarterStatus(game.statusDetail) || "LIVE";
-        if (game.downDistance) liveDetail += ` ΓÇó ${game.downDistance}`;
+        if (game.downDistance) liveDetail += ` • ${game.downDistance}`;
         const possAway = game.possession === 'away';
         const possHome = game.possession === 'home';
         centerScoreHtml = `
           <span class="h2h-game-actual-score" style="color:#f87171;">
-            ${possAway ? '<span class="possession-football-sm" title="Possession">≡ƒÅê</span> ' : ''}${game.awayScore} - ${game.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">≡ƒÅê</span>' : ''}
+            ${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${game.awayScore} - ${game.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}
           </span>
           <span class="h2h-live-tag"><span class="live-pulse-dot"></span> ${liveDetail}</span>
         `;
@@ -4383,7 +4383,7 @@ function renderH2H() {
         footerHtml = `
           <div class="h2h-card-footer">
             <span class="h2h-swing-callout">
-              <span>ΓÜí</span> Swing: ${playerA} (${pkAWinner}) vs ${playerB} (${pkBWinner})
+              <span>⚡</span> Swing: ${playerA} (${pkAWinner}) vs ${playerB} (${pkBWinner})
             </span>
             <span>${swingResult}</span>
           </div>
@@ -4409,7 +4409,7 @@ function renderH2H() {
         footerHtml = `
           <div class="h2h-card-footer">
             <span class="h2h-agreed-callout">
-              <span>≡ƒñ¥</span> Both picked ${agreedWinner}
+              <span>🤝</span> Both picked ${agreedWinner}
             </span>
             <span>${agreedResult}</span>
           </div>
@@ -4443,10 +4443,10 @@ function renderH2H() {
   html += `
     <div style="margin-top:16px; margin-bottom:8px; display:flex; gap:10px;">
       <button type="button" class="btn-back-bottom" onclick="setPlayerViewMode('single')" style="flex:1;">
-        ≡ƒæñ View ${playerA} Scorecard
+        👤 View ${playerA} Scorecard
       </button>
       <button type="button" class="btn-back-bottom" onclick="switchTab('leaderboard')" style="flex:1;">
-        ΓåÉ Standings
+        ← Standings
       </button>
     </div>
   `;
@@ -4718,7 +4718,7 @@ async function setFavoriteTeam(teamCode) {
     }
   }
 
-  showToast(`Γ¡É Favorite team set to ${NFL_TEAMS[norm].name}!`);
+  showToast(`⭐ Favorite team set to ${NFL_TEAMS[norm].name}!`);
   closeTeamPicker();
   renderAccountProfileModal();
 }
@@ -4770,9 +4770,9 @@ function renderTeamPickerGrid(filterQuery = "") {
         </div>
         <div class="team-picker-details">
           <div class="team-picker-name">${t.name}</div>
-          <div class="team-picker-meta">${rec.text} Record ΓÇó ${t.conf} ${t.div}</div>
+          <div class="team-picker-meta">${rec.text} Record • ${t.conf} ${t.div}</div>
         </div>
-        ${isSelected ? `<span class="team-picker-check">Γ£ô</span>` : ""}
+        ${isSelected ? `<span class="team-picker-check">✓</span>` : ""}
       </div>
     `;
   }).join("");
@@ -4790,14 +4790,14 @@ function renderAccountProfileModal() {
     accountCard.innerHTML = `
       <div class="account-profile-hero">
         <div class="account-avatar-large">
-          <div class="player-avatar" style="width:64px; height:64px; font-size:26px;">≡ƒæñ</div>
+          <div class="player-avatar" style="width:64px; height:64px; font-size:26px;">👤</div>
         </div>
         <div class="account-name-lg">Browsing as Guest</div>
         <div class="account-email-sub">Sign in or create an account to customize your profile.</div>
       </div>
       <div style="margin-top:16px; text-align:center;">
         <button type="button" class="btn-hero-primary" onclick="closeProfileModal(); openAuthModal();">
-          <span>≡ƒö« Sign In / Join Free</span>
+          <span>🔮 Sign In / Join Free</span>
         </button>
       </div>
     `;
@@ -4837,7 +4837,7 @@ function renderAccountProfileModal() {
       <!-- 1. Username row -->
       <div class="account-detail-row">
         <div class="detail-label-col">
-          <span class="detail-icon">≡ƒæñ</span>
+          <span class="detail-icon">👤</span>
           <span class="detail-title">Username</span>
         </div>
         <div class="detail-val-col">
@@ -4849,12 +4849,12 @@ function renderAccountProfileModal() {
       <div class="account-detail-row fav-team-card-row">
         <div class="fav-team-row-top">
           <div class="detail-label-col">
-            <span class="detail-icon">≡ƒÅê</span>
+            <span class="detail-icon">🏈</span>
             <span class="detail-title">Favorite Team</span>
           </div>
           <button type="button" class="btn-change-team" onclick="openTeamPicker()">
             <span>Change Team</span>
-            <span class="btn-arrow">ΓåÆ</span>
+            <span class="btn-arrow">→</span>
           </button>
         </div>
         <div class="fav-team-badge-full" onclick="openTeamPicker()" style="border-left: 4px solid ${favTeam.color};" title="Tap to choose from all 32 NFL teams">
@@ -4863,14 +4863,14 @@ function renderAccountProfileModal() {
             <span class="fav-team-name-lg">${favTeam.name}</span>
             <span class="fav-team-conf-sub">${favTeamRec.text} Record</span>
           </div>
-          <span class="fav-team-edit-icon">Γ£Å∩╕Å</span>
+          <span class="fav-team-edit-icon">✏️</span>
         </div>
       </div>
 
       <!-- 3. Member Since row -->
       <div class="account-detail-row">
         <div class="detail-label-col">
-          <span class="detail-icon">≡ƒôà</span>
+          <span class="detail-icon">📅</span>
           <span class="detail-title">Member Since</span>
         </div>
         <div class="detail-val-col">
@@ -4983,7 +4983,7 @@ function renderLeagueDrawerContent() {
   html += `
     <div id="drawer-card-home" class="league-option-card ${activeIsHome ? "active" : ""}" onclick="closeLeagueDrawer(); exitToLobby();">
       <div class="league-card-left">
-        <div class="league-icon-box" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);">≡ƒÅá</div>
+        <div class="league-icon-box" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);">🏠</div>
         <div>
           <div class="league-title-row">
             <span class="league-name">Home</span>
@@ -4992,7 +4992,7 @@ function renderLeagueDrawerContent() {
           <div class="league-meta-row">Game Matchups, NFL Scores & Ways to Play</div>
         </div>
       </div>
-      ${activeIsHome ? `<span class="league-check-icon">Γ£ô</span>` : `<span class="league-switch-arrow">Go &rarr;</span>`}
+      ${activeIsHome ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Go &rarr;</span>`}
     </div>
   `;
 
@@ -5001,7 +5001,7 @@ function renderLeagueDrawerContent() {
     html += `
       <div id="drawer-card-og" class="league-option-card ${activeIsOG ? "active" : ""}" onclick="selectLeague('OG League')">
         <div class="league-card-left">
-          <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">≡ƒÅå</div>
+          <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">🏆</div>
           <div>
             <div class="league-title-row">
               <span class="league-name">OG League</span>
@@ -5009,11 +5009,11 @@ function renderLeagueDrawerContent() {
               ${activeIsOG ? `<span class="league-status-tag">ACTIVE</span>` : ""}
             </div>
             <div class="league-meta-row">
-              <span class="league-join-code-tag">≡ƒöæ OG2026</span> ΓÇó 12 Members ΓÇó 2026 NFL Season
+              <span class="league-join-code-tag">🔑 OG2026</span> • 12 Members • 2026 NFL Season
             </div>
           </div>
         </div>
-        ${activeIsOG ? `<span class="league-check-icon">Γ£ô</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+        ${activeIsOG ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
       </div>
     `;
   }
@@ -5034,7 +5034,7 @@ function renderLeagueDrawerContent() {
       html += `
         <div id="drawer-card-league-${l.id}" class="league-option-card ${isCurrentActive ? "active" : ""}" onclick="selectLeague('${l.id}')">
           <div class="league-card-left">
-            <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">≡ƒÅå</div>
+            <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">🏆</div>
             <div>
               <div class="league-title-row">
                 <span class="league-name">${l.name}</span>
@@ -5042,11 +5042,11 @@ function renderLeagueDrawerContent() {
                 ${isCurrentActive ? `<span class="league-status-tag">ACTIVE</span>` : ""}
               </div>
               <div class="league-meta-row">
-                <span class="league-join-code-tag">≡ƒöæ ${l.join_code}</span> ΓÇó ${formatLabel}
+                <span class="league-join-code-tag">🔑 ${l.join_code}</span> • ${formatLabel}
               </div>
             </div>
           </div>
-          ${isCurrentActive ? `<span class="league-check-icon">Γ£ô</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+          ${isCurrentActive ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
         </div>
       `;
     });
@@ -5056,7 +5056,7 @@ function renderLeagueDrawerContent() {
   html += `
     <div id="drawer-card-solo" class="league-option-card ${activeIsSolo ? "active" : ""}" onclick="enterSoloPlay()">
       <div class="league-card-left">
-        <div class="league-icon-box icon-solo">≡ƒö«</div>
+        <div class="league-icon-box icon-solo">🔮</div>
         <div>
           <div class="league-title-row">
             <span class="league-name">Solo Psychic Play</span>
@@ -5065,7 +5065,7 @@ function renderLeagueDrawerContent() {
           <div class="league-meta-row">Personal Full-Season Forecasting & Accuracies</div>
         </div>
       </div>
-      ${activeIsSolo ? `<span class="league-check-icon">Γ£ô</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+      ${activeIsSolo ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
     </div>
   `;
 
@@ -5114,7 +5114,7 @@ function renderLobbyHero() {
   if (quickLeagues) {
     quickLeagues.innerHTML = `
       <button type="button" class="btn-hero-secondary" onclick="openCreateLeagueModal()" style="margin-bottom: 8px;">
-        <span>Γ₧ò Create a League</span>
+        <span>➕ Create a League</span>
       </button>
     `;
   }
@@ -5127,7 +5127,7 @@ function handleHubLeagueClick() {
 function handleHubSoloClick() {
   if (!state.authUser) {
     state.postAuthAction = "solo";
-    showToast("≡ƒö« Please sign in to access Solo Play.");
+    showToast("🔮 Please sign in to access Solo Play.");
     openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
     return;
   }
@@ -5166,7 +5166,7 @@ function updateAppShellForMode() {
     if (state.activeLeagueData) {
       if (brandTitle) brandTitle.textContent = state.activeLeagueData.name;
       if (brandSub) {
-        brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('${state.activeLeagueData.join_code}')" title="Click to copy invite code">≡ƒöæ ${state.activeLeagueData.join_code}</span>`;
+        brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('${state.activeLeagueData.join_code}')" title="Click to copy invite code">🔑 ${state.activeLeagueData.join_code}</span>`;
       }
       if (activePill) {
         activePill.textContent = state.activeLeagueData.name;
@@ -5176,7 +5176,7 @@ function updateAppShellForMode() {
       if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
       if (brandSub) {
         if (isOG) {
-          brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('OG2026')" title="Click to copy invite code">≡ƒöæ OG2026</span>`;
+          brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('OG2026')" title="Click to copy invite code">🔑 OG2026</span>`;
         } else {
           brandSub.textContent = "SPORTS PSYCHIC";
         }
@@ -5216,7 +5216,7 @@ function enterLeagueView(leagueId = "OG League") {
   }
 
   if (!state.authUser) {
-    showToast("≡ƒö« Please sign in or create an account to enter leagues.");
+    showToast("🔮 Please sign in or create an account to enter leagues.");
     openAuthModal("Sign in or create an account to access leagues");
     return;
   }
@@ -5228,7 +5228,7 @@ function enterLeagueView(leagueId = "OG League") {
   );
 
   if (!isUserInOGLeague() && !ogLeagueRecord) {
-    showToast("ΓÜá∩╕Å OG League is private to official members. Entering Solo Play.");
+    showToast("⚠️ OG League is private to official members. Entering Solo Play.");
     enterSoloPlay();
     return;
   }
@@ -5244,7 +5244,7 @@ function enterLeagueView(leagueId = "OG League") {
   closeLeagueDrawer();
   updateAppShellForMode();
   switchTab("leaderboard");
-  showToast("≡ƒÅå Welcome to OG League!");
+  showToast("🏆 Welcome to OG League!");
 }
 
 async function enterCustomLeague(leagueId) {
@@ -5254,7 +5254,7 @@ async function enterCustomLeague(leagueId) {
   }
 
   if (!state.authUser) {
-    showToast("≡ƒö« Please sign in or create an account to enter leagues.");
+    showToast("🔮 Please sign in or create an account to enter leagues.");
     openAuthModal("Sign in or create an account to access leagues");
     return;
   }
@@ -5278,7 +5278,7 @@ async function enterCustomLeague(leagueId) {
   }
 
   if (!leagueObj) {
-    showToast("ΓÜá∩╕Å Could not load league details.");
+    showToast("⚠️ Could not load league details.");
     return;
   }
 
@@ -5324,7 +5324,7 @@ async function enterCustomLeague(leagueId) {
   updateAppShellForMode();
   await loadCustomLeagueData(leagueObj.id);
   switchTab("matchups");
-  showToast(`≡ƒÅå Welcome to ${leagueObj.name}!`);
+  showToast(`🏆 Welcome to ${leagueObj.name}!`);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -5332,7 +5332,7 @@ async function enterSoloPlay() {
   if (!state.authUser) {
     state.postAuthAction = "solo";
     closeLeagueDrawer();
-    showToast("≡ƒö« Please sign in to access Solo Play.");
+    showToast("🔮 Please sign in to access Solo Play.");
     openAuthModal("Sign in or create an account to access Solo Psychic and manage pick sheets", "signin");
     return;
   }
@@ -5348,7 +5348,7 @@ async function enterSoloPlay() {
   updateAppShellForMode();
   await loadSoloPickSheets();
   renderSoloView();
-  showToast("≡ƒö« Entered Solo Psychic");
+  showToast("🔮 Entered Solo Psychic");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -5363,7 +5363,7 @@ function exitToLobby() {
 
   updateAppShellForMode();
   switchTab("matchups");
-  showToast("≡ƒÅá Returned to Home Lobby");
+  showToast("🏠 Returned to Home Lobby");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -5515,7 +5515,7 @@ function getGameLockStatus(game, weekNum = null) {
   if (!locked) {
     return {
       isLocked: false,
-      badgeText: "≡ƒƒó Open for Picks",
+      badgeText: "🟢 Open for Picks",
       badgeClass: "badge-open",
       detail: "Make your predictions before kickoff"
     };
@@ -5523,24 +5523,24 @@ function getGameLockStatus(game, weekNum = null) {
   if (game && game.isFinal) {
     return {
       isLocked: true,
-      badgeText: "≡ƒöÆ FINAL ΓÇó Game Concluded",
+      badgeText: "🔒 FINAL • Game Concluded",
       badgeClass: "badge-final",
-      detail: "Picks locked ΓÇö game is final"
+      detail: "Picks locked — game is final"
     };
   }
   if (game && game.isLive) {
     return {
       isLocked: true,
-      badgeText: "≡ƒö┤ LIVE ΓÇó In Progress",
+      badgeText: "🔴 LIVE • In Progress",
       badgeClass: "badge-live",
-      detail: "Picks locked ΓÇö game in progress"
+      detail: "Picks locked — game in progress"
     };
   }
   return {
     isLocked: true,
-    badgeText: "≡ƒöÆ KICKOFF PASSED",
+    badgeText: "🔒 KICKOFF PASSED",
     badgeClass: "badge-started",
-    detail: "Kickoff has passed ΓÇö picks locked"
+    detail: "Kickoff has passed — picks locked"
   };
 }
 
@@ -5619,7 +5619,7 @@ function calculateSheetStats(sheet) {
 function updateSheetEditorStats(sheet) {
   const subtitleEl = document.getElementById("sheet-editor-stats-subtitle");
   if (subtitleEl && sheet) {
-    subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made ΓÇó ${sheet.total_points || 0} Solo Points`;
+    subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points`;
   }
 }
 
@@ -5741,7 +5741,7 @@ async function confirmSeasonLockSubmit() {
 
   closeSeasonLockModal();
   renderSoloView();
-  showToast("≡ƒÅå Season Prophecy Locked! Registered into Global Championship.");
+  showToast("🏆 Season Prophecy Locked! Registered into Global Championship.");
 }
 
 function selectSoloSheetWeek(weekNum) {
@@ -5771,27 +5771,27 @@ function updateSoloCardWinnerUI(gameId, winnerTeam) {
     const isAway = (winnerTeam && btnAway.dataset.team === winnerTeam);
     btnAway.classList.toggle("selected", Boolean(isAway));
     const span = btnAway.querySelector("span");
-    if (span) span.textContent = `${isAway ? "Γ£ô " : ""}${btnAway.dataset.team}`;
+    if (span) span.textContent = `${isAway ? "✓ " : ""}${btnAway.dataset.team}`;
   }
   if (btnHome) {
     const isHome = (winnerTeam && btnHome.dataset.team === winnerTeam);
     btnHome.classList.toggle("selected", Boolean(isHome));
     const span = btnHome.querySelector("span");
-    if (span) span.textContent = `${isHome ? "Γ£ô " : ""}${btnHome.dataset.team}`;
+    if (span) span.textContent = `${isHome ? "✓ " : ""}${btnHome.dataset.team}`;
   }
 }
 
 function updateSoloStatsHeader(sheet) {
   const subtitleEl = document.getElementById("solo-sheet-stats-subtitle");
   if (subtitleEl && sheet) {
-    subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made ΓÇó ${sheet.total_points || 0} Solo Points`;
+    subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points`;
   }
 }
 
 function renderSoloView() {
   if (!state.authUser) {
     exitToLobby();
-    showToast("≡ƒö« Please sign in to access Solo Play.");
+    showToast("🔮 Please sign in to access Solo Play.");
     openAuthModal("Sign in or create an account to access Solo Psychic and manage your Master Pick Sheet", "signin");
     return;
   }
@@ -5838,7 +5838,7 @@ function renderSoloView() {
       }
       campaignBannerHtml = `
         <div class="sheet-season-locked-banner">
-          <div style="font-size: 1.6rem;">≡ƒöÆ</div>
+          <div style="font-size: 1.6rem;">🔒</div>
           <div style="flex: 1;">
             <div style="font-size: 0.95rem; font-weight: 800; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
               <span>Full Season Campaign Locked</span>
@@ -5854,13 +5854,13 @@ function renderSoloView() {
       campaignBannerHtml = `
         <div class="sheet-season-lock-action-bar">
           <div class="season-lock-action-info">
-            <div class="season-lock-action-title">≡ƒôà Full Season Championship Prophecy</div>
+            <div class="season-lock-action-title">📅 Full Season Championship Prophecy</div>
             <div class="season-lock-action-sub">
               Forecast all 18 weeks (272 games). Once locked, your season forecast is permanently registered into the official Global Leaderboard.
             </div>
           </div>
           <button type="button" class="btn-lock-season" onclick="openSeasonLockModal()">
-            <span>≡ƒöÆ Lock In Season Prophecy</span>
+            <span>🔒 Lock In Season Prophecy</span>
           </button>
         </div>
       `;
@@ -5869,13 +5869,13 @@ function renderSoloView() {
     campaignBannerHtml = `
       <div class="sheet-weekly-sprint-bar">
         <div class="weekly-sprint-info">
-          <div class="weekly-sprint-title">ΓÜí Week ${currentNFLWk} Sprint ΓÇó Weekly Crown</div>
+          <div class="weekly-sprint-title">⚡ Week ${currentNFLWk} Sprint • Weekly Crown</div>
           <div class="weekly-sprint-sub">
             Rolling Kickoff Locks active. You can adjust your predictions right up until each game kicks off!
           </div>
         </div>
         <div class="weekly-sprint-badge">
-          <span>≡ƒÅå Weekly Slate</span>
+          <span>🏆 Weekly Slate</span>
         </div>
       </div>
     `;
@@ -5888,7 +5888,7 @@ function renderSoloView() {
     for (let w = 1; w <= 18; w++) {
       const isActive = (w === selectedWk);
       const isPast = (w < currentNFLWk);
-      const label = isPast ? `≡ƒöÆ Wk ${w}` : `Wk ${w}`;
+      const label = isPast ? `🔒 Wk ${w}` : `Wk ${w}`;
       pills.push(`
         <button type="button" class="sheet-week-pill ${isActive ? "active" : ""} ${isPast ? "locked" : ""}"
           onclick="selectSoloSheetWeek(${w})" title="${isPast ? `Week ${w} (Concluded)` : `Week ${w}`}">
@@ -5926,14 +5926,14 @@ function renderSoloView() {
 
   const isWeekPast = (selectedWk < currentNFLWk);
   const weekBannerLockStatus = (isSeason && isSeasonLocked)
-    ? `<span class="sheet-week-banner-lock-status" style="color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">≡ƒöÆ Season Locked</span>`
+    ? `<span class="sheet-week-banner-lock-status" style="color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">🔒 Season Locked</span>`
     : (isWeekPast
-      ? `<span class="sheet-week-banner-lock-status">≡ƒöÆ Concluded Week</span>`
-      : `<span class="sheet-week-banner-lock-status">ΓÜí Rolling Kickoff Locks Active</span>`);
+      ? `<span class="sheet-week-banner-lock-status">🔒 Concluded Week</span>`
+      : `<span class="sheet-week-banner-lock-status">⚡ Rolling Kickoff Locks Active</span>`);
 
   const lockStatusCallout = currentLockTeam
-    ? `<span style="font-size:0.75rem; font-weight:800; color:var(--accent-gold);">Γ¡É 3X Lock: <strong>${currentLockTeam}</strong></span>`
-    : `<span style="font-size:0.75rem; color:var(--text-dim);">Γ¡É 3X Lock: None Selected</span>`;
+    ? `<span style="font-size:0.75rem; font-weight:800; color:var(--accent-gold);">⭐ 3X Lock: <strong>${currentLockTeam}</strong></span>`
+    : `<span style="font-size:0.75rem; color:var(--text-dim);">⭐ 3X Lock: None Selected</span>`;
 
   // 4. Build Matchup Cards
   const gamesHtml = games.map((game, idx) => {
@@ -5953,7 +5953,7 @@ function renderSoloView() {
     if (isSeason && isSeasonLocked) {
       isGameLocked = true;
       badgeClass = "badge-final";
-      badgeText = "≡ƒöÆ SEASON LOCKED";
+      badgeText = "🔒 SEASON LOCKED";
     } else {
       const lockStatus = getGameLockStatus(game, selectedWk);
       isGameLocked = lockStatus.isLocked;
@@ -5986,7 +5986,7 @@ function renderSoloView() {
     if (isGameLocked && !pickWinner) {
       lockedNoticeHtml = `
         <div class="game-locked-notice">
-          ≡ƒöÆ Game locked. No pick was submitted prior to kickoff.
+          🔒 Game locked. No pick was submitted prior to kickoff.
         </div>
       `;
     }
@@ -6037,14 +6037,14 @@ function renderSoloView() {
             ${isGameLocked ? "disabled" : ""}
             onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
             title="${isGameLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
-            <span>${awaySelected ? "Γ£ô " : ""}${awayTeam}</span>
+            <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
           </button>
           <button type="button" class="btn-pick-winner btn-pick-home ${homeSelected ? "selected" : ""}"
             data-team="${homeTeam}"
             ${isGameLocked ? "disabled" : ""}
             onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
             title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
-            <span>${homeSelected ? "Γ£ô " : ""}${homeTeam}</span>
+            <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
           </button>
         </div>
 
@@ -6059,7 +6059,7 @@ function renderSoloView() {
                 onclick="stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
               <input type="number" min="0" max="99" class="score-input" id="score-away-${game.id}"
                 value="${pickAwayScore !== undefined && pickAwayScore !== null ? pickAwayScore : ""}"
-                ${isGameLocked ? "disabled" : ""} placeholder="ΓÇö"
+                ${isGameLocked ? "disabled" : ""} placeholder="—"
                 onchange="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
                 oninput="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
                 aria-label="${awayTeam} Predicted Score" />
@@ -6080,7 +6080,7 @@ function renderSoloView() {
                 onclick="stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
               <input type="number" min="0" max="99" class="score-input" id="score-home-${game.id}"
                 value="${pickHomeScore !== undefined && pickHomeScore !== null ? pickHomeScore : ""}"
-                ${isGameLocked ? "disabled" : ""} placeholder="ΓÇö"
+                ${isGameLocked ? "disabled" : ""} placeholder="—"
                 onchange="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
                 oninput="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
                 aria-label="${homeTeam} Predicted Score" />
@@ -6099,7 +6099,7 @@ function renderSoloView() {
             ${isGameLocked ? "disabled" : ""}
             onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
             title="${isGameLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
-            <span>${isMultiplier ? "Γ¡É 3X LOCK OF THE WEEK ACTIVE" : "Γ¡É Select as 3X Lock of the Week"}</span>
+            <span>${isMultiplier ? "⭐ 3X LOCK OF THE WEEK ACTIVE" : "⭐ Select as 3X Lock of the Week"}</span>
           </button>
         </div>
 
@@ -6109,7 +6109,7 @@ function renderSoloView() {
   }).join("");
 
   const formatPillClass = isSeason ? "pill-season" : "pill-weekly";
-  const formatPillText = isSeason ? "Full Season (Weeks 1ΓÇô18)" : `Week ${selectedWk} Slate`;
+  const formatPillText = isSeason ? "Full Season (Weeks 1–18)" : `Week ${selectedWk} Slate`;
 
   container.innerHTML = `
     <div class="sheet-editor-container">
@@ -6122,14 +6122,14 @@ function renderSoloView() {
               <span class="sheet-editor-meta-pill ${formatPillClass}">${formatPillText}</span>
             </div>
             <div class="sheet-editor-subtitle" id="solo-sheet-stats-subtitle">
-              ${sheet.total_picks || 0} Picks Made ΓÇó ${sheet.total_points || 0} Solo Points
+              ${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points
             </div>
           </div>
         </div>
 
         <div class="sheet-editor-top-right">
           <div class="sheet-save-indicator">
-            <span>Γ£ô</span>
+            <span>✓</span>
             <span>Cloud Synced</span>
           </div>
         </div>
@@ -6146,7 +6146,7 @@ function renderSoloView() {
         <div class="sheet-week-banner-left">
           <div>
             <div class="sheet-week-banner-title">Week ${selectedWk} Slate</div>
-            <div class="sheet-week-banner-sub">${games.length} Matchups ΓÇó Select winners, forecast exact scores & lock your 3X play</div>
+            <div class="sheet-week-banner-sub">${games.length} Matchups • Select winners, forecast exact scores & lock your 3X play</div>
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -6176,7 +6176,7 @@ async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
   }
 
   if (isLocked) {
-    showToast("≡ƒöÆ Picks are locked for this game");
+    showToast("🔒 Picks are locked for this game");
     return;
   }
   const sheet = getOrCreateMasterPickSheet();
@@ -6211,7 +6211,7 @@ async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
   }
 
   if (isLocked) {
-    showToast("≡ƒöÆ Scores are locked for this game");
+    showToast("🔒 Scores are locked for this game");
     return;
   }
   const sheet = getOrCreateMasterPickSheet();
@@ -6317,7 +6317,7 @@ async function toggleSoloPickMultiplier(arg1, arg2, arg3, arg4) {
   }
 
   if (isLocked) {
-    showToast("≡ƒöÆ 3X multiplier is locked for this game");
+    showToast("🔒 3X multiplier is locked for this game");
     return;
   }
   const sheet = getOrCreateMasterPickSheet();
@@ -6347,7 +6347,7 @@ async function toggleSoloPickMultiplier(arg1, arg2, arg3, arg4) {
       }
     }
     sheet.picks[gameId].multiplier = true;
-    showToast("Γ¡É Set as 3X Lock of the Week!");
+    showToast("⭐ Set as 3X Lock of the Week!");
   }
 
   calculateSheetStats(sheet);
@@ -6640,14 +6640,14 @@ function handleUsernameInput(val) {
   }
 
   if (clean.length < 3) {
-    statusIcon.textContent = "ΓÜá∩╕Å";
+    statusIcon.textContent = "⚠️";
     feedback.className = "auth-field-feedback warn";
     feedback.textContent = "Must be at least 3 characters";
     return;
   }
 
   if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
-    statusIcon.textContent = "Γ¥î";
+    statusIcon.textContent = "❌";
     feedback.className = "auth-field-feedback error";
     feedback.textContent = "Letters, numbers, and underscores only (no spaces)";
     return;
@@ -6656,13 +6656,13 @@ function handleUsernameInput(val) {
   // Pre-check against OG League reserved names (case-insensitive)
   const ogMatch = PLAYERS.find(p => p.toLowerCase() === clean.toLowerCase());
   if (ogMatch) {
-    statusIcon.textContent = "Γ¥î";
+    statusIcon.textContent = "❌";
     feedback.className = "auth-field-feedback error";
-    feedback.textContent = `Γ¥î Username '${clean}' is already taken`;
+    feedback.textContent = `❌ Username '${clean}' is already taken`;
     return;
   }
 
-  statusIcon.textContent = "ΓÅ│";
+  statusIcon.textContent = "⏳";
   feedback.className = "auth-field-feedback";
   feedback.textContent = "Checking availability...";
 
@@ -6676,13 +6676,13 @@ function handleUsernameInput(val) {
     if (currentInput && currentInput.value.trim().toLowerCase() !== clean.toLowerCase()) return;
 
     if (check.valid) {
-      statusIcon.textContent = "Γ£ô";
+      statusIcon.textContent = "✓";
       feedback.className = "auth-field-feedback success";
-      feedback.textContent = `Γ£ô @${clean} is available!`;
+      feedback.textContent = `✓ @${clean} is available!`;
     } else {
-      statusIcon.textContent = "Γ¥î";
+      statusIcon.textContent = "❌";
       feedback.className = "auth-field-feedback error";
-      feedback.textContent = `Γ¥î ${check.error}`;
+      feedback.textContent = `❌ ${check.error}`;
     }
   }, 280);
 }
@@ -6826,7 +6826,7 @@ function closeAuthModal(event) {
 async function handleEmailSignIn() {
   initSupabaseClient();
   if (!supabaseClient) {
-    showToast("ΓÜá∩╕Å Supabase connection unavailable");
+    showToast("⚠️ Supabase connection unavailable");
     return;
   }
 
@@ -6857,7 +6857,7 @@ async function handleEmailSignIn() {
       return;
     }
     closeAuthModal();
-    showToast("≡ƒö« Welcome back! Signed in successfully.");
+    showToast("🔮 Welcome back! Signed in successfully.");
     if (data && data.user) {
       await handleUserSession(data.user);
     }
@@ -6872,7 +6872,7 @@ async function handleEmailSignIn() {
 async function handleEmailSignUp() {
   initSupabaseClient();
   if (!supabaseClient) {
-    showToast("ΓÜá∩╕Å Supabase connection unavailable");
+    showToast("⚠️ Supabase connection unavailable");
     return;
   }
 
@@ -6943,7 +6943,7 @@ async function handleEmailSignUp() {
         passInput.value = "";
         setTimeout(() => passInput.focus(), 150);
       }
-      setAuthAlert("ΓÜá∩╕Å <strong>Account Already Exists</strong><br>An account is already registered with this email. We've switched you to Sign In ΓÇö enter your password to continue.", "warning");
+      setAuthAlert("⚠️ <strong>Account Already Exists</strong><br>An account is already registered with this email. We've switched you to Sign In — enter your password to continue.", "warning");
       showToast("Account already exists. Please sign in.");
       return;
     }
@@ -6972,14 +6972,14 @@ async function handleEmailSignUp() {
 
     if (data && data.session) {
       closeAuthModal();
-      showToast(`≡ƒö« Welcome, @${cleanUsername}! Account created.`);
+      showToast(`🔮 Welcome, @${cleanUsername}! Account created.`);
       if (data.user) {
         await handleUserSession(data.user);
       }
       renderApp();
     } else {
-      setAuthAlert(`Γ£¿ Account created for @${cleanUsername}! Please check your email to confirm your account, then sign in.`, "success");
-      showToast("Γ£¿ Confirmation email sent! Please check your inbox.");
+      setAuthAlert(`✨ Account created for @${cleanUsername}! Please check your email to confirm your account, then sign in.`, "success");
+      showToast("✨ Confirmation email sent! Please check your inbox.");
     }
   } catch (err) {
     setAuthAlert(err.message || "Failed to create account.", "error");
@@ -6991,7 +6991,7 @@ async function handleEmailSignUp() {
 async function handleMagicLinkSignIn() {
   initSupabaseClient();
   if (!supabaseClient) {
-    showToast("ΓÜá∩╕Å Supabase connection unavailable");
+    showToast("⚠️ Supabase connection unavailable");
     return;
   }
 
@@ -7017,8 +7017,8 @@ async function handleMagicLinkSignIn() {
       return;
     }
 
-    setAuthAlert("≡ƒô¼ Magic Link sent! Check your inbox to sign in instantly without a password.", "success");
-    showToast("≡ƒô¼ Magic Link sent to your email!");
+    setAuthAlert("📬 Magic Link sent! Check your inbox to sign in instantly without a password.", "success");
+    showToast("📬 Magic Link sent to your email!");
   } catch (err) {
     setAuthAlert(err.message || "Failed to send magic link.", "error");
   }
@@ -7027,7 +7027,7 @@ async function handleMagicLinkSignIn() {
 async function handleGoogleSignIn() {
   initSupabaseClient();
   if (!supabaseClient) {
-    showToast("ΓÜá∩╕Å Supabase connection unavailable");
+    showToast("⚠️ Supabase connection unavailable");
     return;
   }
 
@@ -7063,7 +7063,7 @@ async function handleSignOut() {
   closeProfileModal();
   updateAppShellForMode();
   renderHeaderProfile();
-  showToast("≡ƒæï Signed out of Sports Psychic.");
+  showToast("👋 Signed out of Sports Psychic.");
   renderApp();
 }
 
@@ -7152,11 +7152,11 @@ async function handleQuickInviteSubmit() {
     // If there is no league that matches the code entered
     if (!matchedLeague) {
       // Notification toast
-      showToast(`ΓÜá∩╕Å League code "${code}" does not exist.`);
+      showToast(`⚠️ League code "${code}" does not exist.`);
 
       // Inline notification below the search bar
       if (feedback) {
-        feedback.innerHTML = `<span>ΓÜá∩╕Å League code "<strong>${code}</strong>" does not exist. Please check your 6-digit code and try again.</span>`;
+        feedback.innerHTML = `<span>⚠️ League code "<strong>${code}</strong>" does not exist. Please check your 6-digit code and try again.</span>`;
         feedback.className = "lobby-code-feedback error";
         feedback.style.display = "flex";
       }
@@ -7184,7 +7184,7 @@ async function handleQuickInviteSubmit() {
     // Require sign-in to join league
     if (!state.authUser) {
       state.pendingJoinLeague = matchedLeague;
-      showToast(`≡ƒö« Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
+      showToast(`🔮 Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
       openAuthModal(`Sign in to join ${matchedLeague.name}`);
       return;
     }
@@ -7195,11 +7195,11 @@ async function handleQuickInviteSubmit() {
       enterLeagueView("OG League");
       if (!state.myPlayer) {
         setTimeout(() => {
-          showToast("≡ƒæï Welcome to OG League! Select your name to claim your picks:");
+          showToast("👋 Welcome to OG League! Select your name to claim your picks:");
           openProfileModal();
         }, 500);
       } else {
-        showToast("≡ƒÅå Welcome to OG League!");
+        showToast("🏆 Welcome to OG League!");
       }
     } else {
       if (supabaseClient && state.authUser) {
@@ -7225,7 +7225,7 @@ async function handleQuickInviteSubmit() {
           console.warn("Error registering league membership:", err);
         }
       }
-      showToast(`≡ƒÅå Welcome to ${matchedLeague.name}!`);
+      showToast(`🏆 Welcome to ${matchedLeague.name}!`);
       await enterCustomLeague(matchedLeague.id);
     }
 
@@ -7255,7 +7255,7 @@ async function processLeagueCode(code) {
   if (!cleanCode) return;
 
   if (cleanCode.length !== 6) {
-    showToast("ΓÜá∩╕Å League codes must be 6 characters.");
+    showToast("⚠️ League codes must be 6 characters.");
     return;
   }
 
@@ -7282,13 +7282,13 @@ async function processLeagueCode(code) {
   }
 
   if (!matchedLeague) {
-    showToast(`ΓÜá∩╕Å League code "${cleanCode}" does not exist.`);
+    showToast(`⚠️ League code "${cleanCode}" does not exist.`);
     return;
   }
 
   if (!state.authUser) {
     state.pendingJoinLeague = matchedLeague;
-    showToast(`≡ƒö« Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
+    showToast(`🔮 Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
     openAuthModal(`Sign in to join ${matchedLeague.name}`);
     return;
   }
@@ -7298,11 +7298,11 @@ async function processLeagueCode(code) {
     enterLeagueView("OG League");
     if (!state.myPlayer) {
       setTimeout(() => {
-        showToast("≡ƒæï Welcome to OG League! Select your name to claim your picks:");
+        showToast("👋 Welcome to OG League! Select your name to claim your picks:");
         openProfileModal();
       }, 500);
     } else {
-      showToast("≡ƒÅå Welcome to OG League!");
+      showToast("🏆 Welcome to OG League!");
     }
   } else {
     if (supabaseClient && state.authUser) {
@@ -7328,7 +7328,7 @@ async function processLeagueCode(code) {
         console.warn("Error registering league membership:", err);
       }
     }
-    showToast(`≡ƒÅå Welcome to ${matchedLeague.name}!`);
+    showToast(`🏆 Welcome to ${matchedLeague.name}!`);
     await enterCustomLeague(matchedLeague.id);
   }
 }
@@ -7337,7 +7337,7 @@ function copyLeagueCode(code) {
   if (!code) return;
   if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(code).then(() => {
-      showToast(`≡ƒôï Copied league code "${code}" to clipboard!`);
+      showToast(`📋 Copied league code "${code}" to clipboard!`);
     }).catch(() => {
       prompt("League Invite Code (Ctrl+C to copy):", code);
     });
@@ -7377,7 +7377,7 @@ function openCreateLeagueModal() {
   closeAuthModal();
 
   if (!state.authUser) {
-    showToast("≡ƒö« Please sign in or create an account to create a league.");
+    showToast("🔮 Please sign in or create an account to create a league.");
     openAuthModal("Sign in to create your own custom league");
     return;
   }
@@ -7515,7 +7515,7 @@ async function handleCreateLeagueSubmit() {
     await loadUserLeagues();
 
     closeCreateLeagueModal();
-    showToast(`≡ƒÅå League "${newLeague.name}" created! Join code: ${newLeague.join_code}`);
+    showToast(`🏆 League "${newLeague.name}" created! Join code: ${newLeague.join_code}`);
 
     // Immediately enter the newly created league!
     await enterCustomLeague(newLeague.id);
@@ -7540,7 +7540,7 @@ function openJoinLeagueModal() {
   closeAuthModal();
 
   if (!state.authUser) {
-    showToast("≡ƒö« Please sign in or create an account to join a league.");
+    showToast("🔮 Please sign in or create an account to join a league.");
     openAuthModal("Sign in to join a league with your invite code");
     return;
   }
@@ -7683,7 +7683,7 @@ async function setCustomLeaguePick(gameId, winnerTeam) {
   if (!state.activeLeagueData || !state.authUser) return;
   const game = findGameById(gameId);
   if (!game || isGameLockedForPicking(game, state.currentWeek)) {
-    showToast("≡ƒöÆ Picks are locked for this game (kickoff passed).");
+    showToast("🔒 Picks are locked for this game (kickoff passed).");
     return;
   }
 
@@ -7704,7 +7704,7 @@ async function stepCustomLeagueScore(gameId, side, delta) {
   if (!state.activeLeagueData || !state.authUser) return;
   const game = findGameById(gameId);
   if (!game || isGameLockedForPicking(game, state.currentWeek)) {
-    showToast("≡ƒöÆ Picks are locked for this game.");
+    showToast("🔒 Picks are locked for this game.");
     return;
   }
 
@@ -7738,7 +7738,7 @@ async function toggleCustomLeagueMultiplier(gameId, weekNum = state.currentWeek)
   if (!state.activeLeagueData || !state.authUser) return;
   const game = findGameById(gameId);
   if (!game || isGameLockedForPicking(game, weekNum)) {
-    showToast("≡ƒöÆ Multiplier locked: kickoff has passed.");
+    showToast("🔒 Multiplier locked: kickoff has passed.");
     return;
   }
 
@@ -7762,10 +7762,10 @@ async function toggleCustomLeagueMultiplier(gameId, weekNum = state.currentWeek)
       }
     });
     cur.multiplier = true;
-    showToast("Γ¡É 3X Lock of the Week activated!");
+    showToast("⭐ 3X Lock of the Week activated!");
   } else {
     cur.multiplier = false;
-    showToast("Γ¡É 3X Lock removed.");
+    showToast("⭐ 3X Lock removed.");
   }
 
   state.myCustomLeaguePicks[gameId] = cur;
@@ -7907,10 +7907,10 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
       if (game.isFinal) {
         if (p.is_exact) {
           chipClass += " exact";
-          ptsBadge = `<span class="chip-pts-badge pts-exact">≡ƒö« +${p.points_earned || 50}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-exact">🔮 +${p.points_earned || 50}</span>`;
         } else if (p.is_closest) {
           chipClass += " closest";
-          ptsBadge = `<span class="chip-pts-badge pts-closest">≡ƒÄ» +${p.points_earned || 20}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-closest">🎯 +${p.points_earned || 20}</span>`;
         } else if ((p.points_earned || 0) > 0) {
           chipClass += " correct";
           ptsBadge = `<span class="chip-pts-badge pts-win">+${p.points_earned}</span>`;
@@ -7951,7 +7951,7 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
             <span class="chip-player-name">${p.name}</span>
             <div class="chip-badges-group">
               ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
-              ${p.multiplier ? `<span class="chip-mult-tag">Γ¡É 3X</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
             </div>
           </div>
           <div class="chip-row-bottom">
@@ -8017,7 +8017,7 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
   } else {
     memberPicksHtml = `
       <div class="cl-pending-privacy-box">
-        <span>≡ƒöÆ</span>
+        <span>🔒</span>
         <span>Member predictions reveal at kickoff. <strong>${totalSubmitted} of ${totalMembers}</strong> members locked in.</span>
       </div>
     `;
@@ -8027,20 +8027,20 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
     <div class="custom-league-pick-bar ${isLocked ? "is-locked" : ""}" id="cl-pick-bar-${game.id}">
       <div class="cl-pick-header">
         <div class="cl-pick-title">Your League Prediction</div>
-        <span class="${isLocked ? "cl-locked-tag" : "cl-open-tag"}">${isLocked ? "≡ƒöÆ Locked" : "≡ƒƒó Open for Picks"}</span>
+        <span class="${isLocked ? "cl-locked-tag" : "cl-open-tag"}">${isLocked ? "🔒 Locked" : "🟢 Open for Picks"}</span>
       </div>
 
       <div class="cl-team-pick-btns">
         <button type="button" class="btn-cl-pick-team ${awaySelected ? "selected" : ""}"
           ${isLocked ? "disabled" : ""}
           onclick="setCustomLeaguePick('${game.id}', '${awayTeam}')">
-          <span>${awaySelected ? "Γ£ô " : ""}${awayTeam}</span>
+          <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
         </button>
         <span class="cl-pick-vs">VS</span>
         <button type="button" class="btn-cl-pick-team ${homeSelected ? "selected" : ""}"
           ${isLocked ? "disabled" : ""}
           onclick="setCustomLeaguePick('${game.id}', '${homeTeam}')">
-          <span>${homeSelected ? "Γ£ô " : ""}${homeTeam}</span>
+          <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
         </button>
       </div>
 
@@ -8065,7 +8065,7 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
       <button type="button" class="btn-cl-multiplier ${isMultiplier ? "active" : ""}"
         ${isLocked ? "disabled" : ""}
         onclick="toggleCustomLeagueMultiplier('${game.id}', ${state.currentWeek})">
-        <span>${isMultiplier ? "Γ¡É 3X LOCK OF THE WEEK ACTIVE" : "Γ¡É Select as 3X Lock of the Week"}</span>
+        <span>${isMultiplier ? "⭐ 3X LOCK OF THE WEEK ACTIVE" : "⭐ Select as 3X Lock of the Week"}</span>
       </button>
     </div>
 
@@ -8088,8 +8088,8 @@ function renderCustomLeagueLeaderboard() {
   if (labelWeeklyBtn) labelWeeklyBtn.textContent = `Week ${state.currentWeek} Standings`;
   if (sectionTitleEl) {
     sectionTitleEl.textContent = isWeekly
-      ? `${state.activeLeagueData.name} ΓÇó Week ${state.currentWeek}`
-      : `${state.activeLeagueData.name} ΓÇó Season Standings`;
+      ? `${state.activeLeagueData.name} • Week ${state.currentWeek}`
+      : `${state.activeLeagueData.name} • Season Standings`;
   }
 
   const members = state.customLeagueMembers || [];
