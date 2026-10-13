@@ -5015,8 +5015,8 @@ body.is-solo-mode #solo-view {
   display: block !important;
 }
 
+body.is-solo-mode .tab-view,
 body.is-solo-mode .week-stepper-container,
-body.is-solo-mode .main-content > .tab-panel,
 body.is-solo-mode .bottom-nav {
   display: none !important;
 }
