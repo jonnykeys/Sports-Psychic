@@ -5696,13 +5696,8 @@ function getOrCreateMasterPickSheet() {
  */
 function setSoloCampaignMode(mode) {
   state.soloCampaignMode = mode;
-  const currentNFLWk = getCurrentNFLWeek();
-  if (mode === "weekly") {
-    state.selectedSheetWeek = currentNFLWk;
-  } else {
-    if (!state.selectedSheetWeek) {
-      state.selectedSheetWeek = currentNFLWk;
-    }
+  if (!state.selectedSheetWeek) {
+    state.selectedSheetWeek = getCurrentNFLWeek();
   }
   renderSoloView();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -5767,30 +5762,54 @@ function selectSoloSheetWeek(weekNum) {
     debouncedSaveSoloPickSheet(sheet);
   }
   renderSoloView();
+  showToast(`📅 Switched to Week ${w}`);
+
+  setTimeout(() => {
+    const activePill = document.querySelector(`.sheet-week-pill[data-week="${w}"]`);
+    if (activePill) {
+      activePill.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }, 40);
+
   const weekKey = `Week ${w}`;
-  if (!state.data || !state.data.weeks || !state.data.weeks[weekKey]) {
+  if (!state.data || !state.data.weeks || !state.data.weeks[weekKey] || !state.data.weeks[weekKey].games || state.data.weeks[weekKey].games.length === 0) {
     syncWeek(w, true).then(() => {
       renderSoloView();
     });
   }
 }
 
+function stepSoloWeek(delta) {
+  const currentWk = state.selectedSheetWeek || getCurrentNFLWeek();
+  let target = currentWk + delta;
+  if (target < 1) target = 1;
+  if (target > 18) target = 18;
+  selectSoloSheetWeek(target);
+}
+
+function jumpToSoloCurrentWeek() {
+  selectSoloSheetWeek(getCurrentNFLWeek());
+}
+
 function updateSoloCardWinnerUI(gameId, winnerTeam) {
   const card = document.getElementById(`sheet-card-${gameId}`);
   if (!card) return;
-  const btnAway = card.querySelector(".btn-pick-away");
-  const btnHome = card.querySelector(".btn-pick-home");
-  if (btnAway) {
-    const isAway = (winnerTeam && btnAway.dataset.team === winnerTeam);
-    btnAway.classList.toggle("selected", Boolean(isAway));
-    const span = btnAway.querySelector("span");
-    if (span) span.textContent = `${isAway ? "✓ " : ""}${btnAway.dataset.team}`;
+  const boxAway = card.querySelector(".team-pick-box.away");
+  const boxHome = card.querySelector(".team-pick-box.home");
+  const awayTeam = boxAway?.dataset.team;
+  const homeTeam = boxHome?.dataset.team;
+
+  if (boxAway) {
+    const isAway = Boolean(winnerTeam && awayTeam && (winnerTeam === awayTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(awayTeam)));
+    boxAway.classList.toggle("is-selected", isAway);
+    const check = boxAway.querySelector(".team-pick-check");
+    if (check) check.textContent = isAway ? "✓" : "";
   }
-  if (btnHome) {
-    const isHome = (winnerTeam && btnHome.dataset.team === winnerTeam);
-    btnHome.classList.toggle("selected", Boolean(isHome));
-    const span = btnHome.querySelector("span");
-    if (span) span.textContent = `${isHome ? "✓ " : ""}${btnHome.dataset.team}`;
+  if (boxHome) {
+    const isHome = Boolean(winnerTeam && homeTeam && (winnerTeam === homeTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(homeTeam)));
+    boxHome.classList.toggle("is-selected", isHome);
+    const check = boxHome.querySelector(".team-pick-check");
+    if (check) check.textContent = isHome ? "✓" : "";
   }
 }
 
@@ -5798,6 +5817,14 @@ function updateSoloStatsHeader(sheet) {
   const subtitleEl = document.getElementById("solo-sheet-stats-subtitle");
   if (subtitleEl && sheet) {
     subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points`;
+  }
+  const picksEl = document.getElementById("solo-stat-picks-count");
+  if (picksEl && sheet) {
+    picksEl.textContent = sheet.total_picks || 0;
+  }
+  const ptsEl = document.getElementById("solo-stat-pts-count");
+  if (ptsEl && sheet) {
+    ptsEl.textContent = sheet.total_points || 0;
   }
 }
 
@@ -5817,9 +5844,7 @@ function renderSoloView() {
   if (btnWeekly) btnWeekly.classList.toggle("active", mode === "weekly");
 
   const currentNFLWk = getCurrentNFLWeek();
-  const selectedWk = (mode === "weekly")
-    ? currentNFLWk
-    : (state.selectedSheetWeek || currentNFLWk);
+  const selectedWk = state.selectedSheetWeek || currentNFLWk;
   state.selectedSheetWeek = selectedWk;
 
   const isSeason = (mode === "season");
@@ -5830,65 +5855,63 @@ function renderSoloView() {
 
   calculateSheetStats(sheet);
 
-  // 1. Campaign Mode Top Banner
-  let campaignBannerHtml = "";
-  if (isSeason) {
-    if (isSeasonLocked) {
-      let lockedDateFormatted = "Official Entry";
-      if (sheet.season_locked_at) {
-        try {
-          lockedDateFormatted = new Date(sheet.season_locked_at).toLocaleDateString("en-US", {
-            month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"
-          });
-        } catch (e) {}
-      }
-      campaignBannerHtml = `
-        <div class="sheet-season-locked-banner">
-          <div style="font-size: 1.6rem;">🔒</div>
-          <div style="flex: 1;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
-              <span>Season Prophecy Locked</span>
-              <span class="season-lock-status-badge">Official Entry Registered</span>
-            </div>
-            <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 3px; line-height: 1.4;">
-              Submitted on ${lockedDateFormatted}. Picks for all 18 weeks are permanently locked to preserve competitive integrity for the <strong>Global Season Championship</strong>.
-            </div>
-          </div>
-        </div>
-      `;
-    } else {
-      campaignBannerHtml = `
-        <div class="sheet-season-lock-action-bar">
-          <div class="season-lock-action-info">
-            <div class="season-lock-action-title">🔮 Season Prophecy Championship</div>
-            <div class="season-lock-action-sub">
-              Forecast all 18 weeks (272 games). Once locked, your season prophecy is permanently registered into the official Global Leaderboard. ${state.authUser ? "" : "<span style='color: #fbbf24; font-weight: 700;'>(Free account required to submit)</span>"}
-            </div>
-          </div>
-          <button type="button" class="btn-lock-season" onclick="openSeasonLockModal()">
-            <span>🔒 Lock In Season Prophecy</span>
-          </button>
-        </div>
-      `;
-    }
-  } else {
-    campaignBannerHtml = `
-      <div class="sheet-weekly-sprint-bar">
-        <div class="weekly-sprint-info">
-          <div class="weekly-sprint-title">⚡ Week ${currentNFLWk} Vision • Race for the Weekly Crown</div>
-          <div class="weekly-sprint-sub">
-            Rolling Kickoff Locks active. You can adjust your predictions right up until each game kicks off!
-          </div>
-        </div>
-        <div class="weekly-sprint-badge">
-          <span>🏆 Weekly Crown Slate</span>
-        </div>
-      </div>
-    `;
+  // 1. Consolidated Control Header
+  let lockedDateFormatted = "Official Entry";
+  if (sheet.season_locked_at) {
+    try {
+      lockedDateFormatted = new Date(sheet.season_locked_at).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"
+      });
+    } catch (e) {}
   }
 
-  // 2. Week Strip (only in Season mode)
-  let weekStripHtml = "";
+  const headerHtml = `
+    <div class="solo-control-header">
+      <div class="solo-control-main-row">
+        <div class="solo-control-left">
+          <div class="solo-mode-title-row">
+            <h2 class="solo-sheet-title">Master Pick Sheet</h2>
+            <span class="solo-format-pill ${isSeason ? "pill-season" : "pill-weekly"}">${isSeason ? "🔮 Season Prophecy" : "⚡ Weekly Vision"}</span>
+          </div>
+          <div class="solo-control-stats">
+            <span><strong id="solo-stat-picks-count">${sheet.total_picks || 0}</strong> Picks Made</span>
+            <span class="solo-stat-dot">•</span>
+            <span><strong id="solo-stat-pts-count">${sheet.total_points || 0}</strong> Solo Points</span>
+          </div>
+        </div>
+        <div class="solo-control-right">
+          ${state.authUser ? `
+            <div class="solo-sync-badge synced" title="Synced to your cloud account">
+              <span class="sync-check">✓</span>
+              <span class="solo-sync-text">Cloud Synced</span>
+            </div>
+          ` : `
+            <button type="button" class="solo-sync-badge guest" onclick="openAuthModal('Sign in to sync your Solo Master sheet to the cloud across devices!', 'signin')" title="Saved locally on this device. Click to sign in and back up to cloud.">
+              <span>💾</span>
+              <span class="solo-sync-text">Saved Locally (Sync)</span>
+            </button>
+          `}
+          ${isSeason ? (isSeasonLocked ? `
+            <span class="solo-lock-status-badge locked" title="Season locked for Global Championship">
+              🔒 Official Entry
+            </span>
+          ` : `
+            <button type="button" class="btn-lock-season-compact" onclick="openSeasonLockModal()" title="Lock in Season Prophecy to enter Global Leaderboard">
+              <span>🔒 Lock Season</span>
+            </button>
+          `) : ""}
+        </div>
+      </div>
+      ${isSeason && isSeasonLocked ? `
+        <div class="solo-locked-info-bar">
+          <span>🔒 <strong>Season Prophecy Locked</strong> (${lockedDateFormatted}) — Permanent entry registered for the Global Season Championship.</span>
+        </div>
+      ` : ""}
+    </div>
+  `;
+
+  // 2. Week Stepper Row
+  let weekSelectorHtml = "";
   if (isSeason) {
     const pills = [];
     for (let w = 1; w <= 18; w++) {
@@ -5897,16 +5920,45 @@ function renderSoloView() {
       const label = isPast ? `🔒 Wk ${w}` : `Wk ${w}`;
       pills.push(`
         <button type="button" class="sheet-week-pill ${isActive ? "active" : ""} ${isPast ? "locked" : ""}"
+          data-week="${w}"
           onclick="selectSoloSheetWeek(${w})" title="${isPast ? `Week ${w} (Concluded)` : `Week ${w}`}">
           <span>${label}</span>
         </button>
       `);
     }
-    weekStripHtml = `
-      <div class="sheet-week-strip-wrap">
-        <div class="sheet-week-strip">
+    weekSelectorHtml = `
+      <div class="solo-week-stepper-row">
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(-1)" ${selectedWk <= 1 ? "disabled" : ""} aria-label="Previous Week" title="Previous Week">
+          ‹
+        </button>
+        <div class="sheet-week-strip" id="solo-sheet-week-strip">
           ${pills.join("")}
         </div>
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(1)" ${selectedWk >= 18 ? "disabled" : ""} aria-label="Next Week" title="Next Week">
+          ›
+        </button>
+      </div>
+    `;
+  } else {
+    weekSelectorHtml = `
+      <div class="solo-week-stepper-row solo-weekly-stepper">
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(-1)" ${selectedWk <= 1 ? "disabled" : ""} aria-label="Previous Week" title="Previous Week">
+          ‹
+        </button>
+        <div class="solo-weekly-title-wrap">
+          <span class="solo-weekly-title">Week ${selectedWk} Slate</span>
+          <span class="solo-weekly-status-badge ${selectedWk === currentNFLWk ? "is-current" : (selectedWk < currentNFLWk ? "is-past" : "is-upcoming")}">
+            ${selectedWk === currentNFLWk ? "⚡ Current Week" : (selectedWk < currentNFLWk ? "🔒 Concluded" : "🗓️ Upcoming")}
+          </span>
+        </div>
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(1)" ${selectedWk >= 18 ? "disabled" : ""} aria-label="Next Week" title="Next Week">
+          ›
+        </button>
+        ${selectedWk !== currentNFLWk ? `
+          <button type="button" class="btn-jump-current-week-pill" onclick="jumpToSoloCurrentWeek()" title="Jump to active NFL week (Week ${currentNFLWk})">
+            ⚡ Week ${currentNFLWk}
+          </button>
+        ` : ""}
       </div>
     `;
   }
@@ -5921,27 +5973,7 @@ function renderSoloView() {
     games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
   }
 
-  // Active 3X Lock team for this week
-  let currentLockTeam = null;
-  games.forEach(g => {
-    const pk = activePicks[g.id];
-    if (pk && pk.multiplier && pk.winner) {
-      currentLockTeam = pk.winner;
-    }
-  });
-
-  const isWeekPast = (selectedWk < currentNFLWk);
-  const weekBannerLockStatus = (isSeason && isSeasonLocked)
-    ? `<span class="sheet-week-banner-lock-status" style="color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">🔒 Season Locked</span>`
-    : (isWeekPast
-      ? `<span class="sheet-week-banner-lock-status">🔒 Concluded Week</span>`
-      : `<span class="sheet-week-banner-lock-status">⚡ Rolling Kickoff Locks Active</span>`);
-
-  const lockStatusCallout = currentLockTeam
-    ? `<span style="font-size:0.75rem; font-weight:800; color:var(--accent-gold);">⭐ 3X Lock: <strong>${currentLockTeam}</strong></span>`
-    : `<span style="font-size:0.75rem; color:var(--text-dim);">⭐ 3X Lock: None Selected</span>`;
-
-  // 4. Build Matchup Cards
+  // 4. Build Compact 2-Tier Matchup Cards
   const gamesHtml = games.map((game, idx) => {
     const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
     const awayTeam = parts[0] || "AWAY";
@@ -5969,8 +6001,8 @@ function renderSoloView() {
 
     const pick = activePicks[game.id] || {};
     const pickWinner = (pick.winner || "").toUpperCase().trim();
-    const awaySelected = (pickWinner === awayTeam);
-    const homeSelected = (pickWinner === homeTeam);
+    const awaySelected = (pickWinner === awayTeam || (pickWinner && normalizeTeamCode(pickWinner) === normalizeTeamCode(awayTeam)));
+    const homeSelected = (pickWinner === homeTeam || (pickWinner && normalizeTeamCode(pickWinner) === normalizeTeamCode(homeTeam)));
 
     const pickAwayScore = (pick.awayScore !== undefined && pick.awayScore !== null) ? pick.awayScore : "";
     const pickHomeScore = (pick.homeScore !== undefined && pick.homeScore !== null) ? pick.homeScore : "";
@@ -6001,112 +6033,108 @@ function renderSoloView() {
 
     return `
       <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
-        <!-- Top Status & Kickoff Bar -->
+        <!-- Card Header: Kickoff, Status Badge, and 3X Lock Toggle -->
         <div class="game-card-top-status">
-          <span class="game-lock-badge ${badgeClass}">
-            ${badgeText}
-          </span>
-          <span class="game-kickoff-time">${game.dateTime || `Game ${idx + 1}`}</span>
-        </div>
-
-        <!-- Matchup Header Row -->
-        <div class="game-matchup-header-row">
-          <div class="game-team-pill">
-            <div class="game-team-chip" style="background-color: ${awayInfo.color}; color: ${awayInfo.textColor};">
-              ${awayTeam}
-            </div>
-            <div class="game-team-name-block">
-              <span class="game-team-abbr">${awayTeam}</span>
-              <span class="game-team-rec">${awayRec.text}</span>
-            </div>
+          <div class="game-status-left">
+            <span class="game-lock-badge ${badgeClass}">${badgeText}</span>
+            <span class="game-kickoff-time">${game.dateTime || `Game ${idx + 1}`}</span>
           </div>
-
-          <span class="game-vs-separator">@</span>
-
-          <div class="game-team-pill" style="flex-direction: row-reverse;">
-            <div class="game-team-chip" style="background-color: ${homeInfo.color}; color: ${homeInfo.textColor};">
-              ${homeTeam}
-            </div>
-            <div class="game-team-name-block" style="text-align: right;">
-              <span class="game-team-abbr">${homeTeam}</span>
-              <span class="game-team-rec">${homeRec.text}</span>
-            </div>
-          </div>
+          <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}"
+            ${isGameLocked ? "disabled" : ""}
+            onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
+            <span>${isMultiplier ? "⭐ 3X LOCK ACTIVE" : "⭐ 3X Lock"}</span>
+          </button>
         </div>
 
         ${actualScoreBarHtml}
 
-        <!-- Winner Picker Buttons -->
-        <div class="game-winner-picker">
-          <button type="button" class="btn-pick-winner btn-pick-away ${awaySelected ? "selected" : ""}"
+        <!-- Matchup Body: Side-by-Side Team Pick Boxes with Dual-Speed Steppers -->
+        <div class="sheet-card-matchup-body">
+          <!-- Away Team Box -->
+          <div class="team-pick-box away ${awaySelected ? "is-selected" : ""} ${isGameLocked ? "disabled" : ""}"
             data-team="${awayTeam}"
-            ${isGameLocked ? "disabled" : ""}
             onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
-            title="${isGameLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
-            <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
-          </button>
-          <button type="button" class="btn-pick-winner btn-pick-home ${homeSelected ? "selected" : ""}"
-            data-team="${homeTeam}"
-            ${isGameLocked ? "disabled" : ""}
-            onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
-            title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
-            <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
-          </button>
-        </div>
+            title="${isGameLocked ? "Picks are locked" : `Select ${awayTeam} as Winner`}">
+            
+            <div class="team-pick-header">
+              <div class="team-pick-chip" style="background-color: ${awayInfo.color}; color: ${awayInfo.textColor};">
+                ${awayTeam}
+              </div>
+              <div class="team-pick-meta">
+                <span class="team-pick-name">${awayTeam}</span>
+                <span class="team-pick-rec">${awayRec.text}</span>
+              </div>
+              <div class="team-pick-check" aria-hidden="true">${awaySelected ? "✓" : ""}</div>
+            </div>
 
-        <!-- Exact Score Prediction Row with Dual-Speed Steppers ([-10] [-1] [Score] [+1] [+10]) -->
-        <div class="game-scores-row">
-          <div class="score-col-item">
-            <span class="score-col-label">${awayTeam}</span>
-            <div class="score-input-wrap">
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
+            <div class="team-score-stepper-wrap" onclick="event.stopPropagation()">
+              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', -10, ${isGameLocked})"
+                title="Decrease by 10">-10</button>
+              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})"
+                title="Decrease by 1">-1</button>
               <input type="number" min="0" max="99" class="score-input" id="score-away-${game.id}"
                 value="${pickAwayScore !== undefined && pickAwayScore !== null ? pickAwayScore : ""}"
                 ${isGameLocked ? "disabled" : ""} placeholder="—"
+                onclick="event.stopPropagation()"
                 onchange="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
                 oninput="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
                 aria-label="${awayTeam} Predicted Score" />
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})" title="Increase by 1">+1</button>
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', 10, ${isGameLocked})" title="Increase by 10">+10</button>
+              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})"
+                title="Increase by 1">+1</button>
+              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', 10, ${isGameLocked})"
+                title="Increase by 10">+10</button>
             </div>
           </div>
 
-          <span class="score-vs-dash">-</span>
+          <!-- Center VS / @ Divider -->
+          <div class="sheet-card-vs-divider">
+            <span class="vs-label">@</span>
+          </div>
 
-          <div class="score-col-item">
-            <div class="score-input-wrap">
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
+          <!-- Home Team Box -->
+          <div class="team-pick-box home ${homeSelected ? "is-selected" : ""} ${isGameLocked ? "disabled" : ""}"
+            data-team="${homeTeam}"
+            onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
+            title="${isGameLocked ? "Picks are locked" : `Select ${homeTeam} as Winner`}">
+            
+            <div class="team-pick-header">
+              <div class="team-pick-chip" style="background-color: ${homeInfo.color}; color: ${homeInfo.textColor};">
+                ${homeTeam}
+              </div>
+              <div class="team-pick-meta">
+                <span class="team-pick-name">${homeTeam}</span>
+                <span class="team-pick-rec">${homeRec.text}</span>
+              </div>
+              <div class="team-pick-check" aria-hidden="true">${homeSelected ? "✓" : ""}</div>
+            </div>
+
+            <div class="team-score-stepper-wrap" onclick="event.stopPropagation()">
+              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', -10, ${isGameLocked})"
+                title="Decrease by 10">-10</button>
+              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})"
+                title="Decrease by 1">-1</button>
               <input type="number" min="0" max="99" class="score-input" id="score-home-${game.id}"
                 value="${pickHomeScore !== undefined && pickHomeScore !== null ? pickHomeScore : ""}"
                 ${isGameLocked ? "disabled" : ""} placeholder="—"
+                onclick="event.stopPropagation()"
                 onchange="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
                 oninput="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
                 aria-label="${homeTeam} Predicted Score" />
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})" title="Increase by 1">+1</button>
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', 10, ${isGameLocked})" title="Increase by 10">+10</button>
+              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})"
+                title="Increase by 1">+1</button>
+              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', 10, ${isGameLocked})"
+                title="Increase by 10">+10</button>
             </div>
-            <span class="score-col-label">${homeTeam}</span>
           </div>
-        </div>
-
-        <!-- 3X Lock of the Week Toggle -->
-        <div class="game-multiplier-row">
-          <button type="button" class="btn-toggle-multiplier ${isMultiplier ? "active" : ""}"
-            ${isGameLocked ? "disabled" : ""}
-            onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
-            title="${isGameLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
-            <span>${isMultiplier ? "⭐ 3X LOCK OF THE WEEK ACTIVE" : "⭐ Select as 3X Lock of the Week"}</span>
-          </button>
         </div>
 
         ${lockedNoticeHtml}
@@ -6114,61 +6142,10 @@ function renderSoloView() {
     `;
   }).join("");
 
-  const formatPillClass = isSeason ? "pill-season" : "pill-weekly";
-  const formatPillText = isSeason ? "🔮 Season Prophecy (Weeks 1–18)" : `⚡ Weekly Vision (Week ${selectedWk})`;
-
   container.innerHTML = `
     <div class="sheet-editor-container">
-      <!-- Topbar Title & Stats -->
-      <div class="sheet-editor-topbar">
-        <div class="sheet-editor-top-left">
-          <div class="sheet-editor-title-wrap">
-            <div class="sheet-editor-title-row">
-              <h2 class="sheet-editor-title">Master Pick Sheet</h2>
-              <span class="sheet-editor-meta-pill ${formatPillClass}">${formatPillText}</span>
-            </div>
-            <div class="sheet-editor-subtitle" id="solo-sheet-stats-subtitle">
-              ${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points
-            </div>
-          </div>
-        </div>
-
-        <div class="sheet-editor-top-right">
-          ${state.authUser ? `
-            <div class="sheet-save-indicator">
-              <span>✓</span>
-              <span>Cloud Synced</span>
-            </div>
-          ` : `
-            <div class="sheet-save-indicator guest-save-indicator" onclick="openAuthModal('Sign in to sync your Solo Master sheet to the cloud across devices!', 'signin')" style="cursor: pointer; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; border-radius: 8px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" title="Saved locally on this device. Click to sign in and back up to cloud.">
-              <span>💾</span>
-              <span>Saved Locally (Sign in to sync)</span>
-            </div>
-          `}
-        </div>
-      </div>
-
-      <!-- Campaign Banner / Season Lock Action -->
-      ${campaignBannerHtml}
-
-      <!-- Week Strip (if season sheet) -->
-      ${weekStripHtml}
-
-      <!-- Week Header Banner -->
-      <div class="sheet-week-banner">
-        <div class="sheet-week-banner-left">
-          <div>
-            <div class="sheet-week-banner-title">Week ${selectedWk} Slate</div>
-            <div class="sheet-week-banner-sub">${games.length} Matchups • Select winners, forecast exact scores & lock your 3X play</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          ${lockStatusCallout}
-          ${weekBannerLockStatus}
-        </div>
-      </div>
-
-      <!-- Matchup Cards Grid -->
+      ${headerHtml}
+      ${weekSelectorHtml}
       <div class="sheet-games-grid">
         ${gamesHtml}
       </div>
@@ -8384,6 +8361,8 @@ window.handleCreateSheetSubmit = handleCreateSheetSubmit;
 window.openPickSheet = openPickSheet;
 window.closePickSheetEditor = closePickSheetEditor;
 window.selectSoloSheetWeek = selectSoloSheetWeek;
+window.stepSoloWeek = stepSoloWeek;
+window.jumpToSoloCurrentWeek = jumpToSoloCurrentWeek;
 window.renderSoloSheetEditor = renderSoloSheetEditor;
 window.setSoloPickWinner = setSoloPickWinner;
 window.stepSoloPickScore = stepSoloPickScore;

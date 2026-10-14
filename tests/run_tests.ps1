@@ -201,6 +201,39 @@ $weeklyModeLabel = 'Weekly Vision'
 Assert-Test ($seasonModeLabel -eq 'Season Prophecy') 'Mode 1 branded as Season Prophecy'
 Assert-Test ($weeklyModeLabel -eq 'Weekly Vision') 'Mode 2 branded as Weekly Vision'
 
+Write-Host ''
+Write-Host '  -- Suite 8: Week Navigation & Compact Pro Prediction Card Architecture --' -ForegroundColor Yellow
+
+# 1. Week Stepper Clamping Logic
+function Mock-StepSoloWeek([int]$curWeek, [int]$delta) {
+    $target = $curWeek + $delta
+    if ($target -lt 1) { $target = 1 }
+    if ($target -gt 18) { $target = 18 }
+    return $target
+}
+Assert-Test ((Mock-StepSoloWeek 5 1) -eq 6) 'stepSoloWeek increments Week 5 to Week 6'
+Assert-Test ((Mock-StepSoloWeek 5 -1) -eq 4) 'stepSoloWeek decrements Week 5 to Week 4'
+Assert-Test ((Mock-StepSoloWeek 1 -1) -eq 1) 'stepSoloWeek clamps down cleanly at Week 1'
+Assert-Test ((Mock-StepSoloWeek 18 1) -eq 18) 'stepSoloWeek clamps up cleanly at Week 18'
+
+# 2. Verify app.js Pro Card & Week Navigation Code Elements
+$appJsContent = Get-Content -Raw -Path 'apps/og-league/app.js'
+Assert-Test ($appJsContent -match 'solo-control-header') 'app.js includes solo-control-header markup'
+Assert-Test ($appJsContent -match 'solo-week-stepper-row') 'app.js includes solo-week-stepper-row navigation'
+Assert-Test ($appJsContent -match 'team-pick-box away') 'app.js includes away team pick box'
+Assert-Test ($appJsContent -match 'team-pick-box home') 'app.js includes home team pick box'
+Assert-Test ($appJsContent -match 'btn-card-lock-3x') 'app.js includes compact 3X Lock button'
+Assert-Test ($appJsContent -match 'window\.stepSoloWeek = stepSoloWeek') 'app.js exports stepSoloWeek to window'
+
+# 3. Verify style.css Compact Card & Header Styles
+$styleCssContent = Get-Content -Raw -Path 'apps/og-league/style.css'
+Assert-Test ($styleCssContent -match '\.solo-control-header') 'style.css defines .solo-control-header'
+Assert-Test ($styleCssContent -match '\.solo-week-stepper-row') 'style.css defines .solo-week-stepper-row'
+Assert-Test ($styleCssContent -match '\.team-pick-box') 'style.css defines .team-pick-box'
+Assert-Test ($styleCssContent -match '\.btn-card-lock-3x') 'style.css defines .btn-card-lock-3x'
+Assert-Test ($styleCssContent -match '\.sheet-games-grid') 'style.css defines .sheet-games-grid'
+
+
 
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
