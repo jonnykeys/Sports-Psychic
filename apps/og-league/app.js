@@ -5794,22 +5794,22 @@ function jumpToSoloCurrentWeek() {
 function updateSoloCardWinnerUI(gameId, winnerTeam) {
   const card = document.getElementById(`sheet-card-${gameId}`);
   if (!card) return;
-  const boxAway = card.querySelector(".team-pick-box.away");
-  const boxHome = card.querySelector(".team-pick-box.home");
-  const awayTeam = boxAway?.dataset.team;
-  const homeTeam = boxHome?.dataset.team;
+  const btnAway = card.querySelector(".btn-pick-away");
+  const btnHome = card.querySelector(".btn-pick-home");
+  const awayTeam = btnAway?.dataset.team;
+  const homeTeam = btnHome?.dataset.team;
 
-  if (boxAway) {
+  if (btnAway) {
     const isAway = Boolean(winnerTeam && awayTeam && (winnerTeam === awayTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(awayTeam)));
-    boxAway.classList.toggle("is-selected", isAway);
-    const check = boxAway.querySelector(".team-pick-check");
-    if (check) check.textContent = isAway ? "✓" : "";
+    btnAway.classList.toggle("selected", isAway);
+    const span = btnAway.querySelector("span");
+    if (span) span.textContent = `${isAway ? "✓ " : ""}${btnAway.dataset.team}`;
   }
-  if (boxHome) {
+  if (btnHome) {
     const isHome = Boolean(winnerTeam && homeTeam && (winnerTeam === homeTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(homeTeam)));
-    boxHome.classList.toggle("is-selected", isHome);
-    const check = boxHome.querySelector(".team-pick-check");
-    if (check) check.textContent = isHome ? "✓" : "";
+    btnHome.classList.toggle("selected", isHome);
+    const span = btnHome.querySelector("span");
+    if (span) span.textContent = `${isHome ? "✓ " : ""}${btnHome.dataset.team}`;
   }
 }
 
@@ -6049,91 +6049,94 @@ function renderSoloView() {
 
         ${actualScoreBarHtml}
 
-        <!-- Matchup Body: Side-by-Side Team Pick Boxes with Dual-Speed Steppers -->
-        <div class="sheet-card-matchup-body">
-          <!-- Away Team Box -->
-          <div class="team-pick-box away ${awaySelected ? "is-selected" : ""} ${isGameLocked ? "disabled" : ""}"
-            data-team="${awayTeam}"
-            onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
-            title="${isGameLocked ? "Picks are locked" : `Select ${awayTeam} as Winner`}">
-            
-            <div class="team-pick-header">
-              <div class="team-pick-chip" style="background-color: ${awayInfo.color}; color: ${awayInfo.textColor};">
-                ${awayTeam}
-              </div>
-              <div class="team-pick-meta">
-                <span class="team-pick-name">${awayTeam}</span>
-                <span class="team-pick-rec">${awayRec.text}</span>
-              </div>
-              <div class="team-pick-check" aria-hidden="true">${awaySelected ? "✓" : ""}</div>
+        <!-- Symmetrical Matchup Row: Away Team (Left) @ Home Team (Right) -->
+        <div class="game-matchup-header-row">
+          <!-- Away Team (Left-aligned) -->
+          <div class="game-team-pill">
+            <div class="game-team-chip" style="background-color: ${awayInfo.color}; color: ${awayInfo.textColor};">
+              ${awayTeam}
             </div>
+            <div class="game-team-name-block">
+              <span class="game-team-abbr">${awayTeam}</span>
+              <span class="game-team-rec">${awayRec.text}</span>
+            </div>
+          </div>
 
-            <div class="team-score-stepper-wrap" onclick="event.stopPropagation()">
-              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', -10, ${isGameLocked})"
-                title="Decrease by 10">-10</button>
-              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})"
-                title="Decrease by 1">-1</button>
+          <!-- Center @ Separator -->
+          <span class="game-vs-separator">@</span>
+
+          <!-- Home Team (Right-aligned, mirrored) -->
+          <div class="game-team-pill" style="flex-direction: row-reverse;">
+            <div class="game-team-chip" style="background-color: ${homeInfo.color}; color: ${homeInfo.textColor};">
+              ${homeTeam}
+            </div>
+            <div class="game-team-name-block" style="text-align: right;">
+              <span class="game-team-abbr">${homeTeam}</span>
+              <span class="game-team-rec">${homeRec.text}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Symmetrical Winner Selection Buttons -->
+        <div class="game-winner-picker">
+          <button type="button" class="btn-pick-winner btn-pick-away ${awaySelected ? "selected" : ""}"
+            data-team="${awayTeam}"
+            ${isGameLocked ? "disabled" : ""}
+            onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
+            <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
+          </button>
+          <button type="button" class="btn-pick-winner btn-pick-home ${homeSelected ? "selected" : ""}"
+            data-team="${homeTeam}"
+            ${isGameLocked ? "disabled" : ""}
+            onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
+            <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
+          </button>
+        </div>
+
+        <!-- Centered Dual-Speed Score Stepper Row -->
+        <div class="game-scores-row">
+          <div class="score-col-item away-score-col">
+            <span class="score-col-label">${awayTeam}</span>
+            <div class="score-input-wrap">
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
               <input type="number" min="0" max="99" class="score-input" id="score-away-${game.id}"
                 value="${pickAwayScore !== undefined && pickAwayScore !== null ? pickAwayScore : ""}"
                 ${isGameLocked ? "disabled" : ""} placeholder="—"
-                onclick="event.stopPropagation()"
                 onchange="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
                 oninput="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
                 aria-label="${awayTeam} Predicted Score" />
-              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})"
-                title="Increase by 1">+1</button>
-              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'away', 10, ${isGameLocked})"
-                title="Increase by 10">+10</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})" title="Increase by 1">+1</button>
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 10, ${isGameLocked})" title="Increase by 10">+10</button>
             </div>
           </div>
 
-          <!-- Center VS / @ Divider -->
-          <div class="sheet-card-vs-divider">
-            <span class="vs-label">@</span>
-          </div>
+          <span class="score-vs-dash">-</span>
 
-          <!-- Home Team Box -->
-          <div class="team-pick-box home ${homeSelected ? "is-selected" : ""} ${isGameLocked ? "disabled" : ""}"
-            data-team="${homeTeam}"
-            onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
-            title="${isGameLocked ? "Picks are locked" : `Select ${homeTeam} as Winner`}">
-            
-            <div class="team-pick-header">
-              <div class="team-pick-chip" style="background-color: ${homeInfo.color}; color: ${homeInfo.textColor};">
-                ${homeTeam}
-              </div>
-              <div class="team-pick-meta">
-                <span class="team-pick-name">${homeTeam}</span>
-                <span class="team-pick-rec">${homeRec.text}</span>
-              </div>
-              <div class="team-pick-check" aria-hidden="true">${homeSelected ? "✓" : ""}</div>
-            </div>
-
-            <div class="team-score-stepper-wrap" onclick="event.stopPropagation()">
-              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', -10, ${isGameLocked})"
-                title="Decrease by 10">-10</button>
-              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})"
-                title="Decrease by 1">-1</button>
+          <div class="score-col-item home-score-col">
+            <div class="score-input-wrap">
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
               <input type="number" min="0" max="99" class="score-input" id="score-home-${game.id}"
                 value="${pickHomeScore !== undefined && pickHomeScore !== null ? pickHomeScore : ""}"
                 ${isGameLocked ? "disabled" : ""} placeholder="—"
-                onclick="event.stopPropagation()"
                 onchange="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
                 oninput="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
                 aria-label="${homeTeam} Predicted Score" />
-              <button type="button" class="btn-step" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})"
-                title="Increase by 1">+1</button>
-              <button type="button" class="btn-step btn-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="event.stopPropagation(); stepSoloPickScore('${game.id}', 'home', 10, ${isGameLocked})"
-                title="Increase by 10">+10</button>
+              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})" title="Increase by 1">+1</button>
+              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 10, ${isGameLocked})" title="Increase by 10">+10</button>
             </div>
+            <span class="score-col-label">${homeTeam}</span>
           </div>
         </div>
 
