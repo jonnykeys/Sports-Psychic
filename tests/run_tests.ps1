@@ -226,6 +226,9 @@ Assert-Test ($appJsContent -match 'btn-pick-home') 'app.js includes home team wi
 Assert-Test ($appJsContent -match 'game-scores-row') 'app.js includes centered score stepper row'
 Assert-Test ($appJsContent -match 'btn-card-lock-3x') 'app.js includes compact 3X Lock button'
 Assert-Test ($appJsContent -match 'window\.stepSoloWeek = stepSoloWeek') 'app.js exports stepSoloWeek to window'
+Assert-Test ($appJsContent -match 'window\.selectSoloSheetWeek = selectSoloSheetWeek') 'app.js exports selectSoloSheetWeek to window'
+Assert-Test ($appJsContent -notmatch 'window\.setMyPlayer\b') 'app.js contains no orphaned setMyPlayer assignments'
+Assert-Test ($appJsContent -notmatch 'window\.toggleMyProfile\b') 'app.js contains no orphaned toggleMyProfile assignments'
 
 # 3. Verify style.css Compact Card & Header Styles
 $styleCssContent = Get-Content -Raw -Path 'apps/og-league/style.css'
