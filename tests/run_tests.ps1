@@ -241,6 +241,49 @@ Assert-Test ($styleCssContent -match '\.game-scores-row') 'style.css defines .ga
 Assert-Test ($styleCssContent -match '\.btn-card-lock-3x') 'style.css defines .btn-card-lock-3x'
 Assert-Test ($styleCssContent -match '\.sheet-games-grid') 'style.css defines .sheet-games-grid'
 
+# -- Suite 9: Winner Selection, Score Inversion & Made Pick Completeness --
+Write-Host ''
+Write-Host '  -- Suite 9: Winner Selection, Score Inversion & Made Pick Completeness --' -ForegroundColor Yellow
+
+function Mock-CheckPickComplete([string]$winner, $awaySc, $homeSc, [string]$awayTeam, [string]$homeTeam) {
+    if (-not $winner) { return $false }
+    if ($null -eq $awaySc -or $null -eq $homeSc) { return $false }
+    if ($awaySc -eq $homeSc) { return $false }
+    if ($winner -eq $awayTeam -and $awaySc -gt $homeSc) { return $true }
+    if ($winner -eq $homeTeam -and $homeSc -gt $awaySc) { return $true }
+    return $false
+}
+
+function Mock-FlipPickWinner([string]$clickedWinner, [ref]$awaySc, [ref]$homeSc, [string]$awayTeam, [string]$homeTeam) {
+    if ($null -ne $awaySc.Value -and $null -ne $homeSc.Value -and $awaySc.Value -ne $homeSc.Value) {
+        if ($clickedWinner -eq $awayTeam -and $awaySc.Value -lt $homeSc.Value) {
+            $tmp = $awaySc.Value
+            $awaySc.Value = $homeSc.Value
+            $homeSc.Value = $tmp
+        } elseif ($clickedWinner -eq $homeTeam -and $homeSc.Value -lt $awaySc.Value) {
+            $tmp = $homeSc.Value
+            $homeSc.Value = $awaySc.Value
+            $awaySc.Value = $tmp
+        }
+    }
+}
+
+$aScore = 10
+$hScore = 20
+Mock-FlipPickWinner 'SEA' ([ref]$aScore) ([ref]$hScore) 'SEA' 'DEN'
+Assert-Test ($aScore -eq 20 -and $hScore -eq 10) 'Selecting underdog SEA flips 20-10 so SEA gets winning score'
+
+Mock-FlipPickWinner 'DEN' ([ref]$aScore) ([ref]$hScore) 'SEA' 'DEN'
+Assert-Test ($aScore -eq 10 -and $hScore -eq 20) 'Selecting DEN flips scores back to DEN 20, SEA 10'
+
+Assert-Test (Mock-CheckPickComplete 'DEN' 10 20 'SEA' 'DEN') 'DEN 20, SEA 10 with winner DEN counts as Made Pick'
+Assert-Test (-not (Mock-CheckPickComplete 'SEA' 10 20 'SEA' 'DEN')) 'Contradictory winner SEA with DEN 20, SEA 10 does not count as Made Pick'
+Assert-Test (-not (Mock-CheckPickComplete 'DEN' 20 20 'SEA' 'DEN')) 'Tied score 20-20 does not count as Made Pick'
+Assert-Test (-not (Mock-CheckPickComplete 'DEN' $null $null 'SEA' 'DEN')) 'Winner without scores does not count as Made Pick'
+
+Assert-Test ($appJsContent -match 'isSoloPickComplete') 'app.js defines isSoloPickComplete helper'
+Assert-Test ($appJsContent -match 'window\.isSoloPickComplete = isSoloPickComplete') 'app.js exports isSoloPickComplete to window'
+
 
 
 

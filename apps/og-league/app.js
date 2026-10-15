@@ -5570,7 +5570,43 @@ function findGameById(gameId) {
 }
 
 /**
+ * Helper to determine if a solo pick is fully made (has a winning team with a winning score).
+ */
+function isSoloPickComplete(gameId, pick) {
+  if (!pick || !pick.winner) return false;
+  const pAway = (pick.awayScore !== null && pick.awayScore !== undefined && pick.awayScore !== "" && !isNaN(pick.awayScore))
+    ? parseInt(pick.awayScore, 10)
+    : null;
+  const pHome = (pick.homeScore !== null && pick.homeScore !== undefined && pick.homeScore !== "" && !isNaN(pick.homeScore))
+    ? parseInt(pick.homeScore, 10)
+    : null;
+
+  if (pAway === null || pHome === null || pAway === pHome) return false;
+
+  const game = findGameById(gameId);
+  if (!game || !game.matchup) {
+    return pAway !== pHome;
+  }
+  const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
+  const awayTeam = parts[0] || "";
+  const homeTeam = parts[1] || "";
+
+  const pickWinnerNorm = normalizeTeamCode(pick.winner);
+  const awayNorm = normalizeTeamCode(awayTeam);
+  const homeNorm = normalizeTeamCode(homeTeam);
+
+  if (pickWinnerNorm === awayNorm) {
+    return pAway > pHome;
+  }
+  if (pickWinnerNorm === homeNorm) {
+    return pHome > pAway;
+  }
+  return false;
+}
+
+/**
  * Computes live points, pick totals, and accuracy rate for a solo sheet.
+ * A pick is only counted in total_picks if it has a winning team with a winning score.
  */
 function calculateSheetStats(sheet) {
   if (!sheet) return { total_picks: 0, total_points: 0, accuracy_rate: null };
@@ -5581,7 +5617,7 @@ function calculateSheetStats(sheet) {
   let totalPoints = 0;
 
   for (const [gameId, pick] of Object.entries(picks)) {
-    if (!pick || !pick.winner) continue;
+    if (!isSoloPickComplete(gameId, pick)) continue;
     totalPicks++;
 
     const game = findGameById(gameId);
@@ -5597,9 +5633,9 @@ function calculateSheetStats(sheet) {
       const mult = pick.multiplier ? 3 : 1;
       let pts = 10 * mult;
 
-      const pAway = (pick.awayScore !== null && !isNaN(pick.awayScore)) ? parseInt(pick.awayScore, 10) : null;
-      const pHome = (pick.homeScore !== null && !isNaN(pick.homeScore)) ? parseInt(pick.homeScore, 10) : null;
-      if (pAway !== null && pHome !== null && game.awayScore !== null && game.homeScore !== null) {
+      const pAway = parseInt(pick.awayScore, 10);
+      const pHome = parseInt(pick.homeScore, 10);
+      if (game.awayScore !== null && game.homeScore !== null) {
         if (pAway === game.awayScore && pHome === game.homeScore) {
           pts += (50 * mult);
         }
@@ -6175,10 +6211,53 @@ async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
   if (!sheet.picks) sheet.picks = {};
   if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
 
-  if (sheet.picks[gameId].winner === winnerTeam) {
+  const currentPick = sheet.picks[gameId];
+  const isCurrentlySelected = Boolean(currentPick.winner && 
+    (currentPick.winner === winnerTeam || normalizeTeamCode(currentPick.winner) === normalizeTeamCode(winnerTeam)));
+
+  if (isCurrentlySelected) {
+    // Clicking already selected winner deselects it
     delete sheet.picks[gameId].winner;
   } else {
+    // Select new winner
     sheet.picks[gameId].winner = winnerTeam;
+
+    // Check if scores are unbalanced and flip them so the selected team gets the winning score
+    const hasAwayScore = (currentPick.awayScore !== null && currentPick.awayScore !== undefined && currentPick.awayScore !== "" && !isNaN(currentPick.awayScore));
+    const hasHomeScore = (currentPick.homeScore !== null && currentPick.homeScore !== undefined && currentPick.homeScore !== "" && !isNaN(currentPick.homeScore));
+
+    if (hasAwayScore && hasHomeScore) {
+      const aSc = parseInt(currentPick.awayScore, 10);
+      const hSc = parseInt(currentPick.homeScore, 10);
+
+      if (aSc !== hSc) {
+        const game = findGameById(gameId);
+        const parts = (game?.matchup || "").split("@").map(s => s.trim().toUpperCase());
+        const awayTeam = parts[0] || "";
+        const homeTeam = parts[1] || "";
+
+        const winnerNorm = normalizeTeamCode(winnerTeam);
+        const awayNorm = normalizeTeamCode(awayTeam);
+        const homeNorm = normalizeTeamCode(homeTeam);
+
+        // If user picked Away to win, Away score must be the higher score
+        if (winnerNorm === awayNorm && aSc < hSc) {
+          sheet.picks[gameId].awayScore = hSc;
+          sheet.picks[gameId].homeScore = aSc;
+        }
+        // If user picked Home to win, Home score must be the higher score
+        else if (winnerNorm === homeNorm && hSc < aSc) {
+          sheet.picks[gameId].homeScore = aSc;
+          sheet.picks[gameId].awayScore = hSc;
+        }
+
+        // Update DOM inputs immediately so user sees the flipped scores in real time
+        const awayInput = document.getElementById(`score-away-${gameId}`);
+        const homeInput = document.getElementById(`score-home-${gameId}`);
+        if (awayInput) awayInput.value = sheet.picks[gameId].awayScore;
+        if (homeInput) homeInput.value = sheet.picks[gameId].homeScore;
+      }
+    }
   }
 
   calculateSheetStats(sheet);
@@ -6220,18 +6299,23 @@ async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
   cur = Math.max(0, Math.min(99, cur));
   sheet.picks[gameId][key] = cur;
 
-  // Auto-pick winner if scores are unequal
+  // Auto-pick winner if scores are unequal, or clear if tied
   const awaySc = sheet.picks[gameId].awayScore;
   const homeSc = sheet.picks[gameId].homeScore;
   const game = findGameById(gameId);
-  if (game && awaySc !== undefined && awaySc !== null && homeSc !== undefined && homeSc !== null) {
+  if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
+      homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
+    const aVal = parseInt(awaySc, 10);
+    const hVal = parseInt(homeSc, 10);
     const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
-    const awayTeam = parts[0];
-    const homeTeam = parts[1];
-    if (awaySc > homeSc) {
+    const awayTeam = parts[0] || "";
+    const homeTeam = parts[1] || "";
+    if (aVal > hVal) {
       sheet.picks[gameId].winner = awayTeam;
-    } else if (homeSc > awaySc) {
+    } else if (hVal > aVal) {
       sheet.picks[gameId].winner = homeTeam;
+    } else {
+      delete sheet.picks[gameId].winner;
     }
   }
 
@@ -6274,18 +6358,23 @@ async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
     sheet.picks[gameId][key] = Math.max(0, Math.min(99, parseInt(cleaned, 10)));
   }
 
-  // Auto-pick winner if scores are unequal
+  // Auto-pick winner if scores are unequal, or clear if tied
   const awaySc = sheet.picks[gameId].awayScore;
   const homeSc = sheet.picks[gameId].homeScore;
   const game = findGameById(gameId);
-  if (game && awaySc !== undefined && awaySc !== null && homeSc !== undefined && homeSc !== null) {
+  if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
+      homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
+    const aVal = parseInt(awaySc, 10);
+    const hVal = parseInt(homeSc, 10);
     const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
-    const awayTeam = parts[0];
-    const homeTeam = parts[1];
-    if (awaySc > homeSc) {
+    const awayTeam = parts[0] || "";
+    const homeTeam = parts[1] || "";
+    if (aVal > hVal) {
       sheet.picks[gameId].winner = awayTeam;
-    } else if (homeSc > awaySc) {
+    } else if (hVal > aVal) {
       sheet.picks[gameId].winner = homeTeam;
+    } else {
+      delete sheet.picks[gameId].winner;
     }
   }
 
@@ -8371,6 +8460,7 @@ window.handleSoloScoreInput = handleSoloScoreInput;
 window.toggleSoloPickMultiplier = toggleSoloPickMultiplier;
 window.isGameLockedForPicking = isGameLockedForPicking;
 window.getGameLockStatus = getGameLockStatus;
+window.isSoloPickComplete = isSoloPickComplete;
 window.deleteSoloSheet = deleteSoloSheet;
 window.loadUserLeagues = loadUserLeagues;
 window.loadCustomLeagueData = loadCustomLeagueData;
