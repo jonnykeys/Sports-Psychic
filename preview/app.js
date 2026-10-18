@@ -4645,13 +4645,9 @@ function showToast(msg) {
 function isUserInOGLeague() {
   if (!state.authUser) return false;
   if (state.myPlayer && PLAYERS.includes(state.myPlayer)) return true;
-  const email = (state.authUser.email || "").toLowerCase().trim();
-  const ogEmails = [
-    "jonnylcolbert@gmail.com",
-    "alishaklezmer16@gmail.com",
-    "thatpkboy@gmail.com"
-  ];
-  return ogEmails.includes(email);
+  if (state.userProfile && state.userProfile.full_name && PLAYERS.includes(state.userProfile.full_name)) return true;
+  if (state.userProfile && state.userProfile.username && PLAYERS.includes(state.userProfile.username)) return true;
+  return false;
 }
 
 function renderHeaderProfile() {
@@ -6514,25 +6510,22 @@ async function handleUserSession(user) {
 
     if (profile && profile.full_name && PLAYERS.includes(profile.full_name)) {
       claimedPlayer = profile.full_name;
+    } else if (profile && profile.username && PLAYERS.includes(profile.username)) {
+      claimedPlayer = profile.username;
     }
 
-    if (!claimedPlayer && userEmail) {
-      const { data: invite } = await supabaseClient
-        .from("league_roster_invites")
-        .select("player_name")
-        .ilike("invited_email", userEmail)
-        .maybeSingle();
+    if (!claimedPlayer && userEmail && supabaseClient) {
+      try {
+        const { data: invite } = await supabaseClient
+          .from("league_roster_invites")
+          .select("player_name")
+          .ilike("invited_email", userEmail)
+          .maybeSingle();
 
-      if (invite && invite.player_name && PLAYERS.includes(invite.player_name)) {
-        claimedPlayer = invite.player_name;
-      }
-    }
-
-    // Automatic pre-mapping fallbacks
-    if (!claimedPlayer) {
-      if (userEmail === "jonnylcolbert@gmail.com") claimedPlayer = "Jon";
-      else if (userEmail === "alishaklezmer16@gmail.com") claimedPlayer = "Alisha";
-      else if (userEmail === "thatpkboy@gmail.com") claimedPlayer = "Carson";
+        if (invite && invite.player_name && PLAYERS.includes(invite.player_name)) {
+          claimedPlayer = invite.player_name;
+        }
+      } catch (e) {}
     }
 
     if (claimedPlayer) {
@@ -6826,22 +6819,16 @@ async function validateUsernameAvailability(rawUsername, email = "") {
     const cleanEmail = (email || "").toLowerCase().trim();
     let isAllowedOGMember = false;
 
-    if (cleanEmail) {
-      if (ogMatch === "Jon" && cleanEmail === "jonnylcolbert@gmail.com") isAllowedOGMember = true;
-      else if (ogMatch === "Alisha" && cleanEmail === "alishaklezmer16@gmail.com") isAllowedOGMember = true;
-      else if (ogMatch === "Carson" && cleanEmail === "thatpkboy@gmail.com") isAllowedOGMember = true;
-
-      if (!isAllowedOGMember && supabaseClient) {
-        try {
-          const { data: invite } = await supabaseClient
-            .from("league_roster_invites")
-            .select("player_name")
-            .ilike("invited_email", cleanEmail)
-            .ilike("player_name", ogMatch)
-            .maybeSingle();
-          if (invite) isAllowedOGMember = true;
-        } catch (e) {}
-      }
+    if (cleanEmail && supabaseClient) {
+      try {
+        const { data: invite } = await supabaseClient
+          .from("league_roster_invites")
+          .select("player_name")
+          .ilike("invited_email", cleanEmail)
+          .ilike("player_name", ogMatch)
+          .maybeSingle();
+        if (invite) isAllowedOGMember = true;
+      } catch (e) {}
     }
 
     if (!isAllowedOGMember) {
