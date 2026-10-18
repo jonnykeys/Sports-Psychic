@@ -78,7 +78,11 @@ create table public.league_roster_invites (
 create index idx_roster_invites_email on public.league_roster_invites(lower(invited_email));
 
 alter table public.league_roster_invites enable row level security;
-create policy "Roster invites viewable by everyone" on public.league_roster_invites for select using (true);
+create policy "Roster invites viewable by commissioner or matched user" on public.league_roster_invites for select using (
+  (invited_email is null)
+  or (auth.jwt() ->> 'email' is not null and lower(invited_email) = lower(auth.jwt() ->> 'email'))
+  or exists (select 1 from public.leagues where leagues.id = league_roster_invites.league_id and leagues.commissioner_id = auth.uid())
+);
 create policy "Commissioners can manage roster invites" on public.league_roster_invites for all using (
   exists (select 1 from public.leagues where leagues.id = league_roster_invites.league_id and leagues.commissioner_id = auth.uid())
 );
@@ -349,7 +353,7 @@ create trigger on_roster_invite_email_change
 
 -- ------------------------------------------------------------------------------
 -- 9. COMMISSIONER SQL HELPER: One-line tool to link friends by email anytime
--- Usage: SELECT public.link_league_member_by_email('OG2026', 'Carson', 'carson@gmail.com');
+-- Usage: SELECT public.link_league_member_by_email('OG2026', 'Carson', 'carson@example.com');
 -- ------------------------------------------------------------------------------
 create or replace function public.link_league_member_by_email(
   p_join_code text,
@@ -364,6 +368,13 @@ begin
     return 'Error: League with join_code ' || p_join_code || ' not found.';
   end if;
 
+  -- Authorization check: caller must be commissioner if authenticated
+  if auth.role() = 'authenticated' and not exists (
+    select 1 from public.leagues where id = v_league_id and commissioner_id = auth.uid()
+  ) then
+    return 'Error: Only the league commissioner can link members.';
+  end if;
+
   update public.league_roster_invites
   set invited_email = lower(trim(p_email))
   where league_id = v_league_id
@@ -372,6 +383,10 @@ begin
   return 'Success: Pre-mapped ' || p_player_name || ' to ' || p_email || ' for league ' || p_join_code;
 end;
 $$ language plpgsql security definer;
+
+-- Restrict RPC execution so public/anon cannot invoke this
+revoke execute on function public.link_league_member_by_email(text, text, text) from public, anon, authenticated;
+grant execute on function public.link_league_member_by_email(text, text, text) to service_role;
 
 -- ------------------------------------------------------------------------------
 -- 10. SCORING ENGINE: Recalculates pick scores & bonuses on game finalization
