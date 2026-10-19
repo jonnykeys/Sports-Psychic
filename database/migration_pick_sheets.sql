@@ -14,6 +14,7 @@ create table if not exists public.pick_sheets (
   is_season_locked boolean default false not null,
   season_locked_at timestamp with time zone,
   season_picks jsonb default '{}'::jsonb,
+  weekly_picks jsonb default '{}'::jsonb,
   total_picks integer default 0,
   total_points integer default 0,
   accuracy_rate numeric(5,2) default null,
@@ -26,6 +27,7 @@ create table if not exists public.pick_sheets (
 alter table public.pick_sheets add column if not exists is_season_locked boolean default false not null;
 alter table public.pick_sheets add column if not exists season_locked_at timestamp with time zone;
 alter table public.pick_sheets add column if not exists season_picks jsonb default '{}'::jsonb;
+alter table public.pick_sheets add column if not exists weekly_picks jsonb default '{}'::jsonb;
 
 -- Row Level Security
 alter table public.pick_sheets enable row level security;

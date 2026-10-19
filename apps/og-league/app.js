@@ -5443,6 +5443,7 @@ async function saveSoloPickSheet(sheet) {
         is_season_locked: Boolean(sheet.is_season_locked),
         season_locked_at: sheet.season_locked_at || null,
         season_picks: sheet.season_picks || {},
+        weekly_picks: sheet.weekly_picks || {},
         total_picks: sheet.total_picks || 0,
         total_points: sheet.total_points || 0,
         accuracy_rate: (sheet.accuracy_rate !== undefined && sheet.accuracy_rate !== null) ? sheet.accuracy_rate : null,
@@ -5621,15 +5622,17 @@ function isSoloPickComplete(gameId, pick) {
  * Computes live points, pick totals, and accuracy rate for a solo sheet.
  * A pick is only counted in total_picks if it has a winning team with a winning score.
  */
-function calculateSheetStats(sheet) {
-  if (!sheet) return { total_picks: 0, total_points: 0, accuracy_rate: null };
-  const picks = sheet.picks || {};
+function evaluatePicksDict(picks) {
+  if (!picks || typeof picks !== "object") {
+    return { totalPicks: 0, totalPoints: 0, accuracyRate: null };
+  }
   let totalPicks = 0;
   let correctWinners = 0;
   let evaluatedGames = 0;
   let totalPoints = 0;
 
   for (const [gameId, pick] of Object.entries(picks)) {
+    if (!pick || typeof pick !== "object") continue;
     if (!isSoloPickComplete(gameId, pick)) continue;
     totalPicks++;
 
@@ -5693,10 +5696,75 @@ function calculateSheetStats(sheet) {
   }
 
   const accuracyRate = evaluatedGames > 0 ? Math.round((correctWinners / evaluatedGames) * 100) : null;
-  sheet.total_picks = totalPicks;
-  sheet.total_points = totalPoints;
-  sheet.accuracy_rate = accuracyRate;
-  return { total_picks: totalPicks, total_points: totalPoints, accuracy_rate: accuracyRate };
+  return { totalPicks, totalPoints, accuracyRate };
+}
+
+/**
+ * Computes live points, pick totals, and accuracy rate for a solo sheet.
+ * Evaluates Season Prophecy and Weekly Vision independently so each format retains its own separate standings.
+ */
+function calculateSheetStats(sheet) {
+  if (!sheet) return { total_picks: 0, total_points: 0, accuracy_rate: null };
+
+  // 1. Evaluate Season Prophecy picks
+  const seasonPicks = sheet.season_picks || {};
+  const seasonStats = evaluatePicksDict(seasonPicks);
+  sheet.season_total_picks = seasonStats.totalPicks;
+  sheet.season_total_points = seasonStats.totalPoints;
+  sheet.season_accuracy_rate = seasonStats.accuracyRate;
+
+  // 2. Evaluate Weekly Vision picks
+  const weeklyPicks = sheet.weekly_picks || {};
+  const weeklyStats = evaluatePicksDict(weeklyPicks);
+  sheet.weekly_total_picks = weeklyStats.totalPicks;
+  sheet.weekly_total_points = weeklyStats.totalPoints;
+  sheet.weekly_accuracy_rate = weeklyStats.accuracyRate;
+
+  // 3. Mirror active mode onto primary sheet fields for backward compatibility
+  const mode = state.soloCampaignMode || "season";
+  if (mode === "weekly") {
+    sheet.total_picks = sheet.weekly_total_picks;
+    sheet.total_points = sheet.weekly_total_points;
+    sheet.accuracy_rate = sheet.weekly_accuracy_rate;
+    sheet.picks = sheet.weekly_picks;
+  } else {
+    sheet.total_picks = sheet.season_total_picks;
+    sheet.total_points = sheet.season_total_points;
+    sheet.accuracy_rate = sheet.season_accuracy_rate;
+    sheet.picks = sheet.season_picks;
+  }
+
+  return {
+    total_picks: sheet.total_picks,
+    total_points: sheet.total_points,
+    accuracy_rate: sheet.accuracy_rate,
+    season_total_picks: sheet.season_total_picks,
+    season_total_points: sheet.season_total_points,
+    season_accuracy_rate: sheet.season_accuracy_rate,
+    weekly_total_picks: sheet.weekly_total_picks,
+    weekly_total_points: sheet.weekly_total_points,
+    weekly_accuracy_rate: sheet.weekly_accuracy_rate
+  };
+}
+
+/**
+ * Returns the isolated picks dictionary for the active Solo campaign mode.
+ * Guarantees Season Prophecy and Weekly Vision picks never collide or overwrite each other.
+ */
+function getActiveSoloPicks(sheet, mode = null) {
+  if (!sheet) return {};
+  const currentMode = mode || state.soloCampaignMode || "season";
+  if (currentMode === "weekly") {
+    if (!sheet.weekly_picks) sheet.weekly_picks = {};
+    return sheet.weekly_picks;
+  } else {
+    if (!sheet.season_picks) {
+      sheet.season_picks = (sheet.picks && Object.keys(sheet.picks).length > 0)
+        ? JSON.parse(JSON.stringify(sheet.picks))
+        : {};
+    }
+    return sheet.season_picks;
+  }
 }
 
 function updateSheetEditorStats(sheet) {
@@ -5731,6 +5799,7 @@ function debouncedSaveSoloPickSheet(sheet) {
 
 /**
  * Retrieves the user's single Master Pick Sheet, or initializes one if none exists.
+ * Manages separate Season Prophecy and Weekly Vision pick collections.
  */
 function getOrCreateMasterPickSheet() {
   const userId = state.authUser ? state.authUser.id : "guest";
@@ -5744,8 +5813,11 @@ function getOrCreateMasterPickSheet() {
       master.is_master = true;
       master.name = "Master Pick Sheet";
       if (master.is_season_locked === undefined) master.is_season_locked = false;
-      if (!master.season_picks && master.is_season_locked) {
+      if (!master.season_picks) {
         master.season_picks = JSON.parse(JSON.stringify(master.picks || {}));
+      }
+      if (!master.weekly_picks) {
+        master.weekly_picks = {};
       }
     } else {
       master = {
@@ -5758,8 +5830,15 @@ function getOrCreateMasterPickSheet() {
         is_master: true,
         is_season_locked: false,
         season_locked_at: null,
-        picks: {},
         season_picks: {},
+        weekly_picks: {},
+        picks: {},
+        season_total_picks: 0,
+        season_total_points: 0,
+        season_accuracy_rate: null,
+        weekly_total_picks: 0,
+        weekly_total_points: 0,
+        weekly_accuracy_rate: null,
         total_picks: 0,
         total_points: 0,
         accuracy_rate: null,
@@ -5769,6 +5848,14 @@ function getOrCreateMasterPickSheet() {
       state.pickSheets.unshift(master);
     }
     saveSoloPickSheet(master);
+  } else {
+    // Ensure both separate dictionaries exist on existing master sheet
+    if (!master.season_picks) {
+      master.season_picks = JSON.parse(JSON.stringify(master.picks || {}));
+    }
+    if (!master.weekly_picks) {
+      master.weekly_picks = {};
+    }
   }
   return master;
 }
@@ -5781,8 +5868,11 @@ function setSoloCampaignMode(mode) {
   if (!state.selectedSheetWeek) {
     state.selectedSheetWeek = getCurrentNFLWeek();
   }
+  const sheet = getOrCreateMasterPickSheet();
+  calculateSheetStats(sheet);
   renderSoloView();
   window.scrollTo({ top: 0, behavior: "smooth" });
+  showToast(mode === "weekly" ? "⚡ Switched to Weekly Vision" : "🔮 Switched to Season Prophecy");
 }
 
 function openSeasonLockModal() {
@@ -5897,7 +5987,8 @@ function updateSoloCardWinnerUI(gameId, winnerTeam) {
 
   // Update Card Complete State & Pill
   const sheet = getOrCreateMasterPickSheet();
-  const pick = sheet?.picks?.[gameId];
+  const activePicks = getActiveSoloPicks(sheet);
+  const pick = activePicks?.[gameId];
   const isComplete = Boolean(pick && isSoloPickComplete(gameId, pick));
   card.classList.toggle("is-pick-complete", isComplete);
   card.classList.toggle("is-pick-incomplete", !isComplete);
@@ -5910,17 +6001,22 @@ function updateSoloCardWinnerUI(gameId, winnerTeam) {
 }
 
 function updateSoloStatsHeader(sheet) {
+  if (!sheet) return;
+  const isSeason = (state.soloCampaignMode !== "weekly");
+  const modePicks = isSeason ? (sheet.season_total_picks || 0) : (sheet.weekly_total_picks || 0);
+  const modePts = isSeason ? (sheet.season_total_points || 0) : (sheet.weekly_total_points || 0);
+
   const subtitleEl = document.getElementById("solo-sheet-stats-subtitle");
-  if (subtitleEl && sheet) {
-    subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points`;
+  if (subtitleEl) {
+    subtitleEl.textContent = `${modePicks} Picks Made • ${modePts} Solo Points`;
   }
   const picksEl = document.getElementById("solo-stat-picks-count");
-  if (picksEl && sheet) {
-    picksEl.textContent = sheet.total_picks || 0;
+  if (picksEl) {
+    picksEl.textContent = modePicks;
   }
   const ptsEl = document.getElementById("solo-stat-pts-count");
-  if (ptsEl && sheet) {
-    ptsEl.textContent = sheet.total_points || 0;
+  if (ptsEl) {
+    ptsEl.textContent = modePts;
   }
   updateSoloWeekProgressUI();
 }
@@ -5939,7 +6035,7 @@ function updateSoloWeekProgressUI() {
   }
 
   const sheet = getOrCreateMasterPickSheet();
-  const picks = sheet?.picks || {};
+  const picks = getActiveSoloPicks(sheet);
 
   let completedCount = 0;
   const totalCount = games.length;
@@ -5989,9 +6085,7 @@ function renderSoloView() {
 
   const isSeason = (mode === "season");
   const isSeasonLocked = Boolean(sheet.is_season_locked);
-  const activePicks = (isSeason && isSeasonLocked)
-    ? (sheet.season_picks || sheet.picks || {})
-    : (sheet.picks || {});
+  const activePicks = getActiveSoloPicks(sheet, mode);
 
   calculateSheetStats(sheet);
 
@@ -6005,6 +6099,9 @@ function renderSoloView() {
     } catch (e) {}
   }
 
+  const currentModePicks = isSeason ? (sheet.season_total_picks || 0) : (sheet.weekly_total_picks || 0);
+  const currentModePts = isSeason ? (sheet.season_total_points || 0) : (sheet.weekly_total_points || 0);
+
   const headerHtml = `
     <div class="solo-control-header">
       <div class="solo-control-main-row">
@@ -6014,13 +6111,13 @@ function renderSoloView() {
             <span class="solo-format-pill ${isSeason ? "pill-season" : "pill-weekly"}">${isSeason ? "🔮 Season Prophecy" : "⚡ Weekly Vision"}</span>
           </div>
           <div class="solo-control-stats">
-            <span><strong id="solo-stat-picks-count">${sheet.total_picks || 0}</strong> Picks Made</span>
+            <span><strong id="solo-stat-picks-count">${currentModePicks}</strong> Picks Made</span>
             <span class="solo-stat-dot">•</span>
-            <span><strong id="solo-stat-pts-count">${sheet.total_points || 0}</strong> Solo Points</span>
+            <span><strong id="solo-stat-pts-count">${currentModePts}</strong> Solo Points</span>
           </div>
         </div>
         <div class="solo-control-right">
-          <button type="button" class="btn-solo-leaderboard" onclick="openGlobalLeaderboardModal()" title="View the official Global Community Leaderboard">
+          <button type="button" class="btn-solo-leaderboard" onclick="openGlobalLeaderboardModal('${mode}')" title="View the official Global Community Leaderboard">
             <span>🏆 Leaderboard</span>
           </button>
           ${state.authUser ? `
@@ -6042,7 +6139,11 @@ function renderSoloView() {
             <button type="button" class="btn-lock-season-compact" onclick="openSeasonLockModal()" title="Lock in Season Prophecy to enter Global Leaderboard">
               <span>🔒 Lock Season</span>
             </button>
-          `) : ""}
+          `) : `
+            <span class="solo-lock-status-badge weekly" title="Weekly Vision: picks lock individually at each game's kickoff">
+              ⚡ Weekly Sprint
+            </span>
+          `}
         </div>
       </div>
       ${isSeason && isSeasonLocked ? `
@@ -6349,19 +6450,19 @@ async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
   }
   const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
-  if (!sheet.picks) sheet.picks = {};
-  if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
 
-  const currentPick = sheet.picks[gameId];
+  const currentPick = activePicks[gameId];
   const isCurrentlySelected = Boolean(currentPick.winner && 
     (currentPick.winner === winnerTeam || normalizeTeamCode(currentPick.winner) === normalizeTeamCode(winnerTeam)));
 
   if (isCurrentlySelected) {
     // Clicking already selected winner deselects it
-    delete sheet.picks[gameId].winner;
+    delete activePicks[gameId].winner;
   } else {
     // Select new winner
-    sheet.picks[gameId].winner = winnerTeam;
+    activePicks[gameId].winner = winnerTeam;
 
     // Check if scores are unbalanced and flip them so the selected team gets the winning score
     const hasAwayScore = (currentPick.awayScore !== null && currentPick.awayScore !== undefined && currentPick.awayScore !== "" && !isNaN(currentPick.awayScore));
@@ -6383,27 +6484,27 @@ async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
 
         // If user picked Away to win, Away score must be the higher score
         if (winnerNorm === awayNorm && aSc < hSc) {
-          sheet.picks[gameId].awayScore = hSc;
-          sheet.picks[gameId].homeScore = aSc;
+          activePicks[gameId].awayScore = hSc;
+          activePicks[gameId].homeScore = aSc;
         }
         // If user picked Home to win, Home score must be the higher score
         else if (winnerNorm === homeNorm && hSc < aSc) {
-          sheet.picks[gameId].homeScore = aSc;
-          sheet.picks[gameId].awayScore = hSc;
+          activePicks[gameId].homeScore = aSc;
+          activePicks[gameId].awayScore = hSc;
         }
 
         // Update DOM inputs immediately so user sees the flipped scores in real time
         const awayInput = document.getElementById(`score-away-${gameId}`);
         const homeInput = document.getElementById(`score-home-${gameId}`);
-        if (awayInput) awayInput.value = sheet.picks[gameId].awayScore;
-        if (homeInput) homeInput.value = sheet.picks[gameId].homeScore;
+        if (awayInput) awayInput.value = activePicks[gameId].awayScore;
+        if (homeInput) homeInput.value = activePicks[gameId].homeScore;
       }
     }
   }
 
   calculateSheetStats(sheet);
   debouncedSaveSoloPickSheet(sheet);
-  updateSoloCardWinnerUI(gameId, sheet.picks[gameId]?.winner);
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
 }
 
@@ -6427,22 +6528,22 @@ async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
   }
   const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
-  if (!sheet.picks) sheet.picks = {};
-  if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
 
   const key = (teamSide === "away") ? "awayScore" : "homeScore";
-  let cur = sheet.picks[gameId][key];
+  let cur = activePicks[gameId][key];
   if (cur === undefined || cur === null || isNaN(cur) || cur === "") {
     cur = delta > 0 ? delta : 0;
   } else {
     cur = parseInt(cur, 10) + delta;
   }
   cur = Math.max(0, Math.min(99, cur));
-  sheet.picks[gameId][key] = cur;
+  activePicks[gameId][key] = cur;
 
   // Auto-pick winner if scores are unequal, or clear if tied
-  const awaySc = sheet.picks[gameId].awayScore;
-  const homeSc = sheet.picks[gameId].homeScore;
+  const awaySc = activePicks[gameId].awayScore;
+  const homeSc = activePicks[gameId].homeScore;
   const game = findGameById(gameId);
   if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
       homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
@@ -6452,11 +6553,11 @@ async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
     const awayTeam = parts[0] || "";
     const homeTeam = parts[1] || "";
     if (aVal > hVal) {
-      sheet.picks[gameId].winner = awayTeam;
+      activePicks[gameId].winner = awayTeam;
     } else if (hVal > aVal) {
-      sheet.picks[gameId].winner = homeTeam;
+      activePicks[gameId].winner = homeTeam;
     } else {
-      delete sheet.picks[gameId].winner;
+      delete activePicks[gameId].winner;
     }
   }
 
@@ -6467,7 +6568,7 @@ async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
   const inputEl = document.getElementById(`score-${teamSide}-${gameId}`);
   if (inputEl) inputEl.value = cur;
 
-  updateSoloCardWinnerUI(gameId, sheet.picks[gameId]?.winner);
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
 }
 
@@ -6488,20 +6589,20 @@ async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
   if (isLocked) return;
   const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
-  if (!sheet.picks) sheet.picks = {};
-  if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
 
   const key = (teamSide === "away") ? "awayScore" : "homeScore";
   const cleaned = (valStr || "").trim();
   if (cleaned === "" || isNaN(cleaned)) {
-    sheet.picks[gameId][key] = null;
+    activePicks[gameId][key] = null;
   } else {
-    sheet.picks[gameId][key] = Math.max(0, Math.min(99, parseInt(cleaned, 10)));
+    activePicks[gameId][key] = Math.max(0, Math.min(99, parseInt(cleaned, 10)));
   }
 
   // Auto-pick winner if scores are unequal, or clear if tied
-  const awaySc = sheet.picks[gameId].awayScore;
-  const homeSc = sheet.picks[gameId].homeScore;
+  const awaySc = activePicks[gameId].awayScore;
+  const homeSc = activePicks[gameId].homeScore;
   const game = findGameById(gameId);
   if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
       homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
@@ -6511,17 +6612,17 @@ async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
     const awayTeam = parts[0] || "";
     const homeTeam = parts[1] || "";
     if (aVal > hVal) {
-      sheet.picks[gameId].winner = awayTeam;
+      activePicks[gameId].winner = awayTeam;
     } else if (hVal > aVal) {
-      sheet.picks[gameId].winner = homeTeam;
+      activePicks[gameId].winner = homeTeam;
     } else {
-      delete sheet.picks[gameId].winner;
+      delete activePicks[gameId].winner;
     }
   }
 
   calculateSheetStats(sheet);
   debouncedSaveSoloPickSheet(sheet);
-  updateSoloCardWinnerUI(gameId, sheet.picks[gameId]?.winner);
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
 }
 
@@ -6543,15 +6644,15 @@ async function toggleSoloPickMultiplier(arg1, arg2, arg3, arg4) {
   }
   const sheet = getOrCreateMasterPickSheet();
   if (!sheet) return;
-  if (!sheet.picks) sheet.picks = {};
-  if (!sheet.picks[gameId]) sheet.picks[gameId] = {};
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
 
-  const currentlyActive = Boolean(sheet.picks[gameId].multiplier);
+  const currentlyActive = Boolean(activePicks[gameId].multiplier);
   if (currentlyActive) {
-    sheet.picks[gameId].multiplier = false;
+    activePicks[gameId].multiplier = false;
     showToast("Removed 3X Lock of the Week");
   } else {
-    // Clear 3X multiplier on all other games in this same week
+    // Clear 3X multiplier on all other games in this same week within the active format
     const weekKey = `Week ${weekNum}`;
     let weekGames = [];
     if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
@@ -6562,12 +6663,12 @@ async function toggleSoloPickMultiplier(arg1, arg2, arg3, arg4) {
     const weekGameIds = new Set(weekGames.map(g => g.id));
     const weekPrefix = `Week ${weekNum}_`;
 
-    for (const [k, p] of Object.entries(sheet.picks)) {
+    for (const [k, p] of Object.entries(activePicks)) {
       if ((weekGameIds.has(k) || k.startsWith(weekPrefix)) && p && p.multiplier) {
         p.multiplier = false;
       }
     }
-    sheet.picks[gameId].multiplier = true;
+    activePicks[gameId].multiplier = true;
     showToast("⭐ Set as 3X Lock of the Week!");
   }
 
@@ -8604,27 +8705,33 @@ async function loadAndRenderGlobalLeaderboard() {
 
   // Check current local master sheet
   const sheet = getOrCreateMasterPickSheet();
+  calculateSheetStats(sheet);
   const currentUserId = state.authUser ? state.authUser.id : "guest";
   const myName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser?.email ? state.authUser.email.split("@")[0] : "You");
   const isSheetLocked = Boolean(sheet && (sheet.is_season_locked || sheet.is_locked));
 
-  // If local user sheet is locked, ensure it appears in the entries
+  const formatPoints = (format === "weekly") ? (sheet.weekly_total_points || 0) : (sheet.season_total_points || 0);
+  const formatPicks = (format === "weekly") ? (sheet.weekly_total_picks || 0) : (sheet.season_total_picks || 0);
+  const formatAccuracy = (format === "weekly") ? sheet.weekly_accuracy_rate : sheet.season_accuracy_rate;
+  const isEligibleForBoard = (format === "weekly") ? (formatPicks > 0) : isSheetLocked;
+
+  // If local user sheet has entry, ensure it appears in the entries
   const existingIdx = entries.findIndex(e => (state.authUser && e.user_id === state.authUser.id) || e.sheet_id === sheet?.id);
   if (existingIdx >= 0) {
     entries[existingIdx].isCurrentUser = true;
-    if (sheet && sheet.total_points > entries[existingIdx].total_points) {
-      entries[existingIdx].total_points = sheet.total_points;
-      entries[existingIdx].total_picks = sheet.total_picks;
-      entries[existingIdx].accuracy_rate = sheet.accuracy_rate;
+    if (formatPoints > entries[existingIdx].total_points) {
+      entries[existingIdx].total_points = formatPoints;
+      entries[existingIdx].total_picks = formatPicks;
+      entries[existingIdx].accuracy_rate = formatAccuracy;
     }
-  } else if (isSheetLocked && sheet) {
+  } else if (isEligibleForBoard && sheet) {
     entries.push({
       sheet_id: sheet.id,
       user_id: currentUserId,
       format: format,
-      total_picks: sheet.total_picks || 0,
-      total_points: sheet.total_points || 0,
-      accuracy_rate: sheet.accuracy_rate,
+      total_picks: formatPicks,
+      total_points: formatPoints,
+      accuracy_rate: formatAccuracy,
       username: myName,
       full_name: myName,
       avatar_url: null,
@@ -8635,7 +8742,14 @@ async function loadAndRenderGlobalLeaderboard() {
 
   // If community pool is small, populate verified benchmark community psychics
   if (entries.length < 5) {
-    const benchmarks = [
+    const benchmarks = (format === "weekly") ? [
+      { username: "Caleb", total_points: 130, accuracy_rate: 88, total_picks: 16, favorite_team: "LAC", avatar_url: "avatars/caleb.jpg" },
+      { username: "Brett", total_points: 120, accuracy_rate: 81, total_picks: 16, favorite_team: "GB", avatar_url: "avatars/brett.jpg" },
+      { username: "Carson", total_points: 110, accuracy_rate: 75, total_picks: 16, favorite_team: "KC", avatar_url: "avatars/carson.jpg" },
+      { username: "Ross", total_points: 100, accuracy_rate: 69, total_picks: 16, favorite_team: "PIT", avatar_url: "avatars/ross.jpg" },
+      { username: "Alisha", total_points: 90, accuracy_rate: 63, total_picks: 16, favorite_team: "MIN", avatar_url: "avatars/alisha.jpg" },
+      { username: "Dishman", total_points: 80, accuracy_rate: 56, total_picks: 16, favorite_team: "MIA", avatar_url: "avatars/dishman.jpg" }
+    ] : [
       { username: "Caleb", total_points: 630, accuracy_rate: 84, total_picks: 64, favorite_team: "LAC", avatar_url: "avatars/caleb.jpg" },
       { username: "Brett", total_points: 590, accuracy_rate: 81, total_picks: 64, favorite_team: "GB", avatar_url: "avatars/brett.jpg" },
       { username: "Carson", total_points: 540, accuracy_rate: 78, total_picks: 64, favorite_team: "KC", avatar_url: "avatars/carson.jpg" },
@@ -8746,19 +8860,26 @@ async function loadAndRenderGlobalLeaderboard() {
         </div>
       `;
     } else {
+      const isWeeklyTab = (format === "weekly");
       footer.innerHTML = `
         <div class="lb-footer-content is-unregistered">
           <div class="lb-footer-left">
-            <span class="lb-footer-alert-icon">🔒</span>
+            <span class="lb-footer-alert-icon">⚡</span>
             <div class="lb-footer-text">
-              <strong>Not Yet Registered</strong>
-              <span>Lock in your Season Prophecy to enter the Official Global Championship.</span>
+              <strong>${isWeeklyTab ? "Make Weekly Picks" : "Not Yet Registered"}</strong>
+              <span>${isWeeklyTab ? "Predict this week's winners and scores in Weekly Vision to enter the Weekly Leaderboard." : "Lock in your Season Prophecy to enter the Official Global Championship."}</span>
             </div>
           </div>
           <div class="lb-footer-right">
-            <button type="button" class="btn-lb-lock-action" onclick="closeGlobalLeaderboardModal(); openSeasonLockModal();">
-              Lock Season Prophecy →
-            </button>
+            ${isWeeklyTab ? `
+              <button type="button" class="btn-lb-lock-action" onclick="closeGlobalLeaderboardModal(); setSoloCampaignMode('weekly');">
+                Make Weekly Picks →
+              </button>
+            ` : `
+              <button type="button" class="btn-lb-lock-action" onclick="closeGlobalLeaderboardModal(); openSeasonLockModal();">
+                Lock Season Prophecy →
+              </button>
+            `}
           </div>
         </div>
       `;
@@ -8852,6 +8973,7 @@ window.openGlobalLeaderboardModal = openGlobalLeaderboardModal;
 window.closeGlobalLeaderboardModal = closeGlobalLeaderboardModal;
 window.switchGlobalLeaderboardTab = switchGlobalLeaderboardTab;
 window.loadAndRenderGlobalLeaderboard = loadAndRenderGlobalLeaderboard;
+window.getActiveSoloPicks = getActiveSoloPicks;
 
 
 

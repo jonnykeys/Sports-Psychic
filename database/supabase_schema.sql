@@ -538,6 +538,7 @@ create table if not exists public.pick_sheets (
   is_season_locked boolean default false not null,
   season_locked_at timestamp with time zone,
   season_picks jsonb default '{}'::jsonb,
+  weekly_picks jsonb default '{}'::jsonb,
   total_picks integer default 0,
   total_points integer default 0,
   accuracy_rate numeric(5,2) default null,

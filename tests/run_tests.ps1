@@ -1,7 +1,7 @@
 # Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
-Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (10 SUITES)' -ForegroundColor Cyan
+Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (11 SUITES)' -ForegroundColor Cyan
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ''
 
@@ -310,8 +310,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=15\.9') 'index.html includes app.js?v=15.9 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=15\.9') 'index.html includes style.css?v=15.9 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=16\.0') 'index.html includes app.js?v=16.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=16\.0') 'index.html includes style.css?v=16.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
@@ -324,6 +324,37 @@ Assert-Test ($styleCssContent -match '\.global-leaderboard-dialog') 'style.css d
 Assert-Test ($styleCssContent -match '\.global-lb-table') 'style.css defines .global-lb-table'
 Assert-Test ($styleCssContent -match '\.btn-solo-leaderboard') 'style.css defines .btn-solo-leaderboard'
 
+# -- Suite 11: Independent Season Prophecy vs Weekly Vision Pick Separation --
+Write-Host ''
+Write-Host '  -- Suite 11: Independent Season Prophecy vs Weekly Vision Pick Separation --' -ForegroundColor Yellow
+
+$mockSheet = @{
+    id = "master_test_user";
+    season_picks = @{
+        "Week 6_DEN_SEA" = @{ winner = "DEN"; awayScore = 10; homeScore = 20; multiplier = $true };
+    };
+    weekly_picks = @{
+        "Week 6_DEN_SEA" = @{ winner = "SEA"; awayScore = 24; homeScore = 21; multiplier = $false };
+        "Week 6_KC_LAC"  = @{ winner = "KC";  awayScore = 17; homeScore = 31; multiplier = $true };
+    };
+}
+
+Assert-Test ($mockSheet.season_picks["Week 6_DEN_SEA"].winner -eq "DEN") 'Season Prophecy retains DEN winning 20-10'
+Assert-Test ($mockSheet.weekly_picks["Week 6_DEN_SEA"].winner -eq "SEA") 'Weekly Vision independently records SEA winning 24-21'
+Assert-Test ($mockSheet.season_picks["Week 6_DEN_SEA"].multiplier -eq $true) 'Season Prophecy independently holds 3X multiplier on DEN@SEA'
+Assert-Test ($mockSheet.weekly_picks["Week 6_DEN_SEA"].multiplier -eq $false) 'Weekly Vision does not inherit 3X multiplier on DEN@SEA'
+Assert-Test ($mockSheet.weekly_picks["Week 6_KC_LAC"].multiplier -eq $true) 'Weekly Vision holds independent 3X multiplier on KC@LAC'
+
+$migrationSql = Get-Content -Raw 'database/migration_pick_sheets.sql'
+Assert-Test ($migrationSql -match 'weekly_picks\s+jsonb') 'migration_pick_sheets.sql defines weekly_picks column'
+
+$schemaSql = Get-Content -Raw 'database/supabase_schema.sql'
+Assert-Test ($schemaSql -match 'weekly_picks\s+jsonb') 'supabase_schema.sql defines weekly_picks column'
+
+Assert-Test ($appJsContent -match 'getActiveSoloPicks') 'app.js defines getActiveSoloPicks'
+Assert-Test ($appJsContent -match 'window\.getActiveSoloPicks = getActiveSoloPicks') 'app.js exports getActiveSoloPicks to window'
+Assert-Test ($appJsContent -match 'weekly_picks') 'app.js includes weekly_picks state management'
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
@@ -334,6 +365,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 10 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 11 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }
