@@ -5841,6 +5841,19 @@ function updateSoloCardWinnerUI(gameId, winnerTeam) {
     const span = btnHome.querySelector("span");
     if (span) span.textContent = `${isHome ? "✓ " : ""}${btnHome.dataset.team}`;
   }
+
+  // Update Card Complete State & Pill
+  const sheet = getOrCreateMasterPickSheet();
+  const pick = sheet?.picks?.[gameId];
+  const isComplete = Boolean(pick && isSoloPickComplete(gameId, pick));
+  card.classList.toggle("is-pick-complete", isComplete);
+  card.classList.toggle("is-pick-incomplete", !isComplete);
+
+  const statusPill = card.querySelector(".pick-status-pill");
+  if (statusPill) {
+    statusPill.className = `pick-status-pill ${isComplete ? "complete" : "pending"}`;
+    statusPill.innerHTML = isComplete ? "✓ Pick Set" : "Pending";
+  }
 }
 
 function updateSoloStatsHeader(sheet) {
@@ -5855,6 +5868,50 @@ function updateSoloStatsHeader(sheet) {
   const ptsEl = document.getElementById("solo-stat-pts-count");
   if (ptsEl && sheet) {
     ptsEl.textContent = sheet.total_points || 0;
+  }
+  updateSoloWeekProgressUI();
+}
+
+function updateSoloWeekProgressUI() {
+  const progressPanel = document.getElementById("solo-week-progress-panel");
+  if (!progressPanel) return;
+
+  const currentWk = state.selectedSheetWeek || getCurrentNFLWeek();
+  const weekKey = `Week ${currentWk}`;
+  let games = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
+    ? state.data.weeks[weekKey].games
+    : [];
+  if (games.length === 0 && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+    games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
+  }
+
+  const sheet = getOrCreateMasterPickSheet();
+  const picks = sheet?.picks || {};
+
+  let completedCount = 0;
+  const totalCount = games.length;
+  games.forEach(g => {
+    if (picks[g.id] && isSoloPickComplete(g.id, picks[g.id])) {
+      completedCount++;
+    }
+  });
+
+  const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const isFinished = (totalCount > 0 && completedCount === totalCount);
+
+  const countText = progressPanel.querySelector(".progress-count-text");
+  if (countText) {
+    countText.innerHTML = `<strong>${completedCount}</strong> of <strong>${totalCount}</strong> Picks Complete`;
+  }
+  const badge = progressPanel.querySelector(".solo-week-progress-badge");
+  if (badge) {
+    badge.className = `solo-week-progress-badge ${isFinished ? "is-finished" : ""}`;
+    badge.textContent = isFinished ? "✨ Week Complete!" : `${pct}%`;
+  }
+  const fill = progressPanel.querySelector(".solo-week-progress-fill");
+  if (fill) {
+    fill.className = `solo-week-progress-fill ${isFinished ? "is-finished" : ""}`;
+    fill.style.width = `${pct}%`;
   }
 }
 
@@ -5993,7 +6050,7 @@ function renderSoloView() {
     `;
   }
 
-  // 3. Matchup Data for Selected Week
+  // 3. Matchup Data & Weekly Completion Progress
   const weekKey = `Week ${selectedWk}`;
   let games = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
     ? state.data.weeks[weekKey].games
@@ -6002,6 +6059,35 @@ function renderSoloView() {
   if (games.length === 0 && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
     games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
   }
+
+  const weekGamesCount = games.length;
+  let weekCompletedCount = 0;
+  games.forEach(g => {
+    if (activePicks[g.id] && isSoloPickComplete(g.id, activePicks[g.id])) {
+      weekCompletedCount++;
+    }
+  });
+  const weekPct = weekGamesCount > 0 ? Math.round((weekCompletedCount / weekGamesCount) * 100) : 0;
+  const isWeekFullyPicked = (weekGamesCount > 0 && weekCompletedCount === weekGamesCount);
+
+  const weekProgressHtml = `
+    <div class="solo-week-progress-panel" id="solo-week-progress-panel">
+      <div class="solo-week-progress-meta">
+        <div class="solo-week-progress-label">
+          <span class="progress-week-tag">Week ${selectedWk} Slate</span>
+          <span class="progress-count-text">
+            <strong>${weekCompletedCount}</strong> of <strong>${weekGamesCount}</strong> Picks Complete
+          </span>
+        </div>
+        <div class="solo-week-progress-badge ${isWeekFullyPicked ? "is-finished" : ""}">
+          ${isWeekFullyPicked ? "✨ Week Complete!" : `${weekPct}%`}
+        </div>
+      </div>
+      <div class="solo-week-progress-track">
+        <div class="solo-week-progress-fill ${isWeekFullyPicked ? "is-finished" : ""}" style="width: ${weekPct}%;"></div>
+      </div>
+    </div>
+  `;
 
   // 4. Build Compact 2-Tier Matchup Cards
   const gamesHtml = games.map((game, idx) => {
@@ -6059,7 +6145,8 @@ function renderSoloView() {
       `;
     }
 
-    const cardClass = isGameLocked ? "is-locked-game" : "is-open-game";
+    const isComplete = isSoloPickComplete(game.id, pick);
+    const cardClass = `${isGameLocked ? "is-locked-game" : "is-open-game"} ${isComplete ? "is-pick-complete" : "is-pick-incomplete"}`;
 
     return `
       <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
@@ -6068,6 +6155,7 @@ function renderSoloView() {
           <div class="game-status-left">
             <span class="game-lock-badge ${badgeClass}">${badgeText}</span>
             <span class="game-kickoff-time">${game.dateTime || `Game ${idx + 1}`}</span>
+            <span class="pick-status-pill ${isComplete ? "complete" : "pending"}">${isComplete ? "✓ Pick Set" : "Pending"}</span>
           </div>
           <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}"
             ${isGameLocked ? "disabled" : ""}
@@ -6179,6 +6267,7 @@ function renderSoloView() {
     <div class="sheet-editor-container">
       ${headerHtml}
       ${weekSelectorHtml}
+      ${weekProgressHtml}
       <div class="sheet-games-grid">
         ${gamesHtml}
       </div>
@@ -8448,6 +8537,7 @@ window.toggleSoloPickMultiplier = toggleSoloPickMultiplier;
 window.isGameLockedForPicking = isGameLockedForPicking;
 window.getGameLockStatus = getGameLockStatus;
 window.isSoloPickComplete = isSoloPickComplete;
+window.updateSoloWeekProgressUI = updateSoloWeekProgressUI;
 window.deleteSoloSheet = deleteSoloSheet;
 window.loadUserLeagues = loadUserLeagues;
 window.loadCustomLeagueData = loadCustomLeagueData;
