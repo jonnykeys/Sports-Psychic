@@ -573,6 +573,8 @@ alter table public.pick_sheets add column if not exists league_id text;
 alter table public.pick_sheets add column if not exists is_master boolean default false;
 alter table public.pick_sheets add column if not exists submission_label text;
 
+drop view if exists public.global_leaderboard cascade;
+
 create or replace view public.global_leaderboard as
 select
   s.id as sheet_id,

@@ -70,6 +70,8 @@ create index if not exists idx_pick_sheets_leaderboard on public.pick_sheets(for
 -- GLOBAL COMMUNITY LEADERBOARD VIEW
 -- Real-time rankings of locked Season Prophecy and Weekly Vision submissions
 -- ------------------------------------------------------------------------------
+drop view if exists public.global_leaderboard cascade;
+
 create or replace view public.global_leaderboard as
 select
   s.id as sheet_id,
