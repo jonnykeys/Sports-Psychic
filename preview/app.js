@@ -5874,17 +5874,16 @@ function syncOgLeaguePicksToSoloProphecy(playerName, force = false) {
   return false;
 }
 
-function syncOgLeaguePicksToSoloProphecyUI() {
-  const targetPlayer = state.myPlayer || "Jon";
-  const ok = confirm(`Sync your 272 picks from the OG League into your Solo Season Prophecy for ${targetPlayer}?`);
-  if (!ok) return;
-  const success = syncOgLeaguePicksToSoloProphecy(targetPlayer, true);
-  if (success) {
-    renderSoloView();
-    showToast(`⚡ Successfully loaded 272 OG League picks for ${targetPlayer}!`);
-  } else {
-    showToast(`Notice: No OG League picks found for ${targetPlayer}.`);
-  }
+async function unlockSeasonProphecyUI() {
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+  sheet.is_season_locked = false;
+  sheet.is_locked = false;
+  sheet.season_locked_at = null;
+  calculateSheetStats(sheet);
+  await saveSoloPickSheet(sheet);
+  renderSoloView();
+  showToast("🔓 Season Prophecy Unlocked! You can now edit your picks freely.");
 }
 
 /**
@@ -5903,9 +5902,11 @@ function getOrCreateMasterPickSheet() {
       master.is_master = true;
       master.name = "Master Pick Sheet";
       master.submission_label = "Solo Prophecy";
-      if (master.is_season_locked === undefined) master.is_season_locked = false;
+      master.is_season_locked = false;
+      master.is_locked = false;
+      master.season_locked_at = null;
       if (!master.season_picks) {
-        master.season_picks = JSON.parse(JSON.stringify(master.picks || {}));
+        master.season_picks = {};
       }
       if (!master.weekly_picks) {
         master.weekly_picks = {};
@@ -5937,22 +5938,13 @@ function getOrCreateMasterPickSheet() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      // Pre-populate 272 picks from OG League for target player
-      const targetPlayer = state.myPlayer || "Jon";
-      if (typeof PLAYERS !== "undefined" && PLAYERS.includes(targetPlayer)) {
-        const ogPicks = extractOgLeaguePicksForPlayer(targetPlayer);
-        if (Object.keys(ogPicks).length > 0) {
-          master.season_picks = ogPicks;
-          calculateSheetStats(master);
-        }
-      }
       state.pickSheets.unshift(master);
     }
     saveSoloPickSheet(master);
   } else {
     // Ensure both separate dictionaries exist on existing master sheet
     if (!master.season_picks) {
-      master.season_picks = JSON.parse(JSON.stringify(master.picks || {}));
+      master.season_picks = {};
     }
     if (!master.weekly_picks) {
       master.weekly_picks = {};
@@ -5960,16 +5952,14 @@ function getOrCreateMasterPickSheet() {
     if (!master.submission_label) {
       master.submission_label = "Solo Prophecy";
     }
-    // If existing master sheet has < 10 season picks, seed from OG League for target player
-    if (Object.keys(master.season_picks || {}).length < 10) {
-      const targetPlayer = state.myPlayer || "Jon";
-      if (typeof PLAYERS !== "undefined" && PLAYERS.includes(targetPlayer)) {
-        const ogPicks = extractOgLeaguePicksForPlayer(targetPlayer);
-        if (Object.keys(ogPicks).length > 0) {
-          master.season_picks = ogPicks;
-          calculateSheetStats(master);
-        }
-      }
+    // Auto-unlock master sheet if locked accidentally
+    if (master.is_season_locked) {
+      master.is_season_locked = false;
+      master.is_locked = false;
+      master.season_locked_at = null;
+      master.season_picks = {};
+      calculateSheetStats(master);
+      debouncedSaveSoloPickSheet(master);
     }
   }
   return master;
@@ -6238,11 +6228,6 @@ function renderSoloView() {
           <button type="button" class="btn-solo-leaderboard" onclick="openGlobalLeaderboardModal('${mode}')" title="View the official Global Community Leaderboard">
             <span>🏆 Leaderboard</span>
           </button>
-          ${isSeason && !isSeasonLocked ? `
-            <button type="button" class="btn-solo-sync-og" onclick="syncOgLeaguePicksToSoloProphecyUI()" title="Sync your 272 picks from the OG League into this Solo Season Prophecy">
-              <span>⚡ Sync OG Picks</span>
-            </button>
-          ` : ""}
           ${state.authUser ? `
             <div class="solo-sync-badge synced" title="Synced to your cloud account">
               <span class="sync-check">✓</span>
@@ -6255,9 +6240,9 @@ function renderSoloView() {
             </button>
           `}
           ${isSeason ? (isSeasonLocked ? `
-            <span class="solo-lock-status-badge locked" title="Season locked for Global Championship">
-              🔒 Official Entry
-            </span>
+            <button type="button" class="btn-unlock-season-compact" onclick="unlockSeasonProphecyUI()" title="Unlock Season Prophecy to edit your picks">
+              <span>🔓 Unlock Season</span>
+            </button>
           ` : `
             <button type="button" class="btn-lock-season-compact" onclick="openSeasonLockModal()" title="Lock in Season Prophecy to enter Global Leaderboard">
               <span>🔒 Lock Season</span>
@@ -6272,6 +6257,7 @@ function renderSoloView() {
       ${isSeason && isSeasonLocked ? `
         <div class="solo-locked-info-bar">
           <span>🔒 <strong>Season Prophecy Locked</strong> (${lockedDateFormatted}) — Permanent entry registered for the Global Season Championship.</span>
+          <button type="button" class="btn-unlock-link" onclick="unlockSeasonProphecyUI()" title="Unlock to resume editing picks">Unlock to Edit</button>
         </div>
       ` : ""}
     </div>
@@ -9122,4 +9108,4 @@ window.getActiveSoloPicks = getActiveSoloPicks;
 window.extractOgLeaguePicksForPlayer = extractOgLeaguePicksForPlayer;
 window.evaluateWeeklyOgPicks = evaluateWeeklyOgPicks;
 window.syncOgLeaguePicksToSoloProphecy = syncOgLeaguePicksToSoloProphecy;
-window.syncOgLeaguePicksToSoloProphecyUI = syncOgLeaguePicksToSoloProphecyUI;
+window.unlockSeasonProphecyUI = unlockSeasonProphecyUI;

@@ -8515,15 +8515,15 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
 }
 
-.btn-solo-sync-og {
+.btn-unlock-season-compact {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
   padding: 6px 12px;
   border-radius: 8px;
-  color: #38bdf8;
+  color: #f87171;
   font-weight: 800;
   font-size: 0.78rem;
   letter-spacing: 0.02em;
@@ -8532,11 +8532,28 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.btn-solo-sync-og:hover {
-  background: rgba(56, 189, 248, 0.22);
-  border-color: #38bdf8;
+.btn-unlock-season-compact:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: #ef4444;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.btn-unlock-link {
+  background: none;
+  border: none;
+  color: #f87171;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 8px;
+  padding: 0;
+  display: inline;
+}
+
+.btn-unlock-link:hover {
+  color: #ef4444;
 }
 
 .global-leaderboard-dialog {
