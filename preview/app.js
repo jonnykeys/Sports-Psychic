@@ -8524,6 +8524,8 @@ function renderCustomLeagueLeaderboard() {
       </div>
     `;
   }).join("");
+}
+
 // =========================================================
 // GLOBAL COMMUNITY LEADERBOARD ENGINE
 // =========================================================
