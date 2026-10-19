@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=15.8">
+  <link rel="stylesheet" href="style.css?v=15.9">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -47,10 +47,10 @@
         </svg>
       </button>
 
-      <!-- Profile Button (shown in League View) -->
-      <button id="btn-header-profile" class="header-profile-btn not-set" onclick="openProfileModal()" aria-label="Personalize profile" title="Personalize / Remember Me">
+      <!-- Profile Button (shown when Authenticated) -->
+      <button id="btn-header-profile" class="header-profile-btn" onclick="openProfileModal()" aria-label="Account Profile" title="Account Profile" style="display: none;">
         <span class="header-profile-icon">👤</span>
-        <span class="header-profile-text">Set Me</span>
+        <span class="header-profile-text">Account</span>
       </button>
 
       <!-- Sign In / Join Free Button (shown in Lobby Mode) -->
@@ -761,6 +761,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=15.8"></script>
+  <script src="app.js?v=15.9"></script>
 </body>
 </html>

@@ -310,8 +310,10 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=15\.8') 'index.html includes app.js?v=15.8 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=15\.8') 'index.html includes style.css?v=15.8 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=15\.9') 'index.html includes app.js?v=15.9 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=15\.9') 'index.html includes style.css?v=15.9 cache buster'
+Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
+Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
 Assert-Test ($appJsContent -match 'openGlobalLeaderboardModal') 'app.js defines openGlobalLeaderboardModal'
 Assert-Test ($appJsContent -match 'loadAndRenderGlobalLeaderboard') 'app.js defines loadAndRenderGlobalLeaderboard'

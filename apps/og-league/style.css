@@ -4944,6 +4944,11 @@ body {
    AUTHENTICATION & MODE-SPECIFIC VISIBILITY TOGGLES
    --------------------------------------------------------- */
 /* Header Controls Visibility based on Authentication State */
+#btn-header-profile,
+#btn-league-switcher {
+  display: none !important;
+}
+
 body.is-authenticated #btn-header-signin {
   display: none !important;
 }
