@@ -5798,6 +5798,95 @@ function debouncedSaveSoloPickSheet(sheet) {
 }
 
 /**
+ * Extracts full 18-week (272 games) picks for any OG League player from the baseline dataset.
+ */
+function extractOgLeaguePicksForPlayer(playerName) {
+  const result = {};
+  if (!playerName || typeof OG_LEAGUE_INITIAL_DATA === "undefined" || !OG_LEAGUE_INITIAL_DATA.weeks) {
+    return result;
+  }
+  for (const weekKey in OG_LEAGUE_INITIAL_DATA.weeks) {
+    const weekData = OG_LEAGUE_INITIAL_DATA.weeks[weekKey];
+    if (!weekData || !Array.isArray(weekData.games)) continue;
+    for (const game of weekData.games) {
+      if (game && game.id && game.picks && game.picks[playerName]) {
+        const p = game.picks[playerName];
+        if (p.winner || (p.awayScore !== null && p.awayScore !== undefined)) {
+          result[game.id] = {
+            winner: p.winner || "",
+            awayScore: (p.awayScore !== null && p.awayScore !== undefined) ? parseInt(p.awayScore, 10) : 0,
+            homeScore: (p.homeScore !== null && p.homeScore !== undefined) ? parseInt(p.homeScore, 10) : 0,
+            multiplier: Boolean(p.multiplier)
+          };
+        }
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Evaluates weekly picks for any OG League player for a given week number.
+ */
+function evaluateWeeklyOgPicks(playerName, weekNumber) {
+  const weekKey = `Week ${weekNumber}`;
+  const weekData = (typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks)
+    ? OG_LEAGUE_INITIAL_DATA.weeks[weekKey]
+    : null;
+  if (!weekData || !Array.isArray(weekData.games)) {
+    return { totalPicks: 0, totalPoints: 0, accuracyRate: null };
+  }
+  const picksObj = {};
+  for (const g of weekData.games) {
+    if (g.picks && g.picks[playerName]) {
+      picksObj[g.id] = {
+        winner: g.picks[playerName].winner || "",
+        awayScore: (g.picks[playerName].awayScore !== null && g.picks[playerName].awayScore !== undefined) ? parseInt(g.picks[playerName].awayScore, 10) : 0,
+        homeScore: (g.picks[playerName].homeScore !== null && g.picks[playerName].homeScore !== undefined) ? parseInt(g.picks[playerName].homeScore, 10) : 0,
+        multiplier: Boolean(g.picks[playerName].multiplier)
+      };
+    }
+  }
+  return evaluatePicksDict(picksObj);
+}
+
+/**
+ * Synchronizes a player's OG League picks into their Solo Season Prophecy sheet.
+ */
+function syncOgLeaguePicksToSoloProphecy(playerName, force = false) {
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return false;
+  const targetPlayer = playerName || state.myPlayer || "Jon";
+  if (typeof PLAYERS !== "undefined" && !PLAYERS.includes(targetPlayer)) return false;
+
+  const existingPicksCount = Object.keys(sheet.season_picks || {}).length;
+  if (force || existingPicksCount < 10) {
+    const ogPicks = extractOgLeaguePicksForPlayer(targetPlayer);
+    if (Object.keys(ogPicks).length > 0) {
+      sheet.season_picks = ogPicks;
+      sheet.submission_label = "Solo Prophecy";
+      calculateSheetStats(sheet);
+      debouncedSaveSoloPickSheet(sheet);
+      return true;
+    }
+  }
+  return false;
+}
+
+function syncOgLeaguePicksToSoloProphecyUI() {
+  const targetPlayer = state.myPlayer || "Jon";
+  const ok = confirm(`Sync your 272 picks from the OG League into your Solo Season Prophecy for ${targetPlayer}?`);
+  if (!ok) return;
+  const success = syncOgLeaguePicksToSoloProphecy(targetPlayer, true);
+  if (success) {
+    renderSoloView();
+    showToast(`⚡ Successfully loaded 272 OG League picks for ${targetPlayer}!`);
+  } else {
+    showToast(`Notice: No OG League picks found for ${targetPlayer}.`);
+  }
+}
+
+/**
  * Retrieves the user's single Master Pick Sheet, or initializes one if none exists.
  * Manages separate Season Prophecy and Weekly Vision pick collections.
  */
@@ -5812,6 +5901,7 @@ function getOrCreateMasterPickSheet() {
       master.id = `master_${userId}`;
       master.is_master = true;
       master.name = "Master Pick Sheet";
+      master.submission_label = "Solo Prophecy";
       if (master.is_season_locked === undefined) master.is_season_locked = false;
       if (!master.season_picks) {
         master.season_picks = JSON.parse(JSON.stringify(master.picks || {}));
@@ -5824,6 +5914,7 @@ function getOrCreateMasterPickSheet() {
         id: `master_${userId}`,
         user_id: userId,
         name: "Master Pick Sheet",
+        submission_label: "Solo Prophecy",
         format: "season",
         season_year: 2026,
         active_week: state.currentWeek || 5,
@@ -5845,6 +5936,15 @@ function getOrCreateMasterPickSheet() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+      // Pre-populate 272 picks from OG League for target player
+      const targetPlayer = state.myPlayer || "Jon";
+      if (typeof PLAYERS !== "undefined" && PLAYERS.includes(targetPlayer)) {
+        const ogPicks = extractOgLeaguePicksForPlayer(targetPlayer);
+        if (Object.keys(ogPicks).length > 0) {
+          master.season_picks = ogPicks;
+          calculateSheetStats(master);
+        }
+      }
       state.pickSheets.unshift(master);
     }
     saveSoloPickSheet(master);
@@ -5855,6 +5955,20 @@ function getOrCreateMasterPickSheet() {
     }
     if (!master.weekly_picks) {
       master.weekly_picks = {};
+    }
+    if (!master.submission_label) {
+      master.submission_label = "Solo Prophecy";
+    }
+    // If existing master sheet has < 10 season picks, seed from OG League for target player
+    if (Object.keys(master.season_picks || {}).length < 10) {
+      const targetPlayer = state.myPlayer || "Jon";
+      if (typeof PLAYERS !== "undefined" && PLAYERS.includes(targetPlayer)) {
+        const ogPicks = extractOgLeaguePicksForPlayer(targetPlayer);
+        if (Object.keys(ogPicks).length > 0) {
+          master.season_picks = ogPicks;
+          calculateSheetStats(master);
+        }
+      }
     }
   }
   return master;
@@ -5914,7 +6028,10 @@ async function confirmSeasonLockSubmit() {
 
   sheet.is_season_locked = true;
   sheet.season_locked_at = new Date().toISOString();
-  sheet.season_picks = JSON.parse(JSON.stringify(sheet.picks || {}));
+  if (!sheet.season_picks || Object.keys(sheet.season_picks).length === 0) {
+    sheet.season_picks = JSON.parse(JSON.stringify(sheet.picks || {}));
+  }
+  sheet.submission_label = "Solo Prophecy";
 
   calculateSheetStats(sheet);
   await saveSoloPickSheet(sheet);
@@ -6120,6 +6237,11 @@ function renderSoloView() {
           <button type="button" class="btn-solo-leaderboard" onclick="openGlobalLeaderboardModal('${mode}')" title="View the official Global Community Leaderboard">
             <span>🏆 Leaderboard</span>
           </button>
+          ${isSeason && !isSeasonLocked ? `
+            <button type="button" class="btn-solo-sync-og" onclick="syncOgLeaguePicksToSoloProphecyUI()" title="Sync your 272 picks from the OG League into this Solo Season Prophecy">
+              <span>⚡ Sync OG Picks</span>
+            </button>
+          ` : ""}
           ${state.authUser ? `
             <div class="solo-sync-badge synced" title="Synced to your cloud account">
               <span class="sync-check">✓</span>
@@ -8719,6 +8841,7 @@ async function loadAndRenderGlobalLeaderboard() {
   const existingIdx = entries.findIndex(e => (state.authUser && e.user_id === state.authUser.id) || e.sheet_id === sheet?.id);
   if (existingIdx >= 0) {
     entries[existingIdx].isCurrentUser = true;
+    entries[existingIdx].submission_label = entries[existingIdx].submission_label || (format === "weekly" ? "Solo Vision" : "Solo Prophecy");
     if (formatPoints > entries[existingIdx].total_points) {
       entries[existingIdx].total_points = formatPoints;
       entries[existingIdx].total_picks = formatPicks;
@@ -8736,43 +8859,59 @@ async function loadAndRenderGlobalLeaderboard() {
       full_name: myName,
       avatar_url: null,
       favorite_team: getFavoriteTeam()?.code || "BUF",
+      submission_label: format === "weekly" ? "Solo Vision" : "Solo Prophecy",
       isCurrentUser: true
     });
   }
 
-  // If community pool is small, populate verified benchmark community psychics
-  if (entries.length < 5) {
-    const benchmarks = (format === "weekly") ? [
-      { username: "Caleb", total_points: 130, accuracy_rate: 88, total_picks: 16, favorite_team: "LAC", avatar_url: "avatars/caleb.jpg" },
-      { username: "Brett", total_points: 120, accuracy_rate: 81, total_picks: 16, favorite_team: "GB", avatar_url: "avatars/brett.jpg" },
-      { username: "Carson", total_points: 110, accuracy_rate: 75, total_picks: 16, favorite_team: "KC", avatar_url: "avatars/carson.jpg" },
-      { username: "Ross", total_points: 100, accuracy_rate: 69, total_picks: 16, favorite_team: "PIT", avatar_url: "avatars/ross.jpg" },
-      { username: "Alisha", total_points: 90, accuracy_rate: 63, total_picks: 16, favorite_team: "MIN", avatar_url: "avatars/alisha.jpg" },
-      { username: "Dishman", total_points: 80, accuracy_rate: 56, total_picks: 16, favorite_team: "MIA", avatar_url: "avatars/dishman.jpg" }
-    ] : [
-      { username: "Caleb", total_points: 630, accuracy_rate: 84, total_picks: 64, favorite_team: "LAC", avatar_url: "avatars/caleb.jpg" },
-      { username: "Brett", total_points: 590, accuracy_rate: 81, total_picks: 64, favorite_team: "GB", avatar_url: "avatars/brett.jpg" },
-      { username: "Carson", total_points: 540, accuracy_rate: 78, total_picks: 64, favorite_team: "KC", avatar_url: "avatars/carson.jpg" },
-      { username: "Ross", total_points: 510, accuracy_rate: 75, total_picks: 64, favorite_team: "PIT", avatar_url: "avatars/ross.jpg" },
-      { username: "Alisha", total_points: 490, accuracy_rate: 73, total_picks: 64, favorite_team: "MIN", avatar_url: "avatars/alisha.jpg" },
-      { username: "Dishman", total_points: 460, accuracy_rate: 70, total_picks: 64, favorite_team: "MIA", avatar_url: "avatars/dishman.jpg" }
-    ];
+  // Populate the 12 OG League member prophecies with their full 272 picks (season) or weekly picks (weekly)
+  const ogFavTeams = {
+    "Jon": "BUF", "Alisha": "MIN", "Carson": "KC", "Nok": "BAL",
+    "Mango": "SF", "Caleb": "LAC", "Ross": "PIT", "Dishman": "MIA",
+    "Ethan": "NYJ", "Brett": "GB", "Wells": "IND", "Rob": "LV"
+  };
 
-    benchmarks.forEach(bm => {
-      if (!entries.some(e => e.username === bm.username)) {
+  const activeNFLWeek = state.currentWeek || getCurrentNFLWeek() || 1;
+
+  if (typeof PLAYERS !== "undefined" && Array.isArray(PLAYERS)) {
+    PLAYERS.forEach(playerName => {
+      let stats;
+      let label;
+      if (format === "weekly") {
+        stats = evaluateWeeklyOgPicks(playerName, activeNFLWeek);
+        label = "OG League Vision";
+      } else {
+        const picks = extractOgLeaguePicksForPlayer(playerName);
+        stats = evaluatePicksDict(picks);
+        label = "OG League Prophecy";
+      }
+
+      const sheetId = `og_${playerName.toLowerCase()}_${format}`;
+      const found = entries.find(e => e.sheet_id === sheetId || (e.username === playerName && e.submission_label === label));
+      const isMyOGPlayer = Boolean(state.myPlayer && state.myPlayer === playerName);
+      if (!found) {
         entries.push({
-          sheet_id: `bm_${bm.username}`,
-          user_id: `bm_${bm.username}`,
+          sheet_id: sheetId,
+          user_id: `og_${playerName.toLowerCase()}`,
           format: format,
-          total_picks: bm.total_picks,
-          total_points: bm.total_points,
-          accuracy_rate: bm.accuracy_rate,
-          username: bm.username,
-          full_name: bm.username,
-          avatar_url: bm.avatar_url,
-          favorite_team: bm.favorite_team,
-          isBenchmark: true
+          total_picks: stats.totalPicks,
+          total_points: stats.totalPoints,
+          accuracy_rate: stats.accuracyRate,
+          username: playerName,
+          full_name: playerName,
+          avatar_url: (typeof PLAYER_AVATARS !== "undefined" && PLAYER_AVATARS[playerName]) ? PLAYER_AVATARS[playerName] : null,
+          favorite_team: ogFavTeams[playerName] || "NFL",
+          submission_label: label,
+          isOgLeague: true,
+          isCurrentUser: Boolean(isMyOGPlayer && !isSheetLocked)
         });
+      } else {
+        found.submission_label = found.submission_label || label;
+        found.avatar_url = found.avatar_url || (typeof PLAYER_AVATARS !== "undefined" && PLAYER_AVATARS[playerName]) || null;
+        found.favorite_team = found.favorite_team || ogFavTeams[playerName] || "NFL";
+        if (isMyOGPlayer && !isSheetLocked) {
+          found.isCurrentUser = true;
+        }
       }
     });
   }
@@ -8812,8 +8951,11 @@ async function loadAndRenderGlobalLeaderboard() {
           <div class="lb-player-cell">
             ${avatarHtml}
             <div class="lb-name-group">
-              <span class="lb-player-name">${entry.username}${isMe ? ' <span class="lb-you-tag">YOU</span>' : ""}</span>
-              <span class="lb-team-chip" style="background-color:${teamInfo.color}; color:${teamInfo.textColor};">${entry.favorite_team || "NFL"}</span>
+              <div class="lb-name-top">
+                <span class="lb-player-name">${entry.username}${isMe ? ' <span class="lb-you-tag">YOU</span>' : ""}</span>
+                <span class="lb-team-chip" style="background-color:${teamInfo.color}; color:${teamInfo.textColor};">${entry.favorite_team || "NFL"}</span>
+              </div>
+              <span class="lb-sub-label">${entry.submission_label || (format === "weekly" ? "Solo Vision" : "Solo Prophecy")}</span>
             </div>
           </div>
         </td>
@@ -8847,12 +8989,14 @@ async function loadAndRenderGlobalLeaderboard() {
       footer.innerHTML = `
         <div class="lb-footer-content is-registered">
           <div class="lb-footer-left">
-            <span class="lb-footer-badge">Official Entry</span>
+            <span class="lb-footer-badge">${userEntry.submission_label || "Official Entry"}</span>
             <span class="lb-footer-rank">Rank <strong>#${userEntry.rank}</strong> of ${entries.length}</span>
             <span class="lb-footer-dot">•</span>
             <span class="lb-footer-stat"><strong>${userEntry.total_points || 0}</strong> PTS</span>
             <span class="lb-footer-dot">•</span>
-            <span class="lb-footer-stat">${userEntry.accuracy_rate || 0}% Acc</span>
+            <span class="lb-footer-stat">${userEntry.accuracy_rate !== null && userEntry.accuracy_rate !== undefined ? `${userEntry.accuracy_rate}%` : "—"} Acc</span>
+            <span class="lb-footer-dot">•</span>
+            <span class="lb-footer-stat">${userEntry.total_picks || 0} Picks</span>
           </div>
           <div class="lb-footer-right">
             <button type="button" class="btn-lb-close-view" onclick="closeGlobalLeaderboardModal()">Back to Picks</button>
@@ -8974,6 +9118,7 @@ window.closeGlobalLeaderboardModal = closeGlobalLeaderboardModal;
 window.switchGlobalLeaderboardTab = switchGlobalLeaderboardTab;
 window.loadAndRenderGlobalLeaderboard = loadAndRenderGlobalLeaderboard;
 window.getActiveSoloPicks = getActiveSoloPicks;
-
-
-
+window.extractOgLeaguePicksForPlayer = extractOgLeaguePicksForPlayer;
+window.evaluateWeeklyOgPicks = evaluateWeeklyOgPicks;
+window.syncOgLeaguePicksToSoloProphecy = syncOgLeaguePicksToSoloProphecy;
+window.syncOgLeaguePicksToSoloProphecyUI = syncOgLeaguePicksToSoloProphecyUI;
