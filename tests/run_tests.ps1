@@ -310,8 +310,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=17\.0') 'index.html includes app.js?v=17.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=17\.0') 'index.html includes style.css?v=17.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=18\.0') 'index.html includes app.js?v=18.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=18\.0') 'index.html includes style.css?v=18.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
@@ -375,13 +375,13 @@ Assert-Test ($jonPicksCount -eq 272) 'Jon OG League dataset contains full 272 se
 Assert-Test ($calebPicksCount -eq 272) 'Caleb OG League dataset contains full 272 season picks'
 
 Assert-Test ($appJsContent -match 'extractOgLeaguePicksForPlayer') 'app.js defines extractOgLeaguePicksForPlayer'
-Assert-Test ($appJsContent -match 'syncOgLeaguePicksToSoloProphecy') 'app.js defines syncOgLeaguePicksToSoloProphecy'
+Assert-Test ($appJsContent -match 'unlockSeasonProphecyUI') 'app.js defines unlockSeasonProphecyUI'
 Assert-Test ($appJsContent -match 'window\.extractOgLeaguePicksForPlayer\s*=') 'app.js exports extractOgLeaguePicksForPlayer to window'
-Assert-Test ($appJsContent -match 'window\.syncOgLeaguePicksToSoloProphecy\s*=') 'app.js exports syncOgLeaguePicksToSoloProphecy to window'
+Assert-Test ($appJsContent -match 'window\.unlockSeasonProphecyUI\s*=') 'app.js exports unlockSeasonProphecyUI to window'
 
-Assert-Test ($appJsContent -match 'btn-solo-sync-og') 'app.js renders btn-solo-sync-og button'
+Assert-Test ($appJsContent -match 'btn-unlock-season-compact') 'app.js renders btn-unlock-season-compact button'
 Assert-Test ($appJsContent -match 'lb-sub-label') 'app.js renders lb-sub-label for entry provenance'
-Assert-Test ($styleCssContent -match '\.btn-solo-sync-og') 'style.css defines .btn-solo-sync-og'
+Assert-Test ($styleCssContent -match '\.btn-unlock-season-compact') 'style.css defines .btn-unlock-season-compact'
 Assert-Test ($styleCssContent -match '\.lb-sub-label') 'style.css defines .lb-sub-label'
 
 Assert-Test ($migrationSql -match 'submission_label\s+text') 'migration_pick_sheets.sql defines submission_label column'
