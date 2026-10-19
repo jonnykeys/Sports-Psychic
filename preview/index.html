@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=15.7">
+  <link rel="stylesheet" href="style.css?v=15.8">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -649,6 +649,47 @@
     </div>
   </div>
 
+  <!-- GLOBAL COMMUNITY LEADERBOARD MODAL -->
+  <div id="global-leaderboard-modal" class="auth-modal-backdrop global-leaderboard-backdrop" onclick="closeGlobalLeaderboardModal(event)">
+    <div class="auth-modal-dialog global-leaderboard-dialog" onclick="event.stopPropagation()">
+      <div class="auth-modal-header">
+        <div class="auth-modal-title-row">
+          <span class="auth-modal-icon">🏆</span>
+          <h3 id="global-leaderboard-title">Global Community Leaderboard</h3>
+        </div>
+        <button class="profile-modal-close" onclick="closeGlobalLeaderboardModal()" aria-label="Close">&times;</button>
+      </div>
+
+      <!-- Format Switcher: Season vs Weekly -->
+      <div class="global-lb-tabs-row">
+        <button type="button" class="global-lb-tab active" id="tab-lb-season" onclick="switchGlobalLeaderboardTab('season')">
+          <span>🔮 Season Prophecy</span>
+        </button>
+        <button type="button" class="global-lb-tab" id="tab-lb-weekly" onclick="switchGlobalLeaderboardTab('weekly')">
+          <span>⚡ Weekly Vision</span>
+        </button>
+      </div>
+
+      <!-- Scoring Rules Banner -->
+      <div class="global-lb-rules-bar">
+        <span class="lb-rule-pill">✓ Winner: <strong>10 PTS</strong></span>
+        <span class="lb-rule-pill">🎯 Exact Score: <strong>60 PTS</strong></span>
+        <span class="lb-rule-pill">🎯 Global Closest: <strong>10 PTS</strong></span>
+        <span class="lb-rule-pill">⭐ 3X Lock: <strong>Triple Points</strong></span>
+      </div>
+
+      <!-- Standings Content Table Container -->
+      <div class="global-lb-content" id="global-lb-content">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Pinned "Your Rank" Footer -->
+      <div class="global-lb-user-footer" id="global-lb-user-footer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
   <!-- CREATE CUSTOM LEAGUE MODAL -->
   <div id="create-league-modal" class="auth-modal-backdrop" onclick="closeCreateLeagueModal(event)">
     <div class="auth-modal-dialog" onclick="event.stopPropagation()">
@@ -720,6 +761,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=15.7"></script>
+  <script src="app.js?v=15.8"></script>
 </body>
 </html>
