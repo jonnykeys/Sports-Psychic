@@ -58,6 +58,8 @@ create policy "Users can delete own pick sheets"
   on public.pick_sheets for delete
   using (auth.uid() = user_id);
 
+alter table public.pick_sheets add column if not exists league_id text;
+alter table public.pick_sheets add column if not exists is_master boolean default false;
 alter table public.pick_sheets add column if not exists submission_label text;
 
 -- Indexes for performance
@@ -80,7 +82,14 @@ select
   s.accuracy_rate,
   s.is_season_locked,
   s.season_locked_at,
-  coalesce(s.submission_label, case when s.is_master then 'Solo Prophecy' when l.name is not null then l.name || ' Prophecy' else 'Solo Prophecy' end) as submission_label,
+  coalesce(
+    s.submission_label, 
+    case 
+      when s.id like 'master_%' or s.is_master = true then 'Solo Prophecy' 
+      when s.name is not null and s.name != 'Master Pick Sheet' then s.name || ' Prophecy' 
+      else 'Solo Prophecy' 
+    end
+  ) as submission_label,
   coalesce(p.username, p.full_name, 'Psychic Forecaster') as username,
   p.full_name,
   p.avatar_url,
@@ -91,7 +100,6 @@ select
   ) as rank
 from public.pick_sheets s
 left join public.profiles p on p.id = s.user_id
-left join public.leagues l on l.id = s.league_id
 where s.is_season_locked = true or s.is_locked = true;
 
 grant select on public.global_leaderboard to anon, authenticated, service_role;
