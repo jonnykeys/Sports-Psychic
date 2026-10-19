@@ -5874,18 +5874,6 @@ function syncOgLeaguePicksToSoloProphecy(playerName, force = false) {
   return false;
 }
 
-async function unlockSeasonProphecyUI() {
-  const sheet = getOrCreateMasterPickSheet();
-  if (!sheet) return;
-  sheet.is_season_locked = false;
-  sheet.is_locked = false;
-  sheet.season_locked_at = null;
-  calculateSheetStats(sheet);
-  await saveSoloPickSheet(sheet);
-  renderSoloView();
-  showToast("🔓 Season Prophecy Unlocked! You can now edit your picks freely.");
-}
-
 /**
  * Retrieves the user's single Master Pick Sheet, or initializes one if none exists.
  * Manages separate Season Prophecy and Weekly Vision pick collections.
@@ -5952,14 +5940,19 @@ function getOrCreateMasterPickSheet() {
     if (!master.submission_label) {
       master.submission_label = "Solo Prophecy";
     }
-    // Auto-unlock master sheet if locked accidentally
-    if (master.is_season_locked) {
-      master.is_season_locked = false;
-      master.is_locked = false;
-      master.season_locked_at = null;
-      master.season_picks = {};
-      calculateSheetStats(master);
-      debouncedSaveSoloPickSheet(master);
+    // One-time reset ensuring Jon's accidental lock is cleared
+    if (typeof localStorage !== "undefined" && !localStorage.getItem("sports_psychic_jon_unlocked_v19")) {
+      try {
+        localStorage.setItem("sports_psychic_jon_unlocked_v19", "true");
+      } catch (e) {}
+      if (master.is_season_locked) {
+        master.is_season_locked = false;
+        master.is_locked = false;
+        master.season_locked_at = null;
+        master.season_picks = {};
+        calculateSheetStats(master);
+        debouncedSaveSoloPickSheet(master);
+      }
     }
   }
   return master;
@@ -6240,9 +6233,9 @@ function renderSoloView() {
             </button>
           `}
           ${isSeason ? (isSeasonLocked ? `
-            <button type="button" class="btn-unlock-season-compact" onclick="unlockSeasonProphecyUI()" title="Unlock Season Prophecy to edit your picks">
-              <span>🔓 Unlock Season</span>
-            </button>
+            <span class="solo-lock-status-badge locked" title="Season locked for Global Championship">
+              🔒 Official Entry
+            </span>
           ` : `
             <button type="button" class="btn-lock-season-compact" onclick="openSeasonLockModal()" title="Lock in Season Prophecy to enter Global Leaderboard">
               <span>🔒 Lock Season</span>
@@ -6257,7 +6250,6 @@ function renderSoloView() {
       ${isSeason && isSeasonLocked ? `
         <div class="solo-locked-info-bar">
           <span>🔒 <strong>Season Prophecy Locked</strong> (${lockedDateFormatted}) — Permanent entry registered for the Global Season Championship.</span>
-          <button type="button" class="btn-unlock-link" onclick="unlockSeasonProphecyUI()" title="Unlock to resume editing picks">Unlock to Edit</button>
         </div>
       ` : ""}
     </div>
@@ -9108,4 +9100,3 @@ window.getActiveSoloPicks = getActiveSoloPicks;
 window.extractOgLeaguePicksForPlayer = extractOgLeaguePicksForPlayer;
 window.evaluateWeeklyOgPicks = evaluateWeeklyOgPicks;
 window.syncOgLeaguePicksToSoloProphecy = syncOgLeaguePicksToSoloProphecy;
-window.unlockSeasonProphecyUI = unlockSeasonProphecyUI;
