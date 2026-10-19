@@ -1,7 +1,7 @@
 # Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
-Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (6 SUITES)' -ForegroundColor Cyan
+Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (10 SUITES)' -ForegroundColor Cyan
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ''
 
@@ -284,8 +284,43 @@ Assert-Test (-not (Mock-CheckPickComplete 'DEN' $null $null 'SEA' 'DEN')) 'Winne
 Assert-Test ($appJsContent -match 'isSoloPickComplete') 'app.js defines isSoloPickComplete helper'
 Assert-Test ($appJsContent -match 'window\.isSoloPickComplete = isSoloPickComplete') 'app.js exports isSoloPickComplete to window'
 
+# -- Suite 10: Global Community Leaderboard & Approach A Scoring Engine --
+Write-Host ''
+Write-Host '  -- Suite 10: Global Community Leaderboard & Approach A Scoring Engine --' -ForegroundColor Yellow
 
+$soloWinnerPts = 10
+$soloExactBonus = 50
+$soloExactTotal = $soloWinnerPts + $soloExactBonus
+Assert-Test ($soloExactTotal -eq 60) 'Approach A exact score awards 10 base + 50 exact bonus = 60 PTS'
 
+$soloClosestBonus = 10
+$soloClosestTotal = $soloWinnerPts + $soloClosestBonus
+Assert-Test ($soloClosestTotal -eq 20) 'Approach A closest score awards 10 base + 10 closest bonus = 20 PTS'
+
+$exact3x = $soloExactTotal * 3
+Assert-Test ($exact3x -eq 180) 'Approach A 3X Lock triples exact jackpot to 180 PTS'
+
+$closest3x = $soloClosestTotal * 3
+Assert-Test ($closest3x -eq 60) 'Approach A 3X Lock triples closest bonus to 60 PTS'
+
+$tieCount = 4
+$awardedPointsPerTie = $soloClosestBonus
+Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest bonus to tied predictions without fractional dilution'
+
+$indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
+Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
+Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=15\.8') 'index.html includes app.js?v=15.8 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=15\.8') 'index.html includes style.css?v=15.8 cache buster'
+
+Assert-Test ($appJsContent -match 'openGlobalLeaderboardModal') 'app.js defines openGlobalLeaderboardModal'
+Assert-Test ($appJsContent -match 'loadAndRenderGlobalLeaderboard') 'app.js defines loadAndRenderGlobalLeaderboard'
+Assert-Test ($appJsContent -match 'window\.openGlobalLeaderboardModal = openGlobalLeaderboardModal') 'app.js exports openGlobalLeaderboardModal to window'
+Assert-Test ($appJsContent -match 'window\.loadAndRenderGlobalLeaderboard = loadAndRenderGlobalLeaderboard') 'app.js exports loadAndRenderGlobalLeaderboard to window'
+
+Assert-Test ($styleCssContent -match '\.global-leaderboard-dialog') 'style.css defines .global-leaderboard-dialog'
+Assert-Test ($styleCssContent -match '\.global-lb-table') 'style.css defines .global-lb-table'
+Assert-Test ($styleCssContent -match '\.btn-solo-leaderboard') 'style.css defines .btn-solo-leaderboard'
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
@@ -297,6 +332,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 7 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 10 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }

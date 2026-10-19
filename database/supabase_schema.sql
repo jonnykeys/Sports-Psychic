@@ -525,9 +525,77 @@ create index if not exists idx_games_week on public.games(season_year, week_num)
 create index if not exists idx_league_members_points on public.league_members(league_id, total_points desc);
 
 -- ------------------------------------------------------------------------------
--- 12. ROLE GRANTS (Allow anon and authenticated API access via PostgREST)
+-- 12. SOLO PLAY PICK SHEETS & GLOBAL LEADERBOARD VIEW
+-- ------------------------------------------------------------------------------
+create table if not exists public.pick_sheets (
+  id text primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  name text not null,
+  format text default 'season' not null,
+  season_year integer default 2026 not null,
+  active_week integer default 5,
+  is_locked boolean default false not null,
+  is_season_locked boolean default false not null,
+  season_locked_at timestamp with time zone,
+  season_picks jsonb default '{}'::jsonb,
+  total_picks integer default 0,
+  total_points integer default 0,
+  accuracy_rate numeric(5,2) default null,
+  picks jsonb default '{}'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.pick_sheets enable row level security;
+
+create policy "Users can view own or locked pick sheets"
+  on public.pick_sheets for select
+  using (
+    (auth.uid() = user_id)
+    or (is_locked = true)
+    or (is_season_locked = true)
+  );
+
+create policy "Users can create own pick sheets"
+  on public.pick_sheets for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own pick sheets"
+  on public.pick_sheets for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own pick sheets"
+  on public.pick_sheets for delete
+  using (auth.uid() = user_id);
+
+create or replace view public.global_leaderboard as
+select
+  s.id as sheet_id,
+  s.user_id,
+  s.format,
+  s.season_year,
+  s.total_picks,
+  s.total_points,
+  s.accuracy_rate,
+  s.is_season_locked,
+  s.season_locked_at,
+  coalesce(p.username, p.full_name, 'Psychic Forecaster') as username,
+  p.full_name,
+  p.avatar_url,
+  p.favorite_team,
+  dense_rank() over (
+    partition by s.format, s.season_year 
+    order by s.total_points desc, s.accuracy_rate desc nulls last, s.total_picks desc
+  ) as rank
+from public.pick_sheets s
+left join public.profiles p on p.id = s.user_id
+where s.is_season_locked = true or s.is_locked = true;
+
+-- ------------------------------------------------------------------------------
+-- 13. ROLE GRANTS (Allow anon and authenticated API access via PostgREST)
 -- ------------------------------------------------------------------------------
 grant usage on schema public to postgres, anon, authenticated, service_role;
 grant all privileges on all tables in schema public to postgres, anon, authenticated, service_role;
 grant all privileges on all functions in schema public to postgres, anon, authenticated, service_role;
 grant all privileges on all sequences in schema public to postgres, anon, authenticated, service_role;
+grant select on public.global_leaderboard to anon, authenticated, service_role;
