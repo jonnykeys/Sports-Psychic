@@ -310,8 +310,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=16\.0') 'index.html includes app.js?v=16.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=16\.0') 'index.html includes style.css?v=16.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=17\.0') 'index.html includes app.js?v=17.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=17\.0') 'index.html includes style.css?v=17.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
@@ -355,6 +355,38 @@ Assert-Test ($appJsContent -match 'getActiveSoloPicks') 'app.js defines getActiv
 Assert-Test ($appJsContent -match 'window\.getActiveSoloPicks = getActiveSoloPicks') 'app.js exports getActiveSoloPicks to window'
 Assert-Test ($appJsContent -match 'weekly_picks') 'app.js includes weekly_picks state management'
 
+# -- Suite 12: OG League Solo Reflection & Global Leaderboard Sub-Headers --
+Write-Host ''
+Write-Host '  -- Suite 12: OG League Solo Reflection & Global Leaderboard Sub-Headers --' -ForegroundColor Yellow
+
+$rawOg = Get-Content 'apps/og-league/data.js' -Raw
+$jsonTextOg = $rawOg -replace '^\s*//[^\n\r]*[\r\n]+', '' -replace '^\s*const\s+OG_LEAGUE_INITIAL_DATA\s*=\s*', '' -replace ';\s*$', ''
+$dataOg = ConvertFrom-Json $jsonTextOg
+
+$jonPicksCount = 0
+$calebPicksCount = 0
+foreach ($w in $dataOg.weeks.psobject.properties.Name) {
+    foreach ($g in $dataOg.weeks.$w.games) {
+        if ($g.picks.Jon -and $g.picks.Jon.winner) { $jonPicksCount++ }
+        if ($g.picks.Caleb -and $g.picks.Caleb.winner) { $calebPicksCount++ }
+    }
+}
+Assert-Test ($jonPicksCount -eq 272) 'Jon OG League dataset contains full 272 season picks'
+Assert-Test ($calebPicksCount -eq 272) 'Caleb OG League dataset contains full 272 season picks'
+
+Assert-Test ($appJsContent -match 'extractOgLeaguePicksForPlayer') 'app.js defines extractOgLeaguePicksForPlayer'
+Assert-Test ($appJsContent -match 'syncOgLeaguePicksToSoloProphecy') 'app.js defines syncOgLeaguePicksToSoloProphecy'
+Assert-Test ($appJsContent -match 'window\.extractOgLeaguePicksForPlayer\s*=') 'app.js exports extractOgLeaguePicksForPlayer to window'
+Assert-Test ($appJsContent -match 'window\.syncOgLeaguePicksToSoloProphecy\s*=') 'app.js exports syncOgLeaguePicksToSoloProphecy to window'
+
+Assert-Test ($appJsContent -match 'btn-solo-sync-og') 'app.js renders btn-solo-sync-og button'
+Assert-Test ($appJsContent -match 'lb-sub-label') 'app.js renders lb-sub-label for entry provenance'
+Assert-Test ($styleCssContent -match '\.btn-solo-sync-og') 'style.css defines .btn-solo-sync-og'
+Assert-Test ($styleCssContent -match '\.lb-sub-label') 'style.css defines .lb-sub-label'
+
+Assert-Test ($migrationSql -match 'submission_label\s+text') 'migration_pick_sheets.sql defines submission_label column'
+Assert-Test ($schemaSql -match 'submission_label') 'supabase_schema.sql references submission_label'
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
@@ -365,6 +397,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 11 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 12 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }

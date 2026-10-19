@@ -58,6 +58,8 @@ create policy "Users can delete own pick sheets"
   on public.pick_sheets for delete
   using (auth.uid() = user_id);
 
+alter table public.pick_sheets add column if not exists submission_label text;
+
 -- Indexes for performance
 create index if not exists idx_pick_sheets_user on public.pick_sheets(user_id, created_at desc);
 create index if not exists idx_pick_sheets_leaderboard on public.pick_sheets(format, season_year, is_season_locked, total_points desc);
@@ -70,6 +72,7 @@ create or replace view public.global_leaderboard as
 select
   s.id as sheet_id,
   s.user_id,
+  s.league_id,
   s.format,
   s.season_year,
   s.total_picks,
@@ -77,6 +80,7 @@ select
   s.accuracy_rate,
   s.is_season_locked,
   s.season_locked_at,
+  coalesce(s.submission_label, case when s.is_master then 'Solo Prophecy' when l.name is not null then l.name || ' Prophecy' else 'Solo Prophecy' end) as submission_label,
   coalesce(p.username, p.full_name, 'Psychic Forecaster') as username,
   p.full_name,
   p.avatar_url,
@@ -87,6 +91,8 @@ select
   ) as rank
 from public.pick_sheets s
 left join public.profiles p on p.id = s.user_id
+left join public.leagues l on l.id = s.league_id
 where s.is_season_locked = true or s.is_locked = true;
 
 grant select on public.global_leaderboard to anon, authenticated, service_role;
+
