@@ -5436,6 +5436,7 @@ async function saveSoloPickSheet(sheet) {
         id: sheet.id,
         user_id: state.authUser.id,
         name: sheet.name || "Master Pick Sheet",
+        submission_label: sheet.submission_label || "Solo Prophecy",
         format: sheet.format || "season",
         season_year: sheet.season_year || 2026,
         active_week: sheet.active_week || getCurrentNFLWeek(),
