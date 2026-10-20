@@ -6070,20 +6070,30 @@ function updateSoloCardWinnerUI(gameId, winnerTeam) {
   if (!card) return;
   const btnAway = card.querySelector(".btn-pick-away");
   const btnHome = card.querySelector(".btn-pick-home");
+  const tileAway = card.querySelector(".away-tile");
+  const tileHome = card.querySelector(".home-tile");
   const awayTeam = btnAway?.dataset.team;
   const homeTeam = btnHome?.dataset.team;
 
+  const isAway = Boolean(winnerTeam && awayTeam && (winnerTeam === awayTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(awayTeam)));
+  const isHome = Boolean(winnerTeam && homeTeam && (winnerTeam === homeTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(homeTeam)));
+
   if (btnAway) {
-    const isAway = Boolean(winnerTeam && awayTeam && (winnerTeam === awayTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(awayTeam)));
     btnAway.classList.toggle("selected", isAway);
-    const span = btnAway.querySelector("span");
-    if (span) span.textContent = `${isAway ? "✓ " : ""}${btnAway.dataset.team}`;
+    const badge = btnAway.querySelector(".tile-check-badge span") || btnAway.querySelector("span");
+    if (badge) badge.textContent = isAway ? "✓" : "";
   }
+  if (tileAway) {
+    tileAway.classList.toggle("selected", isAway);
+  }
+
   if (btnHome) {
-    const isHome = Boolean(winnerTeam && homeTeam && (winnerTeam === homeTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(homeTeam)));
     btnHome.classList.toggle("selected", isHome);
-    const span = btnHome.querySelector("span");
-    if (span) span.textContent = `${isHome ? "✓ " : ""}${btnHome.dataset.team}`;
+    const badge = btnHome.querySelector(".tile-check-badge span") || btnHome.querySelector("span");
+    if (badge) badge.textContent = isHome ? "✓" : "";
+  }
+  if (tileHome) {
+    tileHome.classList.toggle("selected", isHome);
   }
 
   // Update Card Complete State & Pill
@@ -6404,7 +6414,7 @@ function renderSoloView() {
     }
 
     const isComplete = isSoloPickComplete(game.id, pick);
-    const cardClass = `${isGameLocked ? "is-locked-game" : "is-open-game"} ${isComplete ? "is-pick-complete" : "is-pick-incomplete"}`;
+    const cardClass = `${isGameLocked ? "is-locked-game" : "is-open-game"} ${isComplete ? "is-pick-complete" : "is-pick-incomplete"} ${isMultiplier ? "has-multiplier-3x" : ""}`;
 
     return `
       <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
@@ -6425,94 +6435,110 @@ function renderSoloView() {
 
         ${actualScoreBarHtml}
 
-        <!-- Symmetrical Matchup Row: Away Team (Left) @ Home Team (Right) -->
-        <div class="game-matchup-header-row">
-          <!-- Away Team (Left-aligned) -->
-          <div class="game-team-pill">
-            <div class="game-team-chip" style="background-color: ${awayInfo.color}; color: ${awayInfo.textColor};">
-              ${awayTeam}
-            </div>
-            <div class="game-team-name-block">
-              <span class="game-team-abbr">${awayTeam}</span>
-              <span class="game-team-rec">${awayRec.text}</span>
-            </div>
-          </div>
+        <!-- Athletic Team Cards Grid: Away (Left) vs Home (Right) -->
+        <div class="game-matchup-header-row athletic-tiles-grid">
+          <!-- Away Team Card -->
+          <div class="team-athletic-tile away-tile ${awaySelected ? "selected" : ""}" id="tile-away-${game.id}">
+            <!-- Colored Team Header Banner -->
+            <button type="button" class="btn-pick-winner btn-pick-away ${awaySelected ? "selected" : ""}"
+              data-team="${awayTeam}"
+              style="background-color: ${awayInfo.color}; color: ${awayInfo.textColor};"
+              ${isGameLocked ? "disabled" : ""}
+              onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
+              title="${isGameLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
+              <div class="tile-header-content">
+                <span class="tile-team-code">${awayTeam}</span>
+                <span class="tile-team-rec">${awayRec.text}</span>
+              </div>
+              <div class="tile-check-badge" title="Selected Winner">
+                <span>${awaySelected ? "✓" : ""}</span>
+              </div>
+            </button>
 
-          <!-- Center @ Separator -->
-          <span class="game-vs-separator">@</span>
+            <!-- Card Interior: Steppers & Presets -->
+            <div class="tile-card-body">
+              <div class="tile-score-stepper game-scores-row">
+                <button type="button" class="btn-score-circle btn-score-minus" ${isGameLocked ? "disabled" : ""}
+                  onclick="stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})" title="Decrease ${awayTeam} score by 1" aria-label="Decrease ${awayTeam} score">
+                  <span>−</span>
+                </button>
+                <input type="number" min="0" max="99" class="score-input tile-score-val" id="score-away-${game.id}"
+                  value="${pickAwayScore !== undefined && pickAwayScore !== null ? pickAwayScore : ""}"
+                  ${isGameLocked ? "disabled" : ""} placeholder="—"
+                  onchange="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
+                  oninput="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
+                  aria-label="${awayTeam} Predicted Score" />
+                <button type="button" class="btn-score-circle btn-score-plus" ${isGameLocked ? "disabled" : ""}
+                  onclick="stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})" title="Increase ${awayTeam} score by 1" aria-label="Increase ${awayTeam} score">
+                  <span>+</span>
+                </button>
+              </div>
 
-          <!-- Home Team (Right-aligned, mirrored) -->
-          <div class="game-team-pill" style="flex-direction: row-reverse;">
-            <div class="game-team-chip" style="background-color: ${homeInfo.color}; color: ${homeInfo.textColor};">
-              ${homeTeam}
-            </div>
-            <div class="game-team-name-block" style="text-align: right;">
-              <span class="game-team-abbr">${homeTeam}</span>
-              <span class="game-team-rec">${homeRec.text}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Symmetrical Winner Selection Buttons -->
-        <div class="game-winner-picker">
-          <button type="button" class="btn-pick-winner btn-pick-away ${awaySelected ? "selected" : ""}"
-            data-team="${awayTeam}"
-            ${isGameLocked ? "disabled" : ""}
-            onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
-            title="${isGameLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
-            <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
-          </button>
-          <button type="button" class="btn-pick-winner btn-pick-home ${homeSelected ? "selected" : ""}"
-            data-team="${homeTeam}"
-            ${isGameLocked ? "disabled" : ""}
-            onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
-            title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
-            <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
-          </button>
-        </div>
-
-        <!-- Centered Dual-Speed Score Stepper Row -->
-        <div class="game-scores-row">
-          <div class="score-col-item away-score-col">
-            <span class="score-col-label">${awayTeam}</span>
-            <div class="score-input-wrap">
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
-              <input type="number" min="0" max="99" class="score-input" id="score-away-${game.id}"
-                value="${pickAwayScore !== undefined && pickAwayScore !== null ? pickAwayScore : ""}"
-                ${isGameLocked ? "disabled" : ""} placeholder="—"
-                onchange="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
-                oninput="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
-                aria-label="${awayTeam} Predicted Score" />
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})" title="Increase by 1">+1</button>
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'away', 10, ${isGameLocked})" title="Increase by 10">+10</button>
+              <!-- Dedicated 1-Tap NFL Score Presets -->
+              <div class="tile-presets-row">
+                ${[17, 20, 24, 27, 31].map(preset => {
+                  const isPresetActive = (Number(pickAwayScore) === preset);
+                  return `
+                    <button type="button" class="btn-score-preset ${isPresetActive ? "active" : ""}" ${isGameLocked ? "disabled" : ""}
+                      onclick="setSoloPickExactScore('${game.id}', 'away', ${preset}, ${isGameLocked})" title="Set ${awayTeam} to ${preset}">
+                      ${preset}
+                    </button>
+                  `;
+                }).join("")}
+              </div>
             </div>
           </div>
 
-          <span class="score-vs-dash">-</span>
+          <!-- Home Team Card -->
+          <div class="team-athletic-tile home-tile ${homeSelected ? "selected" : ""}" id="tile-home-${game.id}">
+            <!-- Colored Team Header Banner -->
+            <button type="button" class="btn-pick-winner btn-pick-home ${homeSelected ? "selected" : ""}"
+              data-team="${homeTeam}"
+              style="background-color: ${homeInfo.color}; color: ${homeInfo.textColor};"
+              ${isGameLocked ? "disabled" : ""}
+              onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
+              title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
+              <div class="tile-header-content">
+                <span class="tile-team-code">${homeTeam}</span>
+                <span class="tile-team-rec">${homeRec.text}</span>
+              </div>
+              <div class="tile-check-badge" title="Selected Winner">
+                <span>${homeSelected ? "✓" : ""}</span>
+              </div>
+            </button>
 
-          <div class="score-col-item home-score-col">
-            <div class="score-input-wrap">
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', -10, ${isGameLocked})" title="Decrease by 10">-10</button>
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})" title="Decrease by 1">-1</button>
-              <input type="number" min="0" max="99" class="score-input" id="score-home-${game.id}"
-                value="${pickHomeScore !== undefined && pickHomeScore !== null ? pickHomeScore : ""}"
-                ${isGameLocked ? "disabled" : ""} placeholder="—"
-                onchange="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
-                oninput="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
-                aria-label="${homeTeam} Predicted Score" />
-              <button type="button" class="btn-score-step" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})" title="Increase by 1">+1</button>
-              <button type="button" class="btn-score-step btn-score-step-10" ${isGameLocked ? "disabled" : ""}
-                onclick="stepSoloPickScore('${game.id}', 'home', 10, ${isGameLocked})" title="Increase by 10">+10</button>
+            <!-- Card Interior: Steppers & Presets -->
+            <div class="tile-card-body">
+              <div class="tile-score-stepper game-scores-row">
+                <button type="button" class="btn-score-circle btn-score-minus" ${isGameLocked ? "disabled" : ""}
+                  onclick="stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})" title="Decrease ${homeTeam} score by 1" aria-label="Decrease ${homeTeam} score">
+                  <span>−</span>
+                </button>
+                <input type="number" min="0" max="99" class="score-input tile-score-val" id="score-home-${game.id}"
+                  value="${pickHomeScore !== undefined && pickHomeScore !== null ? pickHomeScore : ""}"
+                  ${isGameLocked ? "disabled" : ""} placeholder="—"
+                  onchange="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
+                  oninput="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
+                  aria-label="${homeTeam} Predicted Score" />
+                <button type="button" class="btn-score-circle btn-score-plus" ${isGameLocked ? "disabled" : ""}
+                  onclick="stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})" title="Increase ${homeTeam} score by 1" aria-label="Increase ${homeTeam} score">
+                  <span>+</span>
+                </button>
+              </div>
+
+              <!-- Dedicated 1-Tap NFL Score Presets -->
+              <div class="tile-presets-row">
+                ${[17, 20, 24, 27, 31].map(preset => {
+                  const isPresetActive = (Number(pickHomeScore) === preset);
+                  return `
+                    <button type="button" class="btn-score-preset ${isPresetActive ? "active" : ""}" ${isGameLocked ? "disabled" : ""}
+                      onclick="setSoloPickExactScore('${game.id}', 'home', ${preset}, ${isGameLocked})" title="Set ${homeTeam} to ${preset}">
+                      ${preset}
+                    </button>
+                  `;
+                }).join("")}
+              </div>
             </div>
-            <span class="score-col-label">${homeTeam}</span>
           </div>
         </div>
 
@@ -6565,11 +6591,28 @@ async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
     // Select new winner
     activePicks[gameId].winner = winnerTeam;
 
-    // Check if scores are unbalanced and flip them so the selected team gets the winning score
-    const hasAwayScore = (currentPick.awayScore !== null && currentPick.awayScore !== undefined && currentPick.awayScore !== "" && !isNaN(currentPick.awayScore));
-    const hasHomeScore = (currentPick.homeScore !== null && currentPick.homeScore !== undefined && currentPick.homeScore !== "" && !isNaN(currentPick.homeScore));
+    // If no scores exist yet, initialize smart football defaults (24 for winner, 17 for opponent)
+    if (!hasAwayScore && !hasHomeScore) {
+      const game = findGameById(gameId);
+      const parts = (game?.matchup || "").split("@").map(s => s.trim().toUpperCase());
+      const awayTeam = parts[0] || "";
+      const homeTeam = parts[1] || "";
 
-    if (hasAwayScore && hasHomeScore) {
+      const winnerNorm = normalizeTeamCode(winnerTeam);
+      const awayNorm = normalizeTeamCode(awayTeam);
+
+      if (winnerNorm === awayNorm) {
+        activePicks[gameId].awayScore = 24;
+        activePicks[gameId].homeScore = 17;
+      } else {
+        activePicks[gameId].awayScore = 17;
+        activePicks[gameId].homeScore = 24;
+      }
+      calculateSheetStats(sheet);
+      debouncedSaveSoloPickSheet(sheet);
+      renderSoloView();
+      return;
+    } else if (hasAwayScore && hasHomeScore) {
       const aSc = parseInt(currentPick.awayScore, 10);
       const hSc = parseInt(currentPick.homeScore, 10);
 
@@ -6669,6 +6712,79 @@ async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
   const inputEl = document.getElementById(`score-${teamSide}-${gameId}`);
   if (inputEl) inputEl.value = cur;
 
+  const tileEl = document.getElementById(`tile-${teamSide}-${gameId}`);
+  if (tileEl) {
+    tileEl.querySelectorAll(".btn-score-preset").forEach(btn => {
+      const btnVal = parseInt(btn.textContent.trim(), 10);
+      btn.classList.toggle("active", btnVal === cur);
+    });
+  }
+
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
+}
+
+async function setSoloPickExactScore(arg1, arg2, arg3, arg4) {
+  let gameId, teamSide, score, isLocked;
+  if (typeof arg3 === "number") {
+    gameId = arg1;
+    teamSide = arg2;
+    score = arg3;
+    isLocked = Boolean(arg4);
+  } else {
+    gameId = arg2;
+    teamSide = arg3;
+    score = arg4;
+    isLocked = Boolean(arguments[4]);
+  }
+
+  if (isLocked) {
+    showToast("🔒 Scores are locked for this game");
+    return;
+  }
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
+
+  const key = (teamSide === "away") ? "awayScore" : "homeScore";
+  activePicks[gameId][key] = Math.max(0, Math.min(99, score));
+
+  // Auto-pick winner if scores are unequal, or clear if tied
+  const awaySc = activePicks[gameId].awayScore;
+  const homeSc = activePicks[gameId].homeScore;
+  const game = findGameById(gameId);
+  if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
+      homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
+    const aVal = parseInt(awaySc, 10);
+    const hVal = parseInt(homeSc, 10);
+    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+    const awayTeam = parts[0] || "";
+    const homeTeam = parts[1] || "";
+    if (aVal > hVal) {
+      activePicks[gameId].winner = awayTeam;
+    } else if (hVal > aVal) {
+      activePicks[gameId].winner = homeTeam;
+    } else {
+      delete activePicks[gameId].winner;
+    }
+  }
+
+  calculateSheetStats(sheet);
+  debouncedSaveSoloPickSheet(sheet);
+
+  // Directly update input value and UI in DOM
+  const inputEl = document.getElementById(`score-${teamSide}-${gameId}`);
+  if (inputEl) inputEl.value = score;
+
+  const tileEl = document.getElementById(`tile-${teamSide}-${gameId}`);
+  if (tileEl) {
+    tileEl.querySelectorAll(".btn-score-preset").forEach(btn => {
+      const btnVal = parseInt(btn.textContent.trim(), 10);
+      btn.classList.toggle("active", btnVal === score);
+    });
+  }
+
   updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
 }
@@ -6723,6 +6839,15 @@ async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
 
   calculateSheetStats(sheet);
   debouncedSaveSoloPickSheet(sheet);
+
+  const tileEl = document.getElementById(`tile-${teamSide}-${gameId}`);
+  if (tileEl) {
+    tileEl.querySelectorAll(".btn-score-preset").forEach(btn => {
+      const btnVal = parseInt(btn.textContent.trim(), 10);
+      btn.classList.toggle("active", btnVal === activePicks[gameId][key]);
+    });
+  }
+
   updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
 }
@@ -9073,6 +9198,7 @@ window.renderSoloSheetEditor = renderSoloSheetEditor;
 window.setSoloPickWinner = setSoloPickWinner;
 window.stepSoloPickScore = stepSoloPickScore;
 window.handleSoloScoreInput = handleSoloScoreInput;
+window.setSoloPickExactScore = setSoloPickExactScore;
 window.toggleSoloPickMultiplier = toggleSoloPickMultiplier;
 window.isGameLockedForPicking = isGameLockedForPicking;
 window.getGameLockStatus = getGameLockStatus;
