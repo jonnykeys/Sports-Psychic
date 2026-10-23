@@ -7753,6 +7753,12 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.pick-status-pill.wrong {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
 /* Solo Week Progress Bar */
 .solo-week-progress-panel {
   background: rgba(15, 23, 42, 0.75);

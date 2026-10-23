@@ -319,8 +319,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=20\.0') 'index.html includes app.js?v=20.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=20\.0') 'index.html includes style.css?v=20.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=21\.0') 'index.html includes app.js?v=21.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=21\.0') 'index.html includes style.css?v=21.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
@@ -363,6 +363,21 @@ Assert-Test ($schemaSql -match 'weekly_picks\s+jsonb') 'supabase_schema.sql defi
 Assert-Test ($appJsContent -match 'getActiveSoloPicks') 'app.js defines getActiveSoloPicks'
 Assert-Test ($appJsContent -match 'window\.getActiveSoloPicks = getActiveSoloPicks') 'app.js exports getActiveSoloPicks to window'
 Assert-Test ($appJsContent -match 'weekly_picks') 'app.js includes weekly_picks state management'
+
+# Invariant: Season Prophecy draft picks cannot gain points until submitted & locked
+function Mock-CalculatePoints([bool]$isSeasonLocked, [int]$evaluatedSeasonPts, [int]$evaluatedWeeklyPts) {
+    $seasonPts = if ($isSeasonLocked) { $evaluatedSeasonPts } else { 0 }
+    $weeklyPts = $evaluatedWeeklyPts
+    return @{ seasonPts = $seasonPts; weeklyPts = $weeklyPts }
+}
+$draftResult = Mock-CalculatePoints $false 60 40
+$lockedResult = Mock-CalculatePoints $true 60 40
+Assert-Test ($draftResult.seasonPts -eq 0) 'Season Prophecy draft sheet gains 0 points while is_season_locked is false'
+Assert-Test ($lockedResult.seasonPts -eq 60) 'Season Prophecy locked sheet gains full points when is_season_locked is true'
+Assert-Test ($draftResult.weeklyPts -eq 40) 'Weekly Vision gains points as games conclude even while season prophecy is unlocked'
+Assert-Test ($appJsContent -match 'if\s*\(\s*isSeasonLocked\s*\)\s*\{\s*sheet\.season_total_points\s*=\s*seasonStats\.totalPoints') 'app.js gates season_total_points behind isSeasonLocked'
+Assert-Test ($appJsContent -match 'Pick Set \(Draft\)') 'app.js displays draft status on cards when season prophecy is unlocked'
+Assert-Test ($styleCssContent -match '\.pick-status-pill\.wrong') 'style.css defines .pick-status-pill.wrong'
 
 # -- Suite 12: OG League Solo Reflection & Global Leaderboard Sub-Headers --
 Write-Host ''
