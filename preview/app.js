@@ -5707,14 +5707,31 @@ function evaluatePicksDict(picks) {
 function calculateSheetStats(sheet) {
   if (!sheet) return { total_picks: 0, total_points: 0, accuracy_rate: null };
 
+  const isSeasonLocked = Boolean(sheet.is_season_locked || sheet.is_locked);
+
   // 1. Evaluate Season Prophecy picks
+  // In Season Prophecy mode, picks CANNOT gain points until submitted and locked!
   const seasonPicks = sheet.season_picks || {};
   const seasonStats = evaluatePicksDict(seasonPicks);
   sheet.season_total_picks = seasonStats.totalPicks;
-  sheet.season_total_points = seasonStats.totalPoints;
-  sheet.season_accuracy_rate = seasonStats.accuracyRate;
+  if (isSeasonLocked) {
+    sheet.season_total_points = seasonStats.totalPoints;
+    sheet.season_accuracy_rate = seasonStats.accuracyRate;
+  } else {
+    sheet.season_total_points = 0;
+    sheet.season_accuracy_rate = null;
+    // Clear point awards on individual picks while Season Prophecy is in unlocked draft state
+    for (const p of Object.values(seasonPicks)) {
+      if (p && typeof p === "object") {
+        p.points = 0;
+        p.isExact = false;
+        p.isClosest = false;
+      }
+    }
+  }
 
   // 2. Evaluate Weekly Vision picks
+  // In Weekly Vision, players can submit picks up until each game's kickoff and gain points as games finish.
   const weeklyPicks = sheet.weekly_picks || {};
   const weeklyStats = evaluatePicksDict(weeklyPicks);
   sheet.weekly_total_picks = weeklyStats.totalPicks;
@@ -6114,12 +6131,16 @@ function updateSoloCardWinnerUI(gameId, winnerTeam) {
 function updateSoloStatsHeader(sheet) {
   if (!sheet) return;
   const isSeason = (state.soloCampaignMode !== "weekly");
+  const isSeasonLocked = Boolean(sheet.is_season_locked || sheet.is_locked);
   const modePicks = isSeason ? (sheet.season_total_picks || 0) : (sheet.weekly_total_picks || 0);
-  const modePts = isSeason ? (sheet.season_total_points || 0) : (sheet.weekly_total_points || 0);
+  const modePts = isSeason 
+    ? (isSeasonLocked ? (sheet.season_total_points || 0) : 0) 
+    : (sheet.weekly_total_points || 0);
 
   const subtitleEl = document.getElementById("solo-sheet-stats-subtitle");
   if (subtitleEl) {
-    subtitleEl.textContent = `${modePicks} Picks Made • ${modePts} Solo Points`;
+    const ptsText = (isSeason && !isSeasonLocked) ? "0 Solo Points (Draft)" : `${modePts} Solo Points`;
+    subtitleEl.textContent = `${modePicks} Picks Made • ${ptsText}`;
   }
   const picksEl = document.getElementById("solo-stat-picks-count");
   if (picksEl) {
@@ -6211,7 +6232,9 @@ function renderSoloView() {
   }
 
   const currentModePicks = isSeason ? (sheet.season_total_picks || 0) : (sheet.weekly_total_picks || 0);
-  const currentModePts = isSeason ? (sheet.season_total_points || 0) : (sheet.weekly_total_points || 0);
+  const currentModePts = isSeason 
+    ? (isSeasonLocked ? (sheet.season_total_points || 0) : 0) 
+    : (sheet.weekly_total_points || 0);
 
   const headerHtml = `
     <div class="solo-control-header">
@@ -6224,7 +6247,7 @@ function renderSoloView() {
           <div class="solo-control-stats">
             <span><strong id="solo-stat-picks-count">${currentModePicks}</strong> Picks Made</span>
             <span class="solo-stat-dot">•</span>
-            <span><strong id="solo-stat-pts-count">${currentModePts}</strong> Solo Points</span>
+            <span><strong id="solo-stat-pts-count">${currentModePts}</strong> ${isSeason && !isSeasonLocked ? "Solo Points (Draft)" : "Solo Points"}</span>
           </div>
         </div>
         <div class="solo-control-right">
@@ -6416,6 +6439,38 @@ function renderSoloView() {
     const isComplete = isSoloPickComplete(game.id, pick);
     const cardClass = `${isGameLocked ? "is-locked-game" : "is-open-game"} ${isComplete ? "is-pick-complete" : "is-pick-incomplete"} ${isMultiplier ? "has-multiplier-3x" : ""}`;
 
+    // Determine status badge pill:
+    // In Season Prophecy: picks cannot gain points until the season prophecy is submitted & locked!
+    // In Weekly Vision: picks gain points as games conclude.
+    let statusPillHtml = "";
+    if (game.isFinal) {
+      if (isSeason) {
+        if (isSeasonLocked) {
+          if (pick.points > 0) {
+            statusPillHtml = `<span class="pick-status-pill complete" title="Final: +${pick.points} PTS earned">✓ +${pick.points} PTS</span>`;
+          } else if (isComplete) {
+            statusPillHtml = `<span class="pick-status-pill wrong" title="Final: 0 PTS">0 PTS</span>`;
+          } else {
+            statusPillHtml = `<span class="pick-status-pill pending">No Pick</span>`;
+          }
+        } else {
+          statusPillHtml = isComplete 
+            ? `<span class="pick-status-pill pending" title="Season Prophecy must be locked to earn points">✓ Pick Set (Draft)</span>`
+            : `<span class="pick-status-pill pending">Pending</span>`;
+        }
+      } else {
+        if (pick.points > 0) {
+          statusPillHtml = `<span class="pick-status-pill complete" title="Final: +${pick.points} PTS earned">✓ +${pick.points} PTS</span>`;
+        } else if (isComplete) {
+          statusPillHtml = `<span class="pick-status-pill wrong" title="Final: 0 PTS">0 PTS</span>`;
+        } else {
+          statusPillHtml = `<span class="pick-status-pill pending">No Pick</span>`;
+        }
+      }
+    } else {
+      statusPillHtml = `<span class="pick-status-pill ${isComplete ? "complete" : "pending"}">${isComplete ? "✓ Pick Set" : "Pending"}</span>`;
+    }
+
     return `
       <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
         <!-- Card Header: Kickoff, Status Badge, and 3X Lock Toggle -->
@@ -6423,7 +6478,7 @@ function renderSoloView() {
           <div class="game-status-left">
             <span class="game-lock-badge ${badgeClass}">${badgeText}</span>
             <span class="game-kickoff-time">${game.dateTime || `Game ${idx + 1}`}</span>
-            <span class="pick-status-pill ${isComplete ? "complete" : "pending"}">${isComplete ? "✓ Pick Set" : "Pending"}</span>
+            ${statusPillHtml}
           </div>
           <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}"
             ${isGameLocked ? "disabled" : ""}
@@ -8944,12 +8999,16 @@ async function loadAndRenderGlobalLeaderboard() {
   // If local user sheet has entry, ensure it appears in the entries
   const existingIdx = entries.findIndex(e => (state.authUser && e.user_id === state.authUser.id) || e.sheet_id === sheet?.id);
   if (existingIdx >= 0) {
-    entries[existingIdx].isCurrentUser = true;
-    entries[existingIdx].submission_label = entries[existingIdx].submission_label || (format === "weekly" ? "Solo Vision" : "Solo Prophecy");
-    if (formatPoints > entries[existingIdx].total_points) {
-      entries[existingIdx].total_points = formatPoints;
-      entries[existingIdx].total_picks = formatPicks;
-      entries[existingIdx].accuracy_rate = formatAccuracy;
+    if (format === "season" && !isSheetLocked) {
+      entries.splice(existingIdx, 1);
+    } else {
+      entries[existingIdx].isCurrentUser = true;
+      entries[existingIdx].submission_label = entries[existingIdx].submission_label || (format === "weekly" ? "Solo Vision" : "Solo Prophecy");
+      if (formatPoints > entries[existingIdx].total_points) {
+        entries[existingIdx].total_points = formatPoints;
+        entries[existingIdx].total_picks = formatPicks;
+        entries[existingIdx].accuracy_rate = formatAccuracy;
+      }
     }
   } else if (isEligibleForBoard && sheet) {
     entries.push({
