@@ -5039,10 +5039,12 @@ body.is-lobby-mode[data-active-tab="rules"] .week-stepper-container {
   display: none !important;
 }
 
-/* 3-tab layout in Lobby Mode: Standings and Players are hidden */
-body.is-lobby-mode .bottom-nav [data-tab="leaderboard"],
+/* 4-tab layout in Lobby Mode: Standings opens Global Leaderboard, Players is hidden */
 body.is-lobby-mode .bottom-nav [data-tab="players"] {
   display: none !important;
+}
+body.is-lobby-mode .bottom-nav [data-tab="leaderboard"] {
+  display: flex !important;
 }
 
 /* 5-tab layout in League Mode */
@@ -5552,6 +5554,399 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   transform: translateY(-1px);
 }
 
+/* =========================================================
+   GUEST HOME: SOCIAL PROOF STRIP & HOW TO PLAY (OPTION B)
+   ========================================================= */
+
+/* Global Standings Social Proof Strip (Guest Home) */
+.guest-standings-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.08) 0%, rgba(15, 23, 42, 0.65) 100%);
+  border: 1px solid rgba(245, 184, 0, 0.28);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.guest-standings-strip:hover {
+  border-color: rgba(245, 184, 0, 0.5);
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.14) 0%, rgba(15, 23, 42, 0.8) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245, 184, 0, 0.15);
+}
+
+.standings-strip-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.standings-trophy-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(245, 184, 0, 0.15);
+  border: 1px solid rgba(245, 184, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f5b800;
+  flex-shrink: 0;
+}
+
+.standings-strip-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.standings-strip-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.standings-crown-pill {
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #f5b800;
+  background: rgba(245, 184, 0, 0.18);
+  padding: 1px 6px;
+  border-radius: 4px;
+  line-height: 1.15;
+}
+
+.standings-sub-info {
+  font-size: 0.68rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 600;
+}
+
+.standings-lead-info {
+  font-size: 0.74rem;
+  color: #ffffff;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.standings-lead-info .pts-glow {
+  color: #f5b800;
+  font-family: monospace;
+}
+
+.standings-strip-cta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #38bdf8;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.15s ease;
+}
+
+.guest-standings-strip:hover .standings-strip-cta {
+  transform: translateX(2px);
+  color: #7dd3fc;
+}
+
+/* Option B: How to Play Scoring Guide (Exact League View Colors) */
+.guest-rules-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.guest-rules-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+}
+
+.guest-rules-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rules-header-icon {
+  width: 15px;
+  height: 15px;
+  color: #38bdf8;
+}
+
+.guest-rules-title {
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.guest-rules-sub {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+}
+
+.rule-step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(2, 6, 23, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 9px 11px;
+}
+
+.rule-step-row.rule-step-multiline {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule-step-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.rule-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  font-size: 0.7rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rule-step-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.rule-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.rule-step-heading-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rule-star-icon {
+  width: 14px;
+  height: 14px;
+  color: #f5b800;
+  flex-shrink: 0;
+}
+
+.rule-step-heading {
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.rule-pts-chip {
+  font-size: 0.65rem;
+  font-weight: 900;
+  font-family: monospace;
+  padding: 1px 6px;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+.rule-step-desc {
+  font-size: 0.68rem;
+  color: var(--text-muted, #94a3b8);
+  margin: 3px 0 0 0;
+  line-height: 1.35;
+}
+
+.score-stepper-hint {
+  color: #e2e8f0;
+  font-family: monospace;
+  font-weight: 700;
+}
+
+/* Subgrid for Step 2 (Closest Blue & Perfect Purple) */
+.rule-step-subgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 34px;
+}
+
+@media (max-width: 400px) {
+  .rule-step-subgrid {
+    grid-template-columns: 1fr;
+    padding-left: 0;
+  }
+}
+
+.rule-sub-card {
+  padding: 7px 9px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rule-sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.rule-sub-title {
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rule-sub-pts {
+  font-size: 0.7rem;
+  font-family: monospace;
+  font-weight: 900;
+}
+
+.rule-sub-desc {
+  font-size: 0.6rem;
+  opacity: 0.85;
+  line-height: 1.25;
+}
+
+/* Formula Bar */
+.rules-formula-bar {
+  background: rgba(2, 6, 23, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.formula-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 700;
+}
+
+.formula-equation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  flex-wrap: wrap;
+}
+
+.formula-op {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.formula-badge {
+  font-size: 0.74rem;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-weight: 900;
+}
+
+/* League View Color Tokens */
+.pts-win,
+.pts-win-text {
+  color: #10b981;
+}
+.rule-step-num.pts-win,
+.rule-pts-chip.pts-win,
+.rule-sub-card.pts-win {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #10b981;
+}
+
+.pts-closest,
+.pts-closest-text {
+  color: #38bdf8;
+}
+.rule-step-num.pts-closest,
+.rule-pts-chip.pts-closest,
+.rule-sub-card.pts-closest {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+}
+
+.pts-exact,
+.pts-exact-text {
+  color: #c084fc;
+}
+.rule-step-num.pts-exact,
+.rule-pts-chip.pts-exact,
+.rule-sub-card.pts-exact {
+  background: rgba(192, 132, 252, 0.18);
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  color: #c084fc;
+}
+
+.pts-mult,
+.pts-mult-text {
+  color: #f5b800;
+}
+.rule-step-num.pts-mult,
+.rule-pts-chip.pts-mult,
+.rule-sub-card.pts-mult,
+.formula-badge.pts-mult {
+  background: rgba(245, 184, 0, 0.18);
+  border: 1px solid rgba(245, 184, 0, 0.45);
+  color: #f5b800;
+}
+
 /* Command Center Header & Greeting */
 .command-center-header {
   display: flex;
@@ -5743,16 +6138,60 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 
 /* Subtle Low-Profile League Invite Strip */
 .lobby-invite-strip {
-  background: rgba(12, 20, 44, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 20, 44, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 10px 14px;
   margin-top: 14px;
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lobby-invite-toggle-row {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
+  width: 100%;
+}
+
+.invite-strip-label-text {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+}
+
+.btn-toggle-invite-input {
+  background: none;
+  border: none;
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.btn-toggle-invite-input:hover {
+  text-decoration: underline;
+  color: #7dd3fc;
+}
+
+.invite-arrow-icon {
+  font-size: 0.75rem;
+  transition: transform 0.15s ease;
+}
+
+.btn-toggle-invite-input:hover .invite-arrow-icon {
+  transform: translateX(2px);
+}
+
+.lobby-quick-invite-drawer {
+  width: 100%;
 }
 
 .invite-strip-label {

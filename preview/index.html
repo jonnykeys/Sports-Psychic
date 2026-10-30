@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=24.0">
+  <link rel="stylesheet" href="style.css?v=25.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -55,7 +55,6 @@
 
       <!-- Sign In / Join Free Button (shown in Lobby Mode) -->
       <button id="btn-header-signin" class="btn-header-signin" onclick="openAuthModal()" aria-label="Sign In or Join Free" title="Sign In or Join Free">
-        <span class="signin-sparkle">🔮</span>
         <span>Sign In</span>
       </button>
     </div>
@@ -84,11 +83,124 @@
         
         <div class="hero-cta-group">
           <button class="btn-hero-primary" onclick="scrollToLobbyGames()">
-            <span>🔮 Start Predicting Free</span>
+            <span>Start Predicting Free</span>
           </button>
           <button class="btn-hero-secondary" onclick="openAuthModal('Sign In')">
             <span>Sign In</span>
           </button>
+        </div>
+
+        <!-- Global Standings Social Proof Strip -->
+        <div class="guest-standings-strip" onclick="openGlobalLeaderboardModal('season')" role="button" tabindex="0" title="View Global Championship Standings">
+          <div class="standings-strip-left">
+            <span class="standings-trophy-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/>
+                <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/>
+                <path d="M4 3h16v6a8 8 0 0 1-16 0V3z"/>
+                <path d="M12 17v4"/><path d="M8 21h8"/>
+              </svg>
+            </span>
+            <div class="standings-strip-text">
+              <div class="standings-strip-heading">
+                <span class="standings-crown-pill">Global Crown</span>
+                <span class="standings-sub-info">Season Standings</span>
+              </div>
+              <div class="standings-lead-info">
+                <strong>Caleb</strong> leads with <span class="pts-glow">630 PTS</span>
+              </div>
+            </div>
+          </div>
+          <span class="standings-strip-cta">View Standings &rarr;</span>
+        </div>
+
+        <!-- Option B: 3-Step Guide with Exact League Colors -->
+        <div class="guest-rules-card">
+          <div class="guest-rules-header">
+            <div class="guest-rules-title-wrap">
+              <svg class="rules-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <span class="guest-rules-title">How to Play</span>
+            </div>
+            <span class="guest-rules-sub">Points stack per game</span>
+          </div>
+
+          <!-- Step 1: Green for Straight Up Win -->
+          <div class="rule-step-row">
+            <div class="rule-step-num pts-win">1</div>
+            <div class="rule-step-content">
+              <div class="rule-step-header">
+                <span class="rule-step-heading">Pick the Winner</span>
+                <span class="rule-pts-chip pts-win">+10 PTS</span>
+              </div>
+              <p class="rule-step-desc">Tap the team you think will win straight up.</p>
+            </div>
+          </div>
+
+          <!-- Step 2: Predict Final Scores (Blue for Closest, Purple for Perfect Score) -->
+          <div class="rule-step-row rule-step-multiline">
+            <div class="rule-step-top">
+              <div class="rule-step-num">2</div>
+              <div class="rule-step-content">
+                <div class="rule-step-header">
+                  <span class="rule-step-heading">Predict Final Scores</span>
+                </div>
+                <p class="rule-step-desc">Use <strong class="score-stepper-hint">+3 FG</strong> and <strong class="score-stepper-hint">+7 TD</strong> to set scores. Unlock 2 bonus payouts:</p>
+              </div>
+            </div>
+            <div class="rule-step-subgrid">
+              <div class="rule-sub-card pts-closest">
+                <div class="rule-sub-header">
+                  <span class="rule-sub-title">Closest Score</span>
+                  <span class="rule-sub-pts">+10 PTS</span>
+                </div>
+                <span class="rule-sub-desc">Best score prediction in the game</span>
+              </div>
+              <div class="rule-sub-card pts-exact">
+                <div class="rule-sub-header">
+                  <span class="rule-sub-title">Perfect Score</span>
+                  <span class="rule-sub-pts">+50 PTS</span>
+                </div>
+                <span class="rule-sub-desc">Exact final score jackpot</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Gold for 3X Lock -->
+          <div class="rule-step-row">
+            <div class="rule-step-num pts-mult">3</div>
+            <div class="rule-step-content">
+              <div class="rule-step-header">
+                <div class="rule-step-heading-wrap">
+                  <svg class="rule-star-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                  <span class="rule-step-heading">Star Your 3X Lock</span>
+                </div>
+                <span class="rule-pts-chip pts-mult">3X MULTIPLIER</span>
+              </div>
+              <p class="rule-step-desc">Pick 1 high-confidence game each week to triple all points earned&mdash;max payout of <strong class="pts-mult-text">180 PTS</strong>!</p>
+            </div>
+          </div>
+
+          <!-- Formula Bar -->
+          <div class="rules-formula-bar">
+            <span class="formula-label">Max Single Game Payout:</span>
+            <div class="formula-equation">
+              <span class="formula-term pts-win-text">(10 Win</span>
+              <span class="formula-op">+</span>
+              <span class="formula-term pts-exact-text">50 Perfect)</span>
+              <span class="formula-op">&times;</span>
+              <span class="formula-term pts-mult-text">3X Lock</span>
+              <span class="formula-op">=</span>
+              <span class="formula-badge pts-mult">180 PTS</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -153,15 +265,20 @@
 
       <!-- Quick League Invite Code Box (Subtle Low-Profile Strip) -->
       <div class="lobby-invite-strip">
-        <div class="invite-strip-label">
-          <span class="invite-icon">🔑</span>
-          <span>Have a League Code?</span>
+        <div class="lobby-invite-toggle-row">
+          <span class="invite-strip-label-text">Playing with friends?</span>
+          <button type="button" class="btn-toggle-invite-input" onclick="toggleLobbyInviteInput()" aria-expanded="false" aria-controls="lobby-quick-invite-drawer">
+            <span>Have a league code? Enter code</span>
+            <span class="invite-arrow-icon">&rarr;</span>
+          </button>
         </div>
-        <div class="invite-input-row">
-          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="6-digit code" maxlength="6" autocomplete="off" autocapitalize="characters" oninput="handleLobbyCodeInput(this.value)" onkeydown="if(event.key === 'Enter' && this.value.trim().length === 6) handleQuickInviteSubmit()">
-          <button type="button" id="btn-lobby-join-league" class="btn-invite-submit disabled" onclick="handleQuickInviteSubmit()" disabled aria-disabled="true">Join</button>
+        <div id="lobby-quick-invite-drawer" class="lobby-quick-invite-drawer" style="display: none;">
+          <div class="invite-input-row">
+            <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="6-digit code" maxlength="6" autocomplete="off" autocapitalize="characters" oninput="handleLobbyCodeInput(this.value)" onkeydown="if(event.key === 'Enter' && this.value.trim().length === 6) handleQuickInviteSubmit()">
+            <button type="button" id="btn-lobby-join-league" class="btn-invite-submit disabled" onclick="handleQuickInviteSubmit()" disabled aria-disabled="true">Join</button>
+          </div>
+          <div id="lobby-code-feedback" class="lobby-code-feedback" style="display: none;"></div>
         </div>
-        <div id="lobby-code-feedback" class="lobby-code-feedback" style="display: none;"></div>
       </div>
     </div>
 
@@ -494,7 +611,7 @@
           <path d="M16 3a5 5 0 0 0 5 5" />
         </svg>
       </span>
-      <span>Matchups</span>
+      <span>Predictions</span>
     </button>
     <button class="nav-item" data-tab="players">
       <span class="nav-icon">
@@ -800,6 +917,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=24.0"></script>
+  <script src="app.js?v=25.0"></script>
 </body>
 </html>
