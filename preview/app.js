@@ -3118,6 +3118,7 @@ function renderMatchups() {
       </div>
     `;
     updateToggleAllBtn();
+    updateGuestSaveBanner();
     return;
   }
 
@@ -3400,6 +3401,7 @@ function renderMatchups() {
   }).join("");
 
   updateToggleAllBtn();
+  updateGuestSaveBanner();
 }
 
 // =========================================================
@@ -5229,6 +5231,52 @@ function handleHubSoloClick() {
   enterSoloPlay();
 }
 
+function updateGuestSaveBanner() {
+  const banner = document.getElementById("guest-floating-save-bar");
+  if (!banner) return;
+
+  // Only show for unauthenticated users in lobby or solo mode
+  if (state.authUser || state.appMode === "league") {
+    banner.style.display = "none";
+    return;
+  }
+
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) {
+    banner.style.display = "none";
+    return;
+  }
+
+  const allPickKeys = new Set();
+  const checkPickObj = (obj) => {
+    if (!obj || typeof obj !== "object") return;
+    Object.keys(obj).forEach(k => {
+      const p = obj[k];
+      if (!p) return;
+      const hasWinner = Boolean(p.winner);
+      const hasScore = (p.awayScore !== undefined && p.awayScore !== null && p.awayScore !== "") ||
+                       (p.homeScore !== undefined && p.homeScore !== null && p.homeScore !== "");
+      if (hasWinner || hasScore) {
+        allPickKeys.add(k);
+      }
+    });
+  };
+  checkPickObj(sheet.picks);
+  checkPickObj(sheet.season_picks);
+  checkPickObj(sheet.weekly_picks);
+
+  const pickCount = allPickKeys.size;
+  if (pickCount >= 1) {
+    const countEl = document.getElementById("guest-save-count");
+    if (countEl) countEl.textContent = pickCount;
+    const nounEl = document.getElementById("guest-save-noun");
+    if (nounEl) nounEl.textContent = pickCount === 1 ? "Pick" : "Picks";
+    banner.style.display = "flex";
+  } else {
+    banner.style.display = "none";
+  }
+}
+
 function updateAppShellForMode() {
   const isLobby = state.appMode === "lobby";
   const isSolo = state.appMode === "solo";
@@ -5284,6 +5332,7 @@ function updateAppShellForMode() {
 
   renderHeaderProfile();
   renderLobbyHero();
+  updateGuestSaveBanner();
 }
 
 function selectLeague(leagueId) {
@@ -6484,17 +6533,16 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
               </button>
             </div>
 
-            <!-- Dedicated 1-Tap NFL Score Presets -->
-            <div class="tile-presets-row">
-              ${[17, 20, 24, 27, 31].map(preset => {
-                const isPresetActive = (Number(pickAwayScore) === preset);
-                return `
-                  <button type="button" class="btn-score-preset ${isPresetActive ? "active" : ""}" ${isGameLocked ? "disabled" : ""}
-                    onclick="setSoloPickExactScore('${game.id}', 'away', ${preset}, ${isGameLocked})" title="Set ${awayTeam} to ${preset}">
-                    ${preset}
-                  </button>
-                `;
-              }).join("")}
+            <!-- Football Scoring Nudges (+3 FG / +7 TD) -->
+            <div class="tile-presets-row tile-football-nudges-row">
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 3, ${isGameLocked})" title="Add Field Goal (+3 to ${awayTeam})">
+                +3 FG
+              </button>
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 7, ${isGameLocked})" title="Add Touchdown (+7 to ${awayTeam})">
+                +7 TD
+              </button>
             </div>
           </div>
         </div>
@@ -6539,17 +6587,16 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
               </button>
             </div>
 
-            <!-- Dedicated 1-Tap NFL Score Presets -->
-            <div class="tile-presets-row">
-              ${[17, 20, 24, 27, 31].map(preset => {
-                const isPresetActive = (Number(pickHomeScore) === preset);
-                return `
-                  <button type="button" class="btn-score-preset ${isPresetActive ? "active" : ""}" ${isGameLocked ? "disabled" : ""}
-                    onclick="setSoloPickExactScore('${game.id}', 'home', ${preset}, ${isGameLocked})" title="Set ${homeTeam} to ${preset}">
-                    ${preset}
-                  </button>
-                `;
-              }).join("")}
+            <!-- Football Scoring Nudges (+3 FG / +7 TD) -->
+            <div class="tile-presets-row tile-football-nudges-row">
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 3, ${isGameLocked})" title="Add Field Goal (+3 to ${homeTeam})">
+                +3 FG
+              </button>
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 7, ${isGameLocked})" title="Add Touchdown (+7 to ${homeTeam})">
+                +7 TD
+              </button>
             </div>
           </div>
         </div>
@@ -6760,6 +6807,7 @@ function renderSoloView() {
       </div>
     </div>
   `;
+  updateGuestSaveBanner();
 }
 
 async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
@@ -6858,6 +6906,7 @@ async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
   debouncedSaveSoloPickSheet(sheet);
   updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
 }
 
 async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
@@ -6930,6 +6979,7 @@ async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
 
   updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
 }
 
 async function setSoloPickExactScore(arg1, arg2, arg3, arg4) {
@@ -6995,6 +7045,7 @@ async function setSoloPickExactScore(arg1, arg2, arg3, arg4) {
 
   updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
 }
 
 async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
@@ -7058,6 +7109,7 @@ async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
 
   updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
   updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
 }
 
 async function toggleSoloPickMultiplier(arg1, arg2, arg3, arg4) {
@@ -7259,18 +7311,25 @@ async function handleUserSession(user) {
       const guestSheets = JSON.parse(guestRaw);
       if (Array.isArray(guestSheets) && guestSheets.length > 0) {
         const guestMaster = guestSheets.find(s => s.is_master || s.id === "master_guest");
-        if (guestMaster && guestMaster.picks && Object.keys(guestMaster.picks).length > 0) {
+        const hasGuestPicks = guestMaster && Boolean(
+          (guestMaster.picks && Object.keys(guestMaster.picks).length > 0) ||
+          (guestMaster.weekly_picks && Object.keys(guestMaster.weekly_picks).length > 0) ||
+          (guestMaster.season_picks && Object.keys(guestMaster.season_picks).length > 0)
+        );
+        if (guestMaster && hasGuestPicks) {
           await loadSoloPickSheets();
           const userMaster = getOrCreateMasterPickSheet();
-          userMaster.picks = Object.assign({}, guestMaster.picks, userMaster.picks || {});
+          userMaster.picks = Object.assign({}, userMaster.picks || {}, guestMaster.picks || {});
+          userMaster.weekly_picks = Object.assign({}, userMaster.weekly_picks || {}, guestMaster.weekly_picks || {});
+          userMaster.season_picks = Object.assign({}, userMaster.season_picks || {}, guestMaster.season_picks || {});
           if (guestMaster.is_season_locked) {
             userMaster.is_season_locked = true;
             userMaster.season_locked_at = guestMaster.season_locked_at;
-            userMaster.season_picks = Object.assign({}, guestMaster.season_picks || guestMaster.picks, userMaster.season_picks || {});
           }
           calculateSheetStats(userMaster);
           await saveSoloPickSheet(userMaster);
           localStorage.removeItem("sp_solo_sheets_guest");
+          showToast("🔮 Welcome! Your guest picks have been saved to your account.");
         }
       }
     }
@@ -9445,3 +9504,4 @@ window.evaluateWeeklyOgPicks = evaluateWeeklyOgPicks;
 window.syncOgLeaguePicksToSoloProphecy = syncOgLeaguePicksToSoloProphecy;
 window.renderOption2Card = renderOption2Card;
 window.scrollToLobbyGames = scrollToLobbyGames;
+window.updateGuestSaveBanner = updateGuestSaveBanner;
