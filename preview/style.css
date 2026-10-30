@@ -9220,6 +9220,7 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex: 1;
 }
 
 .save-bar-icon {
@@ -9232,6 +9233,7 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .save-bar-title {
@@ -9249,12 +9251,10 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 }
 
 .save-bar-sub {
-  font-size: 0.70rem;
+  font-size: 0.72rem;
   color: #94a3b8;
   font-weight: 500;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .btn-guest-save-action {
@@ -9292,15 +9292,19 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
     gap: 8px;
     width: calc(100% - 16px);
   }
+  .save-bar-info {
+    gap: 8px;
+  }
   .save-bar-title {
     font-size: 0.78rem;
   }
   .save-bar-sub {
-    font-size: 0.66rem;
+    font-size: 0.68rem;
+    white-space: nowrap;
   }
   .btn-guest-save-action {
-    padding: 7px 10px;
-    font-size: 0.72rem;
+    padding: 7px 11px;
+    font-size: 0.74rem;
   }
 }
 
