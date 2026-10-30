@@ -319,10 +319,11 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=24\.0') 'index.html includes app.js?v=24.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=24\.0') 'index.html includes style.css?v=24.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=25\.0') 'index.html includes app.js?v=25.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=25\.0') 'index.html includes style.css?v=25.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
+Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
 Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
 Assert-Test ($appJsContent -match 'openGlobalLeaderboardModal') 'app.js defines openGlobalLeaderboardModal'
@@ -357,6 +358,17 @@ Assert-Test ($appJsContent -match 'updateGuestSaveBanner') 'app.js defines updat
 Assert-Test ($appJsContent -match 'window\.updateGuestSaveBanner = updateGuestSaveBanner') 'app.js exports updateGuestSaveBanner to window'
 Assert-Test ($styleCssContent -match '\.guest-floating-save-bar') 'style.css defines .guest-floating-save-bar styling'
 Assert-Test ($styleCssContent -match '\.btn-guest-save-action') 'style.css defines .btn-guest-save-action styling'
+
+# Guest Home Social Proof Strip & Option B Scoring Guide Assertions
+Assert-Test ($indexHtmlContent -match 'guest-standings-strip') 'index.html defines guest-standings-strip social proof ribbon'
+Assert-Test ($indexHtmlContent -match 'guest-rules-card') 'index.html defines Option B guest-rules-card'
+Assert-Test ($indexHtmlContent -match 'lobby-quick-invite-drawer') 'index.html defines lobby-quick-invite-drawer'
+Assert-Test ($appJsContent -match 'toggleLobbyInviteInput') 'app.js defines toggleLobbyInviteInput'
+Assert-Test ($appJsContent -match 'window\.toggleLobbyInviteInput = toggleLobbyInviteInput') 'app.js exports toggleLobbyInviteInput to window'
+Assert-Test ($styleCssContent -match '\.guest-standings-strip') 'style.css defines .guest-standings-strip styling'
+Assert-Test ($styleCssContent -match '\.guest-rules-card') 'style.css defines .guest-rules-card styling'
+Assert-Test ($styleCssContent -match '\.rule-sub-card\.pts-win') 'style.css defines Option B League colors (.pts-win)'
+Assert-Test ($styleCssContent -match 'body\.is-lobby-mode \.bottom-nav \[data-tab="leaderboard"\]\s*\{\s*display:\s*flex\s*!important;') 'style.css allows Standings tab in lobby mode'
 
 # -- Suite 11: Independent Season Prophecy vs Weekly Vision Pick Separation --
 Write-Host ''

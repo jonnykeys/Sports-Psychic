@@ -1124,8 +1124,14 @@ function switchTab(tabId, smoothScroll = true) {
     tabId = state.appMode === "lobby" ? "matchups" : "leaderboard";
   }
 
-  // In lobby mode, Standings and Players are restricted to league view
-  if (state.appMode === "lobby" && (tabId === "leaderboard" || tabId === "players")) {
+  // In lobby mode, clicking Standings opens the official Global Leaderboard modal
+  if (state.appMode === "lobby" && tabId === "leaderboard") {
+    openGlobalLeaderboardModal("season");
+    return;
+  }
+
+  // In lobby mode, Players tab is restricted to private league view
+  if (state.appMode === "lobby" && tabId === "players") {
     tabId = "matchups";
   }
 
@@ -7910,6 +7916,19 @@ async function handleSignOut() {
   renderApp();
 }
 
+function toggleLobbyInviteInput() {
+  const drawer = document.getElementById("lobby-quick-invite-drawer");
+  const btn = document.querySelector(".btn-toggle-invite-input");
+  if (!drawer) return;
+  const isHidden = drawer.style.display === "none" || !drawer.style.display;
+  drawer.style.display = isHidden ? "block" : "none";
+  if (btn) btn.setAttribute("aria-expanded", isHidden ? "true" : "false");
+  if (isHidden) {
+    const input = document.getElementById("lobby-quick-code-input");
+    if (input) input.focus();
+  }
+}
+
 function handleLobbyCodeInput(val) {
   const input = document.getElementById("lobby-quick-code-input");
   const btn = document.getElementById("btn-lobby-join-league") || document.querySelector(".btn-invite-submit");
@@ -9505,3 +9524,4 @@ window.syncOgLeaguePicksToSoloProphecy = syncOgLeaguePicksToSoloProphecy;
 window.renderOption2Card = renderOption2Card;
 window.scrollToLobbyGames = scrollToLobbyGames;
 window.updateGuestSaveBanner = updateGuestSaveBanner;
+window.toggleLobbyInviteInput = toggleLobbyInviteInput;
