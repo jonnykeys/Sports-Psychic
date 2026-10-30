@@ -319,8 +319,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=22\.0') 'index.html includes app.js?v=22.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=22\.0') 'index.html includes style.css?v=22.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=23\.0') 'index.html includes app.js?v=23.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=23\.0') 'index.html includes style.css?v=23.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
@@ -344,6 +344,16 @@ Assert-Test ($appJsContent -match 'window\.renderOption2Card = renderOption2Card
 Assert-Test ($styleCssContent -match '\.game-live-telemetry-bar') 'style.css defines .game-live-telemetry-bar'
 Assert-Test ($styleCssContent -match '\.command-center-header') 'style.css defines .command-center-header'
 Assert-Test ($styleCssContent -match '\.picks-progress-fill') 'style.css defines .picks-progress-fill'
+
+# Option C American Football Score Nudges & Floating Guest Save Banner Assertions
+Assert-Test ($appJsContent -match 'btn-football-nudge') 'app.js renders Option C football score nudges (+3 FG, +7 TD)'
+Assert-Test ($styleCssContent -match '\.btn-football-nudge') 'style.css defines .btn-football-nudge styling'
+Assert-Test ($styleCssContent -match '\.tile-football-nudges-row') 'style.css defines .tile-football-nudges-row grid'
+Assert-Test ($indexHtmlContent -match 'id="guest-floating-save-bar"') 'index.html defines #guest-floating-save-bar markup'
+Assert-Test ($appJsContent -match 'updateGuestSaveBanner') 'app.js defines updateGuestSaveBanner'
+Assert-Test ($appJsContent -match 'window\.updateGuestSaveBanner = updateGuestSaveBanner') 'app.js exports updateGuestSaveBanner to window'
+Assert-Test ($styleCssContent -match '\.guest-floating-save-bar') 'style.css defines .guest-floating-save-bar styling'
+Assert-Test ($styleCssContent -match '\.btn-guest-save-action') 'style.css defines .btn-guest-save-action styling'
 
 # -- Suite 11: Independent Season Prophecy vs Weekly Vision Pick Separation --
 Write-Host ''
