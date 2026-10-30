@@ -319,8 +319,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=21\.0') 'index.html includes app.js?v=21.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=21\.0') 'index.html includes style.css?v=21.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=22\.0') 'index.html includes app.js?v=22.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=22\.0') 'index.html includes style.css?v=22.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($styleCssContent -match '#btn-header-profile,\s*#btn-league-switcher\s*\{\s*display:\s*none\s*!important;') 'style.css hides header profile button by default'
 
@@ -332,6 +332,18 @@ Assert-Test ($appJsContent -match 'window\.loadAndRenderGlobalLeaderboard = load
 Assert-Test ($styleCssContent -match '\.global-leaderboard-dialog') 'style.css defines .global-leaderboard-dialog'
 Assert-Test ($styleCssContent -match '\.global-lb-table') 'style.css defines .global-lb-table'
 Assert-Test ($styleCssContent -match '\.btn-solo-leaderboard') 'style.css defines .btn-solo-leaderboard'
+
+# Home Page Modernization & Live In-Game Telemetry Assertions
+Assert-Test ($indexHtmlContent -match 'command-center-header') 'index.html defines Command Center header markup'
+Assert-Test ($indexHtmlContent -match 'picks-progress-track') 'index.html defines picks progress track markup'
+Assert-Test ($indexHtmlContent -match 'lobby-invite-strip') 'index.html defines low-profile lobby invite strip'
+Assert-Test ($appJsContent -match 'game-live-telemetry-bar') 'app.js renders game-live-telemetry-bar for live games'
+Assert-Test ($appJsContent -match 'live-pulse-dot') 'app.js renders pulsing live indicator dot'
+Assert-Test ($appJsContent -match 'possession-football') 'app.js renders football possession badge'
+Assert-Test ($appJsContent -match 'window\.renderOption2Card = renderOption2Card') 'app.js exports renderOption2Card to window'
+Assert-Test ($styleCssContent -match '\.game-live-telemetry-bar') 'style.css defines .game-live-telemetry-bar'
+Assert-Test ($styleCssContent -match '\.command-center-header') 'style.css defines .command-center-header'
+Assert-Test ($styleCssContent -match '\.picks-progress-fill') 'style.css defines .picks-progress-fill'
 
 # -- Suite 11: Independent Season Prophecy vs Weekly Vision Pick Separation --
 Write-Host ''

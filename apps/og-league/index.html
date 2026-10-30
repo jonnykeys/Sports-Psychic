@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=21.0">
+  <link rel="stylesheet" href="style.css?v=22.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -75,17 +75,17 @@
   <!-- MAIN VIEWPORT -->
   <main class="main-content">
 
-    <!-- LOBBY HERO & NEW USER ONBOARDING (Visible in Lobby Mode) -->
+    <!-- LOBBY HERO & DASHBOARD (Visible in Lobby Mode) -->
     <div id="lobby-hero-card" class="lobby-hero-card">
       <!-- GUEST STATE (Visible when not signed in) -->
       <div id="hero-guest-block" class="hero-guest-block">
         <h2 class="hero-headline">Predict NFL Games.<br><span class="hero-glow">Prove You're Psychic.</span></h2>
-        <p class="hero-subtext">Lock in score predictions, challenge friends in custom weekly or full-season leagues, and compete against the world in Solo Play.</p>
+        <p class="hero-subtext">Lock in your scores, challenge friends in custom leagues, and compete for the Global Crown.</p>
         
         <div class="hero-cta-group">
-          <button class="btn-hero-primary" onclick="openAuthModal('Get Started Free')">
-            <span>🔮 Get Started Free</span>
-            <span class="hero-btn-arrow">→</span>
+          <button class="btn-hero-primary" onclick="scrollToLobbyGames()">
+            <span>🔮 Start Predicting Free</span>
+            <span class="hero-btn-arrow">↓</span>
           </button>
           <button class="btn-hero-secondary" onclick="openAuthModal('Sign In')">
             <span>Sign In</span>
@@ -93,50 +93,76 @@
         </div>
       </div>
 
-      <!-- AUTHENTICATED STATE (Visible when signed in) -->
+      <!-- AUTHENTICATED STATE: COMMAND CENTER (Visible when signed in) -->
       <div id="hero-auth-block" class="hero-auth-block" style="display: none;">
-        <h2 class="hero-headline">Welcome Back, <span id="hero-user-name" class="hero-glow">Psychic</span>!</h2>
-        <p class="hero-subtext">Ready to make your predictions? Join a league with an invite code or jump straight into your leagues below.</p>
+        <div class="command-center-header">
+          <div class="command-center-greeting">
+            <span class="greeting-prefix">Welcome Back,</span>
+            <span id="hero-user-name" class="hero-glow">Psychic</span>!
+          </div>
+          <button class="btn-header-profile-sm" onclick="openProfileModal()" title="View Account Profile" aria-label="Account Profile">
+            <span class="profile-sm-avatar">👤</span>
+          </button>
+        </div>
 
-        <div id="hero-auth-quick-leagues" class="hero-auth-quick-leagues">
-          <!-- Dynamically populated -->
+        <!-- Weekly Forecast Progress Bar -->
+        <div class="command-center-progress-card">
+          <div class="progress-title-row">
+            <span class="progress-title">Week <span id="hero-week-num">4</span> Forecast</span>
+            <span id="hero-picks-progress-count" class="progress-count-pill">0 of 16 Complete</span>
+          </div>
+          <div class="picks-progress-track">
+            <div id="hero-picks-progress-bar" class="picks-progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Season Stats Snapshot -->
+        <div class="command-center-stats">
+          <div class="stat-pill" onclick="enterSoloPlay()" title="Click to view Season Prophecy" style="cursor: pointer;">
+            <span class="stat-label">Season PTS</span>
+            <strong id="hero-season-pts">0 PTS</strong>
+          </div>
+          <div class="stat-pill" onclick="openGlobalLeaderboardModal()" title="Click to view Global Leaderboard" style="cursor: pointer;">
+            <span class="stat-label">Global Standing</span>
+            <strong id="hero-season-rank">--</strong>
+          </div>
+          <div class="stat-pill" onclick="scrollToLobbyGames()" title="Scroll to active week games" style="cursor: pointer;">
+            <span class="stat-label">3X Lock</span>
+            <strong id="hero-3x-status">⚠️ Needed</strong>
+          </div>
+        </div>
+
+        <!-- 2-Card Command Hub -->
+        <div class="command-hub-grid">
+          <div class="command-hub-card" onclick="handleHubLeagueClick()">
+            <div class="hub-card-icon">🏆</div>
+            <div class="hub-card-info">
+              <div class="hub-card-title" id="hub-my-league-title">My Leagues</div>
+              <div class="hub-card-sub" id="hub-my-league-sub">Play with your crew →</div>
+            </div>
+          </div>
+
+          <div class="command-hub-card" onclick="enterSoloPlay()">
+            <div class="hub-card-icon">🔮</div>
+            <div class="hub-card-info">
+              <div class="hub-card-title">Season Prophecy</div>
+              <div class="hub-card-sub">Global Championship Standings →</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Quick League Invite Code Box (Search Bar) -->
-      <div class="lobby-invite-bar">
-        <div class="invite-bar-header">
+      <!-- Quick League Invite Code Box (Subtle Low-Profile Strip) -->
+      <div class="lobby-invite-strip">
+        <div class="invite-strip-label">
           <span class="invite-icon">🔑</span>
-          <span class="invite-bar-label">Have a League Code? Enter 6-digit Code:</span>
+          <span>Have a League Code?</span>
         </div>
         <div class="invite-input-row">
-          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="Enter code here" maxlength="6" autocomplete="off" autocapitalize="characters" oninput="handleLobbyCodeInput(this.value)" onkeydown="if(event.key === 'Enter' && this.value.trim().length === 6) handleQuickInviteSubmit()">
-          <button type="button" id="btn-lobby-join-league" class="btn-invite-submit disabled" onclick="handleQuickInviteSubmit()" disabled aria-disabled="true">Join League</button>
+          <input type="text" id="lobby-quick-code-input" class="lobby-quick-code-input" placeholder="6-digit code" maxlength="6" autocomplete="off" autocapitalize="characters" oninput="handleLobbyCodeInput(this.value)" onkeydown="if(event.key === 'Enter' && this.value.trim().length === 6) handleQuickInviteSubmit()">
+          <button type="button" id="btn-lobby-join-league" class="btn-invite-submit disabled" onclick="handleQuickInviteSubmit()" disabled aria-disabled="true">Join</button>
         </div>
         <div id="lobby-code-feedback" class="lobby-code-feedback" style="display: none;"></div>
-      </div>
-
-      <!-- Ways to Play Hub Cards -->
-      <div class="lobby-hub-grid">
-        <div class="hub-card" onclick="handleHubLeagueClick()">
-          <div class="hub-card-header">
-            <span class="hub-icon">🏆</span>
-            <span class="hub-badge league-tag">PLAY WITH FRIENDS</span>
-          </div>
-          <div class="hub-card-title">Custom Leagues</div>
-          <div class="hub-card-desc">Weekly rolling locks or full-season lock. Custom scoring & 3x multipliers with your crew.</div>
-          <div class="hub-card-action">View Leagues →</div>
-        </div>
-
-        <div class="hub-card" onclick="handleHubSoloClick()">
-          <div class="hub-card-header">
-            <span class="hub-icon">🔮</span>
-            <span class="hub-badge solo-tag">GLOBAL COMMUNITY</span>
-          </div>
-          <div class="hub-card-title">Solo Psychic Play</div>
-          <div class="hub-card-desc">Craft custom Prophecy slates and rank on Global Community Leaderboards.</div>
-          <div class="hub-card-action">Play Solo →</div>
-        </div>
       </div>
     </div>
 
@@ -761,6 +787,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=21.0"></script>
+  <script src="app.js?v=22.0"></script>
 </body>
 </html>
