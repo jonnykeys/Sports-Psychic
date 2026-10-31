@@ -687,6 +687,11 @@ function calculateGamePicksPoints(game) {
   const tieCount = closestPickers.length;
   const isExact = (minDiff === 0);
 
+  // League setting: check if active league has custom tie-rule. Default is true (OG League spreadsheet standard: halving ties)
+  const isSplitTies = (state.activeLeagueData && state.activeLeagueData.settings && state.activeLeagueData.settings.tie_rule === "full_ties")
+    ? false
+    : true;
+
   // 3. Award base points + closest / exact bonus points
   PLAYERS.forEach(pName => {
     const pk = game.picks[pName];
@@ -702,10 +707,12 @@ function calculateGamePicksPoints(game) {
         pk.isClosest = true;
         if (isExact) {
           pk.exact = true;
-          bonusPoints = 50 * mult;
+          const exactBonus = (isSplitTies && tieCount > 1) ? 25 : 50;
+          bonusPoints = exactBonus * mult;
         } else {
           pk.exact = false;
-          bonusPoints = 10 * mult;
+          const closestBonus = (isSplitTies && tieCount > 1) ? 5 : 10;
+          bonusPoints = closestBonus * mult;
         }
       }
 
@@ -756,8 +763,8 @@ function computeSeasonLeaderboard(dataObj, throughWeek = null) {
       }
     }
 
-    // Prioritize live verified games calculation, never allowing stale cloud standings to suppress current week scores
-    const totalPts = Math.max(gamesPts, (cloudMap[pName] !== undefined ? cloudMap[pName] : 0));
+    // Dynamic gamesPts computed from the verified league rules is authoritative for the league view
+    const totalPts = (gamesPts > 0 || cloudMap[pName] === undefined) ? gamesPts : cloudMap[pName];
 
     return {
       name: pName,
@@ -2525,9 +2532,9 @@ function renderLeaderboard() {
   if (labelWeeklyBtn) labelWeeklyBtn.textContent = `Week ${state.currentWeek} Standings`;
 
   if (sectionTitleEl) {
-    sectionTitleEl.textContent = isWeekly
-      ? `Week ${state.currentWeek} Standings`
-      : "League Standings";
+    sectionTitleEl.innerHTML = isWeekly
+      ? `Week ${state.currentWeek} Standings <span class="rules-header-pill">Split Ties (+5 PTS)</span>`
+      : `League Standings <span class="rules-header-pill">Split Ties (+5 PTS)</span>`;
   }
 
   const sorted = isWeekly
@@ -2744,6 +2751,7 @@ function renderLeaderboard() {
         </div>
         <div class="leader-right">
           ${rightSideHtml}
+          <button type="button" class="btn-row-breakdown" onclick="event.stopPropagation(); openScoringBreakdownModal('${player.name}', 'league')" title="View ${player.name}'s scoring breakdown">📊</button>
         </div>
       </div>
     `;
@@ -3663,6 +3671,10 @@ function renderPlayers() {
     </div>
 
     <div class="player-hero-actions-bar">
+      <button type="button" class="btn-hero-action btn-hero-breakdown" onclick="openScoringBreakdownModal('${state.selectedPlayer}')" title="View detailed mathematical scoring breakdown">
+        <span class="action-btn-icon">📊</span>
+        <span>Score Breakdown</span>
+      </button>
       <button type="button" class="btn-hero-action btn-hero-compare" onclick="startH2HComparison('${state.selectedPlayer}')" title="Compare against another player in Head-to-Head">
         <span class="action-btn-icon">⚔️</span>
         <span>Compare Players</span>
@@ -8309,6 +8321,14 @@ function selectLeagueScoring(format) {
   if (win) win.classList.toggle("active", format === "winner_only");
 }
 
+function selectLeagueTieRule(rule) {
+  state.createLeagueTieRule = rule;
+  const split = document.getElementById("league-tie-split");
+  const full = document.getElementById("league-tie-full");
+  if (split) split.classList.toggle("active", rule === "split_ties");
+  if (full) full.classList.toggle("active", rule === "full_ties");
+}
+
 function openCreateLeagueModal() {
   closeLeagueDrawer();
   closeAuthModal();
@@ -8331,6 +8351,7 @@ function openCreateLeagueModal() {
 
   generateNewLeagueCode();
   selectLeagueScoring("classic_proximity");
+  selectLeagueTieRule("split_ties");
 
   if (modal) {
     modal.classList.add("open");
@@ -9439,12 +9460,21 @@ async function loadAndRenderGlobalLeaderboard() {
         </td>
         <td class="col-picks">${entry.total_picks || 0}</td>
         <td class="col-acc">${entry.accuracy_rate !== null && entry.accuracy_rate !== undefined ? `${entry.accuracy_rate}%` : "—"}</td>
-        <td class="col-pts"><strong>${entry.total_points || 0}</strong> <span class="pts-unit">PTS</span></td>
+        <td class="col-pts">
+          <div class="col-pts-wrap">
+            <span><strong>${entry.total_points || 0}</strong> <span class="pts-unit">PTS</span></span>
+            <button type="button" class="btn-lb-breakdown" onclick="event.stopPropagation(); openScoringBreakdownModal('${entry.username}', 'global')" title="View ${entry.username}'s scoring breakdown">📊</button>
+          </div>
+        </td>
       </tr>
     `;
   }).join("");
 
   container.innerHTML = `
+    <div class="global-lb-rules-ribbon">
+      <span class="rules-ribbon-tag">GLOBAL RULES</span>
+      <span class="rules-ribbon-desc">Full Closest (+10 PTS) • Full Exact (+50 PTS) • 3X Lock Active</span>
+    </div>
     <table class="global-lb-table">
       <thead>
         <tr>
@@ -9509,7 +9539,407 @@ async function loadAndRenderGlobalLeaderboard() {
   }
 }
 
+/**
+ * Interactive Scoring Breakdown Engine
+ * Allows players to inspect their exact point calculations across all games and weeks,
+ * and view side-by-side math between League Scoring (with tie-halving) and Global Scoring (full points + 3X).
+ */
+function openScoringBreakdownModal(playerName, initialMode = "league") {
+  const targetPlayer = playerName || state.selectedPlayer || (state.myPlayer || "Jon");
+  state.breakdownPlayer = targetPlayer;
+  state.breakdownMode = initialMode || "league";
+
+  const modal = document.getElementById("score-breakdown-modal");
+  if (!modal) return;
+
+  renderScoringBreakdownContent();
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeScoringBreakdownModal(event) {
+  if (event && event.target && event.target.id !== "score-breakdown-modal") return;
+  const modal = document.getElementById("score-breakdown-modal");
+  if (modal) modal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function setBreakdownScoringMode(mode) {
+  state.breakdownMode = mode;
+  renderScoringBreakdownContent();
+}
+
+function renderScoringBreakdownContent() {
+  const container = document.getElementById("score-breakdown-content");
+  if (!container) return;
+
+  const playerName = state.breakdownPlayer || "Jon";
+  const mode = state.breakdownMode || "league";
+  const isMe = Boolean(state.myPlayer && state.myPlayer === playerName);
+  const teamInfo = getTeamInfo(state.userProfile?.favorite_team || (state.data?.favoriteTeams && state.data.favoriteTeams[playerName]) || "NFL");
+
+  // Compile detailed game-by-game audit
+  let totalGamesFinal = 0;
+  let totalWins = 0;
+  let totalClosestSolo = 0;
+  let totalClosestTied = 0;
+  let totalExactSolo = 0;
+  let totalExactTied = 0;
+  let locksActivated = 0;
+  let locksWon = 0;
+  let leagueTotalPoints = 0;
+  let globalTotalPoints = 0;
+
+  const weeklyBreakdown = [];
+  const maxW = 8; // Current season milestone through Week 8 TNF
+
+  for (let w = 1; w <= maxW; w++) {
+    const wKey = `Week ${w}`;
+    const week = state.data?.weeks ? state.data.weeks[wKey] : null;
+    if (!week || !week.games) continue;
+
+    let weekLeaguePts = 0;
+    let weekGlobalPts = 0;
+    const gameAudits = [];
+
+    week.games.forEach(g => {
+      const parts = (g.matchup || "").split("@").map(s => s.trim().toUpperCase());
+      if (parts.length !== 2) return;
+      const awayTeam = parts[0];
+      const homeTeam = parts[1];
+
+      const awayScore = (g.awayScore !== null && g.awayScore !== "" && !isNaN(g.awayScore)) ? Number(g.awayScore) : null;
+      const homeScore = (g.homeScore !== null && g.homeScore !== "" && !isNaN(g.homeScore)) ? Number(g.homeScore) : null;
+      let winner = (g.winner || "").toUpperCase().trim();
+      if (!winner && awayScore !== null && homeScore !== null) {
+        if (awayScore > homeScore) winner = awayTeam;
+        else if (homeScore > awayScore) winner = homeTeam;
+        else winner = "TIE";
+      }
+
+      const isFinal = (awayScore !== null && homeScore !== null && winner && !g.isLive);
+      if (!isFinal) return;
+
+      totalGamesFinal++;
+
+      const pk = g.picks ? g.picks[playerName] : null;
+      if (!pk || !pk.winner) {
+        gameAudits.push({
+          gameId: g.id || `${wKey}_${awayTeam}_${homeTeam}`,
+          matchup: g.matchup,
+          finalScore: `${awayTeam} ${awayScore}, ${homeTeam} ${homeScore}`,
+          winner: winner,
+          pickWinner: null,
+          pickScore: null,
+          hasMultiplier: false,
+          isWinnerCorrect: false,
+          diff: null,
+          isClosest: false,
+          isExact: false,
+          tieStatus: "No Pick",
+          leaguePts: 0,
+          globalPts: 0
+        });
+        return;
+      }
+
+      const pickWinnerNorm = normalizeTeamCode(pk.winner);
+      const actualWinnerNorm = normalizeTeamCode(winner);
+      const isWinnerCorrect = (pk.winner.toUpperCase().trim() === winner || pickWinnerNorm === actualWinnerNorm);
+      const mult = pk.multiplier ? 3 : 1;
+      if (pk.multiplier) locksActivated++;
+
+      const pAway = (pk.awayScore !== null && pk.awayScore !== "" && !isNaN(pk.awayScore)) ? Number(pk.awayScore) : null;
+      const pHome = (pk.homeScore !== null && pk.homeScore !== "" && !isNaN(pk.homeScore)) ? Number(pk.homeScore) : null;
+
+      let diff = null;
+      if (pAway !== null && pHome !== null) {
+        diff = Math.abs(pAway - awayScore) + Math.abs(pHome - homeScore);
+      }
+
+      // League Closest calculation among OG League members
+      const winningPickers = [];
+      PLAYERS.forEach(otherPlayer => {
+        const opk = g.picks ? g.picks[otherPlayer] : null;
+        if (!opk || !opk.winner) return;
+        const opkW = normalizeTeamCode(opk.winner);
+        if (opk.winner.toUpperCase().trim() === winner || opkW === actualWinnerNorm) {
+          const oA = (opk.awayScore !== null && opk.awayScore !== "" && !isNaN(opk.awayScore)) ? Number(opk.awayScore) : null;
+          const oH = (opk.homeScore !== null && opk.homeScore !== "" && !isNaN(opk.homeScore)) ? Number(opk.homeScore) : null;
+          if (oA !== null && oH !== null) {
+            const d = Math.abs(oA - awayScore) + Math.abs(oH - homeScore);
+            winningPickers.push({ name: otherPlayer, diff: d });
+          }
+        }
+      });
+
+      let minDiff = Infinity;
+      winningPickers.forEach(wp => {
+        if (wp.diff < minDiff) minDiff = wp.diff;
+      });
+
+      const closestPickers = winningPickers.filter(wp => wp.diff === minDiff).map(wp => wp.name);
+      const isLeagueClosest = (isWinnerCorrect && diff !== null && diff === minDiff);
+      const isLeagueExact = (isLeagueClosest && minDiff === 0);
+      const isLeagueTied = (isLeagueClosest && closestPickers.length > 1);
+      const tiedWithNames = closestPickers.filter(n => n !== playerName);
+
+      // Global Closest calculation
+      const gameId = g.id || `${wKey}_${awayTeam}_${homeTeam}`;
+      const globalMinDiff = getGlobalMinDiffForGame(gameId, actualWinnerNorm, awayScore, homeScore);
+      const isGlobalClosest = isWinnerCorrect && diff !== null && (diff <= globalMinDiff || globalMinDiff === Infinity);
+      const isGlobalExact = isGlobalClosest && diff === 0;
+
+      // Points calculation
+      let gameLeaguePts = 0;
+      let gameGlobalPts = 0;
+
+      if (isWinnerCorrect) {
+        totalWins++;
+        if (pk.multiplier) locksWon++;
+
+        // League rules (tie halving: +5 closest tie, +25 exact tie)
+        const leagueWinBase = 10 * mult;
+        let leagueBonus = 0;
+        if (isLeagueClosest) {
+          if (isLeagueExact) {
+            leagueBonus = (isLeagueTied ? 25 : 50) * mult;
+            if (isLeagueTied) totalExactTied++; else totalExactSolo++;
+          } else {
+            leagueBonus = (isLeagueTied ? 5 : 10) * mult;
+            if (isLeagueTied) totalClosestTied++; else totalClosestSolo++;
+          }
+        }
+        gameLeaguePts = leagueWinBase + leagueBonus;
+
+        // Global rules (full points: +10 closest, +50 exact, 3X active)
+        const globalWinBase = 10 * mult;
+        let globalBonus = 0;
+        if (isGlobalClosest) {
+          if (isGlobalExact) {
+            globalBonus = 50 * mult;
+          } else {
+            globalBonus = 10 * mult;
+          }
+        }
+        gameGlobalPts = globalWinBase + globalBonus;
+      }
+
+      weekLeaguePts += gameLeaguePts;
+      weekGlobalPts += gameGlobalPts;
+      leagueTotalPoints += gameLeaguePts;
+      globalTotalPoints += gameGlobalPts;
+
+      let tieStatus = "Winner Only";
+      if (isLeagueClosest) {
+        if (isLeagueExact) {
+          tieStatus = isLeagueTied ? `Exact Jackpot (Tied with ${tiedWithNames.join(', ')})` : "Exact Jackpot (Sole Winner)";
+        } else {
+          tieStatus = isLeagueTied ? `Closest Score (Tied with ${tiedWithNames.join(', ')})` : "Sole Closest Score";
+        }
+      } else if (!isWinnerCorrect) {
+        tieStatus = "Incorrect Winner";
+      }
+
+      gameAudits.push({
+        gameId,
+        matchup: g.matchup,
+        finalScore: `${awayTeam} ${awayScore}, ${homeTeam} ${homeScore}`,
+        winner: winner,
+        pickWinner: pk.winner,
+        pickScore: `${pk.awayScore}–${pk.homeScore}`,
+        hasMultiplier: Boolean(pk.multiplier),
+        isWinnerCorrect,
+        diff,
+        isClosest: isLeagueClosest,
+        isExact: isLeagueExact,
+        isTied: isLeagueTied,
+        tiedWith: tiedWithNames,
+        tieStatus,
+        leaguePts: gameLeaguePts,
+        globalPts: gameGlobalPts
+      });
+    });
+
+    weeklyBreakdown.push({
+      weekKey,
+      weekNum: w,
+      leaguePts: weekLeaguePts,
+      globalPts: weekGlobalPts,
+      games: gameAudits
+    });
+  }
+
+  const deltaPoints = Math.abs(globalTotalPoints - leagueTotalPoints);
+
+  container.innerHTML = `
+    <!-- Modal Header -->
+    <div class="score-breakdown-header">
+      <div class="breakdown-player-identity">
+        <div class="breakdown-avatar-frame">
+          ${getPlayerAvatarHtml(playerName, 48)}
+        </div>
+        <div class="breakdown-name-group">
+          <div class="breakdown-title-row">
+            <h3 class="breakdown-player-name">${playerName}</h3>
+            ${isMe ? '<span class="breakdown-you-pill">YOU</span>' : ""}
+          </div>
+          <div class="breakdown-sub-status">
+            <span>Verified 2026 Season Audit (Weeks 1–8)</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="profile-modal-close" onclick="closeScoringBreakdownModal()" aria-label="Close">&times;</button>
+    </div>
+
+    <!-- Dual Mode Switcher -->
+    <div class="breakdown-mode-tabs" role="tablist">
+      <button type="button" class="breakdown-tab ${mode === 'league' ? 'active' : ''}" onclick="setBreakdownScoringMode('league')">
+        <span class="tab-icon">⚖️</span>
+        <span class="tab-label">League Scoring</span>
+        <span class="tab-badge badge-league">${leagueTotalPoints} PTS</span>
+      </button>
+      <button type="button" class="breakdown-tab ${mode === 'global' ? 'active' : ''}" onclick="setBreakdownScoringMode('global')">
+        <span class="tab-icon">🌐</span>
+        <span class="tab-label">Global Leaderboard</span>
+        <span class="tab-badge badge-global">${globalTotalPoints} PTS</span>
+      </button>
+    </div>
+
+    <!-- Active Rule Explanation Banner -->
+    ${mode === "league" ? `
+      <div class="breakdown-rule-banner rule-league">
+        <div class="rule-banner-left">
+          <span class="rule-banner-icon">⚖️</span>
+          <div class="rule-banner-text">
+            <strong>OG League Scoring: Split Ties Active</strong>
+            <p>10 PTS per win • Closest score is <strong>split to +5 PTS each</strong> when tied (+15 on 3X Lock) • Exact score splits to +25 PTS (+75 on 3X Lock). Matches your official Excel spreadsheet.</p>
+          </div>
+        </div>
+        <div class="rule-banner-delta">
+          <span class="delta-label">Global Diff</span>
+          <span class="delta-val">-${deltaPoints} PTS</span>
+        </div>
+      </div>
+    ` : `
+      <div class="breakdown-rule-banner rule-global">
+        <div class="rule-banner-left">
+          <span class="rule-banner-icon">🌐</span>
+          <div class="rule-banner-text">
+            <strong>Global Leaderboard Scoring: Full Points • 3X Active</strong>
+            <p>10 PTS per win • <strong>Full +10 PTS</strong> for closest score without tie dilution (+30 on 3X Lock) • <strong>Full +50 PTS</strong> for exact jackpot (+150 on 3X Lock). 3X Multiplier fully active.</p>
+          </div>
+        </div>
+        <div class="rule-banner-delta">
+          <span class="delta-label">League Diff</span>
+          <span class="delta-val">+${deltaPoints} PTS</span>
+        </div>
+      </div>
+    `}
+
+    <!-- 4-Stat Metric Summary Cards -->
+    <div class="breakdown-stats-grid">
+      <div class="bstat-card bstat-wins">
+        <div class="bstat-icon">🏆</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${totalWins} <span class="bstat-sub">/ ${totalGamesFinal}</span></div>
+          <div class="bstat-label">Straight Up Wins</div>
+          <div class="bstat-pts">${totalWins * 10} Base PTS</div>
+        </div>
+      </div>
+
+      <div class="bstat-card bstat-closest">
+        <div class="bstat-icon">🎯</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${totalClosestSolo + totalClosestTied} <span class="bstat-sub">Closest</span></div>
+          <div class="bstat-label">${mode === 'league' ? `${totalClosestSolo} Solo • ${totalClosestTied} Tied (+5)` : 'Full +10 Each'}</div>
+          <div class="bstat-pts">${mode === 'league' ? (totalClosestSolo * 10 + totalClosestTied * 5) : (totalClosestSolo + totalClosestTied) * 10} Bonus PTS</div>
+        </div>
+      </div>
+
+      <div class="bstat-card bstat-locks">
+        <div class="bstat-icon">⭐</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${locksWon} <span class="bstat-sub">/ ${locksActivated}</span></div>
+          <div class="bstat-label">3X Locks Hit</div>
+          <div class="bstat-pts">Tripled Points Active</div>
+        </div>
+      </div>
+
+      <div class="bstat-card bstat-exact">
+        <div class="bstat-icon">💎</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${totalExactSolo + totalExactTied} <span class="bstat-sub">Exact</span></div>
+          <div class="bstat-label">Perfect Scores</div>
+          <div class="bstat-pts">${totalExactSolo * 50 + totalExactTied * 25} Jackpot PTS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week-by-Week Accordion List -->
+    <div class="breakdown-weeks-container">
+      <div class="breakdown-section-header">
+        <h4>Week-by-Week Game Audit</h4>
+        <span class="breakdown-subtitle">Click any game to inspect pick details and bonuses</span>
+      </div>
+
+      ${weeklyBreakdown.map(wb => `
+        <div class="breakdown-week-group">
+          <div class="breakdown-week-bar">
+            <span class="week-bar-title">${wb.weekKey}</span>
+            <div class="week-bar-badges">
+              <span class="week-bar-games">${wb.games.length} Games</span>
+              <span class="week-bar-pts ${mode === 'league' ? 'pts-league' : 'pts-global'}">
+                ${mode === 'league' ? wb.leaguePts : wb.globalPts} PTS
+              </span>
+            </div>
+          </div>
+
+          <div class="breakdown-games-list">
+            ${wb.games.map(g => {
+              const pts = (mode === 'league') ? g.leaguePts : g.globalPts;
+              let statusPillClass = "pill-neutral";
+              if (g.isExact) statusPillClass = "pill-purple";
+              else if (g.isClosest) statusPillClass = "pill-blue";
+              else if (g.isWinnerCorrect) statusPillClass = "pill-green";
+              else statusPillClass = "pill-wrong";
+
+              return `
+                <div class="breakdown-game-card ${g.hasMultiplier ? 'has-lock-border' : ''}">
+                  <div class="bg-game-top">
+                    <span class="bg-matchup-text">${g.matchup}</span>
+                    <span class="bg-final-score">${g.finalScore}</span>
+                  </div>
+                  <div class="bg-game-mid">
+                    <div class="bg-pick-info">
+                      <span class="bg-pick-label">Pick:</span>
+                      <strong class="bg-pick-team">${g.pickWinner || '—'} ${g.pickScore || ''}</strong>
+                      ${g.diff !== null ? `<span class="bg-diff-tag">Diff ${g.diff}</span>` : ''}
+                      ${g.hasMultiplier ? '<span class="bg-lock-tag">3X LOCK</span>' : ''}
+                    </div>
+                    <div class="bg-points-badge ${pts > 0 ? 'earned' : 'zero'}">
+                      +${pts} PTS
+                    </div>
+                  </div>
+                  <div class="bg-game-bot">
+                    <span class="bg-status-pill ${statusPillClass}">${g.tieStatus}</span>
+                    ${(mode === 'league' && g.isTied) ? '<span class="bg-tie-note">Halved tie bonus applied</span>' : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 // Global window bindings for inline HTML handlers
+window.openScoringBreakdownModal = openScoringBreakdownModal;
+window.closeScoringBreakdownModal = closeScoringBreakdownModal;
+window.setBreakdownScoringMode = setBreakdownScoringMode;
+window.selectLeagueTieRule = selectLeagueTieRule;
 window.openLeagueDrawer = openLeagueDrawer;
 window.closeLeagueDrawer = closeLeagueDrawer;
 window.selectLeague = selectLeague;

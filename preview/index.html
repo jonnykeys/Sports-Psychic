@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=26.0">
+  <link rel="stylesheet" href="style.css?v=27.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -898,6 +898,27 @@
             </div>
           </div>
         </div>
+        <div class="auth-field-row" id="league-tie-rule-row">
+          <label class="auth-label">Tie-Breaking & Closest Bonus Rule</label>
+          <div class="sheet-format-options">
+            <div class="sheet-format-radio active" id="league-tie-split" onclick="selectLeagueTieRule('split_ties')">
+              <input type="radio" name="league-tie-rule-val" value="split_ties" checked style="display: none;">
+              <div class="format-radio-icon">⚖️</div>
+              <div class="format-radio-text">
+                <div class="format-radio-title">Split Points on Ties (OG League Rule)</div>
+                <div class="format-radio-desc">Tied closest scores split bonus to +5 PTS each (+15 on 3X). Exact ties award +25 PTS (+75 on 3X).</div>
+              </div>
+            </div>
+            <div class="sheet-format-radio" id="league-tie-full" onclick="selectLeagueTieRule('full_ties')">
+              <input type="radio" name="league-tie-rule-val" value="full_ties" style="display: none;">
+              <div class="format-radio-icon">🎯</div>
+              <div class="format-radio-text">
+                <div class="format-radio-title">Full Points on Ties (Global Rule)</div>
+                <div class="format-radio-desc">All players tied for closest receive full +10 PTS (+30 on 3X). Exact ties award full +50 PTS.</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="auth-submit-row" style="margin-top: 14px;">
           <button type="button" class="btn-auth-primary" id="btn-submit-create-league" onclick="handleCreateLeagueSubmit()">
@@ -912,11 +933,20 @@
     </div>
   </div>
 
+  <!-- PLAYER SCORING BREAKDOWN MODAL -->
+  <div id="score-breakdown-modal" class="auth-modal-backdrop" onclick="closeScoringBreakdownModal(event)">
+    <div class="score-breakdown-dialog" onclick="event.stopPropagation()">
+      <div id="score-breakdown-content">
+        <!-- Dynamically populated by renderScoringBreakdownContent() -->
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div id="toast-notice" class="toast-notice" role="alert"></div>
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=26.0"></script>
+  <script src="app.js?v=27.0"></script>
 </body>
 </html>
