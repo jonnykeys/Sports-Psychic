@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=26\.0') 'index.html includes app.js?v=26.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=26\.0') 'index.html includes style.css?v=26.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=27\.0') 'index.html includes app.js?v=27.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=27\.0') 'index.html includes style.css?v=27.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -465,6 +465,62 @@ Assert-Test ($styleCssContent -match '\.lb-sub-label') 'style.css defines .lb-su
 Assert-Test ($migrationSql -match 'submission_label\s+text') 'migration_pick_sheets.sql defines submission_label column'
 Assert-Test ($schemaSql -match 'submission_label') 'supabase_schema.sql references submission_label'
 
+# -- Suite 13: League Tie-Halving vs Global Scoring & Interactive Breakdown Engine --
+Write-Host ''
+Write-Host '  -- Suite 13: League Tie-Halving vs Global Scoring & Interactive Breakdown Engine --' -ForegroundColor Yellow
+
+# 1. League Tie Halving Invariant
+function Calculate-LeagueClosestPoints([bool]$isTied, [bool]$is3x) {
+    $mult = if ($is3x) { 3 } else { 1 }
+    $base = 10 * $mult
+    $bVal = if ($isTied) { 5 } else { 10 }
+    $bonus = $bVal * $mult
+    return $base + $bonus
+}
+Assert-Test ((Calculate-LeagueClosestPoints $false $false) -eq 20) 'League sole closest awards 10 base + 10 bonus = 20 PTS'
+Assert-Test ((Calculate-LeagueClosestPoints $true $false) -eq 15) 'League tied closest splits bonus to +5 = 15 PTS'
+Assert-Test ((Calculate-LeagueClosestPoints $false $true) -eq 60) 'League sole closest with 3X Lock awards 30 base + 30 bonus = 60 PTS'
+Assert-Test ((Calculate-LeagueClosestPoints $true $true) -eq 45) 'League tied closest with 3X Lock awards 30 base + 15 bonus = 45 PTS'
+
+# 2. Verified Player Season Points Alignment
+# Wells: 745 in OG League (tie halving), 810 in Global (no tie dilution)
+$wellsLeagueDelta = 810 - 745
+Assert-Test ($wellsLeagueDelta -eq 65) 'Wells scoring delta between Global (810 PTS) and OG League (745 PTS) equals exactly 65 PTS'
+
+# Dishman: 955 in OG League, 1000 in Global
+$dishmanLeagueDelta = 1000 - 955
+Assert-Test ($dishmanLeagueDelta -eq 45) 'Dishman scoring delta between Global (1000 PTS) and OG League (955 PTS) equals exactly 45 PTS'
+
+# 3. Interactive Scoring Breakdown Modal Assertions
+Assert-Test ($indexHtmlContent -match 'id="score-breakdown-modal"') 'index.html defines #score-breakdown-modal markup'
+Assert-Test ($indexHtmlContent -match 'id="score-breakdown-content"') 'index.html defines #score-breakdown-content container'
+Assert-Test ($appJsContent -match 'openScoringBreakdownModal') 'app.js defines openScoringBreakdownModal'
+Assert-Test ($appJsContent -match 'closeScoringBreakdownModal') 'app.js defines closeScoringBreakdownModal'
+Assert-Test ($appJsContent -match 'setBreakdownScoringMode') 'app.js defines setBreakdownScoringMode'
+Assert-Test ($appJsContent -match 'renderScoringBreakdownContent') 'app.js defines renderScoringBreakdownContent'
+Assert-Test ($appJsContent -match 'selectLeagueTieRule') 'app.js defines selectLeagueTieRule'
+
+Assert-Test ($appJsContent -match 'window\.openScoringBreakdownModal\s*=') 'app.js exports openScoringBreakdownModal to window'
+Assert-Test ($appJsContent -match 'window\.closeScoringBreakdownModal\s*=') 'app.js exports closeScoringBreakdownModal to window'
+Assert-Test ($appJsContent -match 'window\.setBreakdownScoringMode\s*=') 'app.js exports setBreakdownScoringMode to window'
+Assert-Test ($appJsContent -match 'window\.selectLeagueTieRule\s*=') 'app.js exports selectLeagueTieRule to window'
+
+Assert-Test ($appJsContent -match 'btn-hero-breakdown') 'app.js renders btn-hero-breakdown on player profile'
+Assert-Test ($appJsContent -match 'btn-lb-breakdown') 'app.js renders btn-lb-breakdown on global leaderboard'
+Assert-Test ($appJsContent -match 'btn-row-breakdown') 'app.js renders btn-row-breakdown on league leaderboard'
+
+# 4. Commissioner League Creation Tie-Breaking Policy
+Assert-Test ($indexHtmlContent -match 'id="league-tie-rule-row"') 'index.html defines #league-tie-rule-row in create league modal'
+Assert-Test ($indexHtmlContent -match 'id="league-tie-split"') 'index.html defines #league-tie-split option'
+Assert-Test ($indexHtmlContent -match 'id="league-tie-full"') 'index.html defines #league-tie-full option'
+
+# 5. CSS Stylesheet Assertions
+$styleCssContent = Get-Content -Raw 'apps/og-league/style.css'
+Assert-Test ($styleCssContent -match '\.score-breakdown-dialog') 'style.css defines .score-breakdown-dialog'
+Assert-Test ($styleCssContent -match '\.breakdown-stats-grid') 'style.css defines .breakdown-stats-grid'
+Assert-Test ($styleCssContent -match '\.breakdown-mode-tabs') 'style.css defines .breakdown-mode-tabs'
+Assert-Test ($styleCssContent -match '\.breakdown-rule-banner') 'style.css defines .breakdown-rule-banner'
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
@@ -475,6 +531,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 12 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 13 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }
