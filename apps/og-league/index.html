@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League 🏈</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=25.0">
+  <link rel="stylesheet" href="style.css?v=26.0">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -107,7 +107,7 @@
                 <span class="standings-sub-info">Season Standings</span>
               </div>
               <div class="standings-lead-info">
-                <strong>Caleb</strong> leads with <span class="pts-glow">630 PTS</span>
+                <strong id="hero-global-lead-name">Dishman</strong> leads with <span class="pts-glow" id="hero-global-lead-pts">1,000 PTS</span>
               </div>
             </div>
           </div>
@@ -219,8 +219,8 @@
         <!-- Weekly Forecast Progress Bar -->
         <div class="command-center-progress-card">
           <div class="progress-title-row">
-            <span class="progress-title">Week <span id="hero-week-num">4</span> Forecast</span>
-            <span id="hero-picks-progress-count" class="progress-count-pill">0 of 16 Complete</span>
+            <span class="progress-title">Week <span id="hero-week-num">8</span> Forecast</span>
+            <span id="hero-picks-progress-count" class="progress-count-pill">0 of 14 Complete</span>
           </div>
           <div class="picks-progress-track">
             <div id="hero-picks-progress-bar" class="picks-progress-fill" style="width: 0%;"></div>
@@ -377,7 +377,7 @@
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
             </span>
-            <span id="label-toggle-weekly" class="segmented-label">Week 4 Standings</span>
+            <span id="label-toggle-weekly" class="segmented-label">Week 8 Standings</span>
           </button>
         </div>
       </div>
@@ -400,8 +400,8 @@
     <section id="tab-matchups" class="tab-view" role="tabpanel">
       <div id="matchups-week-banner" class="week-summary-banner">
         <div class="week-summary-left">
-          <span id="matchup-banner-title" class="week-summary-title">Week 4 Matchups</span>
-          <span id="matchup-banner-stat" class="week-summary-stat">16 Games</span>
+          <span id="matchup-banner-title" class="week-summary-title">Week 8 Matchups</span>
+          <span id="matchup-banner-stat" class="week-summary-stat">14 Games</span>
         </div>
         <button id="toggle-all-matchups-btn" class="btn-toggle-all-picks" type="button" onclick="toggleAllMatchups()" title="Collapse or expand all game picks">Collapse All</button>
       </div>
@@ -458,7 +458,7 @@
 
         <!-- Player picks for selected week -->
         <div class="player-picks-section-header">
-          <span id="player-week-title" class="player-picks-title">Week 4 Predictions</span>
+          <span id="player-week-title" class="player-picks-title">Week 8 Predictions</span>
         </div>
         <div id="player-picks-container">
           <!-- Rendered by app.js -->
@@ -917,6 +917,6 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=25.0"></script>
+  <script src="app.js?v=26.0"></script>
 </body>
 </html>

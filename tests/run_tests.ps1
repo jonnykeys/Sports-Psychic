@@ -69,6 +69,7 @@ Assert-Test ((Get-NFLWeek '2026-08-20') -eq 1) 'Pre-season date defaults to Week
 Assert-Test ((Get-NFLWeek '2026-09-09') -eq 1) 'Sep 9, 2026 kickoff is Week 1'
 Assert-Test ((Get-NFLWeek '2026-09-16') -eq 2) 'Sep 16, 2026 Wednesday rolls over to Week 2'
 Assert-Test ((Get-NFLWeek '2026-09-30') -eq 4) 'Sep 30, 2026 is Week 4'
+Assert-Test ((Get-NFLWeek '2026-10-31') -eq 8) 'Oct 31, 2026 is Week 8'
 
 function Test-GameLocked([datetime]$kickoff, [datetime]$current) {
     return ($current -ge $kickoff)
@@ -319,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=25\.0') 'index.html includes app.js?v=25.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=25\.0') 'index.html includes style.css?v=25.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=26\.0') 'index.html includes app.js?v=26.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=26\.0') 'index.html includes style.css?v=26.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -330,6 +331,23 @@ Assert-Test ($appJsContent -match 'openGlobalLeaderboardModal') 'app.js defines 
 Assert-Test ($appJsContent -match 'loadAndRenderGlobalLeaderboard') 'app.js defines loadAndRenderGlobalLeaderboard'
 Assert-Test ($appJsContent -match 'window\.openGlobalLeaderboardModal = openGlobalLeaderboardModal') 'app.js exports openGlobalLeaderboardModal to window'
 Assert-Test ($appJsContent -match 'window\.loadAndRenderGlobalLeaderboard = loadAndRenderGlobalLeaderboard') 'app.js exports loadAndRenderGlobalLeaderboard to window'
+
+Assert-Test ($appJsContent -match 'updateGlobalStandingsRibbon') 'app.js defines updateGlobalStandingsRibbon'
+Assert-Test ($appJsContent -match 'window\.updateGlobalStandingsRibbon = updateGlobalStandingsRibbon') 'app.js exports updateGlobalStandingsRibbon to window'
+Assert-Test ($appJsContent -match 'getGlobalMinDiffForGame') 'app.js defines getGlobalMinDiffForGame'
+Assert-Test ($appJsContent -match 'window\.getGlobalMinDiffForGame = getGlobalMinDiffForGame') 'app.js exports getGlobalMinDiffForGame to window'
+Assert-Test ($indexHtmlContent -match 'id="hero-global-lead-name">Dishman') 'index.html hero ribbon displays Dishman'
+Assert-Test ($indexHtmlContent -match 'id="hero-global-lead-pts">1,000 PTS') 'index.html hero ribbon displays 1,000 PTS'
+
+# Universal Global Closest Scoring Gate: strictly awarded ONLY if diff matches global minimum
+function Test-GlobalClosestGate($playerDiff, $globalMinDiff, [bool]$pickedWinner) {
+    if (-not $pickedWinner) { return $false }
+    return ($playerDiff -le $globalMinDiff -or $globalMinDiff -eq [double]::PositiveInfinity)
+}
+Assert-Test (Test-GlobalClosestGate 2 2 $true) 'Global Closest awarded when user matches global minimum diff'
+Assert-Test (Test-GlobalClosestGate 1 3 $true) 'Global Closest awarded when user beats global minimum diff'
+Assert-Test (-not (Test-GlobalClosestGate 4 2 $true)) 'Global Closest strictly denied when competitor was closer in global pool'
+Assert-Test (-not (Test-GlobalClosestGate 2 2 $false)) 'Global Closest strictly denied when user picked losing team'
 
 Assert-Test ($styleCssContent -match '\.global-leaderboard-dialog') 'style.css defines .global-leaderboard-dialog'
 Assert-Test ($styleCssContent -match '\.global-lb-table') 'style.css defines .global-lb-table'
