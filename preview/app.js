@@ -2532,9 +2532,9 @@ function renderLeaderboard() {
   if (labelWeeklyBtn) labelWeeklyBtn.textContent = `Week ${state.currentWeek} Standings`;
 
   if (sectionTitleEl) {
-    sectionTitleEl.innerHTML = isWeekly
-      ? `Week ${state.currentWeek} Standings <span class="rules-header-pill">Split Ties (+5 PTS)</span>`
-      : `League Standings <span class="rules-header-pill">Split Ties (+5 PTS)</span>`;
+    sectionTitleEl.textContent = isWeekly
+      ? `Week ${state.currentWeek} Standings`
+      : "League Standings";
   }
 
   const sorted = isWeekly
@@ -2751,7 +2751,6 @@ function renderLeaderboard() {
         </div>
         <div class="leader-right">
           ${rightSideHtml}
-          <button type="button" class="btn-row-breakdown" onclick="event.stopPropagation(); openScoringBreakdownModal('${player.name}', 'league')" title="View ${player.name}'s scoring breakdown">📊</button>
         </div>
       </div>
     `;
@@ -3671,10 +3670,6 @@ function renderPlayers() {
     </div>
 
     <div class="player-hero-actions-bar">
-      <button type="button" class="btn-hero-action btn-hero-breakdown" onclick="openScoringBreakdownModal('${state.selectedPlayer}')" title="View detailed mathematical scoring breakdown">
-        <span class="action-btn-icon">📊</span>
-        <span>Score Breakdown</span>
-      </button>
       <button type="button" class="btn-hero-action btn-hero-compare" onclick="startH2HComparison('${state.selectedPlayer}')" title="Compare against another player in Head-to-Head">
         <span class="action-btn-icon">⚔️</span>
         <span>Compare Players</span>
@@ -9544,10 +9539,10 @@ async function loadAndRenderGlobalLeaderboard() {
  * Allows players to inspect their exact point calculations across all games and weeks,
  * and view side-by-side math between League Scoring (with tie-halving) and Global Scoring (full points + 3X).
  */
-function openScoringBreakdownModal(playerName, initialMode = "league") {
+function openScoringBreakdownModal(playerName, initialMode = "global") {
   const targetPlayer = playerName || state.selectedPlayer || (state.myPlayer || "Jon");
   state.breakdownPlayer = targetPlayer;
-  state.breakdownMode = initialMode || "league";
+  state.breakdownMode = initialMode || "global";
 
   const modal = document.getElementById("score-breakdown-modal");
   if (!modal) return;
