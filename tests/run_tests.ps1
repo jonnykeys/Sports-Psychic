@@ -380,6 +380,7 @@ Assert-Test ($styleCssContent -match '\.btn-guest-save-action') 'style.css defin
 # Guest Home Social Proof Strip & Option B Scoring Guide Assertions
 Assert-Test ($indexHtmlContent -match 'guest-standings-strip') 'index.html defines guest-standings-strip social proof ribbon'
 Assert-Test ($indexHtmlContent -match 'guest-rules-card') 'index.html defines Option B guest-rules-card'
+Assert-Test ($indexHtmlContent -match 'guest-rules-card[\s\S]*?guest-standings-strip') 'index.html renders guest-rules-card above guest-standings-strip'
 Assert-Test ($indexHtmlContent -match 'lobby-quick-invite-drawer') 'index.html defines lobby-quick-invite-drawer'
 Assert-Test ($appJsContent -match 'toggleLobbyInviteInput') 'app.js defines toggleLobbyInviteInput'
 Assert-Test ($appJsContent -match 'window\.toggleLobbyInviteInput = toggleLobbyInviteInput') 'app.js exports toggleLobbyInviteInput to window'
