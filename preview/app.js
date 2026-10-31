@@ -702,12 +702,10 @@ function calculateGamePicksPoints(game) {
         pk.isClosest = true;
         if (isExact) {
           pk.exact = true;
-          const bonusPool = (tieCount > 1) ? 25 : 50;
-          bonusPoints = bonusPool * mult;
+          bonusPoints = 50 * mult;
         } else {
           pk.exact = false;
-          const bonusPool = (tieCount > 1) ? 5 : 10;
-          bonusPoints = bonusPool * mult;
+          bonusPoints = 10 * mult;
         }
       }
 
@@ -743,22 +741,23 @@ function computeSeasonLeaderboard(dataObj, throughWeek = null) {
   }
 
   const list = PLAYERS.map(pName => {
-    let totalPts = 0;
-    if (cloudMap[pName] !== undefined) {
-      totalPts = cloudMap[pName];
-    } else if (data && data.weeks) {
+    let gamesPts = 0;
+    if (data && data.weeks) {
       for (let w = 1; w <= maxW; w++) {
         const week = data.weeks[`Week ${w}`];
         if (week && week.games && Array.isArray(week.games)) {
           week.games.forEach(g => {
             const pk = g.picks ? g.picks[pName] : null;
             if (pk && typeof pk.points === "number") {
-              totalPts += pk.points;
+              gamesPts += pk.points;
             }
           });
         }
       }
     }
+
+    // Prioritize live verified games calculation, never allowing stale cloud standings to suppress current week scores
+    const totalPts = Math.max(gamesPts, (cloudMap[pName] !== undefined ? cloudMap[pName] : 0));
 
     return {
       name: pName,
@@ -1813,6 +1812,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
       } catch (e) {}
+      updateGlobalStandingsRibbon();
     }
   } catch (err) {
     console.warn("ESPN Scoreboard sync warning (using cached/sheet data):", err);
@@ -1935,6 +1935,7 @@ async function catchUpPastWeeks() {
     if (typeof updateStripButtons === "function") {
       updateStripButtons();
     }
+    updateGlobalStandingsRibbon();
   } finally {
     isCatchingUpPastWeeks = false;
   }
@@ -2315,6 +2316,7 @@ function parseNFLStandingsCSV(csvText) {
 // UI RENDERING - APP MASTER
 // =========================================================
 function renderApp() {
+  updateGlobalStandingsRibbon();
   loadSoloPickSheets().catch(() => {});
   updateAppShellForMode();
   renderHeaderProfile();
@@ -5131,7 +5133,40 @@ function closeLeagueDrawer(event) {
   document.body.style.overflow = "";
 }
 
+/**
+ * Dynamically binds the Global Standings Social Proof Strip in the Lobby Hero
+ * to ensure it always accurately reflects the live Week leader and point total.
+ */
+function updateGlobalStandingsRibbon() {
+  const leadNameEl = document.getElementById("hero-global-lead-name");
+  const leadPtsEl = document.getElementById("hero-global-lead-pts");
+  if (!leadNameEl && !leadPtsEl) return;
+
+  let leaderName = "Dishman";
+  let leaderPts = 1000;
+
+  let board = (state.data && Array.isArray(state.data.leaderboard) && state.data.leaderboard.length > 0)
+    ? state.data.leaderboard
+    : null;
+  if (!board && typeof computeSeasonLeaderboard === "function" && state.data) {
+    board = computeSeasonLeaderboard(state.data);
+  }
+  if (!board && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && Array.isArray(OG_LEAGUE_INITIAL_DATA.leaderboard)) {
+    board = OG_LEAGUE_INITIAL_DATA.leaderboard;
+  }
+
+  if (board && board.length > 0) {
+    leaderName = board[0].name || board[0].username || "Dishman";
+    leaderPts = board[0].points || board[0].total_points || 1000;
+  }
+
+  if (leadNameEl) leadNameEl.textContent = leaderName;
+  if (leadPtsEl) leadPtsEl.textContent = `${Number(leaderPts).toLocaleString()} PTS`;
+}
+
 function renderLobbyHero() {
+  updateGlobalStandingsRibbon();
+
   const guestBlock = document.getElementById("hero-guest-block");
   const authBlock = document.getElementById("hero-auth-block");
   const heroName = document.getElementById("hero-user-name");
@@ -5157,7 +5192,7 @@ function renderLobbyHero() {
   if (heroName) heroName.textContent = firstName;
 
   // Active week & pick progress calculation
-  const currentWk = state.currentWeek || getCurrentNFLWeek() || 4;
+  const currentWk = state.currentWeek || getCurrentNFLWeek() || 8;
   if (weekNumEl) weekNumEl.textContent = currentWk;
 
   const weekKey = `Week ${currentWk}`;
@@ -5171,7 +5206,7 @@ function renderLobbyHero() {
   const sheet = getOrCreateMasterPickSheet();
   const mode = state.soloCampaignMode || "season";
   const activePicks = getActiveSoloPicks(sheet, mode);
-  const totalCount = weekGames.length || 16;
+  const totalCount = weekGames.length || 14;
   let completedCount = 0;
   let has3xLock = false;
 
@@ -5206,7 +5241,14 @@ function renderLobbyHero() {
 
   if (seasonRankEl) {
     if (isSeasonLocked) {
-      seasonRankEl.textContent = "#2";
+      let r = 1;
+      const board = (state.data && state.data.leaderboard) || [];
+      for (const entry of board) {
+        if ((entry.points || 0) > seasonPts) {
+          r++;
+        }
+      }
+      seasonRankEl.textContent = `#${r}`;
     } else {
       seasonRankEl.textContent = "Draft";
     }
@@ -5767,6 +5809,46 @@ function isSoloPickComplete(gameId, pick) {
 }
 
 /**
+ * Calculates the absolute minimum score difference across ALL participants in the global leaderboard
+ * for a specific game, considering only predictions that chose the winning team.
+ */
+function getGlobalMinDiffForGame(gameId, actualWinnerNorm, awayScore, homeScore) {
+  let minDiff = Infinity;
+  const game = findGameById(gameId);
+  if (!game) return Infinity;
+
+  // 1. Check all 12 OG League baseline predictions for this game
+  const ogPicks = game.picks || {};
+  for (const pName in ogPicks) {
+    const pk = ogPicks[pName];
+    if (pk && pk.winner && normalizeTeamCode(pk.winner) === actualWinnerNorm) {
+      const oA = parseInt(pk.awayScore, 10);
+      const oH = parseInt(pk.homeScore, 10);
+      if (!isNaN(oA) && !isNaN(oH)) {
+        const d = Math.abs(oA - awayScore) + Math.abs(oH - homeScore);
+        if (d < minDiff) minDiff = d;
+      }
+    }
+  }
+
+  // 2. Check any custom league / global submissions for this game
+  if (state.customLeaguePicks && Array.isArray(state.customLeaguePicks[gameId])) {
+    state.customLeaguePicks[gameId].forEach(cp => {
+      if (cp && cp.picked_winner && normalizeTeamCode(cp.picked_winner) === actualWinnerNorm) {
+        const oA = parseInt(cp.predicted_away, 10);
+        const oH = parseInt(cp.predicted_home, 10);
+        if (!isNaN(oA) && !isNaN(oH)) {
+          const d = Math.abs(oA - awayScore) + Math.abs(oH - homeScore);
+          if (d < minDiff) minDiff = d;
+        }
+      }
+    });
+  }
+
+  return minDiff;
+}
+
+/**
  * Computes live points, pick totals, and accuracy rate for a solo sheet.
  * A pick is only counted in total_picks if it has a winning team with a winning score.
  */
@@ -5807,25 +5889,15 @@ function evaluatePicksDict(picks) {
           pick.isClosest = true;
           pick.diff = 0;
         } else {
-          // Approach A: Global Closest check across all predictions for this game
-          let minDiff = Math.abs(pAway - game.awayScore) + Math.abs(pHome - game.homeScore);
-          if (game.picks) {
-            for (const pName in game.picks) {
-              const otherPick = game.picks[pName];
-              if (otherPick && normalizeTeamCode(otherPick.winner) === actualWinnerNorm) {
-                const oA = parseInt(otherPick.awayScore, 10);
-                const oH = parseInt(otherPick.homeScore, 10);
-                if (!isNaN(oA) && !isNaN(oH)) {
-                  const d = Math.abs(oA - game.awayScore) + Math.abs(oH - game.homeScore);
-                  if (d < minDiff) minDiff = d;
-                }
-              }
-            }
-          }
+          // Approach A: Global Closest check across everybody in the global leaderboard
           const userDiff = Math.abs(pAway - game.awayScore) + Math.abs(pHome - game.homeScore);
           pick.diff = userDiff;
-          if (userDiff <= minDiff) {
-            // Player is uniquely closest or tied for closest: Approach A awards full +10 pts (* mult)
+
+          const globalMinDiff = getGlobalMinDiffForGame(gameId, actualWinnerNorm, game.awayScore, game.homeScore);
+
+          // Additional CLOSEST points (+10 PTS, or +30 PTS with 3X Lock) are strictly awarded
+          // ONLY if the player's prediction difference matches the closest out of everybody in the global leaderboard
+          if (userDiff <= globalMinDiff || globalMinDiff === Infinity) {
             pts += (10 * mult);
             pick.isClosest = true;
           } else {
@@ -5995,9 +6067,12 @@ function extractOgLeaguePicksForPlayer(playerName) {
  */
 function evaluateWeeklyOgPicks(playerName, weekNumber) {
   const weekKey = `Week ${weekNumber}`;
-  const weekData = (typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks)
-    ? OG_LEAGUE_INITIAL_DATA.weeks[weekKey]
+  let weekData = (state.data && state.data.weeks && state.data.weeks[weekKey])
+    ? state.data.weeks[weekKey]
     : null;
+  if (!weekData && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks) {
+    weekData = OG_LEAGUE_INITIAL_DATA.weeks[weekKey];
+  }
   if (!weekData || !Array.isArray(weekData.games)) {
     return { totalPicks: 0, totalPoints: 0, accuracyRate: null };
   }
@@ -9270,7 +9345,7 @@ async function loadAndRenderGlobalLeaderboard() {
     "Ethan": "NYJ", "Brett": "GB", "Wells": "IND", "Rob": "LV"
   };
 
-  const activeNFLWeek = state.currentWeek || getCurrentNFLWeek() || 1;
+  const activeNFLWeek = state.currentWeek || getCurrentNFLWeek() || 8;
 
   if (typeof PLAYERS !== "undefined" && Array.isArray(PLAYERS)) {
     PLAYERS.forEach(playerName => {
@@ -9325,6 +9400,10 @@ async function loadAndRenderGlobalLeaderboard() {
   entries.forEach((e, idx) => {
     e.rank = idx + 1;
   });
+
+  if (format === "season" && entries.length > 0) {
+    updateGlobalStandingsRibbon();
+  }
 
   // Render Table
   let userEntry = entries.find(e => e.isCurrentUser);
@@ -9525,3 +9604,5 @@ window.renderOption2Card = renderOption2Card;
 window.scrollToLobbyGames = scrollToLobbyGames;
 window.updateGuestSaveBanner = updateGuestSaveBanner;
 window.toggleLobbyInviteInput = toggleLobbyInviteInput;
+window.updateGlobalStandingsRibbon = updateGlobalStandingsRibbon;
+window.getGlobalMinDiffForGame = getGlobalMinDiffForGame;
