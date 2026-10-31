@@ -505,9 +505,9 @@ Assert-Test ($appJsContent -match 'window\.closeScoringBreakdownModal\s*=') 'app
 Assert-Test ($appJsContent -match 'window\.setBreakdownScoringMode\s*=') 'app.js exports setBreakdownScoringMode to window'
 Assert-Test ($appJsContent -match 'window\.selectLeagueTieRule\s*=') 'app.js exports selectLeagueTieRule to window'
 
-Assert-Test ($appJsContent -match 'btn-hero-breakdown') 'app.js renders btn-hero-breakdown on player profile'
 Assert-Test ($appJsContent -match 'btn-lb-breakdown') 'app.js renders btn-lb-breakdown on global leaderboard'
-Assert-Test ($appJsContent -match 'btn-row-breakdown') 'app.js renders btn-row-breakdown on league leaderboard'
+Assert-Test ($appJsContent -notmatch 'btn-hero-breakdown') 'app.js contains no btn-hero-breakdown in League player profile'
+Assert-Test ($appJsContent -notmatch 'btn-row-breakdown') 'app.js contains no btn-row-breakdown in League leaderboard rows'
 
 # 4. Commissioner League Creation Tie-Breaking Policy
 Assert-Test ($indexHtmlContent -match 'id="league-tie-rule-row"') 'index.html defines #league-tie-rule-row in create league modal'
