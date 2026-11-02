@@ -387,6 +387,10 @@ Assert-Test ($appJsContent -match 'window\.toggleLobbyInviteInput = toggleLobbyI
 Assert-Test ($styleCssContent -match '\.guest-standings-strip') 'style.css defines .guest-standings-strip styling'
 Assert-Test ($styleCssContent -match '\.guest-rules-card') 'style.css defines .guest-rules-card styling'
 Assert-Test ($styleCssContent -match '\.rule-sub-card\.pts-win') 'style.css defines Option B League colors (.pts-win)'
+Assert-Test ($indexHtmlContent -match 'cta-desktop') 'index.html defines cta-desktop label'
+Assert-Test ($indexHtmlContent -match 'cta-mobile') 'index.html defines cta-mobile label'
+Assert-Test ($styleCssContent -match 'GUEST HOME MOBILE RESPONSIVE POLISH') 'style.css defines guest home mobile responsive polish'
+Assert-Test ($styleCssContent -match 'grid-template-columns:\s*1\.22fr\s*1fr;') 'style.css defines balanced mobile CTA grid'
 Assert-Test ($styleCssContent -match 'body\.is-lobby-mode \.bottom-nav \[data-tab="leaderboard"\]\s*\{\s*display:\s*flex\s*!important;') 'style.css allows Standings tab in lobby mode'
 
 # -- Suite 11: Independent Season Prophecy vs Weekly Vision Pick Separation --
