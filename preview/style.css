@@ -5658,6 +5658,14 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   transition: transform 0.15s ease;
 }
 
+.standings-strip-cta .cta-mobile {
+  display: none;
+}
+
+.standings-strip-cta .cta-desktop {
+  display: inline;
+}
+
 .guest-standings-strip:hover .standings-strip-cta {
   transform: translateX(2px);
   color: #7dd3fc;
@@ -5810,12 +5818,13 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   width: 100%;
   box-sizing: border-box;
   padding-left: 34px;
+  align-items: stretch;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   .rule-step-subgrid {
-    grid-template-columns: 1fr;
     padding-left: 0;
+    gap: 6px;
   }
 }
 
@@ -5824,7 +5833,9 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   border-radius: 8px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 2px;
+  min-height: 48px;
 }
 
 .rule-sub-header {
@@ -5883,6 +5894,13 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   font-size: 0.72rem;
   font-weight: 800;
   flex-wrap: wrap;
+}
+
+.formula-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 .formula-op {
@@ -5945,6 +5963,208 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   background: rgba(245, 184, 0, 0.18);
   border: 1px solid rgba(245, 184, 0, 0.45);
   color: #f5b800;
+}
+
+/* =========================================================
+   GUEST HOME MOBILE RESPONSIVE POLISH (max-width: 480px)
+   ========================================================= */
+@media (max-width: 480px) {
+  .lobby-hero-card {
+    padding: 16px 12px;
+    border-radius: 16px;
+    margin: 2px 0 14px 0;
+  }
+
+  .hero-headline {
+    font-size: 1.22rem;
+    line-height: 1.2;
+    margin: 0 0 6px 0;
+  }
+
+  .hero-subtext {
+    font-size: 0.78rem;
+    line-height: 1.38;
+    margin: 0 0 12px 0;
+  }
+
+  .hero-cta-group {
+    display: grid;
+    grid-template-columns: 1.22fr 1fr;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .btn-hero-primary {
+    min-width: 0;
+    width: 100%;
+    height: 42px;
+    font-size: 0.8rem;
+    padding: 0 8px;
+    white-space: nowrap;
+    border-radius: 10px;
+  }
+
+  .btn-hero-secondary {
+    min-width: 0;
+    width: 100%;
+    height: 42px;
+    font-size: 0.8rem;
+    padding: 0 8px;
+    white-space: nowrap;
+    border-radius: 10px;
+  }
+
+  .guest-rules-card {
+    padding: 11px 10px;
+    margin-top: 10px;
+    border-radius: 12px;
+    gap: 8px;
+  }
+
+  .guest-rules-header {
+    padding-bottom: 6px;
+  }
+
+  .rule-step-row {
+    padding: 8px 10px;
+    gap: 8px;
+    border-radius: 8px;
+  }
+
+  .rule-step-top {
+    gap: 8px;
+  }
+
+  .rule-step-num {
+    width: 22px;
+    height: 22px;
+    font-size: 0.68rem;
+    border-radius: 5px;
+  }
+
+  .rule-step-heading {
+    font-size: 0.72rem;
+  }
+
+  .rule-step-desc {
+    font-size: 0.65rem;
+    line-height: 1.3;
+  }
+
+  .rule-step-subgrid {
+    padding-left: 0;
+    gap: 6px;
+  }
+
+  .rule-sub-card {
+    padding: 6px 8px;
+    border-radius: 7px;
+    min-height: 48px;
+  }
+
+  .rule-sub-title {
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+
+  .rule-sub-pts {
+    font-size: 0.68rem;
+  }
+
+  .rule-sub-desc {
+    font-size: 0.58rem;
+    line-height: 1.2;
+  }
+
+  .rule-pts-chip.pts-mult {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+  }
+
+  .rules-formula-bar {
+    padding: 6px 10px;
+    border-radius: 8px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .formula-label {
+    font-size: 0.58rem;
+    white-space: nowrap;
+  }
+
+  .formula-equation {
+    font-size: clamp(0.6rem, 2.7vw, 0.72rem);
+    white-space: nowrap;
+    gap: 3px;
+    flex-wrap: nowrap;
+  }
+
+  .guest-standings-strip {
+    padding: 8px 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    gap: 8px;
+  }
+
+  .standings-strip-left {
+    gap: 8px;
+  }
+
+  .standings-trophy-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+  }
+
+  .standings-crown-pill {
+    font-size: 0.58rem;
+    padding: 1px 5px;
+  }
+
+  .standings-sub-info {
+    font-size: 0.64rem;
+  }
+
+  .standings-lead-info {
+    font-size: 0.72rem;
+  }
+
+  .standings-strip-cta {
+    font-size: 0.7rem;
+  }
+
+  .standings-strip-cta .cta-mobile {
+    display: inline;
+  }
+
+  .standings-strip-cta .cta-desktop {
+    display: none;
+  }
+
+  .lobby-invite-strip {
+    padding: 8px 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    gap: 8px;
+  }
+
+  .lobby-invite-toggle-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .invite-strip-label-text {
+    font-size: 0.68rem;
+  }
+
+  .btn-toggle-invite-input {
+    font-size: 0.72rem;
+  }
 }
 
 /* Command Center Header & Greeting */
