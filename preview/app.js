@@ -61,6 +61,37 @@ function getCurrentNFLWeek(d = new Date()) {
   return Math.min(18, Math.max(1, week));
 }
 
+/**
+ * Checks if every single game in a given NFL week is locked for predictions
+ * (e.g. on Monday night once Monday Night Football kicks off).
+ */
+function isWeekFullyLocked(weekNum) {
+  const w = parseInt(weekNum, 10);
+  if (isNaN(w) || w < 1 || w > 18) return true;
+  const weekKey = `Week ${w}`;
+  let games = (state && state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
+    ? state.data.weeks[weekKey].games
+    : null;
+  if (!games && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+    games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games;
+  }
+  if (!games || !Array.isArray(games) || games.length === 0) return false;
+  return games.every(g => isGameLockedForPicking(g, w));
+}
+
+/**
+ * Returns the open prediction week for the Home/Lobby view.
+ * If all games in the current NFL week are locked (e.g. after Monday Night Football),
+ * it advances to the upcoming week so visitors and guests immediately see open games.
+ */
+function getOpenPredictionWeek() {
+  const currentNFL = getCurrentNFLWeek();
+  if (currentNFL < 18 && isWeekFullyLocked(currentNFL)) {
+    return currentNFL + 1;
+  }
+  return currentNFL;
+}
+
 // 12 Players in exact spreadsheet column sequence (Jon at Col 6 / 0-indexed)
 const PLAYERS = [
   "Jon", "Alisha", "Carson", "Nok", "Mango", "Caleb",
@@ -522,7 +553,11 @@ function restoreNavState() {
           state.activeTab = nav.activeTab;
         }
         if (typeof nav.currentWeek === "number" && nav.currentWeek >= 1 && nav.currentWeek <= 18) {
-          state.currentWeek = nav.currentWeek;
+          if (state.appMode === "lobby" && !restoredFromHash && isWeekFullyLocked(nav.currentWeek)) {
+            state.currentWeek = getOpenPredictionWeek();
+          } else {
+            state.currentWeek = nav.currentWeek;
+          }
         }
         if (nav.leaderboardMode === "season" || nav.leaderboardMode === "weekly") {
           state.leaderboardMode = nav.leaderboardMode;
@@ -1082,8 +1117,16 @@ function initData() {
     } catch (e) {}
   }
 
-  // Default to current NFL week based on Wednesday rollover schedule
-  state.currentWeek = getCurrentNFLWeek();
+  // Default week based on app mode:
+  // - League mode: stays on getCurrentNFLWeek() (Wednesday rollover) so members see post-MNF standings & outcomes
+  // - Lobby / Home mode: advances to getOpenPredictionWeek() as soon as last game locks so guests/visitors can make picks
+  const leagueWk = getCurrentNFLWeek();
+  const openWk = getOpenPredictionWeek();
+  if (state.appMode === "league") {
+    state.currentWeek = leagueWk;
+  } else {
+    state.currentWeek = openWk;
+  }
 
   if (state.data) {
     state.data.activeWeek = `Week ${state.currentWeek}`;
@@ -1201,10 +1244,17 @@ function getWeekStatusInfo(w) {
     return { label: "Live", type: "live", isLive: true };
   }
 
+  const openWk = getOpenPredictionWeek();
+
   if (w === currentNFL) {
+    if (isWeekFullyLocked(w)) {
+      return { label: "Final", type: "final", isLive: false };
+    }
     return { label: "Current Week", type: "current", isLive: false };
   } else if (w < currentNFL) {
     return { label: "Final", type: "final", isLive: false };
+  } else if (w === openWk && openWk > currentNFL) {
+    return { label: "Open for Picks", type: "open", isLive: false };
   } else {
     return { label: getWeekDateLabel(w), type: "upcoming", isLive: false };
   }
@@ -1377,6 +1427,8 @@ function updateStripButtons() {
       badgeEl.innerHTML = `<span class="pulse-dot"></span><span id="week-badge-text">LIVE</span>`;
     } else if (status.type === "current") {
       badgeEl.innerHTML = `<span id="week-badge-text">CURRENT WEEK</span>`;
+    } else if (status.type === "open") {
+      badgeEl.innerHTML = `<span class="open-dot"></span><span id="week-badge-text">OPEN FOR PICKS</span>`;
     } else if (status.type === "final") {
       badgeEl.innerHTML = `<span id="week-badge-text">FINAL</span>`;
     } else {
@@ -3024,10 +3076,56 @@ function renderMatchups() {
   const byeStripEl = document.getElementById("matchups-bye-strip");
   const bannerTitle = document.getElementById("matchup-banner-title");
   const bannerStat = document.getElementById("matchup-banner-stat");
+  const contextBannerEl = document.getElementById("lobby-week-context-banner");
   if (!container) return;
 
   const weekKey = `Week ${state.currentWeek}`;
   bannerTitle.textContent = `${weekKey} Matchups`;
+
+  // Update contextual post-MNF bridge banner for Home / Lobby visitors
+  const currentNFL = getCurrentNFLWeek();
+  const openWk = getOpenPredictionWeek();
+
+  if (contextBannerEl) {
+    if (state.appMode === "lobby" && currentNFL < 18 && isWeekFullyLocked(currentNFL)) {
+      contextBannerEl.style.display = "block";
+      if (state.currentWeek === openWk) {
+        // Viewing upcoming open week
+        contextBannerEl.className = "lobby-week-context-banner is-open-preview";
+        contextBannerEl.innerHTML = `
+          <div class="context-banner-content">
+            <div class="context-banner-text">
+              <span class="context-banner-pill">⚡ Week ${currentNFL} Concluded</span>
+              <span class="context-banner-msg">Week ${currentNFL} is in the books! Make your <strong>Week ${openWk} predictions</strong> below.</span>
+            </div>
+            <button type="button" class="btn-context-banner-action" onclick="selectWeek(${currentNFL})" title="View final scores and standings from Week ${currentNFL}">
+              <span>View Week ${currentNFL} Results</span>
+              <span class="banner-action-arrow">&rarr;</span>
+            </button>
+          </div>
+        `;
+      } else if (state.currentWeek === currentNFL) {
+        // Viewing concluded week in review mode
+        contextBannerEl.className = "lobby-week-context-banner is-review-mode";
+        contextBannerEl.innerHTML = `
+          <div class="context-banner-content">
+            <div class="context-banner-text">
+              <span class="context-banner-pill pill-locked">🔒 Week ${currentNFL} Final</span>
+              <span class="context-banner-msg">All Week ${currentNFL} games are concluded. Week ${openWk} is now open for predictions!</span>
+            </div>
+            <button type="button" class="btn-context-banner-action btn-action-forward" onclick="selectWeek(${openWk})" title="Jump to open Week ${openWk} games">
+              <span>Predict Week ${openWk} Now</span>
+              <span class="banner-action-arrow">&rarr;</span>
+            </button>
+          </div>
+        `;
+      } else {
+        contextBannerEl.style.display = "none";
+      }
+    } else {
+      contextBannerEl.style.display = "none";
+    }
+  }
 
   const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
   const games = weekData && weekData.games ? weekData.games : [];
@@ -5461,6 +5559,14 @@ function enterLeagueView(leagueId = "OG League") {
     sessionStorage.removeItem("sp_active_league_id");
   } catch (e) {}
 
+  // In League mode, anchor to current NFL league week (Wednesday rollover) to review standings and results
+  const leagueWk = getCurrentNFLWeek();
+  if (state.currentWeek !== leagueWk) {
+    state.currentWeek = leagueWk;
+    if (state.data) state.data.activeWeek = `Week ${leagueWk}`;
+    updateStripButtons();
+  }
+
   closeLeagueDrawer();
   updateAppShellForMode();
   switchTab("leaderboard");
@@ -5540,6 +5646,14 @@ async function enterCustomLeague(leagueId) {
     sessionStorage.setItem("sp_active_league_id", leagueObj.id);
   } catch (e) {}
 
+  // In League mode, anchor to current NFL league week (Wednesday rollover) to review standings and results
+  const leagueWk = getCurrentNFLWeek();
+  if (state.currentWeek !== leagueWk) {
+    state.currentWeek = leagueWk;
+    if (state.data) state.data.activeWeek = `Week ${leagueWk}`;
+    updateStripButtons();
+  }
+
   closeLeagueDrawer();
   updateAppShellForMode();
   await loadCustomLeagueData(leagueObj.id);
@@ -5572,6 +5686,15 @@ function exitToLobby() {
     sessionStorage.setItem("sp_app_mode", "lobby");
     sessionStorage.removeItem("sp_active_league_id");
   } catch (e) {}
+
+  // In Lobby mode, advance to open prediction week if current NFL week is locked
+  const openWk = getOpenPredictionWeek();
+  if (state.currentWeek !== openWk) {
+    state.currentWeek = openWk;
+    if (state.data) state.data.activeWeek = `Week ${openWk}`;
+    updateStripButtons();
+    syncWeek(openWk, true);
+  }
 
   updateAppShellForMode();
   switchTab("matchups");
@@ -10103,3 +10226,5 @@ window.updateGuestSaveBanner = updateGuestSaveBanner;
 window.toggleLobbyInviteInput = toggleLobbyInviteInput;
 window.updateGlobalStandingsRibbon = updateGlobalStandingsRibbon;
 window.getGlobalMinDiffForGame = getGlobalMinDiffForGame;
+window.isWeekFullyLocked = isWeekFullyLocked;
+window.getOpenPredictionWeek = getOpenPredictionWeek;
