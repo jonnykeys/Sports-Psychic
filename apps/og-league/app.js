@@ -1697,6 +1697,113 @@ function formatEspnGameTime(event) {
 }
 
 /**
+ * Normalizes ESPN broadcast names to a clean, uppercase TV network badge (FOX, CBS, NBC, PRIME, ESPN, etc.)
+ */
+function getGameBroadcast(game) {
+  if (!game) return "";
+  let raw = (game.broadcast || "").toString().trim().toUpperCase();
+
+  // If not in game.broadcast, check dateTime hints like (TNF), (SNF), (MNF), (INTL)
+  if (!raw && game.dateTime) {
+    const dt = game.dateTime.toUpperCase();
+    if (dt.includes("(TNF)")) return "PRIME";
+    if (dt.includes("(SNF)")) return "NBC";
+    if (dt.includes("(MNF)")) return "ESPN";
+    if (dt.includes("(INTL)")) return "NFLN";
+  }
+
+  if (!raw) return "";
+
+  if (raw.includes("PRIME") || raw.includes("AMAZON")) return "PRIME";
+  if (raw.includes("FOX")) return "FOX";
+  if (raw.includes("CBS")) return "CBS";
+  if (raw.includes("NBC")) return "NBC";
+  if (raw.includes("ESPN")) return "ESPN";
+  if (raw.includes("NFL NET") || raw.includes("NFLN")) return "NFLN";
+  if (raw.includes("NETFLIX")) return "NETFLIX";
+  if (raw.includes("PEACOCK")) return "PEACOCK";
+  if (raw.includes("ABC")) return "ABC";
+
+  // First word or first 8 chars fallback
+  const firstWord = raw.split(/[\s,/]+/)[0];
+  return firstWord.length <= 8 ? firstWord : firstWord.substring(0, 8);
+}
+
+/**
+ * Formats game spread and over/under betting lines cleanly
+ */
+function getGameOdds(game) {
+  if (!game) return { spread: "", ou: "" };
+  let spread = (game.spread || "").toString().trim();
+  let ou = "";
+  if (game.overUnder !== undefined && game.overUnder !== null && game.overUnder !== "") {
+    const rawOu = game.overUnder.toString().trim();
+    ou = rawOu.toUpperCase().startsWith("O/U") ? rawOu : `O/U ${rawOu}`;
+  }
+  return { spread, ou };
+}
+
+const WIN_PROB_CACHE = new Map();
+
+/**
+ * Fetches real-time live win probability from ESPN event summary
+ */
+async function fetchLiveGameWinProbability(game, espnEventId) {
+  if (!espnEventId || !game) return null;
+  const now = Date.now();
+  const cached = WIN_PROB_CACHE.get(espnEventId);
+  if (cached && (now - cached.timestamp < 30000)) {
+    game.winProbability = cached.data;
+    return cached.data;
+  }
+
+  try {
+    const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${espnEventId}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || !Array.isArray(data.winprobability) || data.winprobability.length === 0) return null;
+
+    const latest = data.winprobability[data.winprobability.length - 1];
+    if (latest && typeof latest.homeWinPercentage === "number") {
+      let homePct = Math.round(latest.homeWinPercentage * 1000) / 10;
+      if (homePct <= 0 && game.isLive) homePct = 0.1;
+      if (homePct >= 100 && game.isLive) homePct = 99.9;
+      const awayPct = Math.round((100 - homePct) * 10) / 10;
+      const probData = {
+        homePct,
+        awayPct,
+        playId: latest.playId || "",
+        updatedAt: now
+      };
+      game.winProbability = probData;
+      WIN_PROB_CACHE.set(espnEventId, { data: probData, timestamp: now });
+      return probData;
+    }
+  } catch (e) {
+    // Non-blocking telemetry
+  }
+  return null;
+}
+
+/**
+ * Gets live win probability (ESPN real-time data with smooth game situation fallback)
+ */
+function getGameWinProbability(game, awayTeam, homeTeam) {
+  if (!game) return null;
+  if (game.winProbability && typeof game.winProbability.homePct === "number") {
+    return game.winProbability;
+  }
+  if (game.isLive && game.awayScore !== null && game.homeScore !== null) {
+    const diff = (game.homeScore || 0) - (game.awayScore || 0);
+    let homePct = Math.min(95, Math.max(5, 50 + diff * 5));
+    homePct = Math.round(homePct * 10) / 10;
+    const awayPct = Math.round((100 - homePct) * 10) / 10;
+    return { homePct, awayPct, isEstimated: true };
+  }
+  return null;
+}
+
+/**
  * Automatically fetches real-time scores, clocks, and final outcomes directly from ESPN.
  * Dynamic matchup mapping: handles bye weeks dynamically (varying games per week) and
  * reconciles team acronym differences (WSH/WAS, AZ/ARI, LAR/LA, JAX/JAC).
@@ -1762,6 +1869,11 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       const stateCode = (statusType.state || "").toLowerCase(); // "pre" | "in" | "post"
       const shortDetail = statusType.shortDetail || "";
 
+      // Store official ESPN event ID
+      if (matchedEvent.id) {
+        game.espnEventId = matchedEvent.id;
+      }
+
       // Prioritize ESPN official kickoff date & time for real-time accuracy
       if (matchedEvent.date) {
         game.kickoffTime = matchedEvent.date;
@@ -1769,6 +1881,33 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       const espnFormattedTime = formatEspnGameTime(matchedEvent);
       if (espnFormattedTime) {
         game.dateTime = espnFormattedTime;
+      }
+
+      // Extract official TV broadcast network
+      let broadcast = "";
+      if (comp.broadcast) {
+        broadcast = comp.broadcast;
+      } else if (comp.broadcasts && comp.broadcasts[0]) {
+        const bObj = comp.broadcasts[0];
+        if (Array.isArray(bObj.names) && bObj.names.length > 0) {
+          broadcast = bObj.names.join(", ");
+        } else if (typeof bObj.names === "string") {
+          broadcast = bObj.names;
+        }
+      }
+      if (broadcast) {
+        game.broadcast = broadcast;
+      }
+
+      // Extract official DraftKings betting odds (spread and over/under)
+      if (comp.odds && comp.odds[0]) {
+        const oddsObj = comp.odds[0];
+        if (oddsObj.details) {
+          game.spread = oddsObj.details;
+        }
+        if (oddsObj.overUnder !== undefined && oddsObj.overUnder !== null) {
+          game.overUnder = oddsObj.overUnder;
+        }
       }
 
       // Parse score integers (or null if pre-game)
@@ -1852,6 +1991,9 @@ async function syncLiveNFLScores(weekNum, silent = false) {
           game.isFinal = false;
           game.isLive = true;
           game.statusDetail = formatQuarterStatus(shortDetail) || "Live";
+          if (matchedEvent.id) {
+            fetchLiveGameWinProbability(game, matchedEvent.id);
+          }
         } else {
           // Pre-game broadcast window (TV coverage live, but ball has not kicked off yet)
           game.isFinal = false;
@@ -3087,8 +3229,7 @@ function renderConcludedDivider(finalCount) {
     <div class="matchups-concluded-divider" role="separator" aria-label="Concluded Matchups (${finalCount})">
       <span class="divider-line"></span>
       <span class="divider-pill">
-        <span class="divider-pill-icon">🏁</span>
-        <span>Concluded Games (${finalCount})</span>
+        <span>CONCLUDED MATCHUPS (${finalCount})</span>
       </span>
       <span class="divider-line"></span>
     </div>
@@ -3323,7 +3464,7 @@ function renderMatchups() {
         liveText += ` • ${game.downDistance}`;
       }
       if (game.isRedZone) {
-        liveText += ` • <span class="redzone-tag">🔴 RZ</span>`;
+        liveText += ` • <span class="redzone-tag">RZ</span>`;
       }
       badgeText = `<span class="live-pulse-dot"></span> ${liveText}`;
       badgeClass = "live";
@@ -3357,10 +3498,10 @@ function renderMatchups() {
       if (isFinal) {
         if (pick.exact) {
           chipClass += " exact";
-          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">🔮 +${pick.points}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">+${pick.points}</span>`;
         } else if (pick.isClosest) {
           chipClass += " closest";
-          ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">+${pick.points}</span>`;
         } else if (pick.points > 0) {
           chipClass += " correct";
           ptsBadge = `<span class="chip-pts-badge pts-win">+${pick.points}</span>`;
@@ -3426,7 +3567,7 @@ function renderMatchups() {
             <span class="chip-player-name">${p.name}</span>
             <div class="chip-badges-group">
               ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
-              ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">3X</span>` : ""}
             </div>
           </div>
           <div class="chip-row-bottom">
@@ -3446,11 +3587,22 @@ function renderMatchups() {
       ? renderConcludedDivider(finalsCount)
       : "";
 
+    const broadcast = getGameBroadcast(game);
+    const odds = getGameOdds(game);
+    const broadcastBadge = broadcast ? `<span class="game-network-pill">${broadcast}</span>` : "";
+    const spreadBadge = odds.spread ? `<span class="game-odds-pill">${odds.spread}</span>` : "";
+    const ouBadge = odds.ou ? `<span class="game-ou-pill">${odds.ou}</span>` : "";
+
     return `
       ${dividerHtml}
       <article class="matchup-card ${isCollapsed ? "collapsed" : ""} ${isLive ? "is-live" : ""}" id="${game.id}">
         <div class="matchup-card-header" ${isLeagueMode ? `onclick="toggleMatchupCollapse('${game.id}', event)"` : ""}>
-          <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
+          <div class="matchup-header-info">
+            <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
+            ${broadcastBadge}
+            ${spreadBadge}
+            ${ouBadge}
+          </div>
           <div class="matchup-header-actions">
             <span class="matchup-badge ${badgeClass}">${badgeText}</span>
             ${isLeagueMode ? `
@@ -3469,7 +3621,7 @@ function renderMatchups() {
             <div class="team-details">
               <div class="team-code">
                 <span>${awayTeam}</span>
-                ${isLive && game.possession === 'away' ? '<span class="possession-football" title="Possession: ' + awayTeam + '">🏈</span>' : ''}
+                ${isLive && game.possession === 'away' ? '<span class="possession-dot" title="Possession: ' + awayTeam + '"></span>' : ''}
               </div>
               <div class="team-name-sub">${awayInfo.city || awayInfo.name || ""}</div>
               <div class="team-record-sub">${awayRecord.text}</div>
@@ -3487,7 +3639,7 @@ function renderMatchups() {
             <div class="team-badge" style="background-color: ${homeInfo.color}; color: ${homeTextColor};">${homeTeam}</div>
             <div class="team-details">
               <div class="team-code">
-                ${isLive && game.possession === 'home' ? '<span class="possession-football" title="Possession: ' + homeTeam + '">🏈</span>' : ''}
+                ${isLive && game.possession === 'home' ? '<span class="possession-dot" title="Possession: ' + homeTeam + '"></span> ' : ''}
                 <span>${homeTeam}</span>
               </div>
               <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
@@ -4007,7 +4159,7 @@ function renderPlayers() {
             const possAway = g.possession === 'away';
             const possHome = g.possession === 'home';
             const scoreDisplay = g.awayScore !== null
-              ? `${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.awayScore} - ${g.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}`
+              ? `${possAway ? '<span class="possession-dot" title="Possession"></span> ' : ''}${g.awayScore} - ${g.homeScore}${possHome ? ' <span class="possession-dot" title="Possession"></span>' : ''}`
               : '';
 
             outcomeHtml = `
@@ -4561,7 +4713,7 @@ function renderH2H() {
         const possHome = game.possession === 'home';
         centerScoreHtml = `
           <span class="h2h-game-actual-score" style="color:#f87171;">
-            ${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${game.awayScore} - ${game.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}
+            ${possAway ? '<span class="possession-dot" title="Possession"></span> ' : ''}${game.awayScore} - ${game.homeScore}${possHome ? ' <span class="possession-dot" title="Possession"></span>' : ''}
           </span>
           <span class="h2h-live-tag"><span class="live-pulse-dot"></span> ${liveDetail}</span>
         `;
@@ -5971,7 +6123,7 @@ function getGameLockStatus(game, weekNum = null) {
   if (!locked) {
     return {
       isLocked: false,
-      badgeText: "🟢 Open for Picks",
+      badgeText: "",
       badgeClass: "badge-open",
       detail: "Make your predictions before kickoff"
     };
@@ -5979,24 +6131,24 @@ function getGameLockStatus(game, weekNum = null) {
   if (game && game.isFinal) {
     return {
       isLocked: true,
-      badgeText: "🔒 FINAL • Game Concluded",
+      badgeText: "FINAL",
       badgeClass: "badge-final",
-      detail: "Picks locked — game is final"
+      detail: "Game is final"
     };
   }
   if (game && game.isLive) {
     return {
       isLocked: true,
-      badgeText: "🔴 LIVE • In Progress",
+      badgeText: "LIVE",
       badgeClass: "badge-live",
-      detail: "Picks locked — game in progress"
+      detail: "Game in progress"
     };
   }
   return {
     isLocked: true,
-    badgeText: "🔒 KICKOFF PASSED",
+    badgeText: "LOCKED",
     badgeClass: "badge-started",
-    detail: "Kickoff has passed — picks locked"
+    detail: "Kickoff has passed"
   };
 }
 
@@ -6596,10 +6748,25 @@ function updateSoloCardWinnerUI(gameId, winnerTeam) {
   card.classList.toggle("is-pick-complete", isComplete);
   card.classList.toggle("is-pick-incomplete", !isComplete);
 
-  const statusPill = card.querySelector(".pick-status-pill");
-  if (statusPill) {
-    statusPill.className = `pick-status-pill ${isComplete ? "complete" : "pending"}`;
-    statusPill.innerHTML = isComplete ? "✓ Pick Set" : "Pending";
+  const isSeason = (state.soloCampaignMode !== "weekly");
+  const isSeasonLocked = Boolean(sheet?.is_season_locked || sheet?.is_locked);
+  const pickSetText = (isSeason && !isSeasonLocked) ? "Pick Set (Draft)" : "PICK SET";
+
+  const statusLeft = card.querySelector(".game-status-left");
+  let statusPill = card.querySelector(".pick-status-pill");
+  if (isComplete) {
+    if (!statusPill && statusLeft) {
+      statusPill = document.createElement("span");
+      statusPill.className = "pick-status-pill complete";
+      statusPill.textContent = pickSetText;
+      statusLeft.appendChild(statusPill);
+    } else if (statusPill) {
+      statusPill.className = "pick-status-pill complete";
+      statusPill.textContent = pickSetText;
+      statusPill.style.display = "";
+    }
+  } else if (statusPill && !card.classList.contains("is-final-game") && !card.classList.contains("is-live-game")) {
+    statusPill.remove();
   }
 }
 
@@ -6696,19 +6863,6 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
   const isGameLocked = isSeason && isSeasonLocked ? true : lockStatus.isLocked;
   const isLive = Boolean(game.isLive || (!isFinal && game.awayScore !== null && game.homeScore !== null && (game.awayScore > 0 || game.homeScore > 0)));
 
-  let badgeClass = lockStatus.badgeClass;
-  let badgeText = lockStatus.badgeText;
-
-  if (isFinal) {
-    badgeClass = "badge-final";
-    badgeText = (game.statusDetail && game.statusDetail.toUpperCase().includes("FINAL"))
-      ? game.statusDetail.toUpperCase()
-      : "FINAL";
-  } else if (isSeason && isSeasonLocked) {
-    badgeClass = "badge-final";
-    badgeText = "🔒 SEASON LOCKED";
-  }
-
   const pickWinner = (pick?.winner || "").toUpperCase().trim();
   const awaySelected = (pickWinner === awayTeam || (pickWinner && normalizeTeamCode(pickWinner) === normalizeTeamCode(awayTeam)));
   const homeSelected = (pickWinner === homeTeam || (pickWinner && normalizeTeamCode(pickWinner) === normalizeTeamCode(homeTeam)));
@@ -6718,51 +6872,119 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
   const isMultiplier = Boolean(pick?.multiplier);
 
   const isComplete = isSoloPickComplete(game.id, pick || {});
-  const cardClass = `${isGameLocked ? "is-locked-game" : "is-open-game"} ${isLive ? "is-live-game" : ""} ${isComplete ? "is-pick-complete" : "is-pick-incomplete"} ${isMultiplier ? "has-multiplier-3x" : ""}`;
+  const cardClass = `${isFinal ? "is-final-game" : ""} ${isGameLocked ? "is-locked-game" : "is-open-game"} ${isLive ? "is-live-game" : ""} ${isComplete ? "is-pick-complete" : "is-pick-incomplete"} ${isMultiplier ? "has-multiplier-3x" : ""}`;
 
-  // Determine status badge pill:
-  let statusPillHtml = "";
+  // TV Broadcast & Betting Lines
+  const broadcast = getGameBroadcast(game);
+  const odds = getGameOdds(game);
+  const broadcastBadge = broadcast ? `<span class="game-network-pill">${broadcast}</span>` : "";
+  const spreadBadge = odds.spread ? `<span class="game-odds-pill">${odds.spread}</span>` : "";
+  const ouBadge = odds.ou ? `<span class="game-ou-pill">${odds.ou}</span>` : "";
+
+  // 3X Lock button label (Clean, no emoji)
+  const lockBtnText = isMultiplier 
+    ? (isGameLocked ? "3X LOCKED" : "3X ACTIVE") 
+    : (isGameLocked ? "3X LOCKED" : "3X LOCK");
+
+  // Format header left and right based on 4-stage lifecycle:
+  let headerLeftHtml = "";
+  let headerRightHtml = "";
+
   if (isFinal) {
-    if (isSeason) {
-      if (isSeasonLocked) {
-        if (pick?.points > 0) {
-          statusPillHtml = `<span class="pick-status-pill complete" title="Final: +${pick.points} PTS earned">✓ +${pick.points} PTS</span>`;
-        } else if (isComplete) {
-          statusPillHtml = `<span class="pick-status-pill wrong" title="Final: 0 PTS">0 PTS</span>`;
-        } else {
-          statusPillHtml = `<span class="pick-status-pill pending">No Pick</span>`;
-        }
-      } else {
-        statusPillHtml = isComplete 
-          ? `<span class="pick-status-pill pending" title="Season Prophecy must be locked to earn points">✓ Pick Set (Draft)</span>`
-          : `<span class="pick-status-pill pending">Pending</span>`;
-      }
-    } else {
-      if (pick?.points > 0) {
-        statusPillHtml = `<span class="pick-status-pill complete" title="Final: +${pick.points} PTS earned">✓ +${pick.points} PTS</span>`;
-      } else if (isComplete) {
-        statusPillHtml = `<span class="pick-status-pill wrong" title="Final: 0 PTS">0 PTS</span>`;
-      } else {
-        statusPillHtml = `<span class="pick-status-pill pending">No Pick</span>`;
-      }
+    // STAGE 4: FINAL
+    let ptsBadgeHtml = "";
+    if (pick?.points > 0) {
+      const is3xPts = Boolean(pick.multiplier);
+      ptsBadgeHtml = `<span class="pick-status-pill final-pts-pill ${is3xPts ? "pts-3x" : "pts-win"}">+${pick.points} PTS${is3xPts ? " 3X" : ""}</span>`;
+    } else if (isComplete) {
+      ptsBadgeHtml = `<span class="pick-status-pill final-pts-pill wrong">0 PTS</span>`;
     }
+
+    let winnerSummary = "";
+    if (game.winner) {
+      const winScore = Math.max(game.awayScore || 0, game.homeScore || 0);
+      const loseScore = Math.min(game.awayScore || 0, game.homeScore || 0);
+      winnerSummary = `<span class="game-final-winner-text">${game.winner} Won ${winScore}-${loseScore}</span>`;
+    }
+
+    headerLeftHtml = `
+      <span class="game-lock-badge badge-final">FINAL</span>
+      ${ptsBadgeHtml}
+      ${winnerSummary}
+    `;
+    headerRightHtml = `
+      <span class="game-final-verified">Points Verified</span>
+    `;
   } else if (isLive) {
-    statusPillHtml = `<span class="pick-status-pill live-pill"><span class="live-pulse-dot"></span> LIVE IN-PLAY</span>`;
+    // STAGE 3: LIVE
+    const quarterClock = formatQuarterStatus(game.statusDetail) || "LIVE";
+    headerLeftHtml = `
+      <span class="game-lock-badge badge-live"><span class="live-pulse-dot"></span> LIVE • ${quarterClock}</span>
+      ${broadcastBadge}
+      ${odds.spread ? `<span class="game-closing-spread">Closing: ${odds.spread}</span>` : ""}
+    `;
+    headerRightHtml = `
+      <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}" disabled title="Game is locked — in progress">
+        <span>${lockBtnText}</span>
+      </button>
+    `;
   } else {
-    statusPillHtml = `<span class="pick-status-pill ${isComplete ? "complete" : "pending"}">${isComplete ? "✓ Pick Set" : "Pending"}</span>`;
+    // STAGE 1 & 2: PRE-KICKOFF (OPEN or LOCKED KICKOFF PASSED)
+    const formattedTime = game.dateTime || `Game ${idx + 1}`;
+    const pickSetText = (isSeason && !isSeasonLocked) ? "Pick Set (Draft)" : "PICK SET";
+    const pickSetPill = isComplete ? `<span class="pick-status-pill complete">${pickSetText}</span>` : "";
+
+    headerLeftHtml = `
+      <span class="game-kickoff-time">${formattedTime}</span>
+      ${broadcastBadge}
+      ${spreadBadge}
+      ${ouBadge}
+      ${pickSetPill}
+    `;
+
+    headerRightHtml = `
+      <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}"
+        ${isGameLocked ? "disabled" : ""}
+        onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
+        title="${isGameLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
+        <span>${lockBtnText}</span>
+      </button>
+    `;
   }
 
   // Live in-game telemetry bar or final score strip
   let liveOrFinalTelemetryHtml = "";
   if (isLive) {
     const quarterClock = formatQuarterStatus(game.statusDetail) || "LIVE";
+    const winProb = getGameWinProbability(game, awayTeam, homeTeam);
+
+    let winProbHtml = "";
+    if (winProb) {
+      const awayColor = (awayInfo.color && awayInfo.color !== '#000000') ? awayInfo.color : '#3b82f6';
+      const homeColor = (homeInfo.color && homeInfo.color !== '#000000') ? homeInfo.color : '#ef4444';
+
+      winProbHtml = `
+        <div class="live-win-prob-container">
+          <div class="live-win-prob-labels">
+            <span class="prob-away-label" style="color: ${awayColor}">${awayTeam} ${winProb.awayPct}%</span>
+            <span class="prob-title">LIVE WIN PROBABILITY</span>
+            <span class="prob-home-label" style="color: ${homeColor}">${winProb.homePct}% ${homeTeam}</span>
+          </div>
+          <div class="live-win-prob-track">
+            <div class="prob-fill-away" style="width: ${winProb.awayPct}%; background-color: ${awayColor};"></div>
+            <div class="prob-fill-home" style="width: ${winProb.homePct}%; background-color: ${homeColor};"></div>
+          </div>
+        </div>
+      `;
+    }
+
     liveOrFinalTelemetryHtml = `
       <div class="game-live-telemetry-bar">
         <div class="live-telemetry-left">
           <div class="live-telemetry-status">
             <span class="live-pulse-dot"></span>
             <span class="live-quarter-clock">${quarterClock}</span>
-            ${game.isRedZone ? '<span class="live-redzone-badge">🚨 RED ZONE</span>' : ''}
+            ${game.isRedZone ? '<span class="live-redzone-badge">RED ZONE</span>' : ''}
           </div>
           ${game.downDistance ? `<div class="live-down-distance">${game.downDistance}</div>` : ''}
         </div>
@@ -6773,6 +6995,7 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
             <span class="live-score-team">${homeTeam}</span>
           </div>
         </div>
+        ${winProbHtml}
       </div>
     `;
   } else if (isFinal || (game.awayScore !== null && game.homeScore !== null)) {
@@ -6785,10 +7008,10 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
   }
 
   let lockedNoticeHtml = "";
-  if (isGameLocked && !pickWinner && !isLive) {
+  if (isGameLocked && !pickWinner && !isLive && !isFinal) {
     lockedNoticeHtml = `
       <div class="game-locked-notice">
-        🔒 Game locked. No pick was submitted prior to kickoff.
+        Kickoff passed. No pick was submitted prior to game start.
       </div>
     `;
   }
@@ -6798,19 +7021,12 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
 
   return `
     <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
-      <!-- Card Header: Kickoff, Status Badge, and 3X Lock Toggle -->
+      <!-- Card Header: Kickoff, TV Network, Betting Lines, and 3X Lock Toggle -->
       <div class="game-card-top-status">
         <div class="game-status-left">
-          <span class="game-lock-badge ${badgeClass}">${badgeText}</span>
-          <span class="game-kickoff-time">${game.dateTime || `Game ${idx + 1}`}</span>
-          ${statusPillHtml}
+          ${headerLeftHtml}
         </div>
-        <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}"
-          ${isGameLocked ? "disabled" : ""}
-          onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
-          title="${isGameLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
-          <span>${isMultiplier ? "⭐ 3X LOCK ACTIVE" : "⭐ 3X Lock"}</span>
-        </button>
+        ${headerRightHtml}
       </div>
 
       ${liveOrFinalTelemetryHtml}
@@ -6829,7 +7045,7 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
             <div class="tile-header-content">
               <span class="tile-team-code">
                 ${awayTeam}
-                ${awayPossession ? '<span class="possession-football" title="Possession: ' + awayTeam + '">🏈</span>' : ''}
+                ${awayPossession ? '<span class="possession-dot" title="Possession: ' + awayTeam + '"></span>' : ''}
               </span>
               <span class="tile-team-rec">${awayRec.text}</span>
             </div>
@@ -6882,7 +7098,7 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
             title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
             <div class="tile-header-content">
               <span class="tile-team-code">
-                ${homePossession ? '<span class="possession-football" title="Possession: ' + homeTeam + '">🏈</span> ' : ''}
+                ${homePossession ? '<span class="possession-dot" title="Possession: ' + homeTeam + '"></span> ' : ''}
                 ${homeTeam}
               </span>
               <span class="tile-team-rec">${homeRec.text}</span>
@@ -9096,10 +9312,10 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
       if (game.isFinal) {
         if (p.is_exact) {
           chipClass += " exact";
-          ptsBadge = `<span class="chip-pts-badge pts-exact">🔮 +${p.points_earned || 50}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-exact">+${p.points_earned || 50}</span>`;
         } else if (p.is_closest) {
           chipClass += " closest";
-          ptsBadge = `<span class="chip-pts-badge pts-closest">🎯 +${p.points_earned || 20}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-closest">+${p.points_earned || 20}</span>`;
         } else if ((p.points_earned || 0) > 0) {
           chipClass += " correct";
           ptsBadge = `<span class="chip-pts-badge pts-win">+${p.points_earned}</span>`;
@@ -9140,7 +9356,7 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
             <span class="chip-player-name">${p.name}</span>
             <div class="chip-badges-group">
               ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
-              ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">3X</span>` : ""}
             </div>
           </div>
           <div class="chip-row-bottom">
@@ -9216,7 +9432,7 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
     <div class="custom-league-pick-bar ${isLocked ? "is-locked" : ""}" id="cl-pick-bar-${game.id}">
       <div class="cl-pick-header">
         <div class="cl-pick-title">Your League Prediction</div>
-        <span class="${isLocked ? "cl-locked-tag" : "cl-open-tag"}">${isLocked ? "🔒 Locked" : "🟢 Open for Picks"}</span>
+        <span class="${isLocked ? "cl-locked-tag" : "cl-open-tag"}">${isLocked ? "LOCKED" : "OPEN"}</span>
       </div>
 
       <div class="cl-team-pick-btns">
@@ -9254,7 +9470,7 @@ function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, ho
       <button type="button" class="btn-cl-multiplier ${isMultiplier ? "active" : ""}"
         ${isLocked ? "disabled" : ""}
         onclick="toggleCustomLeagueMultiplier('${game.id}', ${state.currentWeek})">
-        <span>${isMultiplier ? "⭐ 3X LOCK OF THE WEEK ACTIVE" : "⭐ Select as 3X Lock of the Week"}</span>
+        <span>${isMultiplier ? "3X LOCK ACTIVE" : "Select as 3X Lock"}</span>
       </button>
     </div>
 
@@ -10271,3 +10487,7 @@ window.isWeekFullyLocked = isWeekFullyLocked;
 window.getOpenPredictionWeek = getOpenPredictionWeek;
 window.getPartitionedMatchupGames = getPartitionedMatchupGames;
 window.renderConcludedDivider = renderConcludedDivider;
+window.getGameBroadcast = getGameBroadcast;
+window.getGameOdds = getGameOdds;
+window.fetchLiveGameWinProbability = fetchLiveGameWinProbability;
+window.getGameWinProbability = getGameWinProbability;

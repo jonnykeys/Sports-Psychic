@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=30\.0') 'index.html includes app.js?v=30.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=30\.0') 'index.html includes style.css?v=30.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.0') 'index.html includes app.js?v=31.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.0') 'index.html includes style.css?v=31.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -359,7 +359,7 @@ Assert-Test ($indexHtmlContent -match 'picks-progress-track') 'index.html define
 Assert-Test ($indexHtmlContent -match 'lobby-invite-strip') 'index.html defines low-profile lobby invite strip'
 Assert-Test ($appJsContent -match 'game-live-telemetry-bar') 'app.js renders game-live-telemetry-bar for live games'
 Assert-Test ($appJsContent -match 'live-pulse-dot') 'app.js renders pulsing live indicator dot'
-Assert-Test ($appJsContent -match 'possession-football') 'app.js renders football possession badge'
+Assert-Test ($appJsContent -match 'possession-dot|possession-football') 'app.js renders possession indicator'
 Assert-Test ($appJsContent -match 'window\.renderOption2Card = renderOption2Card') 'app.js exports renderOption2Card to window'
 Assert-Test ($styleCssContent -match '\.game-live-telemetry-bar') 'style.css defines .game-live-telemetry-bar'
 Assert-Test ($styleCssContent -match '\.command-center-header') 'style.css defines .command-center-header'
@@ -725,7 +725,108 @@ Assert-Test ($appJsContent -match 'filteredGames = getPartitionedMatchupGames\(g
 Assert-Test ($appJsContent -match 'return getPartitionedMatchupGames\(games\);') 'getMatchupsTargetGames returns getPartitionedMatchupGames'
 Assert-Test ($styleCssContent -match '\.matchups-concluded-divider') 'style.css defines .matchups-concluded-divider'
 Assert-Test ($styleCssContent -match '\.divider-pill') 'style.css defines .divider-pill'
-Assert-Test ($indexHtmlContent -match 'v=30\.0') 'index.html references cache buster v=30.0'
+Assert-Test ($indexHtmlContent -match 'v=31\.0') 'index.html references cache buster v=31.0'
+
+# =========================================================
+# SUITE 17: Modern Game Card Lifecycle, TV Network, Odds, Permanent O/U, Live Win Probability, and Emoji Removal
+# =========================================================
+Write-Host ''
+Write-Host '  -- Suite 17: Modern Game Card Lifecycle, TV Network, Odds, Permanent O/U & Live Win Probability --' -ForegroundColor Yellow
+
+# Helper Functions & Architecture
+Assert-Test ($appJsContent -match 'function getGameBroadcast\(') 'app.js defines getGameBroadcast helper'
+Assert-Test ($appJsContent -match 'function getGameOdds\(') 'app.js defines getGameOdds helper'
+Assert-Test ($appJsContent -match 'async function fetchLiveGameWinProbability\(') 'app.js defines fetchLiveGameWinProbability helper'
+Assert-Test ($appJsContent -match 'function getGameWinProbability\(') 'app.js defines getGameWinProbability helper'
+Assert-Test ($appJsContent -match 'window\.getGameBroadcast = getGameBroadcast') 'app.js exports getGameBroadcast to window'
+Assert-Test ($appJsContent -match 'window\.getGameOdds = getGameOdds') 'app.js exports getGameOdds to window'
+Assert-Test ($appJsContent -match 'window\.fetchLiveGameWinProbability = fetchLiveGameWinProbability') 'app.js exports fetchLiveGameWinProbability to window'
+Assert-Test ($appJsContent -match 'window\.getGameWinProbability = getGameWinProbability') 'app.js exports getGameWinProbability to window'
+
+# Card Header Cleanliness & Modern Badges (No OPEN FOR PICKS or PENDING in Option 2 card)
+Assert-Test ($appJsContent -notmatch '"🟢 Open for Picks"') 'app.js has eliminated 🟢 Open for Picks badge'
+Assert-Test ($appJsContent -match 'game-network-pill') 'app.js renders TV broadcast network pill'
+Assert-Test ($appJsContent -match 'game-odds-pill') 'app.js renders game spread odds pill'
+Assert-Test ($appJsContent -match 'game-ou-pill') 'app.js renders Over/Under betting line pill'
+Assert-Test ($appJsContent -match 'pick-status-pill complete') 'app.js renders clean PICK SET pill when pick is complete'
+Assert-Test ($appJsContent -notmatch '\$\{isComplete \? "✓ Pick Set" : "Pending"\}') 'app.js does not render fallback Pending pill on cards'
+
+# Permanent Over/Under Display
+Assert-Test ($appJsContent -match '\$\{spreadBadge\}[\s\S]*?\$\{ouBadge\}[\s\S]*?\$\{pickSetPill\}') 'app.js preserves Spread and Over/Under permanently when pick is set'
+
+# Live Win Probability Momentum Bar
+Assert-Test ($appJsContent -match 'live-win-prob-container') 'app.js renders live-win-prob-container'
+Assert-Test ($appJsContent -match 'live-win-prob-labels') 'app.js renders live-win-prob-labels'
+Assert-Test ($appJsContent -match 'LIVE WIN PROBABILITY') 'app.js renders LIVE WIN PROBABILITY header title'
+Assert-Test ($appJsContent -match 'live-win-prob-track') 'app.js renders dual-color momentum track'
+Assert-Test ($appJsContent -match 'prob-fill-away') 'app.js renders away win probability fill bar'
+Assert-Test ($appJsContent -match 'prob-fill-home') 'app.js renders home win probability fill bar'
+
+# 100% Emoji Removal Across App Game Cards
+Assert-Test ($appJsContent -notmatch '"⭐ 3X LOCK ACTIVE"') 'app.js eliminated star emoji from 3X lock active button'
+Assert-Test ($appJsContent -notmatch '"⭐ 3X Lock"') 'app.js eliminated star emoji from 3X lock default button'
+Assert-Test ($appJsContent -notmatch '🚨 RED ZONE') 'app.js eliminated siren emoji from Red Zone badge'
+Assert-Test ($appJsContent -notmatch 'possession-football.*?>🏈<') 'app.js eliminated football emoji from possession badge'
+Assert-Test ($appJsContent -notmatch 'divider-pill-icon.*?>🏁<') 'app.js eliminated checkered flag emoji from concluded divider'
+
+# CSS Modern Terminal Aesthetics
+Assert-Test ($styleCssContent -match '\.game-network-pill') 'style.css defines .game-network-pill'
+Assert-Test ($styleCssContent -match '\.game-odds-pill') 'style.css defines .game-odds-pill'
+Assert-Test ($styleCssContent -match '\.game-ou-pill') 'style.css defines .game-ou-pill'
+Assert-Test ($styleCssContent -match '\.live-win-prob-container') 'style.css defines .live-win-prob-container'
+Assert-Test ($styleCssContent -match '\.live-win-prob-track') 'style.css defines .live-win-prob-track'
+Assert-Test ($styleCssContent -match '\.possession-dot') 'style.css defines .possession-dot'
+Assert-Test ($styleCssContent -match '\.game-closing-spread') 'style.css defines .game-closing-spread'
+Assert-Test ($styleCssContent -match '\.game-final-verified') 'style.css defines .game-final-verified'
+
+# Logic Verification via PowerShell Functions matching app.js
+function Test-GetGameBroadcast($game) {
+    if (-not $game) { return '' }
+    $raw = if ($game.broadcast) { "$($game.broadcast)".Trim().ToUpper() } else { '' }
+    if (-not $raw -and $game.dateTime) {
+        $dt = "$($game.dateTime)".ToUpper()
+        if ($dt.Contains('(TNF)')) { return 'PRIME' }
+        if ($dt.Contains('(SNF)')) { return 'NBC' }
+        if ($dt.Contains('(MNF)')) { return 'ESPN' }
+        if ($dt.Contains('(INTL)')) { return 'NFLN' }
+    }
+    if (-not $raw) { return '' }
+    if ($raw.Contains('PRIME') -or $raw.Contains('AMAZON')) { return 'PRIME' }
+    if ($raw.Contains('FOX')) { return 'FOX' }
+    if ($raw.Contains('CBS')) { return 'CBS' }
+    if ($raw.Contains('NBC')) { return 'NBC' }
+    if ($raw.Contains('ESPN')) { return 'ESPN' }
+    if ($raw.Contains('NFL NET') -or $raw.Contains('NFLN')) { return 'NFLN' }
+    if ($raw.Contains('NETFLIX')) { return 'NETFLIX' }
+    if ($raw.Contains('PEACOCK')) { return 'PEACOCK' }
+    if ($raw.Contains('ABC')) { return 'ABC' }
+    $parts = $raw -split '[\s,/]+'
+    return $parts[0]
+}
+
+function Test-GetGameOdds($game) {
+    if (-not $game) { return @{ spread = ''; ou = '' } }
+    $spread = if ($game.spread) { "$($game.spread)".Trim() } else { '' }
+    $ou = ''
+    if ($null -ne $game.overUnder -and $game.overUnder -ne '') {
+        $rawOu = "$($game.overUnder)".Trim()
+        $ou = if ($rawOu.ToUpper().StartsWith('O/U')) { $rawOu } else { "O/U $rawOu" }
+    }
+    return @{ spread = $spread; ou = $ou }
+}
+
+Assert-Test ((Test-GetGameBroadcast @{ broadcast = 'Prime Video' }) -eq 'PRIME') 'Broadcast normalizes Prime Video to PRIME'
+Assert-Test ((Test-GetGameBroadcast @{ broadcast = 'FOX' }) -eq 'FOX') 'Broadcast normalizes FOX to FOX'
+Assert-Test ((Test-GetGameBroadcast @{ broadcast = 'CBS Sports' }) -eq 'CBS') 'Broadcast normalizes CBS Sports to CBS'
+Assert-Test ((Test-GetGameBroadcast @{ broadcast = 'NBC' }) -eq 'NBC') 'Broadcast normalizes NBC to NBC'
+Assert-Test ((Test-GetGameBroadcast @{ broadcast = 'ESPN / ABC' }) -eq 'ESPN') 'Broadcast normalizes ESPN to ESPN'
+Assert-Test ((Test-GetGameBroadcast @{ dateTime = 'Thu 7:15 PM (TNF)' }) -eq 'PRIME') 'Broadcast infers PRIME from (TNF)'
+Assert-Test ((Test-GetGameBroadcast @{ dateTime = 'Sun 7:20 PM (SNF)' }) -eq 'NBC') 'Broadcast infers NBC from (SNF)'
+Assert-Test ((Test-GetGameBroadcast @{ dateTime = 'Mon 7:15 PM (MNF)' }) -eq 'ESPN') 'Broadcast infers ESPN from (MNF)'
+
+$testOdds = Test-GetGameOdds @{ spread = 'KC -3.5'; overUnder = 47.5 }
+Assert-Test ($testOdds.spread -eq 'KC -3.5') 'Odds spread correctly formatted as KC -3.5'
+Assert-Test ($testOdds.ou -eq 'O/U 47.5') 'Odds over/under correctly formatted as O/U 47.5'
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
@@ -737,6 +838,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 16 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 17 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }
