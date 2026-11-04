@@ -6937,6 +6937,16 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   transition: width 0.5s ease-in-out;
 }
 
+.matchup-live-win-prob-wrapper {
+  padding: 0 16px 12px 16px;
+}
+
+.matchup-live-win-prob-wrapper .live-win-prob-container {
+  border-top: none;
+  padding-top: 4px;
+  margin-top: 0;
+}
+
 .possession-football {
   display: inline-block;
   font-size: 0.85rem;

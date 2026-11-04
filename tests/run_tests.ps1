@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.0') 'index.html includes app.js?v=31.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.0') 'index.html includes style.css?v=31.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.1') 'index.html includes app.js?v=31.1 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.1') 'index.html includes style.css?v=31.1 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -725,7 +725,7 @@ Assert-Test ($appJsContent -match 'filteredGames = getPartitionedMatchupGames\(g
 Assert-Test ($appJsContent -match 'return getPartitionedMatchupGames\(games\);') 'getMatchupsTargetGames returns getPartitionedMatchupGames'
 Assert-Test ($styleCssContent -match '\.matchups-concluded-divider') 'style.css defines .matchups-concluded-divider'
 Assert-Test ($styleCssContent -match '\.divider-pill') 'style.css defines .divider-pill'
-Assert-Test ($indexHtmlContent -match 'v=31\.0') 'index.html references cache buster v=31.0'
+Assert-Test ($indexHtmlContent -match 'v=31\.[01]') 'index.html references cache buster v=31.1'
 
 # =========================================================
 # SUITE 17: Modern Game Card Lifecycle, TV Network, Odds, Permanent O/U, Live Win Probability, and Emoji Removal
@@ -761,6 +761,7 @@ Assert-Test ($appJsContent -match 'LIVE WIN PROBABILITY') 'app.js renders LIVE W
 Assert-Test ($appJsContent -match 'live-win-prob-track') 'app.js renders dual-color momentum track'
 Assert-Test ($appJsContent -match 'prob-fill-away') 'app.js renders away win probability fill bar'
 Assert-Test ($appJsContent -match 'prob-fill-home') 'app.js renders home win probability fill bar'
+Assert-Test ($appJsContent -match 'matchup-live-win-prob-wrapper') 'app.js renders live win probability in League view matchup cards'
 
 # 100% Emoji Removal Across App Game Cards
 Assert-Test ($appJsContent -notmatch '"⭐ 3X LOCK ACTIVE"') 'app.js eliminated star emoji from 3X lock active button'
@@ -768,6 +769,8 @@ Assert-Test ($appJsContent -notmatch '"⭐ 3X Lock"') 'app.js eliminated star em
 Assert-Test ($appJsContent -notmatch '🚨 RED ZONE') 'app.js eliminated siren emoji from Red Zone badge'
 Assert-Test ($appJsContent -notmatch 'possession-football.*?>🏈<') 'app.js eliminated football emoji from possession badge'
 Assert-Test ($appJsContent -notmatch 'divider-pill-icon.*?>🏁<') 'app.js eliminated checkered flag emoji from concluded divider'
+Assert-Test ($appJsContent -notmatch '🔥 Unanimous') 'app.js eliminated fire emoji from unanimous consensus badge'
+Assert-Test ($appJsContent -notmatch '⚡ 50/50 Split') 'app.js eliminated lightning emoji from 50/50 split consensus badge'
 
 # CSS Modern Terminal Aesthetics
 Assert-Test ($styleCssContent -match '\.game-network-pill') 'style.css defines .game-network-pill'
@@ -778,6 +781,7 @@ Assert-Test ($styleCssContent -match '\.live-win-prob-track') 'style.css defines
 Assert-Test ($styleCssContent -match '\.possession-dot') 'style.css defines .possession-dot'
 Assert-Test ($styleCssContent -match '\.game-closing-spread') 'style.css defines .game-closing-spread'
 Assert-Test ($styleCssContent -match '\.game-final-verified') 'style.css defines .game-final-verified'
+Assert-Test ($styleCssContent -match '\.matchup-live-win-prob-wrapper') 'style.css defines .matchup-live-win-prob-wrapper'
 
 # Logic Verification via PowerShell Functions matching app.js
 function Test-GetGameBroadcast($game) {
