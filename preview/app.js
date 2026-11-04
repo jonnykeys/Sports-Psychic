@@ -3341,7 +3341,6 @@ function renderMatchups() {
 
       byeStripEl.innerHTML = `
         <div class="bye-strip-left">
-          <span class="bye-strip-icon">☕</span>
           <span class="bye-strip-label">BYE:</span>
         </div>
         <div class="bye-strip-chips">
@@ -3649,6 +3648,26 @@ function renderMatchups() {
           </div>
         </div>
 
+        ${isLive ? (() => {
+          const winProb = getGameWinProbability(game, awayTeam, homeTeam);
+          if (!winProb) return "";
+          return `
+            <div class="matchup-live-win-prob-wrapper">
+              <div class="live-win-prob-container">
+                <div class="live-win-prob-labels">
+                  <span class="prob-away-label" style="color: ${awayColor}">${awayTeam} ${winProb.awayPct}%</span>
+                  <span class="prob-title">LIVE WIN PROBABILITY</span>
+                  <span class="prob-home-label" style="color: ${homeColor}">${winProb.homePct}% ${homeTeam}</span>
+                </div>
+                <div class="live-win-prob-track">
+                  <div class="prob-fill-away" style="width: ${winProb.awayPct}%; background-color: ${awayColor};"></div>
+                  <div class="prob-fill-home" style="width: ${winProb.homePct}%; background-color: ${homeColor};"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        })() : ""}
+
         ${isCustomLeague
           ? renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
           : (isOGLeague
@@ -3664,8 +3683,8 @@ function renderMatchups() {
                   <span class="consensus-count">(${awayPicks.length})</span>
                 </div>
 
-                ${isUnanimous ? `<span class="consensus-badge unanimous">🔥 Unanimous</span>` :
-                  isDeadHeat ? `<span class="consensus-badge split">⚡ 50/50 Split</span>` : ""}
+                ${isUnanimous ? `<span class="consensus-badge unanimous">Unanimous</span>` :
+                  isDeadHeat ? `<span class="consensus-badge split">50/50 Split</span>` : ""}
 
                 <div class="consensus-side home">
                   <span class="consensus-dot" style="background-color: ${homeColor};"></span>
