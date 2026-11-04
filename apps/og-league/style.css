@@ -4384,6 +4384,50 @@ body {
   }
 }
 
+/* =========================================================
+   CONCLUDED MATCHUPS DIVIDER (Option A)
+   Separates active/upcoming matchups from concluded games
+   ========================================================= */
+.matchups-concluded-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 18px 0 10px 0;
+  padding: 4px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.matchups-concluded-divider .divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+
+.matchups-concluded-divider .divider-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  user-select: none;
+}
+
+.matchups-concluded-divider .divider-pill-icon {
+  font-size: 0.85rem;
+}
+
 /* Matchup Summary Banner */
 .week-summary-banner {
   background: var(--bg-card);

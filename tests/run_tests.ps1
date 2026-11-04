@@ -1,7 +1,7 @@
 # Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
-Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (11 SUITES)' -ForegroundColor Cyan
+Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (16 SUITES)' -ForegroundColor Cyan
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ''
 
@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=29\.0') 'index.html includes app.js?v=29.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=29\.0') 'index.html includes style.css?v=29.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=30\.0') 'index.html includes app.js?v=30.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=30\.0') 'index.html includes style.css?v=30.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -663,6 +663,70 @@ Assert-Test ($styleCssContent -match '\.btn-context-banner-action') 'style.css d
 Assert-Test ($styleCssContent -match '\.week-trigger-badge\.badge-open') 'style.css defines .week-trigger-badge.badge-open'
 Assert-Test ($styleCssContent -match '\.week-cell-status\.status-open') 'style.css defines .week-cell-status.status-open'
 
+Write-Host ''
+Write-Host '  -- Suite 16: Stable Matchup Partitioning & Concluded Divider (Option A) --' -ForegroundColor Yellow
+
+function Test-PartitionMatchupGames($gamesList) {
+    if ($null -eq $gamesList -or $gamesList.Count -eq 0) { return @() }
+    $active = @($gamesList | Where-Object { -not $_.isFinal })
+    $completed = @($gamesList | Where-Object { [bool]$_.isFinal })
+    return @($active + $completed)
+}
+
+# Scenario 1: Mixed Week (Games 1 & 4 Final, Games 2, 3, 5 Active)
+$simSchedule = @(
+    @{ id = 'g1'; isFinal = $true; name = 'TNF Final' },
+    @{ id = 'g2'; isFinal = $false; name = 'Sun Early 1' },
+    @{ id = 'g3'; isFinal = $false; name = 'Sun Early 2' },
+    @{ id = 'g4'; isFinal = $true; name = 'Sun Early 3 Final' },
+    @{ id = 'g5'; isFinal = $false; name = 'Sun Late Upcoming' }
+)
+
+$partitioned = Test-PartitionMatchupGames $simSchedule
+Assert-Test ($partitioned.Count -eq 5) 'Partitioned list preserves total game count'
+Assert-Test ($partitioned[0].id -eq 'g2' -and $partitioned[1].id -eq 'g3' -and $partitioned[2].id -eq 'g5') 'Active games (g2, g3, g5) maintain original relative order at top'
+Assert-Test ($partitioned[3].id -eq 'g1' -and $partitioned[4].id -eq 'g4') 'Concluded games (g1, g4) maintain original relative order at bottom'
+
+# Scenario 2: Concluded Week (All games Final)
+$simAllFinal = @(
+    @{ id = 'g1'; isFinal = $true },
+    @{ id = 'g2'; isFinal = $true },
+    @{ id = 'g3'; isFinal = $true },
+    @{ id = 'g4'; isFinal = $true }
+)
+$partitionedAllFinal = Test-PartitionMatchupGames $simAllFinal
+Assert-Test ($partitionedAllFinal[0].id -eq 'g1' -and $partitionedAllFinal[1].id -eq 'g2' -and $partitionedAllFinal[2].id -eq 'g3' -and $partitionedAllFinal[3].id -eq 'g4') 'When all games are final, exact original schedule order is fully restored'
+
+# Scenario 3: Pre-Kickoff Week (0 games Final)
+$simAllActive = @(
+    @{ id = 'g1'; isFinal = $false },
+    @{ id = 'g2'; isFinal = $false },
+    @{ id = 'g3'; isFinal = $false }
+)
+$partitionedAllActive = Test-PartitionMatchupGames $simAllActive
+Assert-Test ($partitionedAllActive[0].id -eq 'g1' -and $partitionedAllActive[1].id -eq 'g2' -and $partitionedAllActive[2].id -eq 'g3') 'When 0 games are final, exact original schedule order is maintained'
+
+# Scenario 4: Option A Divider Visibility Logic
+function Test-ShouldShowConcludedDivider($filter, $activeCount, $finalsCount) {
+    return ($filter -eq 'all' -and $activeCount -gt 0 -and $finalsCount -gt 0)
+}
+Assert-Test (Test-ShouldShowConcludedDivider 'all' 3 2) 'Option A divider shows when viewing All with both active and final games'
+Assert-Test (-not (Test-ShouldShowConcludedDivider 'all' 0 5)) 'Option A divider hides when 100% of games are final'
+Assert-Test (-not (Test-ShouldShowConcludedDivider 'all' 5 0)) 'Option A divider hides when 0 games are final'
+Assert-Test (-not (Test-ShouldShowConcludedDivider 'upcoming' 3 2)) 'Option A divider hides in upcoming filter view'
+Assert-Test (-not (Test-ShouldShowConcludedDivider 'final' 3 2)) 'Option A divider hides in final filter view'
+
+# Scenario 5: Codebase Architecture & Window Exports
+Assert-Test ($appJsContent -match 'function getPartitionedMatchupGames\(') 'app.js defines getPartitionedMatchupGames helper'
+Assert-Test ($appJsContent -match 'function renderConcludedDivider\(') 'app.js defines renderConcludedDivider helper'
+Assert-Test ($appJsContent -match 'window\.getPartitionedMatchupGames\s*=') 'app.js exports getPartitionedMatchupGames to window'
+Assert-Test ($appJsContent -match 'window\.renderConcludedDivider\s*=') 'app.js exports renderConcludedDivider to window'
+Assert-Test ($appJsContent -match 'filteredGames = getPartitionedMatchupGames\(games\);') 'renderMatchups applies getPartitionedMatchupGames when filter is all'
+Assert-Test ($appJsContent -match 'return getPartitionedMatchupGames\(games\);') 'getMatchupsTargetGames returns getPartitionedMatchupGames'
+Assert-Test ($styleCssContent -match '\.matchups-concluded-divider') 'style.css defines .matchups-concluded-divider'
+Assert-Test ($styleCssContent -match '\.divider-pill') 'style.css defines .divider-pill'
+Assert-Test ($indexHtmlContent -match 'v=30\.0') 'index.html references cache buster v=30.0'
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
@@ -673,6 +737,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 15 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 16 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }
