@@ -3070,6 +3070,31 @@ function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
   `;
 }
 
+// =========================================================
+// STABLE MATCHUP PARTITIONING & DIVIDERS (Option A)
+// Pushes completed games to bottom while strictly preserving
+// relative chronological order; restores full order once all final.
+// =========================================================
+function getPartitionedMatchupGames(gamesList) {
+  if (!Array.isArray(gamesList) || gamesList.length === 0) return [];
+  const active = gamesList.filter(g => !g.isFinal);
+  const completed = gamesList.filter(g => Boolean(g.isFinal));
+  return [...active, ...completed];
+}
+
+function renderConcludedDivider(finalCount) {
+  return `
+    <div class="matchups-concluded-divider" role="separator" aria-label="Concluded Matchups (${finalCount})">
+      <span class="divider-line"></span>
+      <span class="divider-pill">
+        <span class="divider-pill-icon">🏁</span>
+        <span>Concluded Games (${finalCount})</span>
+      </span>
+      <span class="divider-line"></span>
+    </div>
+  `;
+}
+
 function renderMatchups() {
   const container = document.getElementById("matchups-list");
   const filterBar = document.getElementById("matchups-filter-bar");
@@ -3150,6 +3175,7 @@ function renderMatchups() {
   games.forEach(g => calculateGamePicksPoints(g));
 
   const finalGamesList = games.filter(g => Boolean(g.isFinal));
+  const activeGamesList = games.filter(g => !g.isFinal);
   const liveGamesList = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)));
   const upcomingGamesList = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null)));
 
@@ -3157,6 +3183,7 @@ function renderMatchups() {
   const finalsCount = finalGamesList.length;
   const liveCount = liveGamesList.length;
   const upcomingCount = upcomingGamesList.length;
+  const activeCount = activeGamesList.length;
 
   bannerStat.innerHTML = `${totalGames}&nbsp;Games • ${finalsCount}&nbsp;Final${liveCount > 0 ? ` • <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
 
@@ -3196,7 +3223,13 @@ function renderMatchups() {
     filteredGames = liveGamesList;
   } else if (currentFilter === "final") {
     filteredGames = finalGamesList;
+  } else {
+    // "all": stable partition - active games first (chronological), completed games at bottom (chronological)
+    filteredGames = getPartitionedMatchupGames(games);
   }
+
+  // Option A: Subtle divider between active and concluded games when viewing "all"
+  const showDivider = (currentFilter === "all" && activeCount > 0 && finalsCount > 0);
 
   const filterChipsHtml = `
     <div class="filter-pills-row" role="group" aria-label="Matchup status filters">
@@ -3246,8 +3279,11 @@ function renderMatchups() {
     container.innerHTML = `
       <div class="sheet-games-grid lobby-games-grid">
         ${filteredGames.map((game, idx) => {
+          const dividerHtml = (showDivider && idx === activeCount)
+            ? renderConcludedDivider(finalsCount)
+            : "";
           const pick = activePicks[game.id] || {};
-          return renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx);
+          return dividerHtml + renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx);
         }).join("")}
       </div>
     `;
@@ -3406,7 +3442,12 @@ function renderMatchups() {
     const isLeagueMode = isCustomLeague || isOGLeague;
     const isCollapsed = isLeagueMode && state.collapsedMatchups && state.collapsedMatchups.has(game.id);
 
+    const dividerHtml = (showDivider && idx === activeCount)
+      ? renderConcludedDivider(finalsCount)
+      : "";
+
     return `
+      ${dividerHtml}
       <article class="matchup-card ${isCollapsed ? "collapsed" : ""} ${isLive ? "is-live" : ""}" id="${game.id}">
         <div class="matchup-card-header" ${isLeagueMode ? `onclick="toggleMatchupCollapse('${game.id}', event)"` : ""}>
           <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
@@ -3555,7 +3596,7 @@ function getMatchupsTargetGames(games) {
   } else if (currentFilter === "final") {
     return games.filter(g => Boolean(g.isFinal));
   }
-  return games;
+  return getPartitionedMatchupGames(games);
 }
 
 function toggleMatchupCollapse(gameId, event) {
@@ -10228,3 +10269,5 @@ window.updateGlobalStandingsRibbon = updateGlobalStandingsRibbon;
 window.getGlobalMinDiffForGame = getGlobalMinDiffForGame;
 window.isWeekFullyLocked = isWeekFullyLocked;
 window.getOpenPredictionWeek = getOpenPredictionWeek;
+window.getPartitionedMatchupGames = getPartitionedMatchupGames;
+window.renderConcludedDivider = renderConcludedDivider;
