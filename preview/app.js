@@ -9356,9 +9356,9 @@ async function loadAndRenderGlobalLeaderboard() {
 
   // Populate the 12 OG League member prophecies with their full 272 picks (season) or weekly picks (weekly)
   const ogFavTeams = {
-    "Jon": "BUF", "Alisha": "MIN", "Carson": "KC", "Nok": "BAL",
-    "Mango": "SF", "Caleb": "LAC", "Ross": "PIT", "Dishman": "MIA",
-    "Ethan": "NYJ", "Brett": "GB", "Wells": "IND", "Rob": "LV"
+    "Jon": "KC", "Alisha": "KC", "Carson": "KC", "Nok": "KC",
+    "Mango": "KC", "Caleb": "KC", "Ross": "DAL", "Dishman": "KC",
+    "Ethan": "CIN", "Brett": "JAX", "Wells": "IND", "Rob": "MIA"
   };
 
   const activeNFLWeek = state.currentWeek || getCurrentNFLWeek() || 8;
