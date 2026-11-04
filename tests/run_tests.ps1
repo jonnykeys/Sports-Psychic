@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=28\.0') 'index.html includes app.js?v=28.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=28\.0') 'index.html includes style.css?v=28.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=29\.0') 'index.html includes app.js?v=29.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=29\.0') 'index.html includes style.css?v=29.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -601,6 +601,68 @@ Assert-Test ($appJsContent -match 'America/Chicago') 'parseGameKickoff explicitl
 Assert-Test ($appJsContent -match 'keep picks open until official kickoff') 'isGameLockedForPicking safeguards pre-kickoff broadcast window'
 Assert-Test ($indexHtmlContent -notmatch '</section>\s*</section>\s*</main>') 'index.html contains no orphan section tag before main'
 
+Write-Host ''
+Write-Host '  -- Suite 15: Post-MNF Open Prediction Week Auto-Advance & Contextual Bridge Banner --' -ForegroundColor Yellow
+
+# 1. Week Lock and Open Prediction Week Math
+function Test-SimulatedWeekFullyLocked([array]$games, [DateTimeOffset]$checkTime) {
+    if (-not $games -or $games.Count -eq 0) { return $false }
+    foreach ($g in $games) {
+        $locked = Test-SimulatedLock $g $checkTime
+        if (-not $locked) { return $false }
+    }
+    return $true
+}
+
+$simWeekPartiallyOpen = @(
+    @{ kickoffTime = '2026-11-01T17:00:00Z'; isFinal = $true; awayScore = 20; homeScore = 17; isLive = $false },
+    @{ kickoffTime = '2026-11-02T19:15:00-06:00'; isFinal = $false; awayScore = $null; homeScore = $null; isLive = $false }
+)
+
+$simWeekAllLocked = @(
+    @{ kickoffTime = '2026-11-01T17:00:00Z'; isFinal = $true; awayScore = 20; homeScore = 17; isLive = $false },
+    @{ kickoffTime = '2026-11-02T19:15:00-06:00'; isFinal = $true; awayScore = 24; homeScore = 21; isLive = $false }
+)
+
+$timeMondayAfternoon = [DateTimeOffset]::Parse('2026-11-02T14:00:00-06:00')
+$timeTuesday = [DateTimeOffset]::Parse('2026-11-03T12:00:00-06:00')
+
+Assert-Test (-not (Test-SimulatedWeekFullyLocked $simWeekPartiallyOpen $timeMondayAfternoon)) 'Week with open MNF game is NOT fully locked on Monday afternoon'
+Assert-Test (Test-SimulatedWeekFullyLocked $simWeekAllLocked $timeTuesday) 'Week with all games concluded is fully locked on Tuesday'
+
+function Test-SimulatedOpenPredictionWeek([int]$currentNFL, [bool]$isLocked) {
+    if ($currentNFL -lt 18 -and $isLocked) {
+        return ($currentNFL + 1)
+    }
+    return $currentNFL
+}
+
+Assert-Test ((Test-SimulatedOpenPredictionWeek 8 $false) -eq 8) 'Open prediction week remains Week 8 while Week 8 has open games'
+Assert-Test ((Test-SimulatedOpenPredictionWeek 8 $true) -eq 9) 'Open prediction week advances to Week 9 once Week 8 is fully locked'
+Assert-Test ((Test-SimulatedOpenPredictionWeek 18 $true) -eq 18) 'Open prediction week capped at Week 18'
+
+# 2. Codebase Architecture & Mode-Aware Week Resolution
+Assert-Test ($appJsContent -match 'function isWeekFullyLocked\(') 'app.js defines isWeekFullyLocked helper'
+Assert-Test ($appJsContent -match 'function getOpenPredictionWeek\(') 'app.js defines getOpenPredictionWeek helper'
+Assert-Test ($appJsContent -match 'window\.isWeekFullyLocked\s*=') 'app.js exports isWeekFullyLocked to window'
+Assert-Test ($appJsContent -match 'window\.getOpenPredictionWeek\s*=') 'app.js exports getOpenPredictionWeek to window'
+Assert-Test ($appJsContent -match 'state\.currentWeek = leagueWk;' -and $appJsContent -match 'state\.currentWeek = openWk;') 'app.js initializes state.currentWeek mode-aware (League=currentNFL, Lobby=openWk)'
+Assert-Test ($appJsContent -match 'enterLeagueView[\s\S]*?state\.currentWeek = leagueWk;') 'enterLeagueView anchors week to current NFL league week'
+Assert-Test ($appJsContent -match 'enterCustomLeague[\s\S]*?state\.currentWeek = leagueWk;') 'enterCustomLeague anchors week to current NFL league week'
+Assert-Test ($appJsContent -match 'exitToLobby[\s\S]*?state\.currentWeek = openWk;') 'exitToLobby advances week to open prediction week'
+
+# 3. Contextual Bridge Banner & UI Markup
+$indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
+$styleCssContent = Get-Content -Raw 'apps/og-league/style.css'
+Assert-Test ($indexHtmlContent -match 'id="lobby-week-context-banner"') 'index.html defines #lobby-week-context-banner container'
+Assert-Test ($appJsContent -match 'lobby-week-context-banner') 'app.js renders lobby-week-context-banner'
+Assert-Test ($appJsContent -match 'selectWeek\(\$\{currentNFL\}\)') 'app.js provides one-click action to view completed week results'
+Assert-Test ($appJsContent -match 'selectWeek\(\$\{openWk\}\)') 'app.js provides one-click action to jump to open predictions'
+Assert-Test ($styleCssContent -match '\.lobby-week-context-banner') 'style.css defines .lobby-week-context-banner'
+Assert-Test ($styleCssContent -match '\.btn-context-banner-action') 'style.css defines .btn-context-banner-action'
+Assert-Test ($styleCssContent -match '\.week-trigger-badge\.badge-open') 'style.css defines .week-trigger-badge.badge-open'
+Assert-Test ($styleCssContent -match '\.week-cell-status\.status-open') 'style.css defines .week-cell-status.status-open'
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
@@ -611,6 +673,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 14 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 15 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }

@@ -521,6 +521,22 @@ body {
   border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
+.week-trigger-badge.badge-open {
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.16);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+}
+
+.open-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 .pulse-dot {
   width: 5px;
   height: 5px;
@@ -706,6 +722,11 @@ body {
 
 .week-cell-status.status-current {
   color: #4ade80;
+  font-weight: 800;
+}
+
+.week-cell-status.status-open {
+  color: #00e5ff;
   font-weight: 800;
 }
 
@@ -4233,6 +4254,134 @@ body {
   border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
   font-size: 0.78rem;
   color: var(--text-main);
+}
+
+/* =========================================================
+   LOBBY WEEK CONTEXTUAL BANNER (Option 1)
+   Informs users when the current week concluded & previews open predictions
+   ========================================================= */
+.lobby-week-context-banner {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-left: 4px solid var(--accent-cyan, #00e5ff);
+  border-radius: var(--border-radius, 12px);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 0 12px rgba(0, 229, 255, 0.1);
+  transition: all 0.25s ease;
+}
+
+.lobby-week-context-banner.is-review-mode {
+  border-color: rgba(255, 215, 0, 0.3);
+  border-left-color: var(--accent-gold, #ffd700);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 0 12px rgba(255, 215, 0, 0.1);
+}
+
+.context-banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.context-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.context-banner-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.context-banner-pill.pill-locked {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+}
+
+.context-banner-msg {
+  color: var(--text-main, #e2e8f0);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.context-banner-msg strong {
+  color: #ffffff;
+}
+
+.btn-context-banner-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-context-banner-action:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: rgba(0, 229, 255, 0.5);
+  color: #00e5ff;
+  transform: translateX(2px);
+}
+
+.btn-context-banner-action.btn-action-forward {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.2) 0%, rgba(37, 99, 235, 0.3) 100%);
+  border-color: rgba(0, 229, 255, 0.4);
+}
+
+.btn-context-banner-action.btn-action-forward:hover {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.35) 0%, rgba(37, 99, 235, 0.45) 100%);
+  border-color: #00e5ff;
+}
+
+.banner-action-arrow {
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
+.btn-context-banner-action:hover .banner-action-arrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 640px) {
+  .context-banner-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .context-banner-text {
+    align-items: flex-start;
+  }
+  .btn-context-banner-action {
+    justify-content: center;
+    width: 100%;
+    padding: 9px 12px;
+  }
 }
 
 /* Matchup Summary Banner */
