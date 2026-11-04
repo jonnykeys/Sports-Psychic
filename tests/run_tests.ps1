@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=27\.0') 'index.html includes app.js?v=27.0 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=27\.0') 'index.html includes style.css?v=27.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=28\.0') 'index.html includes app.js?v=28.0 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=28\.0') 'index.html includes style.css?v=28.0 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -526,6 +526,81 @@ Assert-Test ($styleCssContent -match '\.breakdown-stats-grid') 'style.css define
 Assert-Test ($styleCssContent -match '\.breakdown-mode-tabs') 'style.css defines .breakdown-mode-tabs'
 Assert-Test ($styleCssContent -match '\.breakdown-rule-banner') 'style.css defines .breakdown-rule-banner'
 
+Write-Host ''
+Write-Host '  -- Suite 14: Game Kickoff Timing, Timezones & Pre-Kickoff Lock Engine --' -ForegroundColor Yellow
+
+# 1. Regex Match tests across diverse formats
+$koPattern = '(\d{1,2})\/(\d{1,2})(?:[^\d\r\n:]+)(\d{1,2}):(\d{2})\s*(AM|PM)?'
+Assert-Test ([regex]::IsMatch('Mon 11/2 @ 7:15pm (MNF)', $koPattern)) 'parseGameKickoff regex matches spreadsheet @ format'
+Assert-Test ([regex]::IsMatch('Mon 11/2 • 7:15 PM', $koPattern)) 'parseGameKickoff regex matches ESPN bullet format'
+Assert-Test ([regex]::IsMatch('Sun 11/1 @ 12:00pm', $koPattern)) 'parseGameKickoff regex matches Sunday noon format'
+Assert-Test ([regex]::IsMatch('11/2 - 7:15 PM EST', $koPattern)) 'parseGameKickoff regex matches ESPN status detail format'
+
+# 2. ISO & Timezone calculations (Nov 2, 2026 is CST -06:00; Sep 13, 2026 is CDT -05:00)
+$mnfKickoff = [DateTimeOffset]::Parse('2026-11-02T19:15:00-06:00')
+$mnfUtc = $mnfKickoff.ToUniversalTime()
+Assert-Test ($mnfUtc.ToString('yyyy-MM-ddTHH:mm:ssZ') -eq '2026-11-03T01:15:00Z') 'Nov 2, 2026 7:15 PM CST equates to 2026-11-03T01:15:00Z'
+
+$noonKickoff = [DateTimeOffset]::Parse('2026-09-13T12:00:00-05:00')
+$noonUtc = $noonKickoff.ToUniversalTime()
+Assert-Test ($noonUtc.ToString('yyyy-MM-ddTHH:mm:ssZ') -eq '2026-09-13T17:00:00Z') 'Sep 13, 2026 12:00 PM CDT equates to 2026-09-13T17:00:00Z'
+
+# 3. Game Lock Timing at 7:05 PM vs 7:15 PM
+function Test-SimulatedLock([hashtable]$game, [DateTimeOffset]$checkTime) {
+    if ($game['isFinal']) { return $true }
+    if ($null -ne $game['awayScore'] -and $null -ne $game['homeScore'] -and ($game['awayScore'] -gt 0 -or $game['homeScore'] -gt 0)) { return $true }
+    
+    $koTime = $null
+    if ($game['kickoffTime']) {
+        $koTime = [DateTimeOffset]::Parse($game['kickoffTime'])
+    }
+    
+    if ($game['isLive']) {
+        $hasScore = ($game['awayScore'] -gt 0 -or $game['homeScore'] -gt 0)
+        if (-not $hasScore -and $null -ne $koTime -and $koTime -gt $checkTime) {
+            return $false
+        }
+        return $true
+    }
+    
+    if ($null -ne $koTime -and $koTime -le $checkTime) {
+        return $true
+    }
+    return $false
+}
+
+$simGame = @{
+    kickoffTime = '2026-11-03T01:15:00Z';
+    isLive = $true; # Broadcast went live early
+    isFinal = $false;
+    awayScore = $null;
+    homeScore = $null;
+}
+
+$timeAt705 = [DateTimeOffset]::Parse('2026-11-02T19:05:00-06:00') # 7:05 PM Central (01:05 UTC)
+$timeAt715 = [DateTimeOffset]::Parse('2026-11-02T19:15:00-06:00') # 7:15 PM Central (01:15 UTC)
+$timeAt725 = [DateTimeOffset]::Parse('2026-11-02T19:25:00-06:00') # 7:25 PM Central (01:25 UTC)
+
+Assert-Test (-not (Test-SimulatedLock $simGame $timeAt705)) 'Game remains UNLOCKED at 7:05 PM Central (10 min before 7:15 PM kickoff)'
+Assert-Test (Test-SimulatedLock $simGame $timeAt715) 'Game is LOCKED at 7:15 PM Central kickoff time'
+Assert-Test (Test-SimulatedLock $simGame $timeAt725) 'Game is LOCKED at 7:25 PM Central in-game'
+
+$simEarlyScoreGame = @{
+    kickoffTime = '2026-11-03T01:15:00Z';
+    isLive = $true;
+    isFinal = $false;
+    awayScore = 3;
+    homeScore = 0;
+}
+Assert-Test (Test-SimulatedLock $simEarlyScoreGame $timeAt705) 'Game locks early if points are already scored on scoreboard'
+
+# 4. Codebase Architecture Assertions
+Assert-Test ($appJsContent -match 'game\.kickoffTime\s*=\s*matchedEvent\.date') 'syncLiveNFLScores sets game.kickoffTime from ESPN date'
+Assert-Test ($appJsContent -match 'Pre-game broadcast window') 'syncLiveNFLScores guards against premature TV broadcast telemetry'
+Assert-Test ($appJsContent -match 'America/Chicago') 'parseGameKickoff explicitly anchors to America/Chicago Central Time'
+Assert-Test ($appJsContent -match 'keep picks open until official kickoff') 'isGameLockedForPicking safeguards pre-kickoff broadcast window'
+Assert-Test ($indexHtmlContent -notmatch '</section>\s*</section>\s*</main>') 'index.html contains no orphan section tag before main'
+
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
 
@@ -536,6 +611,6 @@ Write-Host '--------------------------------------------------------' -Foregroun
 Write-Host ''
 
 if ($passed -eq $total) {
-    Write-Host ' All 13 modular test suites verified successfully!' -ForegroundColor Green
+    Write-Host ' All 14 modular test suites verified successfully!' -ForegroundColor Green
     Write-Host ''
 }

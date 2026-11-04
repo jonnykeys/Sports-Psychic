@@ -1711,6 +1711,9 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       const shortDetail = statusType.shortDetail || "";
 
       // Prioritize ESPN official kickoff date & time for real-time accuracy
+      if (matchedEvent.date) {
+        game.kickoffTime = matchedEvent.date;
+      }
       const espnFormattedTime = formatEspnGameTime(matchedEvent);
       if (espnFormattedTime) {
         game.dateTime = espnFormattedTime;
@@ -1781,10 +1784,28 @@ async function syncLiveNFLScores(weekNum, silent = false) {
           else game.winner = "TIE";
         }
       } else if (stateCode === "in") {
-        // Game is actively IN PROGRESS / LIVE
-        game.isFinal = false;
-        game.isLive = true;
-        game.statusDetail = formatQuarterStatus(shortDetail) || "Live";
+        // Game telemetry reports "in".
+        // Guard against premature TV broadcast telemetry before actual kickoff:
+        const koEpoch = (game.kickoffTime && !isNaN(new Date(game.kickoffTime).getTime()))
+          ? new Date(game.kickoffTime).getTime()
+          : null;
+        const hasStarted = (
+          (parsedAway !== null && parsedAway > 0) ||
+          (parsedHome !== null && parsedHome > 0) ||
+          (status.period && status.period >= 1 && status.displayClock !== "0:00" && status.displayClock !== "15:00") ||
+          (koEpoch !== null && koEpoch <= Date.now())
+        );
+
+        if (hasStarted) {
+          game.isFinal = false;
+          game.isLive = true;
+          game.statusDetail = formatQuarterStatus(shortDetail) || "Live";
+        } else {
+          // Pre-game broadcast window (TV coverage live, but ball has not kicked off yet)
+          game.isFinal = false;
+          game.isLive = false;
+          game.statusDetail = "Pre-game";
+        }
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
         game.possession = possession;
@@ -5656,46 +5677,85 @@ async function saveSoloPickSheet(sheet) {
 
 /**
  * Parses kickoff string into Date object.
- * Supports "Thu 10/1 8:15 PM", "10/1 8:15 PM", ISO dates, etc.
+ * Supports "Thu 10/1 8:15 PM", "Mon 11/2 • 7:15 PM", "Mon 11/2 @ 7:15pm (MNF)", ISO dates, etc.
+ * Anchors times to US Central Time (America/Chicago) unless explicit timezone is provided,
+ * ensuring kickoff lock timing is identical across all user devices worldwide.
  */
 function parseGameKickoff(dateTimeStr) {
   if (!dateTimeStr || typeof dateTimeStr !== "string") return null;
+
+  // Direct ISO 8601 parsing (e.g. ESPN "2026-11-03T01:15Z")
   const parsedDirect = new Date(dateTimeStr);
   if (!isNaN(parsedDirect.getTime()) && parsedDirect.getFullYear() >= 2026) {
     return parsedDirect;
   }
-  const m = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})(?:\s+@\s+|\s+)(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+
+  // Regex matching "Mon 11/2 @ 7:15pm (MNF)", "Mon 11/2 • 7:15 PM", "11/2 - 7:15 PM EST", "Sun 11/1 12:00pm", etc.
+  const m = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})(?:[^\d\n:]+)(\d{1,2}):(\d{2})\s*(AM|PM)?(?:\s*([A-Z]{2,4}))?/i);
   if (m) {
     const month = parseInt(m[1], 10);
     const day = parseInt(m[2], 10);
     let hours = parseInt(m[3], 10);
     const minutes = parseInt(m[4], 10);
     const ampm = (m[5] || "").toUpperCase();
+    const tz = (m[6] || "").toUpperCase();
+
     if (ampm === "PM" && hours < 12) hours += 12;
     if (ampm === "AM" && hours === 12) hours = 0;
     const year = (month <= 2) ? 2027 : 2026;
+
+    // Explicit or US Central Time (America/Chicago) offset:
+    // In 2026, Daylight Saving Time ends Sunday Nov 1, 2026 at 2:00 AM (CDT -> CST).
+    let offsetStr = "-06:00"; // Default CST
+    if (tz === "EST") offsetStr = "-05:00";
+    else if (tz === "EDT") offsetStr = "-04:00";
+    else if (tz === "PST") offsetStr = "-08:00";
+    else if (tz === "PDT") offsetStr = "-07:00";
+    else if (tz === "MST") offsetStr = "-07:00";
+    else if (tz === "MDT") offsetStr = "-06:00";
+    else {
+      // US Central Time: CDT (-05:00) before Nov 1, 2026 02:00 AM; CST (-06:00) thereafter
+      if (year === 2026 && (month < 11 || (month === 11 && day === 1 && hours < 2))) {
+        offsetStr = "-05:00"; // CDT
+      } else {
+        offsetStr = "-06:00"; // CST
+      }
+    }
+
+    const isoStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00${offsetStr}`;
+    const d = new Date(isoStr);
+    if (!isNaN(d.getTime())) return d;
     return new Date(year, month - 1, day, hours, minutes, 0);
   }
+
+  // Fallback for date-only formats: default to Sunday 12:00 PM Central (noon kickoff slate)
   const dateOnlyMatch = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})/);
   if (dateOnlyMatch) {
     const month = parseInt(dateOnlyMatch[1], 10);
     const day = parseInt(dateOnlyMatch[2], 10);
     const year = (month <= 2) ? 2027 : 2026;
-    return new Date(year, month - 1, day, 13, 0, 0);
+    const offsetStr = (year === 2026 && (month < 11 || (month === 11 && day === 1 && 12 < 2))) ? "-05:00" : "-06:00";
+    const isoStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T12:00:00${offsetStr}`;
+    const d = new Date(isoStr);
+    if (!isNaN(d.getTime())) return d;
+    return new Date(year, month - 1, day, 12, 0, 0);
   }
+
   return null;
 }
 
 /**
  * Determines if an NFL game is locked for user predictions:
- * 1. Final or live games are always locked.
+ * 1. Final games are always locked.
  * 2. Games with recorded scores (>0) are locked.
  * 3. Games in past NFL weeks (prior to current NFL week) are 100% locked.
  * 4. Games whose official kickoff date/time has passed are locked.
+ * 5. Pre-kickoff safeguard: If ESPN broadcast is live (state="in") but official kickoff
+ *    has not arrived yet and scores are 0-0/null, keep picks open until official kickoff!
  */
 function isGameLockedForPicking(game, weekNum = null) {
   if (!game) return true;
-  if (game.isFinal || game.isLive) return true;
+  if (game.isFinal) return true;
   if (game.awayScore !== null && game.homeScore !== null && (game.awayScore > 0 || game.homeScore > 0)) {
     return true;
   }
@@ -5706,14 +5766,36 @@ function isGameLockedForPicking(game, weekNum = null) {
     if (m) w = parseInt(m[1], 10);
   }
   if (w && w < currWk) return true;
+
+  // Resolve kickoff timestamp: prefer exact game.kickoffTime, fallback to parsed game.dateTime
+  let koTime = null;
   if (game.kickoffTime) {
     const d = new Date(game.kickoffTime);
-    if (!isNaN(d.getTime()) && d.getTime() <= Date.now()) return true;
+    if (!isNaN(d.getTime())) koTime = d.getTime();
   }
-  if (game.dateTime) {
+  if (koTime === null && game.dateTime) {
     const ko = parseGameKickoff(game.dateTime);
-    if (ko && ko.getTime() <= Date.now()) return true;
+    if (ko && !isNaN(ko.getTime())) koTime = ko.getTime();
   }
+
+  const now = Date.now();
+
+  // If game is flagged live:
+  // But if scheduled kickoff has NOT arrived yet and score is 0-0/null, ESPN is in pre-game TV broadcast;
+  // keep picks open until official kickoff time!
+  if (game.isLive) {
+    const hasScore = (game.awayScore > 0 || game.homeScore > 0);
+    if (!hasScore && koTime !== null && koTime > now) {
+      return false; // Still before kickoff!
+    }
+    return true;
+  }
+
+  // Lock if official kickoff time has passed
+  if (koTime !== null && koTime <= now) {
+    return true;
+  }
+
   return false;
 }
 
@@ -6446,31 +6528,21 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
   const homeRec = getNFLTeamRecord(homeTeam, selectedWk);
 
   const isFinal = Boolean(game.isFinal);
-  const isLive = Boolean(game.isLive || (!isFinal && game.awayScore !== null && game.homeScore !== null));
+  const lockStatus = getGameLockStatus(game, selectedWk);
+  const isGameLocked = isSeason && isSeasonLocked ? true : lockStatus.isLocked;
+  const isLive = Boolean(game.isLive || (!isFinal && game.awayScore !== null && game.homeScore !== null && (game.awayScore > 0 || game.homeScore > 0)));
 
-  let isGameLocked = false;
-  let badgeClass = "badge-upcoming";
-  let badgeText = "Upcoming";
+  let badgeClass = lockStatus.badgeClass;
+  let badgeText = lockStatus.badgeText;
 
   if (isFinal) {
-    isGameLocked = true;
     badgeClass = "badge-final";
     badgeText = (game.statusDetail && game.statusDetail.toUpperCase().includes("FINAL"))
       ? game.statusDetail.toUpperCase()
       : "FINAL";
-  } else if (isLive) {
-    isGameLocked = true;
-    badgeClass = "badge-live";
-    badgeText = "LIVE";
   } else if (isSeason && isSeasonLocked) {
-    isGameLocked = true;
     badgeClass = "badge-final";
     badgeText = "🔒 SEASON LOCKED";
-  } else {
-    const lockStatus = getGameLockStatus(game, selectedWk);
-    isGameLocked = lockStatus.isLocked;
-    badgeClass = lockStatus.badgeClass;
-    badgeText = lockStatus.badgeText;
   }
 
   const pickWinner = (pick?.winner || "").toUpperCase().trim();
