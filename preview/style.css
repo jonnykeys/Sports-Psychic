@@ -1698,6 +1698,13 @@ body {
   font-weight: 600;
 }
 
+.matchup-header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .matchup-header-actions {
   display: flex;
   align-items: center;
@@ -1919,6 +1926,22 @@ body {
   align-items: center;
   margin-left: 5px;
   vertical-align: middle;
+}
+
+.possession-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.85);
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.team-box.home .possession-dot {
+  margin-left: 0;
+  margin-right: 5px;
 }
 
 .team-box.home .possession-football {
@@ -6864,6 +6887,56 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
+/* Dual-Color Live Win Probability Momentum Bar */
+.live-win-prob-container {
+  width: 100%;
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.live-win-prob-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.live-win-prob-labels .prob-title {
+  font-size: 0.6rem;
+  color: #22d3ee;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.live-win-prob-labels .prob-away-label,
+.live-win-prob-labels .prob-home-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 800;
+  font-size: 0.68rem;
+}
+
+.live-win-prob-track {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  display: flex;
+}
+
+.prob-fill-away,
+.prob-fill-home {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
 .possession-football {
   display: inline-block;
   font-size: 0.85rem;
@@ -8849,13 +8922,16 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .game-status-left {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .game-lock-badge {
@@ -8868,6 +8944,7 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  line-height: 1.2;
 }
 
 .game-lock-badge.badge-final {
@@ -8898,6 +8975,103 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   font-size: 0.72rem;
   color: var(--text-dim);
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.game-network-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  line-height: 1.2;
+}
+
+.game-odds-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(6, 182, 212, 0.12);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  line-height: 1.2;
+}
+
+.game-ou-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  line-height: 1.2;
+}
+
+.game-closing-spread {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+  line-height: 1.2;
+}
+
+.game-final-verified {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+.game-final-winner-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.pick-status-pill.final-pts-pill {
+  font-weight: 900;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+}
+
+.pick-status-pill.final-pts-pill.pts-win {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.pick-status-pill.final-pts-pill.pts-3x {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(16, 185, 129, 0.25));
+  color: #fde047;
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
 }
 
 .btn-card-lock-3x {
