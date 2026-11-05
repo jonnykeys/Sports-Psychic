@@ -6000,7 +6000,8 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   gap: 5px;
 }
 
-.rule-star-icon {
+.rule-star-icon,
+.rule-lock-icon {
   width: 14px;
   height: 14px;
   color: #f5b800;
