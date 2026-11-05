@@ -3595,6 +3595,16 @@ function renderMatchups() {
     const spreadBadge = odds.spread ? `<span class="game-odds-pill">${odds.spread}</span>` : "";
     const ouBadge = odds.ou ? `<span class="game-ou-pill">${odds.ou}</span>` : "";
 
+    const oddsStripHtml = (odds.spread || odds.ou) ? `
+      <div class="matchup-odds-strip">
+        <div class="game-odds-subbar">
+          <span class="odds-subbar-label">LINE:</span>
+          ${spreadBadge}
+          ${ouBadge}
+        </div>
+      </div>
+    ` : "";
+
     return `
       ${dividerHtml}
       <article class="matchup-card ${isCollapsed ? "collapsed" : ""} ${isLive ? "is-live" : ""}" id="${game.id}">
@@ -3602,8 +3612,6 @@ function renderMatchups() {
           <div class="matchup-header-info">
             <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
             ${broadcastBadge}
-            ${spreadBadge}
-            ${ouBadge}
           </div>
           <div class="matchup-header-actions">
             <span class="matchup-badge ${badgeClass}">${badgeText}</span>
@@ -3615,6 +3623,8 @@ function renderMatchups() {
             </button>` : ""}
           </div>
         </div>
+
+        ${oddsStripHtml}
 
         <div class="matchup-teams-display">
           <!-- Away Team (Left) -->

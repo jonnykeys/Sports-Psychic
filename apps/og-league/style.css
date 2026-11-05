@@ -1685,6 +1685,14 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
+.matchup-odds-strip {
+  padding: 8px 12px 0 12px;
+}
+
+.matchup-odds-strip .game-odds-subbar {
+  margin-bottom: 0;
+}
+
 .matchup-card-header {
   background: var(--bg-card);
   padding: 8px 12px;
