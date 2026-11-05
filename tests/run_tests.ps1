@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.3') 'index.html includes app.js?v=31.3 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.3') 'index.html includes style.css?v=31.3 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.4') 'index.html includes app.js?v=31.4 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.4') 'index.html includes style.css?v=31.4 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -785,6 +785,8 @@ Assert-Test ($styleCssContent -match '\.matchup-live-win-prob-wrapper') 'style.c
 Assert-Test ($styleCssContent -notmatch '\.app-header\s*\{[^}]*backdrop-filter') 'style.css app-header contains zero backdrop-filter blur'
 Assert-Test ($styleCssContent -notmatch '\.ptr-pill\s*\{[^}]*backdrop-filter') 'style.css ptr-pill contains zero backdrop-filter blur'
 Assert-Test ($styleCssContent -match '\.ptr-indicator\s*\{[^}]*visibility:\s*hidden') 'style.css ptr-indicator hides completely with visibility:hidden when inactive'
+Assert-Test ($indexHtmlContent -match 'apple-mobile-web-app-status-bar-style"\s*content="black"') 'index.html uses solid black status-bar style for crisp standalone PWA'
+Assert-Test ($indexHtmlContent -match 'theme-color"\s*content="#070c1e"') 'index.html theme-color matches header background exactly'
 
 # Logic Verification via PowerShell Functions matching app.js
 function Test-GetGameBroadcast($game) {
