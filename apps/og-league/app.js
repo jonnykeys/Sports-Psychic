@@ -6911,6 +6911,7 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
   // Format header left and right based on 4-stage lifecycle:
   let headerLeftHtml = "";
   let headerRightHtml = "";
+  let oddsRowHtml = "";
 
   if (isFinal) {
     // STAGE 4: FINAL
@@ -6956,15 +6957,24 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
     const pickSetText = (isSeason && !isSeasonLocked) ? "Pick Set (Draft)" : "PICK SET";
     const pickSetPill = isComplete ? `<span class="pick-status-pill complete">${pickSetText}</span>` : "";
 
+    // Dedicated Odds Sub-Bar (Option 1: Modern Sportsbook Sub-Bar)
+    if (odds.spread || odds.ou) {
+      oddsRowHtml = `
+        <div class="game-odds-subbar">
+          <span class="odds-subbar-label">LINE:</span>
+          ${spreadBadge}
+          ${ouBadge}
+        </div>
+      `;
+    }
+
     headerLeftHtml = `
       <span class="game-kickoff-time">${formattedTime}</span>
       ${broadcastBadge}
-      ${spreadBadge}
-      ${ouBadge}
-      ${pickSetPill}
     `;
 
     headerRightHtml = `
+      ${pickSetPill}
       <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}"
         ${isGameLocked ? "disabled" : ""}
         onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
@@ -7043,13 +7053,18 @@ function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx
 
   return `
     <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
-      <!-- Card Header: Kickoff, TV Network, Betting Lines, and 3X Lock Toggle -->
+      <!-- Card Header: Kickoff, TV Network, and 3X Lock Toggle -->
       <div class="game-card-top-status">
         <div class="game-status-left">
           ${headerLeftHtml}
         </div>
-        ${headerRightHtml}
+        <div class="game-status-right">
+          ${headerRightHtml}
+        </div>
       </div>
+
+      <!-- Dedicated Odds Sub-Bar (Option 1) -->
+      ${oddsRowHtml}
 
       ${liveOrFinalTelemetryHtml}
 
