@@ -59,6 +59,12 @@ body {
   overflow-x: hidden;
 }
 
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
 /* =========================================================
    APP HEADER
    ========================================================= */
@@ -70,7 +76,6 @@ body {
   background: var(--bg-primary, #070c1e);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transform: translateZ(0);
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
   padding-top: max(12px, env(safe-area-inset-top, 0px));
@@ -281,24 +286,28 @@ body {
   align-items: center;
   pointer-events: none;
   z-index: 95;
-  transform: translateY(-80px);
+  transform: translateY(-200px);
   opacity: 0;
-  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.2s ease;
+  visibility: hidden;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .ptr-indicator.is-pulling {
   transition: none; /* Instant follow when dragging */
+  visibility: visible;
 }
 
 .ptr-indicator.is-refreshing {
   transform: translateY(12px) !important;
   opacity: 1 !important;
+  visibility: visible;
   transition: transform 0.3s ease, opacity 0.2s ease;
 }
 
 .ptr-indicator.is-success {
   transform: translateY(12px) !important;
   opacity: 1 !important;
+  visibility: visible;
   transition: transform 0.3s ease, opacity 0.2s ease;
 }
 
@@ -307,11 +316,9 @@ body {
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  background: rgba(15, 23, 42, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(56, 189, 248, 0.2);
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.25);
   border-radius: 999px;
   color: #ffffff;
   font-size: 0.74rem;

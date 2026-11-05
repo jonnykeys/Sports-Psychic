@@ -1533,6 +1533,7 @@ async function triggerScoresRefresh() {
       indicator.classList.remove("is-success");
       indicator.style.transform = "";
       indicator.style.opacity = "";
+      indicator.style.visibility = "";
       isScoresRefreshing = false;
       if (refreshBtn) refreshBtn.classList.remove("spinning");
     }, 700);
@@ -1601,6 +1602,7 @@ function setupPullToRefresh() {
       isTracking = false;
       indicator.style.transform = "";
       indicator.style.opacity = "";
+      indicator.style.visibility = "";
       indicator.classList.remove("is-pulling", "is-ready");
       return;
     }
@@ -1637,6 +1639,7 @@ function setupPullToRefresh() {
     } else {
       indicator.style.transform = "";
       indicator.style.opacity = "";
+      indicator.style.visibility = "";
     }
   }, { passive: true });
 }
