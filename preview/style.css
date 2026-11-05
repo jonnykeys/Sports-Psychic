@@ -66,9 +66,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(7, 12, 30, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  width: 100%;
+  background: var(--bg-primary, #070c1e);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0);
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
   padding-top: max(12px, env(safe-area-inset-top, 0px));
@@ -7588,12 +7590,12 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
     height: 26px;
   }
   .brand-text h1 {
-    font-size: 0.74rem;
-    letter-spacing: -0.02em;
+    font-size: 0.94rem;
+    letter-spacing: -0.01em;
   }
   .brand-text .subtext {
-    font-size: 0.58rem;
-    letter-spacing: 0.02em;
+    font-size: 0.65rem;
+    letter-spacing: 0.03em;
   }
   .header-right-actions {
     gap: 4px;
