@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.1') 'index.html includes app.js?v=31.1 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.1') 'index.html includes style.css?v=31.1 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.2') 'index.html includes app.js?v=31.2 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.2') 'index.html includes style.css?v=31.2 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -notmatch 'hero-btn-arrow') 'index.html contains no unnecessary down arrow on Start Predicting Free'
 Assert-Test ($indexHtmlContent -notmatch '🔮 Start Predicting Free') 'index.html contains clean emoji-free Start Predicting Free CTA'
@@ -725,7 +725,7 @@ Assert-Test ($appJsContent -match 'filteredGames = getPartitionedMatchupGames\(g
 Assert-Test ($appJsContent -match 'return getPartitionedMatchupGames\(games\);') 'getMatchupsTargetGames returns getPartitionedMatchupGames'
 Assert-Test ($styleCssContent -match '\.matchups-concluded-divider') 'style.css defines .matchups-concluded-divider'
 Assert-Test ($styleCssContent -match '\.divider-pill') 'style.css defines .divider-pill'
-Assert-Test ($indexHtmlContent -match 'v=31\.[01]') 'index.html references cache buster v=31.1'
+Assert-Test ($indexHtmlContent -match 'v=31\.[0-9]+') 'index.html references cache buster v=31.2'
 
 # =========================================================
 # SUITE 17: Modern Game Card Lifecycle, TV Network, Odds, Permanent O/U, Live Win Probability, and Emoji Removal
