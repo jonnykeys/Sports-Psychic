@@ -449,7 +449,7 @@ function syncUrlHash() {
  * Restores navigation snapshot from URL hash or sessionStorage.
  */
 function restoreNavState() {
-  const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
+  const validTabs = ["leaderboard", "matchups", "playoffs", "players", "nfl", "rules"];
   let restoredFromHash = false;
 
   // 0. Determine App Mode (Lobby vs League)
@@ -1209,6 +1209,11 @@ function switchTab(tabId, smoothScroll = true) {
   }
   renderTabContent();
   saveNavState();
+
+  // If opening playoffs tab from home/lobby, prompt user to select a league
+  if (state.appMode === "lobby" && tabId === "playoffs") {
+    openLeagueDrawer();
+  }
 
   // If opening NFL standings tab, ensure live records are fresh
   if (tabId === "nfl") {
@@ -5017,18 +5022,154 @@ function renderNFLStandings() {
 // TAB 5: POSTSEASON & SUPER BOWL PLAYOFFS
 // =========================================================
 
+function enterLeagueViewFromPlayoffs(leagueId = "OG League") {
+  if (leagueId === "OG League" || leagueId === "OG2026") {
+    state.activeLeagueData = null;
+    state.appMode = "league";
+    state.activeLeague = "OG League";
+    try {
+      sessionStorage.setItem("sp_app_mode", "league");
+      sessionStorage.removeItem("sp_active_league_id");
+    } catch (e) {}
+  } else {
+    const lObj = (state.userLeagues || []).find(l => l.id === leagueId || l.join_code === leagueId || l.name === leagueId);
+    state.activeLeagueData = lObj || null;
+    state.appMode = "league";
+    state.activeLeague = lObj ? lObj.name : leagueId;
+    try {
+      sessionStorage.setItem("sp_app_mode", "league");
+      if (lObj) sessionStorage.setItem("sp_active_league_id", lObj.id);
+    } catch (e) {}
+  }
+  updateAppShellForMode();
+  switchTab("playoffs");
+}
+window.enterLeagueViewFromPlayoffs = enterLeagueViewFromPlayoffs;
+
+function renderPlayoffsLeaguePrompt(container) {
+  const customLeagues = (state.userLeagues || []).filter(l => 
+    l.name !== "OG League" && 
+    l.join_code !== "OG2026" && 
+    l.id !== "e0000000-0000-0000-0000-000000000001"
+  );
+
+  const customLeaguesHtml = customLeagues.map(l => `
+    <div class="prompt-league-card" onclick="enterLeagueViewFromPlayoffs('${l.id}')">
+      <div class="plc-left">
+        <div class="plc-icon">🏆</div>
+        <div>
+          <div class="plc-name">${l.name}</div>
+          <div class="plc-meta"><span class="plc-code-tag">🔑 ${l.join_code}</span> • Custom League</div>
+        </div>
+      </div>
+      <span class="plc-arrow">&rarr;</span>
+    </div>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="playoff-league-prompt-box">
+      <div class="prompt-trophy-circle">
+        <svg class="prompt-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+          <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+          <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
+          <path d="M12 17v4" />
+          <path d="M8 21h8" />
+        </svg>
+      </div>
+      <h2 class="prompt-title">Select a League</h2>
+      <p class="prompt-desc">
+        Playoff tournament brackets and Super Bowl prophecies are specific to your private leagues. Choose a league below to inspect member brackets, seedings, and championship picks:
+      </p>
+
+      <div class="prompt-leagues-stack">
+        <!-- 1-Tap Entry to OG League -->
+        <div class="prompt-league-card prompt-card-og" onclick="enterLeagueViewFromPlayoffs('OG League')">
+          <div class="plc-left">
+            <div class="plc-icon og-gold">🏆</div>
+            <div>
+              <div class="plc-name">OG League</div>
+              <div class="plc-meta">12 Members • Preseason Tournament Brackets Set</div>
+            </div>
+          </div>
+          <span class="plc-arrow">View Brackets &rarr;</span>
+        </div>
+
+        ${customLeaguesHtml}
+
+        <button type="button" class="btn-prompt-open-drawer" onclick="openLeagueDrawer()">
+          Browse All Leagues / Join with Code &rarr;
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCustomLeaguePlayoffs(container) {
+  const leagueName = (state.activeLeagueData && state.activeLeagueData.name) || "Custom League";
+  container.innerHTML = `
+    <div class="custom-playoffs-notice-card">
+      <div class="cpn-header">
+        <span class="cpn-tag">POSTSEASON PROPHECIES</span>
+        <h3 class="cpn-title">${leagueName}</h3>
+      </div>
+      <p class="cpn-desc">
+        Postseason tournament bracket picks for <strong>${leagueName}</strong> will officially open for member predictions once the 14 NFL playoff seeds lock in Week 18.
+      </p>
+      <div class="cpn-preview-box">
+        <span class="cpn-sub">Want to see how postseason prophecies work?</span>
+        <button type="button" class="btn-preview-og-brackets" onclick="enterLeagueViewFromPlayoffs('OG League')">
+          🏆 Preview OG League Playoff Brackets &rarr;
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 function renderPlayoffsTab() {
   const container = document.getElementById("playoffs-container");
   if (!container) return;
 
+  const isLeagueMode = (state.appMode === "league");
+
+  // 1. If accessed from Home/Lobby or Solo mode, prompt user to select a league
+  if (!isLeagueMode) {
+    renderPlayoffsLeaguePrompt(container);
+    return;
+  }
+
+  // 2. If in a custom league, show custom league status
+  if (state.activeLeagueData) {
+    renderCustomLeaguePlayoffs(container);
+    return;
+  }
+
+  // 3. In OG League: load verified preseason prophecies
   const data = window.OG_LEAGUE_PLAYOFFS_DATA || {};
-  const playerIds = Object.keys(data);
+  let playerIds = Object.keys(data);
   if (playerIds.length === 0) {
     container.innerHTML = `<div class="empty-state-card" style="padding:24px; text-align:center; color:var(--text-muted);">Playoff predictions loading...</div>`;
     return;
   }
 
-  // 1. Tally Super Bowl Winner Consensus
+  // Sort players by active League Standings Rank (1st place down to 12th place)
+  const standings = (typeof getSeasonLeaderboard === "function") ? getSeasonLeaderboard(state.currentWeek) : [];
+  const rankMap = {};
+  standings.forEach((entry, idx) => {
+    rankMap[entry.name] = {
+      rankIndex: idx,
+      rankDisplay: entry.rankDisplay || String(idx + 1),
+      points: entry.points || 0
+    };
+  });
+
+  playerIds.sort((a, b) => {
+    const rankA = rankMap[a] ? rankMap[a].rankIndex : 999;
+    const rankB = rankMap[b] ? rankMap[b].rankIndex : 999;
+    return rankA - rankB;
+  });
+
+  // Tally Super Bowl Winner Consensus
   const sbCounts = {};
   playerIds.forEach(id => {
     const w = data[id].superBowl?.winner;
@@ -5046,10 +5187,10 @@ function renderPlayoffsTab() {
     `;
   }).join("");
 
-  // 2. Render each player's prophecy card
+  // Render each player's prophecy card (Default to 'picture' to save space)
   const cardsHtml = playerIds.map(id => {
     const p = data[id];
-    const viewMode = (state.playoffCardViews && state.playoffCardViews[id]) || "bracket";
+    const viewMode = (state.playoffCardViews && state.playoffCardViews[id]) || "picture";
     const afcTeam = p.superBowl?.afcTeam || "AFC";
     const nfcTeam = p.superBowl?.nfcTeam || "NFC";
     const afcInfo = getTeamInfo(afcTeam);
@@ -5057,6 +5198,8 @@ function renderPlayoffsTab() {
     const winner = p.superBowl?.winner || "";
     const sbMvp = p.superBowl?.sbMvp || "TBD";
     const regMvp = p.regularSeasonMvp || "TBD";
+    const rankInfo = rankMap[p.name] || { rankDisplay: "-", points: 0 };
+    const isFirstPlace = rankInfo.rankDisplay === "1" || rankInfo.rankIndex === 0;
 
     // Playoff Picture (Seeds) View
     const afcSeedsHtml = (p.afc?.seeds || []).map((s, idx) => `
@@ -5162,8 +5305,8 @@ function renderPlayoffsTab() {
           </div>
         </div>
 
-        <!-- Super Bowl LXI Finale Box -->
-        <div class="superbowl-showcase-box" style="background: linear-gradient(135deg, ${afcInfo.color}35 0%, rgba(245, 184, 0, 0.18) 50%, ${nfcInfo.color}35 100%);">
+        <!-- Super Bowl LXI Finale Box (Revamped High-Contrast Modern Showcase) -->
+        <div class="superbowl-showcase-box">
           <div class="sb-header-row">
             <div class="sb-title-wrap">
               <svg class="sb-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -5175,17 +5318,32 @@ function renderPlayoffsTab() {
               </svg>
               <span class="sb-title-text">SUPER BOWL LXI</span>
             </div>
-            <span class="sb-sub-text">Predicted Final</span>
+            <span class="sb-sub-text">Championship Matchup</span>
           </div>
 
-          <div class="bracket-matchup-box is-superbowl">
-            <div class="bracket-team-slot ${winner === afcTeam ? 'is-winner' : 'is-loser'}">
-              <span><span class="seed-tag seed-tag-afc">AFC</span><strong style="color:${afcInfo.color};">${afcInfo.name.toUpperCase()}</strong></span>
-              <span class="sb-score-val">${p.superBowl?.afcScore || 0}${winner === afcTeam ? ' <span class="winner-check">&#10003;</span>' : ''}</span>
+          <div class="sb-matchup-container">
+            <div class="sb-team-row ${winner === afcTeam ? 'is-winner' : 'is-loser'}">
+              <div class="sb-team-identity">
+                <span class="sb-team-stripe" style="background:${afcInfo.color};"></span>
+                <span class="seed-tag seed-tag-afc">AFC</span>
+                <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
+              </div>
+              <div class="sb-score-pod">
+                <span class="sb-score-number">${p.superBowl?.afcScore || 0}</span>
+                ${winner === afcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
+              </div>
             </div>
-            <div class="bracket-team-slot ${winner === nfcTeam ? 'is-winner' : 'is-loser'}">
-              <span><span class="seed-tag seed-tag-nfc">NFC</span><strong style="color:${nfcInfo.color};">${nfcInfo.name.toUpperCase()}</strong></span>
-              <span class="sb-score-val">${p.superBowl?.nfcScore || 0}${winner === nfcTeam ? ' <span class="winner-check">&#10003;</span>' : ''}</span>
+
+            <div class="sb-team-row ${winner === nfcTeam ? 'is-winner' : 'is-loser'}">
+              <div class="sb-team-identity">
+                <span class="sb-team-stripe" style="background:${nfcInfo.color};"></span>
+                <span class="seed-tag seed-tag-nfc">NFC</span>
+                <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
+              </div>
+              <div class="sb-score-pod">
+                <span class="sb-score-number">${p.superBowl?.nfcScore || 0}</span>
+                ${winner === nfcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
+              </div>
             </div>
           </div>
 
@@ -5211,35 +5369,56 @@ function renderPlayoffsTab() {
     `;
 
     return `
-      <div class="prophecy-card" id="prophecy-card-${id}">
+      <div class="prophecy-card ${isFirstPlace ? 'is-first-place' : ''}" id="prophecy-card-${id}">
         <div class="prophecy-card-header">
           <div class="prophecy-user-col">
             ${getPlayerAvatarHtml(p.name, 36)}
             <div>
-              <div class="prophecy-user-name">${p.name}</div>
+              <div class="prophecy-user-name-row">
+                <span class="prophecy-user-name">${p.name}</span>
+                <span class="prophecy-rank-chip">#${rankInfo.rankDisplay} • ${rankInfo.points} PTS</span>
+                ${state.myPlayer === p.name ? '<span class="prophecy-you-chip">YOU</span>' : ''}
+              </div>
               <div class="prophecy-mvp-sub">Reg Season MVP: <strong class="text-mvp-gold">${regMvp}</strong></div>
             </div>
           </div>
-          <span class="badge-champion">CHAMPION: ${winner}</span>
+          <span class="badge-champion-crown">👑 ${winner}</span>
         </div>
 
-        <!-- Super Bowl Matchup Row Summary -->
-        <div class="prophecy-sb-summary-bar">
-          <div>
-            <span class="sb-summary-label">Super Bowl LXI</span>
-            <div class="sb-teams-matchup-row">
-              <span class="badge-team" style="background:${afcInfo.color}; color:${getTeamContrastColor(afcInfo.color)};">${afcTeam}</span>
-              <span class="sb-vs-text">vs</span>
-              <span class="badge-team" style="background:${nfcInfo.color}; color:${getTeamContrastColor(nfcInfo.color)};">${nfcTeam}</span>
+        <!-- Modern Super Bowl Championship Strip (Revamped & Sleek) -->
+        <div class="sb-championship-strip">
+          <div class="sb-championship-left">
+            <div class="sb-mini-badge">
+              <svg class="sb-mini-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+                <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+                <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
+                <path d="M12 17v4" />
+                <path d="M8 21h8" />
+              </svg>
+              <span>SUPER BOWL LXI</span>
+            </div>
+            <div class="sb-matchup-row-modern">
+              <div class="team-capsule ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${afcInfo.color};">
+                <span class="conf-tag-pill afc">AFC</span>
+                <span class="team-code">${afcTeam}</span>
+                ${winner === afcTeam ? '<span class="crown-icon">👑</span>' : ''}
+              </div>
+              <span class="sb-score-capsule">${p.superBowl?.afcScore || 0} - ${p.superBowl?.nfcScore || 0}</span>
+              <div class="team-capsule ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${nfcInfo.color};">
+                <span class="team-code">${nfcTeam}</span>
+                <span class="conf-tag-pill nfc">NFC</span>
+                ${winner === nfcTeam ? '<span class="crown-icon">👑</span>' : ''}
+              </div>
             </div>
           </div>
-          <div class="sb-summary-mvp-col">
-            <span class="sb-summary-label">SB MVP Pick</span>
-            <div class="sb-mvp-name">${sbMvp}</div>
+          <div class="sb-championship-right">
+            <span class="sb-stat-label">SB MVP</span>
+            <span class="sb-stat-val text-cyan">${sbMvp}</span>
           </div>
         </div>
 
-        <!-- View Selector Buttons -->
+        <!-- View Selector Buttons (Default to Playoff Picture) -->
         <div class="prophecy-view-selector">
           <button type="button" class="prophecy-view-btn ${viewMode === 'picture' ? 'active' : ''}" onclick="setPlayerPlayoffViewMode('${id}', 'picture')">
             Playoff Picture
@@ -5255,7 +5434,7 @@ function renderPlayoffsTab() {
     `;
   }).join("");
 
-  // 3. Playoff Scoring Value Card
+  // Playoff Scoring Value Card
   const rulesBannerHtml = `
     <div class="playoff-points-guide-card">
       <div class="points-guide-header">
