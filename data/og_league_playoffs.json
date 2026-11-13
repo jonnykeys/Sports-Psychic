@@ -1,0 +1,398 @@
+{
+    "brett":  {
+                  "id":  "brett",
+                  "name":  "Brett",
+                  "regularSeasonMvp":  "Matthew Stafford",
+                  "superBowl":  {
+                                    "team1":  "BUF",
+                                    "score1":  0,
+                                    "team2":  "LAR",
+                                    "score2":  0,
+                                    "winner":  "BUF",
+                                    "sbMvp":  "Josh Allen"
+                                },
+                  "afcChamp":  "BUF",
+                  "nfcChamp":  "LAR",
+                  "afcSeeds":  [
+                                   "BUF",
+                                   "BAL",
+                                   "HOU",
+                                   "LAC",
+                                   "CIN",
+                                   "DEN",
+                                   "NE"
+                               ],
+                  "nfcSeeds":  [
+                                   "PHI",
+                                   "LAR",
+                                   "GB",
+                                   "TB",
+                                   "SEA",
+                                   "DET",
+                                   "SF"
+                               ]
+              },
+    "ross":  {
+                 "id":  "ross",
+                 "name":  "Ross",
+                 "regularSeasonMvp":  "Dak Prescott",
+                 "superBowl":  {
+                                   "team1":  "NE",
+                                   "score1":  0,
+                                   "team2":  "LAR",
+                                   "score2":  0,
+                                   "winner":  "LAR",
+                                   "sbMvp":  "Matt Stafford"
+                               },
+                 "afcChamp":  "NE",
+                 "nfcChamp":  "LAR",
+                 "afcSeeds":  [
+                                  "BUF",
+                                  "KC",
+                                  "CIN",
+                                  "HOU",
+                                  "DEN",
+                                  "NE",
+                                  "LAC"
+                              ],
+                 "nfcSeeds":  [
+                                  "LAR",
+                                  "DET",
+                                  "DAL",
+                                  "ATL",
+                                  "SEA",
+                                  "PHI",
+                                  "SF"
+                              ]
+             },
+    "carson":  {
+                   "id":  "carson",
+                   "name":  "Carson",
+                   "regularSeasonMvp":  "Lamar Jackson",
+                   "superBowl":  {
+                                     "team1":  "BAL",
+                                     "score1":  0,
+                                     "team2":  "PHI",
+                                     "score2":  0,
+                                     "winner":  "PHI",
+                                     "sbMvp":  "Jalen Hurts"
+                                 },
+                   "afcChamp":  "BAL",
+                   "nfcChamp":  "PHI",
+                   "afcSeeds":  [
+                                    "BAL",
+                                    "JAX",
+                                    "BUF",
+                                    "KC",
+                                    "IND",
+                                    "HOU",
+                                    "NE"
+                                ],
+                   "nfcSeeds":  [
+                                    "SEA",
+                                    "PHI",
+                                    "DET",
+                                    "CAR",
+                                    "CHI",
+                                    "SF",
+                                    "GB"
+                                ]
+               },
+    "caleb":  {
+                  "id":  "caleb",
+                  "name":  "Caleb",
+                  "regularSeasonMvp":  "Joe Burrow",
+                  "superBowl":  {
+                                    "team1":  "BAL",
+                                    "score1":  23,
+                                    "team2":  "PHI",
+                                    "score2":  24,
+                                    "winner":  "PHI",
+                                    "sbMvp":  "Jalen Hurts"
+                                },
+                  "afcChamp":  "BAL",
+                  "nfcChamp":  "PHI",
+                  "afcSeeds":  [
+                                   "BAL",
+                                   "HOU",
+                                   "BUF",
+                                   "LAC",
+                                   "DEN",
+                                   "CIN",
+                                   "NE"
+                               ],
+                  "nfcSeeds":  [
+                                   "PHI",
+                                   "DET",
+                                   "LAR",
+                                   "CAR",
+                                   "GB",
+                                   "SEA",
+                                   "CHI"
+                               ]
+              },
+    "rob":  {
+                "id":  "rob",
+                "name":  "Rob",
+                "regularSeasonMvp":  "Jalen Hurts",
+                "superBowl":  {
+                                  "team1":  "LAC",
+                                  "score1":  0,
+                                  "team2":  "DET",
+                                  "score2":  0,
+                                  "winner":  "LAC",
+                                  "sbMvp":  "Justin Herbert"
+                              },
+                "afcChamp":  "LAC",
+                "nfcChamp":  "DET",
+                "afcSeeds":  [
+                                 "MIA",
+                                 "CIN",
+                                 "HOU",
+                                 "LAC",
+                                 "BUF",
+                                 "TEN",
+                                 "PIT"
+                             ],
+                "nfcSeeds":  [
+                                 "SEA",
+                                 "PHI",
+                                 "NO",
+                                 "MIN",
+                                 "AZ",
+                                 "CHI",
+                                 "DET"
+                             ]
+            },
+    "jon":  {
+                "id":  "jon",
+                "name":  "Jon",
+                "regularSeasonMvp":  "Matthew Stafford",
+                "superBowl":  {
+                                  "team1":  "BAL",
+                                  "score1":  17,
+                                  "team2":  "LAR",
+                                  "score2":  20,
+                                  "winner":  "LAR",
+                                  "sbMvp":  "Matthew Stafford"
+                              },
+                "afcChamp":  "BAL",
+                "nfcChamp":  "LAR",
+                "afcSeeds":  [
+                                 "NE",
+                                 "DEN",
+                                 "BAL",
+                                 "HOU",
+                                 "BUF",
+                                 "CIN",
+                                 "KC"
+                             ],
+                "nfcSeeds":  [
+                                 "PHI",
+                                 "LAR",
+                                 "DET",
+                                 "NO",
+                                 "SEA",
+                                 "DAL",
+                                 "CHI"
+                             ]
+            },
+    "wells":  {
+                  "id":  "wells",
+                  "name":  "Wells",
+                  "regularSeasonMvp":  "Patrick Mahomes",
+                  "superBowl":  {
+                                    "team1":  "BUF",
+                                    "score1":  7,
+                                    "team2":  "CHI",
+                                    "score2":  10,
+                                    "winner":  "CHI",
+                                    "sbMvp":  "Caleb Williams"
+                                },
+                  "afcChamp":  "BUF",
+                  "nfcChamp":  "CHI",
+                  "afcSeeds":  [
+                                   "LAC",
+                                   "BUF",
+                                   "PIT",
+                                   "TEN",
+                                   "KC",
+                                   "JAX",
+                                   "NE"
+                               ],
+                  "nfcSeeds":  [
+                                   "LAR",
+                                   "CHI",
+                                   "DAL",
+                                   "CAR",
+                                   "SEA",
+                                   "DET",
+                                   "PHI"
+                               ]
+              },
+    "mango":  {
+                  "id":  "mango",
+                  "name":  "Mango",
+                  "regularSeasonMvp":  "Josh Allen",
+                  "superBowl":  {
+                                    "team1":  "DEN",
+                                    "score1":  24,
+                                    "team2":  "SF",
+                                    "score2":  17,
+                                    "winner":  "DEN",
+                                    "sbMvp":  "Bo Nix"
+                                },
+                  "afcChamp":  "DEN",
+                  "nfcChamp":  "SF",
+                  "afcSeeds":  [
+                                   "BUF",
+                                   "DEN",
+                                   "PIT",
+                                   "IND",
+                                   "KC",
+                                   "BAL",
+                                   "NE"
+                               ],
+                  "nfcSeeds":  [
+                                   "SF",
+                                   "CHI",
+                                   "DAL",
+                                   "TB",
+                                   "LAR",
+                                   "SEA",
+                                   "PHI"
+                               ]
+              },
+    "alisha":  {
+                   "id":  "alisha",
+                   "name":  "Alisha",
+                   "regularSeasonMvp":  "Josh Allen",
+                   "superBowl":  {
+                                     "team1":  "BUF",
+                                     "score1":  20,
+                                     "team2":  "LAR",
+                                     "score2":  17,
+                                     "winner":  "BUF",
+                                     "sbMvp":  "Josh Allen"
+                                 },
+                   "afcChamp":  "BUF",
+                   "nfcChamp":  "LAR",
+                   "afcSeeds":  [
+                                    "BUF",
+                                    "JAX",
+                                    "BAL",
+                                    "DEN",
+                                    "HOU",
+                                    "CIN",
+                                    "NE"
+                                ],
+                   "nfcSeeds":  [
+                                    "SEA",
+                                    "DET",
+                                    "PHI",
+                                    "TB",
+                                    "SF",
+                                    "LAR",
+                                    "CHI"
+                                ]
+               },
+    "dishman":  {
+                    "id":  "dishman",
+                    "name":  "Dishman",
+                    "regularSeasonMvp":  "CJ STROUD",
+                    "superBowl":  {
+                                      "team1":  "BAL",
+                                      "score1":  31,
+                                      "team2":  "DET",
+                                      "score2":  34,
+                                      "winner":  "BAL",
+                                      "sbMvp":  "AMON-RA ST. BROWN"
+                                  },
+                    "afcChamp":  "BAL",
+                    "nfcChamp":  "DET",
+                    "afcSeeds":  [
+                                     "HOU",
+                                     "BAL",
+                                     "KC",
+                                     "BUF",
+                                     "CIN",
+                                     "DEN",
+                                     "NE"
+                                 ],
+                    "nfcSeeds":  [
+                                     "PHI",
+                                     "DET",
+                                     "SF",
+                                     "TB",
+                                     "LAR",
+                                     "SEA",
+                                     "CHI"
+                                 ]
+                },
+    "ethan":  {
+                  "id":  "ethan",
+                  "name":  "Ethan",
+                  "regularSeasonMvp":  "bo nix",
+                  "superBowl":  {
+                                    "team1":  "CIN",
+                                    "score1":  0,
+                                    "team2":  "DET",
+                                    "score2":  0,
+                                    "winner":  "CIN",
+                                    "sbMvp":  "joe burrow"
+                                },
+                  "afcChamp":  "CIN",
+                  "nfcChamp":  "DET",
+                  "afcSeeds":  [
+                                   "CIN",
+                                   "NE",
+                                   "IND",
+                                   "KC",
+                                   "BUF",
+                                   "BAL",
+                                   "PIT"
+                               ],
+                  "nfcSeeds":  [
+                                   "PHI",
+                                   "TB",
+                                   "GB",
+                                   "LAR",
+                                   "SF",
+                                   "ATL",
+                                   "DET"
+                               ]
+              },
+    "nok":  {
+                "id":  "nok",
+                "name":  "Nok",
+                "regularSeasonMvp":  "Josh Allen",
+                "superBowl":  {
+                                  "team1":  "BUF",
+                                  "score1":  0,
+                                  "team2":  "LAR",
+                                  "score2":  0,
+                                  "winner":  "BUF",
+                                  "sbMvp":  "Josh Allen"
+                              },
+                "afcChamp":  "BUF",
+                "nfcChamp":  "LAR",
+                "afcSeeds":  [
+                                 "CIN",
+                                 "BUF",
+                                 "HOU",
+                                 "KC",
+                                 "BAL",
+                                 "DEN",
+                                 "JAX"
+                             ],
+                "nfcSeeds":  [
+                                 "LAR",
+                                 "PHI",
+                                 "TB",
+                                 "GB",
+                                 "SEA",
+                                 "SF",
+                                 "DAL"
+                             ]
+            }
+}

@@ -1,4 +1,4 @@
-# Windows PowerShell Test Suite Runner for Sports Psychic
+﻿# Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (16 SUITES)' -ForegroundColor Cyan
@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.8') 'index.html includes app.js?v=31.8 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.8') 'index.html includes style.css?v=31.8 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.9') 'index.html includes app.js?v=31.9 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.9') 'index.html includes style.css?v=31.9 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -match 'Prove You Know the Game\.') 'index.html hero displays Prove You Know the Game'
 Assert-Test ($indexHtmlContent -match 'Make Your Picks') 'index.html hero button displays Make Your Picks'
@@ -844,6 +844,16 @@ Assert-Test ((Test-GetGameBroadcast @{ dateTime = 'Mon 7:15 PM (MNF)' }) -eq 'ES
 $testOdds = Test-GetGameOdds @{ spread = 'KC -3.5'; overUnder = 47.5 }
 Assert-Test ($testOdds.spread -eq 'KC -3.5') 'Odds spread correctly formatted as KC -3.5'
 Assert-Test ($testOdds.ou -eq 'O/U 47.5') 'Odds over/under correctly formatted as O/U 47.5'
+
+Assert-Test ($indexHtmlContent -match 'data-tab="playoffs"') 'index.html bottom navigation defines data-tab="playoffs"'
+Assert-Test ($indexHtmlContent -match 'id="tab-playoffs"') 'index.html defines #tab-playoffs container'
+Assert-Test ($indexHtmlContent -match 'id="rules-modal"') 'index.html defines #rules-modal dialog'
+Assert-Test ($appJsContent -match 'renderPlayoffsTab') 'app.js defines renderPlayoffsTab'
+Assert-Test ($appJsContent -match 'openLeagueRulesModal') 'app.js defines openLeagueRulesModal'
+Assert-Test ($styleCssContent -match '\.bracket-matchup-box') 'style.css defines .bracket-matchup-box'
+Assert-Test ($styleCssContent -match '\.superbowl-showcase-box') 'style.css defines .superbowl-showcase-box'
+Assert-Test ($styleCssContent -match '--afc-red') 'style.css defines --afc-red'
+Assert-Test ($styleCssContent -match '--nfc-blue') 'style.css defines --nfc-blue'
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count

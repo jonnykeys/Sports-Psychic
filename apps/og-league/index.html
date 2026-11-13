@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=31.8">
+  <link rel="stylesheet" href="style.css?v=31.9">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -395,9 +395,14 @@
         <!-- Rendered by app.js -->
       </div>
 
-      <!-- Complete Rankings (4-12) -->
-      <div id="leaderboard-section-title" class="leaderboard-section-title" style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
-        League Standings
+      <!-- Complete Rankings (4-12) & Quick Rules Button -->
+      <div class="leaderboard-section-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div id="leaderboard-section-title" class="leaderboard-section-title" style="font-size:0.8rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0;">
+          League Standings
+        </div>
+        <button type="button" class="btn-quick-rules" onclick="openLeagueRulesModal()" title="View League Scoring Rules">
+          <span>Rules ℹ️</span>
+        </button>
       </div>
       <div id="leaderboard-list" class="leaderboard-list">
         <!-- Rendered by app.js -->
@@ -495,54 +500,10 @@
       </div>
     </section>
 
-    <!-- TAB 5: RULES & SCORING -->
-    <section id="tab-rules" class="tab-view" role="tabpanel">
-      <div class="rules-container">
-        <div class="rule-card">
-          <div class="rule-card-title">
-            <span>🏈 Correct Winner</span>
-            <span class="rule-badge-pts pts-winner">+10 PTS</span>
-          </div>
-          <p class="rule-desc">
-            Earn 10 base points for predicting the winning NFL team of each matchup correctly.
-          </p>
-        </div>
-
-        <div class="rule-card">
-          <div class="rule-card-title">
-            <span>🎯 Closest Score Bonus</span>
-            <span class="rule-badge-pts pts-closest">+10 PTS</span>
-          </div>
-          <p class="rule-desc">
-            Contenders who pick the winning team compete for the Closest Score Bonus. The winning picker whose predicted score has the lowest absolute difference to the final score receives an additional <strong>+10 bonus points</strong> (or triples to <strong>+30 PTS</strong> if a 3X multiplier is used).
-          </p>
-          <div class="rule-tip">
-            💡 If contenders tie for the closest score, the bonus is split evenly (e.g. +5 PTS each).
-          </div>
-        </div>
-
-        <div class="rule-card">
-          <div class="rule-card-title">
-            <span>🔮 Exact Score Prediction</span>
-            <span class="rule-badge-pts pts-exact">+50 PTS</span>
-          </div>
-          <p class="rule-desc">
-            Correctly predict both the exact home and away final scores of the game! Hits on exact score award a massive 50-point jackpot (or 25 PTS each if tied; triples to 150 PTS on 3X multiplier).
-          </p>
-        </div>
-
-        <div class="rule-card">
-          <div class="rule-card-title">
-            <span>⭐ Weekly Multiplier (3x)</span>
-            <span class="rule-badge-pts pts-mult">3X MULTIPLIER</span>
-          </div>
-          <p class="rule-desc">
-            Each player designates one game per week as their confidence multiplier. If your pick wins, your winner points and closest/exact bonuses for that game are tripled!
-          </p>
-          <div class="rule-tip">
-            💡 <strong>Max Payout:</strong> (10 base + 10 closest) &times; 3 = <strong>60 PTS</strong>, or (10 base + 50 exact) &times; 3 = <strong>180 PTS</strong>!
-          </div>
-        </div>
+    <!-- TAB 5: POSTSEASON & SUPER BOWL PLAYOFFS -->
+    <section id="tab-playoffs" class="tab-view" role="tabpanel">
+      <div id="playoffs-container" class="playoffs-container">
+        <!-- Rendered dynamically by renderPlayoffsTab() -->
       </div>
     </section>
 
@@ -644,14 +605,17 @@
       </span>
       <span>NFL</span>
     </button>
-    <button class="nav-item" data-tab="rules">
+    <button class="nav-item" data-tab="playoffs" aria-label="Playoff Brackets and Super Bowl Prophecies">
       <span class="nav-icon">
         <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+          <path d="M3 4h4v6H3" />
+          <path d="M3 14h4v6H3" />
+          <path d="M7 7h5v10H7" />
+          <path d="M12 12h5" />
+          <path d="M17 9l4 3-4 3V9z" />
         </svg>
       </span>
-      <span>Rules</span>
+      <span>Playoffs</span>
     </button>
   </nav>
 
@@ -942,6 +906,69 @@
     </div>
   </div>
 
+  <!-- LEAGUE RULES & SCORING MODAL -->
+  <div id="rules-modal" class="profile-modal-backdrop" onclick="closeLeagueRulesModal(event)">
+    <div class="profile-modal-dialog" onclick="event.stopPropagation()">
+      <div class="profile-modal-header">
+        <div class="profile-modal-title-row">
+          <span class="profile-modal-icon">📋</span>
+          <h3 id="rules-modal-title">League Scoring &amp; Rules</h3>
+        </div>
+        <button class="profile-modal-close" onclick="closeLeagueRulesModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="rules-container modal-rules-body" style="padding: 14px 16px; max-height: 70vh; overflow-y: auto;">
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>Correct Game Winner</span>
+            <span class="rule-badge-pts pts-winner">+10 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Earn 10 base points for predicting the winning NFL team of each matchup correctly.
+          </p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>Closest Score Bonus</span>
+            <span class="rule-badge-pts pts-closest">+10 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Contenders who pick the winning team compete for the Closest Score Bonus. The winning picker whose predicted score has the lowest absolute difference to the final score receives an additional <strong>+10 bonus points</strong> (or triples to <strong>+30 PTS</strong> if a 3X multiplier is used).
+          </p>
+          <div class="rule-tip">
+            If contenders tie for the closest score, the bonus is split evenly (e.g. +5 PTS each).
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>Exact Score Prediction</span>
+            <span class="rule-badge-pts pts-exact">+50 PTS</span>
+          </div>
+          <p class="rule-desc">
+            Correctly predict both the exact home and away final scores of the game! Hits on exact score award a massive 50-point jackpot (or 25 PTS each if tied; triples to 150 PTS on 3X multiplier).
+          </p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-card-title">
+            <span>Weekly Multiplier (3x)</span>
+            <span class="rule-badge-pts pts-mult">3X MULTIPLIER</span>
+          </div>
+          <p class="rule-desc">
+            Each player designates one game per week as their confidence multiplier. Set Your 3X Lock on one game: if your pick wins, your winner points and closest/exact bonuses for that game are tripled!
+          </p>
+          <div class="rule-tip">
+            <strong>Max Payout:</strong> (10 base + 10 closest) &times; 3 = <strong>60 PTS</strong>, or (10 base + 50 exact) &times; 3 = <strong>180 PTS</strong>!
+          </div>
+        </div>
+      </div>
+      <div class="profile-modal-footer">
+        <button type="button" class="btn-modal-done" onclick="closeLeagueRulesModal()" style="width: 100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PLAYER SCORING BREAKDOWN MODAL -->
   <div id="score-breakdown-modal" class="auth-modal-backdrop" onclick="closeScoringBreakdownModal(event)">
     <div class="score-breakdown-dialog" onclick="event.stopPropagation()">
@@ -956,6 +983,7 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="app.js?v=31.8"></script>
+  <script src="playoffs_data.js?v=31.9"></script>
+  <script src="app.js?v=31.9"></script>
 </body>
 </html>
