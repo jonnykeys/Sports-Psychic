@@ -5156,16 +5156,22 @@ function renderPlayoffsTab() {
   const standings = (typeof getSeasonLeaderboard === "function") ? getSeasonLeaderboard(state.currentWeek) : [];
   const rankMap = {};
   standings.forEach((entry, idx) => {
-    rankMap[entry.name] = {
+    const norm = (entry.name || "").toLowerCase().trim();
+    rankMap[norm] = {
       rankIndex: idx,
       rankDisplay: entry.rankDisplay || String(idx + 1),
-      points: entry.points || 0
+      points: entry.points || 0,
+      name: entry.name
     };
+    if (norm === "jon") rankMap["jonny"] = rankMap[norm];
+    if (norm === "jonny") rankMap["jon"] = rankMap[norm];
   });
 
   playerIds.sort((a, b) => {
-    const rankA = rankMap[a] ? rankMap[a].rankIndex : 999;
-    const rankB = rankMap[b] ? rankMap[b].rankIndex : 999;
+    const nameA = ((data[a] && data[a].name) || a).toLowerCase().trim();
+    const nameB = ((data[b] && data[b].name) || b).toLowerCase().trim();
+    const rankA = (rankMap[nameA] !== undefined) ? rankMap[nameA].rankIndex : (rankMap[a.toLowerCase()] !== undefined ? rankMap[a.toLowerCase()].rankIndex : 999);
+    const rankB = (rankMap[nameB] !== undefined) ? rankMap[nameB].rankIndex : (rankMap[b.toLowerCase()] !== undefined ? rankMap[b.toLowerCase()].rankIndex : 999);
     return rankA - rankB;
   });
 
@@ -5198,7 +5204,8 @@ function renderPlayoffsTab() {
     const winner = p.superBowl?.winner || "";
     const sbMvp = p.superBowl?.sbMvp || "TBD";
     const regMvp = p.regularSeasonMvp || "TBD";
-    const rankInfo = rankMap[p.name] || { rankDisplay: "-", points: 0 };
+    const playerKey = (p.name || id).toLowerCase().trim();
+    const rankInfo = rankMap[playerKey] || rankMap[id.toLowerCase()] || { rankDisplay: "-", points: 0 };
     const isFirstPlace = rankInfo.rankDisplay === "1" || rankInfo.rankIndex === 0;
 
     // Playoff Picture (Seeds) View
@@ -5305,8 +5312,8 @@ function renderPlayoffsTab() {
           </div>
         </div>
 
-        <!-- Super Bowl LXI Finale Box (Revamped High-Contrast Modern Showcase) -->
-        <div class="superbowl-showcase-box">
+        <!-- Super Bowl LXI Finale Box (Restored Dual-Team Colors + High-Contrast Frosted Core) -->
+        <div class="superbowl-showcase-box" style="background: linear-gradient(135deg, ${afcInfo.color}45 0%, rgba(245, 184, 0, 0.16) 50%, ${nfcInfo.color}45 100%);">
           <div class="sb-header-row">
             <div class="sb-title-wrap">
               <svg class="sb-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -5385,10 +5392,10 @@ function renderPlayoffsTab() {
           <span class="badge-champion-crown">👑 ${winner}</span>
         </div>
 
-        <!-- Modern Super Bowl Championship Strip (Revamped & Sleek) -->
+        <!-- 2-Tier Modern Championship Strip (Spacious & De-cluttered on Mobile) -->
         <div class="sb-championship-strip">
-          <div class="sb-championship-left">
-            <div class="sb-mini-badge">
+          <div class="sb-strip-header-row">
+            <div class="sb-strip-badge">
               <svg class="sb-mini-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
                 <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
@@ -5398,23 +5405,32 @@ function renderPlayoffsTab() {
               </svg>
               <span>SUPER BOWL LXI</span>
             </div>
-            <div class="sb-matchup-row-modern">
-              <div class="team-capsule ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${afcInfo.color};">
-                <span class="conf-tag-pill afc">AFC</span>
-                <span class="team-code">${afcTeam}</span>
-                ${winner === afcTeam ? '<span class="crown-icon">👑</span>' : ''}
-              </div>
-              <span class="sb-score-capsule">${p.superBowl?.afcScore || 0} - ${p.superBowl?.nfcScore || 0}</span>
-              <div class="team-capsule ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${nfcInfo.color};">
-                <span class="team-code">${nfcTeam}</span>
-                <span class="conf-tag-pill nfc">NFC</span>
-                ${winner === nfcTeam ? '<span class="crown-icon">👑</span>' : ''}
-              </div>
+            <div class="sb-mvp-pill-top">
+              <span class="mvp-lbl">SB MVP:</span>
+              <strong class="mvp-val text-cyan">${sbMvp}</strong>
             </div>
           </div>
-          <div class="sb-championship-right">
-            <span class="sb-stat-label">SB MVP</span>
-            <span class="sb-stat-val text-cyan">${sbMvp}</span>
+
+          <div class="sb-strip-matchup-row">
+            <div class="team-capsule-wide ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${afcInfo.color};">
+              <div class="tcw-left">
+                <span class="conf-tag-pill afc">AFC</span>
+                <span class="team-code">${afcTeam}</span>
+              </div>
+              ${winner === afcTeam ? '<span class="crown-icon">👑</span>' : ''}
+            </div>
+
+            <div class="sb-score-capsule-center">
+              ${p.superBowl?.afcScore || 0} - ${p.superBowl?.nfcScore || 0}
+            </div>
+
+            <div class="team-capsule-wide ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${nfcInfo.color};">
+              <div class="tcw-left">
+                <span class="team-code">${nfcTeam}</span>
+                <span class="conf-tag-pill nfc">NFC</span>
+              </div>
+              ${winner === nfcTeam ? '<span class="crown-icon">👑</span>' : ''}
+            </div>
           </div>
         </div>
 
