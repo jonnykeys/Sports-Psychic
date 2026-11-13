@@ -11143,6 +11143,10 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
+.prophecy-card.is-first-place {
+  border-color: rgba(245, 184, 0, 0.4);
+}
+
 .prophecy-card-header {
   display: flex;
   align-items: center;
@@ -11156,10 +11160,37 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   gap: 10px;
 }
 
+.prophecy-user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .prophecy-user-name {
   font-size: 0.9rem;
   font-weight: 800;
   color: #ffffff;
+}
+
+.prophecy-rank-chip {
+  font-size: 0.62rem;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(245, 184, 0, 0.18);
+  color: var(--accent-gold);
+  border: 1px solid rgba(245, 184, 0, 0.35);
+  font-family: monospace;
+}
+
+.prophecy-you-chip {
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
 }
 
 .prophecy-mvp-sub {
@@ -11169,6 +11200,17 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 
 .text-mvp-gold {
   color: var(--accent-gold);
+}
+
+.badge-champion-crown {
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.22), rgba(245, 184, 0, 0.06));
+  border: 1px solid rgba(245, 184, 0, 0.45);
+  color: var(--accent-gold);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 9999px;
 }
 
 .badge-champion {
@@ -11182,7 +11224,122 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   border-radius: 9999px;
 }
 
-/* Super Bowl Matchup Row */
+/* Modern Super Bowl Championship Strip (Revamped UI) */
+.sb-championship-strip {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sb-championship-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sb-mini-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: var(--accent-gold);
+  letter-spacing: 0.06em;
+}
+
+.sb-mini-trophy {
+  width: 12px;
+  height: 12px;
+  color: var(--accent-gold);
+}
+
+.sb-matchup-row-modern {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-capsule {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 3px 7px;
+  border-radius: 6px;
+  color: #ffffff;
+}
+
+.team-capsule.is-winner {
+  border-color: rgba(245, 184, 0, 0.6);
+  background: #242c3d;
+  box-shadow: 0 0 10px rgba(245, 184, 0, 0.15);
+}
+
+.team-capsule .team-code {
+  font-size: 0.76rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.team-capsule .crown-icon {
+  font-size: 0.68rem;
+}
+
+.conf-tag-pill {
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.conf-tag-pill.afc {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.conf-tag-pill.nfc {
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+.sb-score-capsule {
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 0.74rem;
+  color: #cbd5e1;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sb-championship-right {
+  text-align: right;
+}
+
+.sb-stat-label {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+.sb-stat-val {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #38bdf8;
+  white-space: nowrap;
+}
+
+/* Super Bowl Matchup Row (Legacy Fallback) */
 .prophecy-sb-summary-bar {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -11429,25 +11586,30 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   font-weight: 900;
 }
 
-/* Super Bowl LXI Finale Box */
+/* Super Bowl LXI Finale Box (Modern High-Contrast Showcase) */
 .superbowl-showcase-box {
-  border: 1.5px solid rgba(245, 184, 0, 0.5);
-  border-radius: 11px;
-  padding: 10px 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(145deg, rgba(24, 34, 53, 0.95) 0%, rgba(10, 15, 29, 0.98) 100%);
+  border: 1px solid rgba(245, 184, 0, 0.45);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.6), 0 0 16px rgba(245, 184, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .sb-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
 }
 
 .sb-title-wrap {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .sb-trophy-svg {
@@ -11457,7 +11619,7 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 }
 
 .sb-title-text {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 900;
   color: var(--accent-gold);
   letter-spacing: 0.08em;
@@ -11466,6 +11628,73 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 .sb-sub-text {
   font-size: 0.62rem;
   color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sb-matchup-container {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.sb-team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 0.72rem;
+}
+
+.sb-team-row:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sb-team-row.is-winner {
+  background: rgba(245, 184, 0, 0.12);
+}
+
+.sb-team-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sb-team-stripe {
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+}
+
+.sb-team-fullname {
+  font-weight: 900;
+  color: #ffffff !important;
+  letter-spacing: 0.02em;
+  font-size: 0.74rem;
+}
+
+.sb-score-pod {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sb-score-number {
+  font-family: monospace;
+  font-weight: 900;
+  font-size: 0.86rem;
+  color: #ffffff;
+}
+
+.sb-champion-tag {
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: var(--accent-gold);
+  background: rgba(245, 184, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 184, 0, 0.4);
 }
 
 .bracket-matchup-box.is-superbowl {
@@ -11484,10 +11713,12 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   align-items: center;
   justify-content: space-between;
   font-size: 0.68rem;
+  padding-top: 2px;
 }
 
 .text-sb-mvp {
   color: #38bdf8;
+  font-weight: 800;
 }
 
 .sb-pts-badge {
@@ -11495,6 +11726,206 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   font-weight: 900;
   font-size: 0.68rem;
   letter-spacing: 0.04em;
+  font-family: monospace;
+}
+
+/* Playoff League Selection Prompt UI */
+.playoff-league-prompt-box {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 24px 18px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin-bottom: 20px;
+}
+
+.prompt-trophy-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(245, 184, 0, 0.15);
+  border: 1px solid rgba(245, 184, 0, 0.3);
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.prompt-trophy-svg {
+  width: 22px;
+  height: 22px;
+}
+
+.prompt-title {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.prompt-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+
+.prompt-leagues-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.prompt-league-card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid rgba(245, 184, 0, 0.35);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prompt-league-card:hover {
+  border-color: var(--accent-gold);
+  transform: translateY(-1px);
+}
+
+.prompt-card-og {
+  border-color: rgba(245, 184, 0, 0.5);
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+.plc-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.plc-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(245, 184, 0, 0.15);
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.8rem;
+}
+
+.plc-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.plc-meta {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.plc-code-tag {
+  color: #38bdf8;
+  font-family: monospace;
+  font-weight: 700;
+}
+
+.plc-arrow {
+  color: var(--accent-gold);
+  font-weight: 900;
+  font-size: 0.82rem;
+}
+
+.btn-prompt-open-drawer {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  color: var(--accent-cyan);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 11px;
+  border-radius: 10px;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-prompt-open-drawer:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.custom-playoffs-notice-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 22px 18px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.cpn-header {
+  margin-bottom: 8px;
+}
+
+.cpn-tag {
+  font-size: 0.62rem;
+  font-weight: 900;
+  color: var(--accent-gold);
+  letter-spacing: 0.08em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.cpn-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.cpn-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+
+.cpn-preview-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.cpn-sub {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.btn-preview-og-brackets {
+  background: rgba(245, 184, 0, 0.15);
+  border: 1px solid rgba(245, 184, 0, 0.4);
+  color: var(--accent-gold);
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-preview-og-brackets:hover {
+  background: rgba(245, 184, 0, 0.25);
 }
 
 /* Quick Rules Button in Standings */
