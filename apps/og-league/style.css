@@ -11663,11 +11663,11 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
 .superbowl-showcase-box {
   border: 1.5px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px;
   box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
   margin-bottom: 10px;
 }
 
@@ -11676,30 +11676,30 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  padding-bottom: 6px;
+  padding-bottom: 5px;
 }
 
 .sb-title-wrap {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .sb-trophy-svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   color: var(--accent-gold);
 }
 
 .sb-title-text {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 900;
   color: var(--accent-gold);
   letter-spacing: 0.08em;
 }
 
 .sb-sub-text {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   color: #ffffff;
   opacity: 0.85;
   font-weight: 700;
@@ -11719,7 +11719,7 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: 7px 8px;
   font-size: 0.72rem;
 }
 
@@ -11734,27 +11734,32 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
 .sb-team-identity {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
   flex: 1 1 auto;
 }
 
 .sb-team-stripe {
-  width: 4px;
-  height: 18px;
+  width: 3.5px;
+  height: 16px;
   border-radius: 2px;
   flex-shrink: 0;
 }
 
 .sb-team-identity .seed-tag {
+  font-size: 0.54rem;
+  font-weight: 900;
+  padding: 1px 3.5px;
+  border-radius: 3px;
+  line-height: 1.1;
   flex-shrink: 0;
 }
 
 .sb-team-fullname {
   font-weight: 900;
   color: #ffffff !important;
-  letter-spacing: 0.02em;
-  font-size: 0.74rem;
+  letter-spacing: 0.01em;
+  font-size: 0.69rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -11764,17 +11769,17 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
-  margin-left: 6px;
+  margin-left: 4px;
 }
 
 .sb-score-number {
   font-family: monospace;
   font-weight: 900;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   color: #ffffff;
-  min-width: 22px;
+  min-width: 20px;
   text-align: right;
   flex-shrink: 0;
 }
@@ -11783,10 +11788,10 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--accent-gold);
   background: rgba(245, 184, 0, 0.2);
-  padding: 2px 5px;
+  padding: 2px 4px;
   border-radius: 4px;
   border: 1px solid rgba(245, 184, 0, 0.4);
   white-space: nowrap;
