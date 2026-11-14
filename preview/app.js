@@ -5492,15 +5492,14 @@ function renderPlayoffsTab() {
           </div>
 
           <div class="sb-strip-matchup-row">
-            <div class="team-capsule-wide ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3.5px solid ${afcInfo.color};">
+            <div class="team-capsule-wide ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${afcInfo.color};">
               <div class="tcw-left">
                 <span class="conf-tag-pill afc">AFC</span>
                 <span class="sb-team-code-bold">${afcTeam}</span>
               </div>
               ${winner === afcTeam ? `
-                <span class="sb-crown-badge-pill" title="${afcTeam} Super Bowl Champion">
+                <span class="sb-crown-pill" title="${afcTeam} Super Bowl Champion">
                   <svg class="sb-crown-svg" viewBox="0 0 24 24"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>
-                  <span>WIN</span>
                 </span>
               ` : ''}
             </div>
@@ -5511,15 +5510,14 @@ function renderPlayoffsTab() {
               <span class="${winner === nfcTeam ? 'score-win' : 'score-loss'}">${sbNfcScore}</span>
             </div>
 
-            <div class="team-capsule-wide ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3.5px solid ${nfcInfo.color};">
+            <div class="team-capsule-wide ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${nfcInfo.color};">
               <div class="tcw-left">
-                <span class="sb-team-code-bold">${nfcTeam}</span>
                 <span class="conf-tag-pill nfc">NFC</span>
+                <span class="sb-team-code-bold">${nfcTeam}</span>
               </div>
               ${winner === nfcTeam ? `
-                <span class="sb-crown-badge-pill" title="${nfcTeam} Super Bowl Champion">
+                <span class="sb-crown-pill" title="${nfcTeam} Super Bowl Champion">
                   <svg class="sb-crown-svg" viewBox="0 0 24 24"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>
-                  <span>WIN</span>
                 </span>
               ` : ''}
             </div>
