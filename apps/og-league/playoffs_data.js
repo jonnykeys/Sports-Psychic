@@ -1149,9 +1149,9 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                     "regularSeasonMvp":  "CJ STROUD",
                     "superBowl":  {
                                       "afcTeam":  "BAL",
-                                      "afcScore":  31,
+                                      "afcScore":  34,
                                       "nfcTeam":  "DET",
-                                      "nfcScore":  34,
+                                      "nfcScore":  31,
                                       "winner":  "BAL",
                                       "sbMvp":  "AMON-RA ST. BROWN"
                                   },

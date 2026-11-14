@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.13') 'index.html includes app.js?v=31.13 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.13') 'index.html includes style.css?v=31.13 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.14') 'index.html includes app.js?v=31.14 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.14') 'index.html includes style.css?v=31.14 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -match 'Prove You Know the Game\.') 'index.html hero displays Prove You Know the Game'
 Assert-Test ($indexHtmlContent -match 'Make Your Picks') 'index.html hero button displays Make Your Picks'
@@ -870,6 +870,25 @@ Assert-Test ($appJsContent -match 'sbAfcScore\s*=\s*20') 'app.js defines non-zer
 $playoffsDataRaw = Get-Content -Raw 'apps/og-league/playoffs_data.js'
 Assert-Test ($playoffsDataRaw -notmatch '"afcScore":\s*0') 'playoffs_data.js contains zero blank/0 afcScore instances'
 Assert-Test ($playoffsDataRaw -notmatch '"nfcScore":\s*0') 'playoffs_data.js contains zero blank/0 nfcScore instances'
+Assert-Test ($appJsContent -match 'sb-champion-tag[\s\S]+?sb-score-number') 'app.js renders WINNER tag before score number for clean right alignment'
+
+$rawPl = [System.IO.File]::ReadAllText("$PWD/apps/og-league/playoffs_data.js")
+$idxStartPl = $rawPl.IndexOf('{')
+$idxEndPl = $rawPl.LastIndexOf('}')
+$jsonStrPl = $rawPl.Substring($idxStartPl, $idxEndPl - $idxStartPl + 1)
+$dataPl = $jsonStrPl | ConvertFrom-Json
+$hasInvertedScore = $false
+$dataPl.psobject.properties | ForEach-Object {
+    $p = $_.Value
+    $w = $p.superBowl.winner
+    $afc = $p.superBowl.afcTeam
+    $as = [int]$p.superBowl.afcScore
+    $ns = [int]$p.superBowl.nfcScore
+    $winScore = if ($w -eq $afc) { $as } else { $ns }
+    $loseScore = if ($w -eq $afc) { $ns } else { $as }
+    if ($winScore -le $loseScore) { $hasInvertedScore = $true }
+}
+Assert-Test (-not $hasInvertedScore) 'All 12 players have verified winning score strictly greater than losing score'
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count

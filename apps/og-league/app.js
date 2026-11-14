@@ -5287,6 +5287,17 @@ function renderPlayoffsTab() {
         sbAfcScore = 17;
         sbNfcScore = 20;
       }
+    } else {
+      // Ensure the declared winner has the higher score; swap if inverted
+      if (winner === afcTeam && sbAfcScore < sbNfcScore) {
+        const temp = sbAfcScore;
+        sbAfcScore = sbNfcScore;
+        sbNfcScore = temp;
+      } else if (winner === nfcTeam && sbNfcScore < sbAfcScore) {
+        const temp = sbAfcScore;
+        sbAfcScore = sbNfcScore;
+        sbNfcScore = temp;
+      }
     }
     const sbMvp = p.superBowl?.sbMvp || "TBD";
     const regMvp = p.regularSeasonMvp || "TBD";
@@ -5422,8 +5433,8 @@ function renderPlayoffsTab() {
                 <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
               </div>
               <div class="sb-score-pod">
-                <span class="sb-score-number">${sbAfcScore}</span>
                 ${winner === afcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
+                <span class="sb-score-number">${sbAfcScore}</span>
               </div>
             </div>
 
@@ -5434,8 +5445,8 @@ function renderPlayoffsTab() {
                 <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
               </div>
               <div class="sb-score-pod">
-                <span class="sb-score-number">${sbNfcScore}</span>
                 ${winner === nfcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
+                <span class="sb-score-number">${sbNfcScore}</span>
               </div>
             </div>
           </div>
