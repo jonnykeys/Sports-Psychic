@@ -11094,6 +11094,12 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   border-radius: 6px;
   font-size: 0.7rem;
   font-weight: 700;
+  color: #ffffff;
+}
+
+.consensus-chip strong {
+  color: #ffffff;
+  font-weight: 800;
 }
 
 /* Points Value Guide */

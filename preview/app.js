@@ -5244,8 +5244,8 @@ function renderPlayoffsTab() {
     const info = getTeamInfo(tm);
     const count = sbCounts[tm];
     return `
-      <span class="consensus-chip" style="border: 1px solid ${info.color}60; background: ${info.color}25; color: #ffffff;">
-        <strong style="color: ${info.color};">${tm}</strong> (${count})
+      <span class="consensus-chip" style="border: 1px solid ${info.color}80; background: ${info.color}35; color: #ffffff;">
+        <strong style="color: #ffffff;">${tm}</strong> (${count})
       </span>
     `;
   }).join("");
