@@ -5366,7 +5366,6 @@ function renderPlayoffsTab() {
 
         <div class="sb-footer-row">
           <span class="sb-mvp-text">Super Bowl MVP: <strong class="text-sb-mvp">${sbMvp}</strong></span>
-          <span class="sb-pts-badge">+50 PTS WINNER</span>
         </div>
       </div>
     `;
