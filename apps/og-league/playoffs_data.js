@@ -6,9 +6,9 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                   "regularSeasonMvp":  "Matthew Stafford",
                   "superBowl":  {
                                     "afcTeam":  "BUF",
-                                    "afcScore":  0,
+                                    "afcScore":  20,
                                     "nfcTeam":  "LAR",
-                                    "nfcScore":  0,
+                                    "nfcScore":  17,
                                     "winner":  "BUF",
                                     "sbMvp":  "Josh Allen"
                                 },
@@ -133,9 +133,9 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                  "regularSeasonMvp":  "Dak Prescott",
                  "superBowl":  {
                                    "afcTeam":  "NE",
-                                   "afcScore":  0,
+                                   "afcScore":  17,
                                    "nfcTeam":  "LAR",
-                                   "nfcScore":  0,
+                                   "nfcScore":  20,
                                    "winner":  "LAR",
                                    "sbMvp":  "Matt Stafford"
                                },
@@ -260,9 +260,9 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                    "regularSeasonMvp":  "Lamar Jackson",
                    "superBowl":  {
                                      "afcTeam":  "BAL",
-                                     "afcScore":  0,
+                                     "afcScore":  17,
                                      "nfcTeam":  "PHI",
-                                     "nfcScore":  0,
+                                     "nfcScore":  20,
                                      "winner":  "PHI",
                                      "sbMvp":  "Jalen Hurts"
                                  },
@@ -514,9 +514,9 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                 "regularSeasonMvp":  "Jalen Hurts",
                 "superBowl":  {
                                   "afcTeam":  "LAC",
-                                  "afcScore":  0,
+                                  "afcScore":  20,
                                   "nfcTeam":  "DET",
-                                  "nfcScore":  0,
+                                  "nfcScore":  17,
                                   "winner":  "LAC",
                                   "sbMvp":  "Justin Herbert"
                               },
@@ -1276,9 +1276,9 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                   "regularSeasonMvp":  "bo nix",
                   "superBowl":  {
                                     "afcTeam":  "CIN",
-                                    "afcScore":  0,
+                                    "afcScore":  20,
                                     "nfcTeam":  "DET",
-                                    "nfcScore":  0,
+                                    "nfcScore":  17,
                                     "winner":  "CIN",
                                     "sbMvp":  "joe burrow"
                                 },
@@ -1403,9 +1403,9 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                 "regularSeasonMvp":  "Josh Allen",
                 "superBowl":  {
                                   "afcTeam":  "BUF",
-                                  "afcScore":  0,
+                                  "afcScore":  20,
                                   "nfcTeam":  "LAR",
-                                  "nfcScore":  0,
+                                  "nfcScore":  17,
                                   "winner":  "BUF",
                                   "sbMvp":  "Josh Allen"
                               },

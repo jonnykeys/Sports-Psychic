@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.12') 'index.html includes app.js?v=31.12 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.12') 'index.html includes style.css?v=31.12 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.13') 'index.html includes app.js?v=31.13 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.13') 'index.html includes style.css?v=31.13 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -match 'Prove You Know the Game\.') 'index.html hero displays Prove You Know the Game'
 Assert-Test ($indexHtmlContent -match 'Make Your Picks') 'index.html hero button displays Make Your Picks'
@@ -865,6 +865,11 @@ Assert-Test ($styleCssContent -match '--nfc-blue') 'style.css defines --nfc-blue
 Assert-Test ($appJsContent -match 'resolveSuperBowlContainerColors') 'app.js defines resolveSuperBowlContainerColors helper'
 Assert-Test ($appJsContent -match 'doTeamColorsClash') 'app.js defines doTeamColorsClash hue-based clash detector'
 Assert-Test ($appJsContent -match 'radial-gradient\(circle at top left') 'app.js applies Concept 1 dual-corner radial gradient to superbowl-showcase-box'
+Assert-Test ($appJsContent -match 'sbAfcScore\s*=\s*20') 'app.js defines non-zero playoff score fallback logic'
+
+$playoffsDataRaw = Get-Content -Raw 'apps/og-league/playoffs_data.js'
+Assert-Test ($playoffsDataRaw -notmatch '"afcScore":\s*0') 'playoffs_data.js contains zero blank/0 afcScore instances'
+Assert-Test ($playoffsDataRaw -notmatch '"nfcScore":\s*0') 'playoffs_data.js contains zero blank/0 nfcScore instances'
 
 $passed = ($testResults | Where-Object { $_ -eq $true }).Count
 $total = $testResults.Count
