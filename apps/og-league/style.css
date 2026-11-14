@@ -5233,6 +5233,18 @@ body.is-lobby-mode #lobby-hero-card {
 }
 
 body.is-league-mode #btn-exit-league {
+  display: none !important;
+}
+
+body.is-league-mode #btn-league-switcher {
+  display: none !important;
+}
+
+body.is-league-mode #btn-header-signin {
+  display: none !important;
+}
+
+body.is-league-mode #btn-header-profile {
   display: inline-flex !important;
 }
 
@@ -5282,7 +5294,10 @@ body.is-lobby-mode .bottom-nav [data-tab="leaderboard"] {
 
 /* 5-tab layout in League Mode */
 body.is-league-mode .bottom-nav [data-tab="leaderboard"],
-body.is-league-mode .bottom-nav [data-tab="players"] {
+body.is-league-mode .bottom-nav [data-tab="matchups"],
+body.is-league-mode .bottom-nav [data-tab="playoffs"],
+body.is-league-mode .bottom-nav [data-tab="players"],
+body.is-league-mode .bottom-nav [data-tab="nfl"] {
   display: flex !important;
 }
 
