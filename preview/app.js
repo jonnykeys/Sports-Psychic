@@ -5346,7 +5346,7 @@ function renderPlayoffsTab() {
               <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
             </div>
             <div class="sb-score-pod">
-              ${winner === afcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion">👑</span>' : ''}
+              ${winner === afcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion"><svg class="crown-mini-svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg></span>' : ''}
               <span class="sb-score-number">${sbAfcScore}</span>
             </div>
           </div>
@@ -5358,7 +5358,7 @@ function renderPlayoffsTab() {
               <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
             </div>
             <div class="sb-score-pod">
-              ${winner === nfcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion">👑</span>' : ''}
+              ${winner === nfcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion"><svg class="crown-mini-svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg></span>' : ''}
               <span class="sb-score-number">${sbNfcScore}</span>
             </div>
           </div>

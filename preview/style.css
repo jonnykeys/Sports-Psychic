@@ -11788,15 +11788,19 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
   color: var(--accent-gold);
-  background: rgba(245, 184, 0, 0.2);
-  padding: 2px 4px;
-  border-radius: 4px;
-  border: 1px solid rgba(245, 184, 0, 0.4);
+  background: linear-gradient(135deg, rgba(245, 184, 0, 0.24), rgba(245, 184, 0, 0.08));
+  padding: 2.5px 5px;
+  border-radius: 9999px;
+  border: 1px solid rgba(245, 184, 0, 0.45);
   white-space: nowrap;
   flex-shrink: 0;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.sb-champion-tag svg {
+  display: block;
 }
 
 .bracket-matchup-box.is-superbowl {
