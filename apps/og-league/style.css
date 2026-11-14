@@ -11645,6 +11645,39 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   font-size: 0.72rem;
 }
 
+.bracket-team-name-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bracket-score-pod {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.bracket-team-score {
+  font-family: monospace;
+  font-weight: 900;
+  font-size: 0.74rem;
+  color: #ffffff;
+  min-width: 17px;
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+
+.bracket-team-slot.is-loser .bracket-team-score {
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+}
+
 .bye-label {
   font-size: 0.58rem;
   color: var(--accent-gold);

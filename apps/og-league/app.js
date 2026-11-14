@@ -5308,15 +5308,23 @@ function renderPlayoffsTab() {
       if (!m) return "";
       const isAwayWin = m.winner === m.awayTeam;
       const isHomeWin = m.winner === m.homeTeam;
+      const awaySc = (m.awayScore !== undefined && m.awayScore !== null) ? m.awayScore : '';
+      const homeSc = (m.homeScore !== undefined && m.homeScore !== null) ? m.homeScore : '';
       return `
         <div class="bracket-matchup-box ${confClass}">
           <div class="bracket-team-slot ${isAwayWin ? 'is-winner' : 'is-loser'}">
-            <span><span class="seed-tag ${seedTagClass}">${m.awaySeed || ''}</span>${m.awayTeam}</span>
-            <span>${isAwayWin ? '<span class="winner-check">&#10003;</span>' : '&mdash;'}</span>
+            <span class="bracket-team-name-wrap"><span class="seed-tag ${seedTagClass}">${m.awaySeed || ''}</span>${m.awayTeam}</span>
+            <span class="bracket-score-pod">
+              ${isAwayWin ? '<span class="winner-check">&#10003;</span>' : ''}
+              ${awaySc !== '' ? `<span class="bracket-team-score">${awaySc}</span>` : ''}
+            </span>
           </div>
           <div class="bracket-team-slot ${isHomeWin ? 'is-winner' : 'is-loser'}">
-            <span><span class="seed-tag ${seedTagClass}">${m.homeSeed || ''}</span>${m.homeTeam}${m.homeSeed === 1 ? ' <span class="bye-label">(BYE)</span>' : ''}</span>
-            <span>${isHomeWin ? '<span class="winner-check">&#10003;</span>' : '&mdash;'}</span>
+            <span class="bracket-team-name-wrap"><span class="seed-tag ${seedTagClass}">${m.homeSeed || ''}</span>${m.homeTeam}${m.homeSeed === 1 ? ' <span class="bye-label">(BYE)</span>' : ''}</span>
+            <span class="bracket-score-pod">
+              ${isHomeWin ? '<span class="winner-check">&#10003;</span>' : ''}
+              ${homeSc !== '' ? `<span class="bracket-team-score">${homeSc}</span>` : ''}
+            </span>
           </div>
         </div>
       `;
@@ -5413,12 +5421,18 @@ function renderPlayoffsTab() {
               <span class="conf-title-tag text-afc-red">● AFC Championship</span>
               <div class="bracket-matchup-box is-afc conf-title-box">
                 <div class="bracket-team-slot ${afcChamp.winner === afcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
-                  <span><span class="seed-tag seed-tag-afc">${afcChamp.awaySeed || ''}</span>${afcChamp.awayTeam}</span>
-                  <span>${afcChamp.winner === afcChamp.awayTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-afc">${afcChamp.awaySeed || ''}</span>${afcChamp.awayTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${afcChamp.winner === afcChamp.awayTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : ''}
+                    ${afcChamp.awayScore !== undefined && afcChamp.awayScore !== null ? `<span class="bracket-team-score">${afcChamp.awayScore}</span>` : ''}
+                  </span>
                 </div>
                 <div class="bracket-team-slot ${afcChamp.winner === afcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
-                  <span><span class="seed-tag seed-tag-afc">${afcChamp.homeSeed || ''}</span>${afcChamp.homeTeam}</span>
-                  <span>${afcChamp.winner === afcChamp.homeTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-afc">${afcChamp.homeSeed || ''}</span>${afcChamp.homeTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${afcChamp.winner === afcChamp.homeTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : ''}
+                    ${afcChamp.homeScore !== undefined && afcChamp.homeScore !== null ? `<span class="bracket-team-score">${afcChamp.homeScore}</span>` : ''}
+                  </span>
                 </div>
               </div>
             </div>
@@ -5426,12 +5440,18 @@ function renderPlayoffsTab() {
               <span class="conf-title-tag text-nfc-blue">● NFC Championship</span>
               <div class="bracket-matchup-box is-nfc conf-title-box">
                 <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
-                  <span><span class="seed-tag seed-tag-nfc">${nfcChamp.awaySeed || ''}</span>${nfcChamp.awayTeam}</span>
-                  <span>${nfcChamp.winner === nfcChamp.awayTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-nfc">${nfcChamp.awaySeed || ''}</span>${nfcChamp.awayTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${nfcChamp.winner === nfcChamp.awayTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : ''}
+                    ${nfcChamp.awayScore !== undefined && nfcChamp.awayScore !== null ? `<span class="bracket-team-score">${nfcChamp.awayScore}</span>` : ''}
+                  </span>
                 </div>
                 <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
-                  <span><span class="seed-tag seed-tag-nfc">${nfcChamp.homeSeed || ''}</span>${nfcChamp.homeTeam}</span>
-                  <span>${nfcChamp.winner === nfcChamp.homeTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-nfc">${nfcChamp.homeSeed || ''}</span>${nfcChamp.homeTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${nfcChamp.winner === nfcChamp.homeTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : ''}
+                    ${nfcChamp.homeScore !== undefined && nfcChamp.homeScore !== null ? `<span class="bracket-team-score">${nfcChamp.homeScore}</span>` : ''}
+                  </span>
                 </div>
               </div>
             </div>
