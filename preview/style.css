@@ -11691,6 +11691,7 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
 .sb-score-pod {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -11699,6 +11700,8 @@ body.is-league-mode .bottom-nav [data-tab="players"] {
   font-weight: 900;
   font-size: 0.86rem;
   color: #ffffff;
+  min-width: 22px;
+  text-align: right;
 }
 
 .sb-champion-tag {
