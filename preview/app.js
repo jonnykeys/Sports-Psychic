@@ -303,18 +303,92 @@ function normalizeTeamCode(code) {
  * Resolves full team metadata, styling colors, and contrast text for any team code or alias.
  */
 function getTeamInfo(code) {
-  if (!code) return { code: "", name: "", city: "", color: "#2a3b50", textColor: "#ffffff" };
+  if (!code) return { code: "", name: "", city: "", color: "#2a3b50", alt: "#2a3b50", textColor: "#ffffff" };
   const norm = normalizeTeamCode(code);
   const info = (typeof NFL_TEAMS !== "undefined" && (NFL_TEAMS[norm] || NFL_TEAMS[code]))
     ? (NFL_TEAMS[norm] || NFL_TEAMS[code])
-    : { code, name: code, city: code, color: "#2a3b50" };
+    : { code, name: code, city: code, color: "#2a3b50", alt: "#2a3b50" };
   const textColor = getTeamContrastColor(info.color || "#2a3b50");
   return {
     code: info.code || norm || code,
     name: info.name || code,
     city: info.city || info.name || code,
     color: info.color || "#2a3b50",
+    alt: info.alt || info.color || "#2a3b50",
     textColor: textColor
+  };
+}
+
+/**
+ * Calculates 360-degree color wheel hue from a hex color string.
+ */
+function getHueFromHex(hex) {
+  if (!hex || typeof hex !== "string") return 0;
+  const clean = hex.replace("#", "");
+  const bigint = parseInt(clean, 16);
+  if (isNaN(bigint)) return 0;
+  const r = ((bigint >> 16) & 255) / 255.0;
+  const g = ((bigint >> 8) & 255) / 255.0;
+  const b = (bigint & 255) / 255.0;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  if (d === 0) return 0;
+  let h = 0;
+  if (max === r) {
+    h = (g - b) / d;
+    if (g < b) h += 6;
+  } else if (max === g) {
+    h = ((b - r) / d) + 2;
+  } else {
+    h = ((r - g) / d) + 4;
+  }
+  h = Math.round(h * 60);
+  if (h >= 360) h -= 360;
+  return h;
+}
+
+/**
+ * Detects whether two team colors clash by checking if they share the same
+ * hue family on the color wheel within 28 degrees (e.g. Bills Blue vs Rams Blue = 1 deg).
+ */
+function doTeamColorsClash(hex1, hex2) {
+  if (!hex1 || !hex2) return false;
+  const h1 = getHueFromHex(hex1);
+  const h2 = getHueFromHex(hex2);
+  let diff = Math.abs(h1 - h2);
+  if (diff > 180) diff = 360 - diff;
+  return diff < 28;
+}
+
+/**
+ * Resolves dual-team colors for the Super Bowl container:
+ * If colors clash (e.g. Bills Blue vs Rams Blue), switch NFC to a vibrant alternate
+ * (e.g. Rams Sol Gold #FFA300 or 49ers Gold #B3995D).
+ * Otherwise keep both in their authentic primary colors (e.g. Ravens Purple vs Eagles Green).
+ */
+function resolveSuperBowlContainerColors(afcInfo, nfcInfo) {
+  const afcPrimary = afcInfo?.color || "#00338D";
+  const nfcPrimary = nfcInfo?.color || "#003594";
+  const isClash = doTeamColorsClash(afcPrimary, nfcPrimary);
+
+  let afcFinal = afcPrimary;
+  let nfcFinal = nfcPrimary;
+
+  if (isClash) {
+    if (nfcInfo?.alt && nfcInfo.alt !== "#000000" && nfcInfo.alt !== "#A5ACAF" && nfcInfo.alt !== "#B0B7BC") {
+      nfcFinal = nfcInfo.alt;
+    } else if (afcInfo?.alt && afcInfo.alt !== "#000000" && afcInfo.alt !== "#A5ACAF" && afcInfo.alt !== "#B0B7BC") {
+      afcFinal = afcInfo.alt;
+    } else {
+      nfcFinal = nfcInfo?.alt || nfcPrimary;
+    }
+  }
+
+  return {
+    afc: afcFinal,
+    nfc: nfcFinal,
+    isClash: isClash
   };
 }
 
@@ -5201,6 +5275,7 @@ function renderPlayoffsTab() {
     const nfcTeam = p.superBowl?.nfcTeam || "NFC";
     const afcInfo = getTeamInfo(afcTeam);
     const nfcInfo = getTeamInfo(nfcTeam);
+    const sbColors = resolveSuperBowlContainerColors(afcInfo, nfcInfo);
     const winner = p.superBowl?.winner || "";
     const sbMvp = p.superBowl?.sbMvp || "TBD";
     const regMvp = p.regularSeasonMvp || "TBD";
@@ -5312,8 +5387,8 @@ function renderPlayoffsTab() {
           </div>
         </div>
 
-        <!-- Super Bowl LXI Finale Box (Restored Dual-Team Colors + High-Contrast Frosted Core) -->
-        <div class="superbowl-showcase-box" style="background: linear-gradient(135deg, ${afcInfo.color}45 0%, rgba(245, 184, 0, 0.16) 50%, ${nfcInfo.color}45 100%);">
+        <!-- Super Bowl LXI Finale Box (Concept 1: Dual-Corner Radial Glow with Smart Alternate Clash Resolution) -->
+        <div class="superbowl-showcase-box" style="background: radial-gradient(circle at top left, ${sbColors.afc}85 0%, transparent 65%), radial-gradient(circle at bottom right, ${sbColors.nfc}85 0%, transparent 65%), #0b1222;">
           <div class="sb-header-row">
             <div class="sb-title-wrap">
               <svg class="sb-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -5331,7 +5406,7 @@ function renderPlayoffsTab() {
           <div class="sb-matchup-container">
             <div class="sb-team-row ${winner === afcTeam ? 'is-winner' : 'is-loser'}">
               <div class="sb-team-identity">
-                <span class="sb-team-stripe" style="background:${afcInfo.color};"></span>
+                <span class="sb-team-stripe" style="background:${sbColors.afc};"></span>
                 <span class="seed-tag seed-tag-afc">AFC</span>
                 <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
               </div>
@@ -5343,7 +5418,7 @@ function renderPlayoffsTab() {
 
             <div class="sb-team-row ${winner === nfcTeam ? 'is-winner' : 'is-loser'}">
               <div class="sb-team-identity">
-                <span class="sb-team-stripe" style="background:${nfcInfo.color};"></span>
+                <span class="sb-team-stripe" style="background:${sbColors.nfc};"></span>
                 <span class="seed-tag seed-tag-nfc">NFC</span>
                 <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
               </div>
