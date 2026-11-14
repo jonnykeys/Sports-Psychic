@@ -427,12 +427,12 @@ function initSupabaseClient() {
 }
 
 let state = {
-  appMode: "lobby", // "lobby" | "league"
+  appMode: "league", // "league" | "lobby"
   activeLeague: "OG League", // "OG League" | "solo"
   currentWeek: getCurrentNFLWeek(),
   myPlayer: initialSavedPlayer,
   selectedPlayer: initialSavedPlayer || "Caleb",
-  activeTab: "matchups",
+  activeTab: "leaderboard",
   leaderboardMode: "season", // "season" | "weekly"
   playerViewMode: "single", // "single" | "h2h"
   h2hPlayerA: null,
@@ -1072,14 +1072,14 @@ function getNFLTeamRecord(teamCode, targetWeek = null) {
 // INITIALIZATION
 // =========================================================
 document.addEventListener("DOMContentLoaded", () => {
-  initSupabaseAuth();
-  initData();
   restoreNavState();
+  initData();
   setupNavigation();
   setupWeekStrip();
   setupRefresh();
   setupPullToRefresh();
   renderApp();
+  initSupabaseAuth();
   
   // Background live sync
   syncWeek(state.currentWeek).then(() => {
@@ -8468,9 +8468,9 @@ async function initSupabaseAuth() {
     if (!sessionErr && sessionData && sessionData.session && sessionData.session.user) {
       await handleUserSession(sessionData.session.user);
     } else {
-      if (state.appMode === "league" || state.appMode === "solo") {
-        exitToLobby();
-      }
+      // In OG League view, unauthenticated visitors view the OG League directly without signing in
+      state.appMode = "league";
+      state.activeLeague = "OG League";
     }
 
     // 2. Subscribe to auth lifecycle changes
@@ -8480,7 +8480,8 @@ async function initSupabaseAuth() {
       } else if (event === "SIGNED_OUT") {
         state.authUser = null;
         state.userProfile = null;
-        exitToLobby();
+        state.appMode = "league";
+        state.activeLeague = "OG League";
         updateAppShellForMode();
         renderHeaderProfile();
       }
