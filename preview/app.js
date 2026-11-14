@@ -5469,10 +5469,10 @@ function renderPlayoffsTab() {
               <div class="prophecy-mvp-sub">Reg Season MVP: <strong class="text-mvp-gold">${regMvp}</strong></div>
             </div>
           </div>
-          <span class="badge-champion-crown">👑 ${winner}</span>
+          <span class="badge-champion-crown"><svg class="crown-mini-svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="vertical-align: -1px; margin-right: 4px;"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>${winner}</span>
         </div>
 
-        <!-- 2-Tier Modern Championship Strip (Spacious & De-cluttered on Mobile) -->
+        <!-- 2-Tier Modern Championship Strip (Option 1: Bold Athletic Font + Vector Crown Pill) -->
         <div class="sb-championship-strip">
           <div class="sb-strip-header-row">
             <div class="sb-strip-badge">
@@ -5492,24 +5492,36 @@ function renderPlayoffsTab() {
           </div>
 
           <div class="sb-strip-matchup-row">
-            <div class="team-capsule-wide ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${afcInfo.color};">
+            <div class="team-capsule-wide ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3.5px solid ${afcInfo.color};">
               <div class="tcw-left">
                 <span class="conf-tag-pill afc">AFC</span>
-                <span class="team-code">${afcTeam}</span>
+                <span class="sb-team-code-bold">${afcTeam}</span>
               </div>
-              ${winner === afcTeam ? '<span class="crown-icon">👑</span>' : ''}
+              ${winner === afcTeam ? `
+                <span class="sb-crown-badge-pill" title="${afcTeam} Super Bowl Champion">
+                  <svg class="sb-crown-svg" viewBox="0 0 24 24"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>
+                  <span>WIN</span>
+                </span>
+              ` : ''}
             </div>
 
             <div class="sb-score-capsule-center">
-              ${sbAfcScore} - ${sbNfcScore}
+              <span class="${winner === afcTeam ? 'score-win' : 'score-loss'}">${sbAfcScore}</span>
+              <span class="score-sep">-</span>
+              <span class="${winner === nfcTeam ? 'score-win' : 'score-loss'}">${sbNfcScore}</span>
             </div>
 
-            <div class="team-capsule-wide ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${nfcInfo.color};">
+            <div class="team-capsule-wide ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3.5px solid ${nfcInfo.color};">
               <div class="tcw-left">
-                <span class="team-code">${nfcTeam}</span>
+                <span class="sb-team-code-bold">${nfcTeam}</span>
                 <span class="conf-tag-pill nfc">NFC</span>
               </div>
-              ${winner === nfcTeam ? '<span class="crown-icon">👑</span>' : ''}
+              ${winner === nfcTeam ? `
+                <span class="sb-crown-badge-pill" title="${nfcTeam} Super Bowl Champion">
+                  <svg class="sb-crown-svg" viewBox="0 0 24 24"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>
+                  <span>WIN</span>
+                </span>
+              ` : ''}
             </div>
           </div>
         </div>
