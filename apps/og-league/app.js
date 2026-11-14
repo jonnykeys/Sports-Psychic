@@ -400,7 +400,7 @@ const SAVED_USER_KEY = IS_PREVIEW ? "sp_preview_my_player" : "og_league_my_playe
 const CACHE_KEY = IS_PREVIEW ? "sp_preview_cache_v2" : "og_league_cache_v10";
 let initialSavedPlayer = null;
 try {
-  const stored = localStorage.getItem(SAVED_USER_KEY);
+  const stored = localStorage.getItem(SAVED_USER_KEY) || localStorage.getItem("og_league_my_player");
   if (stored && PLAYERS.includes(stored)) {
     initialSavedPlayer = stored;
   }
@@ -5902,7 +5902,11 @@ function setMyPlayer(playerName) {
     state.myPlayer = playerName;
     state.selectedPlayer = playerName;
     try {
+      localStorage.setItem(SAVED_USER_KEY, playerName);
       localStorage.setItem("og_league_my_player", playerName);
+      if (typeof ogFavTeams !== "undefined" && ogFavTeams[playerName]) {
+        localStorage.setItem("sp_fav_team", ogFavTeams[playerName]);
+      }
     } catch (e) {
       console.warn("Could not save to localStorage:", e);
     }
@@ -5910,6 +5914,7 @@ function setMyPlayer(playerName) {
   } else {
     state.myPlayer = null;
     try {
+      localStorage.removeItem(SAVED_USER_KEY);
       localStorage.removeItem("og_league_my_player");
     } catch (e) {
       console.warn("Could not remove from localStorage:", e);
