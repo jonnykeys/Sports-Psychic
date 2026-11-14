@@ -137,7 +137,7 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
                                    "nfcTeam":  "LAR",
                                    "nfcScore":  20,
                                    "winner":  "LAR",
-                                   "sbMvp":  "Matt Stafford"
+                                   "sbMvp":  "Matthew Stafford"
                                },
                  "afc":  {
                              "seeds":  [
@@ -1146,14 +1146,14 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
     "dishman":  {
                     "id":  "dishman",
                     "name":  "Dishman",
-                    "regularSeasonMvp":  "CJ STROUD",
+                    "regularSeasonMvp":  "CJ Stroud",
                     "superBowl":  {
                                       "afcTeam":  "BAL",
                                       "afcScore":  34,
                                       "nfcTeam":  "DET",
                                       "nfcScore":  31,
                                       "winner":  "BAL",
-                                      "sbMvp":  "AMON-RA ST. BROWN"
+                                      "sbMvp":  "Amon-Ra St. Brown"
                                   },
                     "afc":  {
                                 "seeds":  [
@@ -1273,14 +1273,14 @@ window.OG_LEAGUE_PLAYOFFS_DATA = {
     "ethan":  {
                   "id":  "ethan",
                   "name":  "Ethan",
-                  "regularSeasonMvp":  "bo nix",
+                  "regularSeasonMvp":  "Bo Nix",
                   "superBowl":  {
                                     "afcTeam":  "CIN",
                                     "afcScore":  20,
                                     "nfcTeam":  "DET",
                                     "nfcScore":  17,
                                     "winner":  "CIN",
-                                    "sbMvp":  "joe burrow"
+                                    "sbMvp":  "Joe Burrow"
                                 },
                   "afc":  {
                               "seeds":  [
