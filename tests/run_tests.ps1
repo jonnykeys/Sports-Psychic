@@ -1,4 +1,4 @@
-# Windows PowerShell Test Suite Runner for Sports Psychic
+﻿# Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (16 SUITES)' -ForegroundColor Cyan
@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.18') 'index.html includes app.js?v=31.18 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.18') 'index.html includes style.css?v=31.18 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.19') 'index.html includes app.js?v=31.19 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.19') 'index.html includes style.css?v=31.19 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -match 'Prove You Know the Game\.') 'index.html hero displays Prove You Know the Game'
 Assert-Test ($indexHtmlContent -match 'Make Your Picks') 'index.html hero button displays Make Your Picks'

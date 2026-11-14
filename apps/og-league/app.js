@@ -5346,7 +5346,6 @@ function renderPlayoffsTab() {
         <div class="bracket-round-block">
           <div class="bracket-round-header">
             <span>Divisional Round</span>
-            <span class="bracket-subnote">1-Seeds Re-enter</span>
           </div>
           <div class="bracket-grid-2col">
             ${renderMatchupNode(afcDiv[0], "is-afc", "seed-tag-afc")}
@@ -5360,7 +5359,6 @@ function renderPlayoffsTab() {
         <div class="bracket-round-block">
           <div class="bracket-round-header">
             <span>Conference Championships</span>
-            <span class="bracket-subnote">Title Games</span>
           </div>
           <div class="bracket-grid-2col">
             <div>
@@ -5416,7 +5414,7 @@ function renderPlayoffsTab() {
                 <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
               </div>
               <div class="sb-score-pod">
-                ${winner === afcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
+                ${winner === afcTeam ? '<span class="sb-champion-tag">👑&nbsp;WINNER</span>' : ''}
                 <span class="sb-score-number">${sbAfcScore}</span>
               </div>
             </div>
@@ -5428,7 +5426,7 @@ function renderPlayoffsTab() {
                 <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
               </div>
               <div class="sb-score-pod">
-                ${winner === nfcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
+                ${winner === nfcTeam ? '<span class="sb-champion-tag">👑&nbsp;WINNER</span>' : ''}
                 <span class="sb-score-number">${sbNfcScore}</span>
               </div>
             </div>
