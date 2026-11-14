@@ -5390,53 +5390,125 @@ function renderPlayoffsTab() {
           </div>
         </div>
 
-        <!-- Super Bowl LXI Finale Box (Concept 1: Dual-Corner Radial Glow with Smart Alternate Clash Resolution) -->
-        <div class="superbowl-showcase-box" style="background: radial-gradient(circle at top left, ${sbColors.afc}85 0%, transparent 65%), radial-gradient(circle at bottom right, ${sbColors.nfc}85 0%, transparent 65%), #0b1222;">
-          <div class="sb-header-row">
-            <div class="sb-title-wrap">
-              <svg class="sb-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
-                <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
-                <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
-                <path d="M12 17v4" />
-                <path d="M8 21h8" />
-              </svg>
-              <span class="sb-title-text">SUPER BOWL LXI</span>
-            </div>
-            <span class="sb-sub-text">Championship Matchup</span>
+    const sbShowcaseBoxHtml = `
+      <div class="superbowl-showcase-box" style="background: radial-gradient(circle at top left, ${sbColors.afc}85 0%, transparent 65%), radial-gradient(circle at bottom right, ${sbColors.nfc}85 0%, transparent 65%), #0b1222;">
+        <div class="sb-header-row">
+          <div class="sb-title-wrap">
+            <svg class="sb-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+              <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+              <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
+              <path d="M12 17v4" />
+              <path d="M8 21h8" />
+            </svg>
+            <span class="sb-title-text">SUPER BOWL LXI</span>
           </div>
+          <span class="sb-sub-text">Championship Matchup</span>
+        </div>
 
-          <div class="sb-matchup-container">
-            <div class="sb-team-row ${winner === afcTeam ? 'is-winner' : 'is-loser'}">
-              <div class="sb-team-identity">
-                <span class="sb-team-stripe" style="background:${sbColors.afc};"></span>
-                <span class="seed-tag seed-tag-afc">AFC</span>
-                <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
-              </div>
-              <div class="sb-score-pod">
-                ${winner === afcTeam ? '<span class="sb-champion-tag">👑&nbsp;WINNER</span>' : ''}
-                <span class="sb-score-number">${sbAfcScore}</span>
-              </div>
+        <div class="sb-matchup-container">
+          <div class="sb-team-row ${winner === afcTeam ? 'is-winner' : 'is-loser'}">
+            <div class="sb-team-identity">
+              <span class="sb-team-stripe" style="background:${sbColors.afc};"></span>
+              <span class="seed-tag seed-tag-afc">AFC</span>
+              <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
             </div>
-
-            <div class="sb-team-row ${winner === nfcTeam ? 'is-winner' : 'is-loser'}">
-              <div class="sb-team-identity">
-                <span class="sb-team-stripe" style="background:${sbColors.nfc};"></span>
-                <span class="seed-tag seed-tag-nfc">NFC</span>
-                <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
-              </div>
-              <div class="sb-score-pod">
-                ${winner === nfcTeam ? '<span class="sb-champion-tag">👑&nbsp;WINNER</span>' : ''}
-                <span class="sb-score-number">${sbNfcScore}</span>
-              </div>
+            <div class="sb-score-pod">
+              ${winner === afcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion">👑</span>' : ''}
+              <span class="sb-score-number">${sbAfcScore}</span>
             </div>
           </div>
 
-          <div class="sb-footer-row">
-            <span class="sb-mvp-text">Super Bowl MVP: <strong class="text-sb-mvp">${sbMvp}</strong></span>
-            <span class="sb-pts-badge">+50 PTS WINNER</span>
+          <div class="sb-team-row ${winner === nfcTeam ? 'is-winner' : 'is-loser'}">
+            <div class="sb-team-identity">
+              <span class="sb-team-stripe" style="background:${sbColors.nfc};"></span>
+              <span class="seed-tag seed-tag-nfc">NFC</span>
+              <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
+            </div>
+            <div class="sb-score-pod">
+              ${winner === nfcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion">👑</span>' : ''}
+              <span class="sb-score-number">${sbNfcScore}</span>
+            </div>
           </div>
         </div>
+
+        <div class="sb-footer-row">
+          <span class="sb-mvp-text">Super Bowl MVP: <strong class="text-sb-mvp">${sbMvp}</strong></span>
+          <span class="sb-pts-badge">+50 PTS WINNER</span>
+        </div>
+      </div>
+    `;
+
+    const bracketHtml = `
+      <div class="prophecy-bracket-view">
+        <!-- Wild Card Round -->
+        <div class="bracket-round-block">
+          <div class="bracket-round-header">
+            <span>Wild Card Round</span>
+            <div class="bracket-conf-indicator">
+              <span class="text-afc-red">3 AFC</span> &bull; <span class="text-nfc-blue">3 NFC</span>
+            </div>
+          </div>
+          <div class="bracket-grid-2col">
+            ${renderMatchupNode(afcWc[0], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcWc[0], "is-nfc", "seed-tag-nfc")}
+            ${renderMatchupNode(afcWc[1], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcWc[1], "is-nfc", "seed-tag-nfc")}
+            ${renderMatchupNode(afcWc[2], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcWc[2], "is-nfc", "seed-tag-nfc")}
+          </div>
+        </div>
+
+        <!-- Divisional Round -->
+        <div class="bracket-round-block">
+          <div class="bracket-round-header">
+            <span>Divisional Round</span>
+          </div>
+          <div class="bracket-grid-2col">
+            ${renderMatchupNode(afcDiv[0], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcDiv[0], "is-nfc", "seed-tag-nfc")}
+            ${renderMatchupNode(afcDiv[1], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcDiv[1], "is-nfc", "seed-tag-nfc")}
+          </div>
+        </div>
+
+        <!-- Conference Championships -->
+        <div class="bracket-round-block">
+          <div class="bracket-round-header">
+            <span>Conference Championships</span>
+          </div>
+          <div class="bracket-grid-2col">
+            <div>
+              <span class="conf-title-tag text-afc-red">● AFC Championship</span>
+              <div class="bracket-matchup-box is-afc conf-title-box">
+                <div class="bracket-team-slot ${afcChamp.winner === afcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
+                  <span><span class="seed-tag seed-tag-afc">${afcChamp.awaySeed || ''}</span>${afcChamp.awayTeam}</span>
+                  <span>${afcChamp.winner === afcChamp.awayTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                </div>
+                <div class="bracket-team-slot ${afcChamp.winner === afcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
+                  <span><span class="seed-tag seed-tag-afc">${afcChamp.homeSeed || ''}</span>${afcChamp.homeTeam}</span>
+                  <span>${afcChamp.winner === afcChamp.homeTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="conf-title-tag text-nfc-blue">● NFC Championship</span>
+              <div class="bracket-matchup-box is-nfc conf-title-box">
+                <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
+                  <span><span class="seed-tag seed-tag-nfc">${nfcChamp.awaySeed || ''}</span>${nfcChamp.awayTeam}</span>
+                  <span>${nfcChamp.winner === nfcChamp.awayTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                </div>
+                <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
+                  <span><span class="seed-tag seed-tag-nfc">${nfcChamp.homeSeed || ''}</span>${nfcChamp.homeTeam}</span>
+                  <span>${nfcChamp.winner === nfcChamp.homeTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : '&mdash;'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Super Bowl LXI Finale Box -->
+        ${sbShowcaseBoxHtml}
       </div>
     `;
 
@@ -5470,57 +5542,8 @@ function renderPlayoffsTab() {
           <span class="badge-champion-crown"><svg class="crown-mini-svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="vertical-align: -1px; margin-right: 4px;"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>${winner}</span>
         </div>
 
-        <!-- 2-Tier Modern Championship Strip (Option 1: Bold Athletic Font + Vector Crown Pill) -->
-        <div class="sb-championship-strip">
-          <div class="sb-strip-header-row">
-            <div class="sb-strip-badge">
-              <svg class="sb-mini-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
-                <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
-                <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
-                <path d="M12 17v4" />
-                <path d="M8 21h8" />
-              </svg>
-              <span>SUPER BOWL LXI</span>
-            </div>
-            <div class="sb-mvp-pill-top">
-              <span class="mvp-lbl">SB MVP:</span>
-              <strong class="mvp-val text-cyan">${sbMvp}</strong>
-            </div>
-          </div>
-
-          <div class="sb-strip-matchup-row">
-            <div class="team-capsule-wide ${winner === afcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${afcInfo.color};">
-              <div class="tcw-left">
-                <span class="conf-tag-pill afc">AFC</span>
-                <span class="sb-team-code-bold">${afcTeam}</span>
-              </div>
-              ${winner === afcTeam ? `
-                <span class="sb-crown-pill" title="${afcTeam} Super Bowl Champion">
-                  <svg class="sb-crown-svg" viewBox="0 0 24 24"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>
-                </span>
-              ` : ''}
-            </div>
-
-            <div class="sb-score-capsule-center">
-              <span class="${winner === afcTeam ? 'score-win' : 'score-loss'}">${sbAfcScore}</span>
-              <span class="score-sep">-</span>
-              <span class="${winner === nfcTeam ? 'score-win' : 'score-loss'}">${sbNfcScore}</span>
-            </div>
-
-            <div class="team-capsule-wide ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${nfcInfo.color};">
-              <div class="tcw-left">
-                <span class="conf-tag-pill nfc">NFC</span>
-                <span class="sb-team-code-bold">${nfcTeam}</span>
-              </div>
-              ${winner === nfcTeam ? `
-                <span class="sb-crown-pill" title="${nfcTeam} Super Bowl Champion">
-                  <svg class="sb-crown-svg" viewBox="0 0 24 24"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>
-                </span>
-              ` : ''}
-            </div>
-          </div>
-        </div>
+        <!-- Championship Matchup Showcase Box (Universal Top Feature) -->
+        ${sbShowcaseBoxHtml}
 
         <!-- View Selector Buttons (Default to Playoff Picture) -->
         <div class="prophecy-view-selector">
