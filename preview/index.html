@@ -11,7 +11,7 @@
   <title>Sports Psychic - OG League</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=31.14">
+  <link rel="stylesheet" href="style.css?v=31.15">
   <link rel="icon" type="image/png" href="logo.png?v=3.2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.2">
 
@@ -22,40 +22,19 @@
 
   <!-- APP STICKY HEADER -->
   <header class="app-header">
-    <!-- Back to Lobby button (shown in League View) -->
-    <button id="btn-exit-league" class="btn-exit-league" onclick="exitToLobby()" aria-label="Back to Home Lobby" title="Exit to Lobby">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      <span>Home</span>
-    </button>
-
-    <div class="brand-row" onclick="handleBrandClick()" style="cursor: pointer;" title="Sports Psychic">
+    <div class="brand-row" onclick="switchTab('leaderboard')" style="cursor: pointer;" title="Back to Standings">
       <img src="logo.png?v=3.2" class="brand-logo" alt="Sports Psychic Logo" width="32" height="32">
       <div class="brand-text">
-        <h1 id="header-brand-title">Sports Psychic</h1>
-        <div class="subtext" id="header-brand-sub">Know the Game</div>
+        <h1 id="header-brand-title">OG League</h1>
+        <div class="subtext" id="header-brand-sub">Official Season Tracker</div>
       </div>
     </div>
 
     <div class="header-right-actions">
-      <!-- League Switcher (shown in League View) -->
-      <button id="btn-league-switcher" class="league-selector-btn" onclick="openLeagueDrawer()" aria-label="Switch League" title="Switch League">
-        <span id="header-active-league-pill">Home</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </button>
-
-      <!-- Profile Button (shown when Authenticated) -->
-      <button id="btn-header-profile" class="header-profile-btn" onclick="openProfileModal()" aria-label="Account Profile" title="Account Profile" style="display: none;">
+      <!-- Profile & Personalization Button (Always visible for OG League members) -->
+      <button id="btn-header-profile" class="header-profile-btn not-set" onclick="openProfileModal()" aria-label="Personalize profile" title="Personalize / Remember Me">
         <span class="header-profile-icon">👤</span>
-        <span class="header-profile-text">Account</span>
-      </button>
-
-      <!-- Sign In / Join Free Button (shown in Lobby Mode) -->
-      <button id="btn-header-signin" class="btn-header-signin" onclick="openAuthModal()" aria-label="Sign In or Join Free" title="Sign In or Join Free">
-        <span>Sign In</span>
+        <span class="header-profile-text">Profile</span>
       </button>
     </div>
   </header>
@@ -583,6 +562,18 @@
       </span>
       <span>Predictions</span>
     </button>
+    <button class="nav-item" data-tab="playoffs" aria-label="Playoff Brackets and Super Bowl Prophecies">
+      <span class="nav-icon">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 4h4v6H3" />
+          <path d="M3 14h4v6H3" />
+          <path d="M7 7h5v10H7" />
+          <path d="M12 12h5" />
+          <path d="M17 9l4 3-4 3V9z" />
+        </svg>
+      </span>
+      <span>Playoffs</span>
+    </button>
     <button class="nav-item" data-tab="players">
       <span class="nav-icon">
         <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -605,38 +596,36 @@
       </span>
       <span>NFL</span>
     </button>
-    <button class="nav-item" data-tab="playoffs" aria-label="Playoff Brackets and Super Bowl Prophecies">
-      <span class="nav-icon">
-        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 4h4v6H3" />
-          <path d="M3 14h4v6H3" />
-          <path d="M7 7h5v10H7" />
-          <path d="M12 12h5" />
-          <path d="M17 9l4 3-4 3V9z" />
-        </svg>
-      </span>
-      <span>Playoffs</span>
-    </button>
   </nav>
 
-  <!-- USER ACCOUNT PROFILE MODAL -->
+  <!-- USER PERSONALIZATION & SETTINGS MODAL -->
   <div id="profile-modal" class="profile-modal-backdrop" onclick="closeProfileModal(event)">
-    <div class="profile-modal-dialog profile-account-dialog" onclick="event.stopPropagation()">
+    <div class="profile-modal-dialog" onclick="event.stopPropagation()">
       <div class="profile-modal-header">
         <div class="profile-modal-title-row">
           <span class="profile-modal-icon">👤</span>
-          <h3 id="profile-modal-title">Account Profile</h3>
+          <h3 id="profile-modal-title">Personalize Your Profile</h3>
         </div>
         <button class="profile-modal-close" onclick="closeProfileModal()" aria-label="Close">&times;</button>
       </div>
 
-      <div id="profile-account-card" class="account-card-body">
-        <!-- Dynamically rendered by renderAccountProfileModal() -->
+      <p class="profile-modal-desc" style="color: var(--text-dim); font-size: 0.85rem; margin: 0 0 14px 0; line-height: 1.4;">
+        Select who you are on this device to highlight your picks across all games and jump straight to your scorecard.
+      </p>
+
+      <div id="profile-modal-grid" class="profile-modal-grid">
+        <!-- Rendered dynamically with 12 players -->
       </div>
 
-      <div class="profile-modal-footer">
-        <button type="button" id="btn-auth-signout" class="btn-auth-signout" onclick="handleSignOut()">Sign Out of Account</button>
-        <button class="btn-modal-done" onclick="closeProfileModal()">Close</button>
+      <div style="margin-top: 14px; text-align: center;">
+        <button type="button" class="btn-rules-preview" onclick="closeProfileModal(); openLeagueRulesModal();" style="width: 100%; padding: 10px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; color: #38bdf8; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>📜 Official Rules & Scoring</span>
+        </button>
+      </div>
+
+      <div class="profile-modal-footer" style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <button id="btn-clear-profile" class="btn-clear-profile" onclick="setMyPlayer(null)" style="background: none; border: 1px solid var(--border-subtle); color: var(--text-dim); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">Clear Profile (Guest)</button>
+        <button class="btn-modal-done" onclick="closeProfileModal()" style="background: var(--accent-blue); color: #fff; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-weight: 600;">Done</button>
       </div>
     </div>
   </div>
@@ -983,7 +972,7 @@
 
   <!-- EMBEDDED BASELINE DATA + CLIENT ENGINE -->
   <script src="data.js?v=7.2"></script>
-  <script src="playoffs_data.js?v=31.14"></script>
-  <script src="app.js?v=31.14"></script>
+  <script src="playoffs_data.js?v=31.15"></script>
+  <script src="app.js?v=31.15"></script>
 </body>
 </html>

@@ -526,31 +526,14 @@ function restoreNavState() {
   const validTabs = ["leaderboard", "matchups", "playoffs", "players", "nfl", "rules"];
   let restoredFromHash = false;
 
-  // 0. Determine App Mode (Lobby vs League)
-  let detectedMode = "lobby";
+  // 0. Locked strictly to OG League view (zero lobby/solo switching)
+  state.appMode = "league";
+  state.activeLeague = "OG League";
+  state.activeLeagueData = null;
   try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const rawHash = window.location.hash ? window.location.hash.replace(/^#/, "").trim() : "";
-    const savedMode = sessionStorage.getItem("sp_app_mode");
-
-    if (urlParams.get("mode") === "solo" || urlParams.get("league") === "solo" || rawHash.startsWith("solo") || savedMode === "solo") {
-      detectedMode = "solo";
-      state.activeLeague = "solo";
-    } else if (urlParams.has("league")) {
-      detectedMode = "league";
-      state.activeLeague = "OG League";
-    } else if (urlParams.get("tab") === "leaderboard" || urlParams.get("tab") === "players") {
-      detectedMode = "league";
-    } else if (rawHash.startsWith("leaderboard") || rawHash.startsWith("players") || rawHash.startsWith("league")) {
-      detectedMode = "league";
-    } else if (savedMode === "league") {
-      detectedMode = "league";
-    } else if (savedMode === "lobby") {
-      detectedMode = "lobby";
-    }
+    sessionStorage.setItem("sp_app_mode", "league");
+    sessionStorage.removeItem("sp_active_league_id");
   } catch (e) {}
-
-  state.appMode = detectedMode;
 
   // 1. Try URL Query Params (?tab=players&week=5&p=Jon)
   try {
@@ -5656,22 +5639,27 @@ function renderHeaderProfile() {
   const btn = document.getElementById("btn-header-profile");
   if (!btn) return;
 
-  if (state.authUser) {
-    const displayName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser.user_metadata && state.authUser.user_metadata.username) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Account");
+  if (state.myPlayer) {
     btn.className = "header-profile-btn has-user";
     btn.innerHTML = `
       <div class="header-profile-avatar-wrap">
-        ${getUserAvatarHtml(26)}
+        ${getPlayerAvatarHtml(state.myPlayer, 26)}
       </div>
       <div class="header-profile-text-wrap">
-        <span class="header-profile-name">${displayName}</span>
+        <span class="header-profile-name">${state.myPlayer}</span>
+        <span class="header-profile-tag">YOU</span>
       </div>
     `;
-    btn.title = `Signed in as ${state.authUser.email} (Click for Account Profile)`;
+    btn.title = `Remembered as ${state.myPlayer} (Tap to change)`;
     btn.style.display = "inline-flex";
   } else {
     btn.className = "header-profile-btn not-set";
-    btn.style.display = "none";
+    btn.innerHTML = `
+      <span class="header-profile-icon">👤</span>
+      <span class="header-profile-text">Set Me</span>
+    `;
+    btn.title = "Personalize: Choose your profile on this device";
+    btn.style.display = "inline-flex";
   }
 }
 
@@ -5911,10 +5899,77 @@ function renderAccountProfileModal() {
   `;
 }
 
+function renderProfileModalGrid() {
+  const grid = document.getElementById("profile-modal-grid");
+  if (!grid) return;
+
+  const lb = (typeof getSeasonLeaderboard === "function") ? getSeasonLeaderboard() : [];
+
+  grid.innerHTML = PLAYERS.map(pName => {
+    const isCurrent = Boolean(state.myPlayer && state.myPlayer === pName);
+    const playerRankObj = lb.find(p => p.name === pName) || { rankDisplay: "-", points: 0 };
+    const rankLabel = playerRankObj.rankDisplay ? (String(playerRankObj.rankDisplay).startsWith("T-") ? `T-#${String(playerRankObj.rankDisplay).slice(2)}` : `#${playerRankObj.rankDisplay}`) : "#-";
+    return `
+      <div class="profile-choice-card ${isCurrent ? "active" : ""}" onclick="setMyPlayer('${pName}')">
+        <div class="choice-avatar">
+          ${getPlayerAvatarHtml(pName, 40)}
+        </div>
+        <div class="choice-info">
+          <div class="choice-name">
+            <span>${pName}</span>
+            ${isCurrent ? `<span class="choice-current-badge">YOU</span>` : ""}
+          </div>
+          <div class="choice-stats">Rank ${rankLabel} • ${playerRankObj.points} PTS</div>
+        </div>
+        <div class="choice-action">
+          ${isCurrent ? `<span class="choice-check">✓</span>` : `<span class="choice-select-btn">Select</span>`}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const clearBtn = document.getElementById("btn-clear-profile");
+  if (clearBtn) {
+    clearBtn.style.display = state.myPlayer ? "inline-block" : "none";
+  }
+}
+
+function setMyPlayer(playerName) {
+  if (playerName && PLAYERS.includes(playerName)) {
+    state.myPlayer = playerName;
+    state.selectedPlayer = playerName;
+    try {
+      localStorage.setItem("og_league_my_player", playerName);
+    } catch (e) {
+      console.warn("Could not save to localStorage:", e);
+    }
+    showToast(`⭐ Remembered as ${playerName}! Your picks are highlighted.`);
+  } else {
+    state.myPlayer = null;
+    try {
+      localStorage.removeItem("og_league_my_player");
+    } catch (e) {
+      console.warn("Could not remove from localStorage:", e);
+    }
+    showToast("👤 Profile cleared (Browsing as Guest)");
+  }
+
+  closeProfileModal();
+  renderApp();
+}
+
+function toggleMyProfile(playerName) {
+  if (state.myPlayer === playerName) {
+    openProfileModal();
+  } else {
+    setMyPlayer(playerName);
+  }
+}
+
 function openProfileModal() {
   const modal = document.getElementById("profile-modal");
   if (!modal) return;
-  renderAccountProfileModal();
+  renderProfileModalGrid();
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
 }
@@ -6355,11 +6410,7 @@ function updateAppShellForMode() {
       const isOG = (state.activeLeague === "OG League");
       if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
       if (brandSub) {
-        if (isOG) {
-          brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('OG2026')" title="Click to copy invite code">🔑 OG2026</span>`;
-        } else {
-          brandSub.textContent = "SPORTS PSYCHIC";
-        }
+        brandSub.textContent = "Official Season Tracker";
       }
       if (activePill) {
         activePill.textContent = isOG ? "OG League" : (state.activeLeague || "League");
@@ -6396,24 +6447,7 @@ function enterLeagueView(leagueId = "OG League") {
     return;
   }
 
-  if (!state.authUser) {
-    showToast("🔮 Please sign in or create an account to enter leagues.");
-    openAuthModal("Sign in or create an account to access leagues");
-    return;
-  }
-
-  const ogLeagueRecord = (state.userLeagues || []).find(l => 
-    l.name === "OG League" || 
-    l.join_code === "OG2026" || 
-    l.id === "e0000000-0000-0000-0000-000000000001"
-  );
-
-  if (!isUserInOGLeague() && !ogLeagueRecord) {
-    showToast("⚠️ OG League is private to official members. Entering Solo Play.");
-    enterSoloPlay();
-    return;
-  }
-
+  // OG League is 100% open and view-only for all friends & family (zero sign-in required)
   state.activeLeagueData = null;
   state.appMode = "league";
   state.activeLeague = "OG League";
@@ -6433,7 +6467,6 @@ function enterLeagueView(leagueId = "OG League") {
   closeLeagueDrawer();
   updateAppShellForMode();
   switchTab("leaderboard");
-  showToast("🏆 Welcome to OG League!");
 }
 
 async function enterCustomLeague(leagueId) {
