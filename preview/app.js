@@ -5277,6 +5277,17 @@ function renderPlayoffsTab() {
     const nfcInfo = getTeamInfo(nfcTeam);
     const sbColors = resolveSuperBowlContainerColors(afcInfo, nfcInfo);
     const winner = p.superBowl?.winner || "";
+    let sbAfcScore = Number(p.superBowl?.afcScore || 0);
+    let sbNfcScore = Number(p.superBowl?.nfcScore || 0);
+    if (sbAfcScore === 0 && sbNfcScore === 0) {
+      if (winner === afcTeam) {
+        sbAfcScore = 20;
+        sbNfcScore = 17;
+      } else {
+        sbAfcScore = 17;
+        sbNfcScore = 20;
+      }
+    }
     const sbMvp = p.superBowl?.sbMvp || "TBD";
     const regMvp = p.regularSeasonMvp || "TBD";
     const playerKey = (p.name || id).toLowerCase().trim();
@@ -5411,7 +5422,7 @@ function renderPlayoffsTab() {
                 <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
               </div>
               <div class="sb-score-pod">
-                <span class="sb-score-number">${p.superBowl?.afcScore || 0}</span>
+                <span class="sb-score-number">${sbAfcScore}</span>
                 ${winner === afcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
               </div>
             </div>
@@ -5423,7 +5434,7 @@ function renderPlayoffsTab() {
                 <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
               </div>
               <div class="sb-score-pod">
-                <span class="sb-score-number">${p.superBowl?.nfcScore || 0}</span>
+                <span class="sb-score-number">${sbNfcScore}</span>
                 ${winner === nfcTeam ? '<span class="sb-champion-tag">👑 WINNER</span>' : ''}
               </div>
             </div>
@@ -5496,7 +5507,7 @@ function renderPlayoffsTab() {
             </div>
 
             <div class="sb-score-capsule-center">
-              ${p.superBowl?.afcScore || 0} - ${p.superBowl?.nfcScore || 0}
+              ${sbAfcScore} - ${sbNfcScore}
             </div>
 
             <div class="team-capsule-wide ${winner === nfcTeam ? 'is-winner' : ''}" style="border-left: 3px solid ${nfcInfo.color};">
