@@ -11076,7 +11076,18 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   color: var(--text-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.consensus-filter-hint {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #86efac;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }
 
 .consensus-chips-row {
@@ -11090,16 +11101,101 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.7rem;
   font-weight: 700;
   color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  font-family: inherit;
+  border: 1px solid transparent;
+}
+
+.consensus-chip:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+}
+
+.consensus-chip:active {
+  transform: translateY(0);
 }
 
 .consensus-chip strong {
   color: #ffffff;
   font-weight: 800;
+}
+
+.consensus-chip.is-active {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 1px;
+  box-shadow: 0 0 10px rgba(245, 184, 0, 0.45);
+  transform: scale(1.04);
+}
+
+.consensus-chip-all {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.consensus-chip-all.is-active {
+  background: var(--accent-gold);
+  color: #0b0f17 !important;
+  border-color: var(--accent-gold);
+  font-weight: 900;
+  outline: none;
+  box-shadow: 0 0 12px rgba(245, 184, 0, 0.45);
+}
+
+.consensus-chip-all.is-active strong {
+  color: #0b0f17 !important;
+}
+
+.consensus-chips-row.has-filter .consensus-chip:not(.is-active) {
+  opacity: 0.5;
+}
+
+.consensus-chips-row.has-filter .consensus-chip:not(.is-active):hover {
+  opacity: 0.85;
+}
+
+.consensus-filter-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(245, 184, 0, 0.12);
+  border: 1px solid rgba(245, 184, 0, 0.35);
+  border-radius: 6px;
+  font-size: 0.68rem;
+  color: #ffffff;
+}
+
+.consensus-filter-status strong {
+  color: var(--accent-gold);
+}
+
+.btn-clear-consensus-filter {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 0.64rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s ease;
+}
+
+.btn-clear-consensus-filter:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  color: #ff8585;
 }
 
 /* Points Value Guide */

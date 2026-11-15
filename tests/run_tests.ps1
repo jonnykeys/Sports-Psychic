@@ -1,4 +1,4 @@
-# Windows PowerShell Test Suite Runner for Sports Psychic
+﻿# Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (16 SUITES)' -ForegroundColor Cyan
@@ -320,8 +320,8 @@ Assert-Test ($awardedPointsPerTie -eq 10) 'Approach A awards full 10 PTS closest
 $indexHtmlContent = Get-Content -Raw 'apps/og-league/index.html'
 Assert-Test ($indexHtmlContent -match 'id="global-leaderboard-modal"') 'index.html defines #global-leaderboard-modal markup'
 Assert-Test ($appJsContent -match 'btn-solo-leaderboard') 'app.js renders .btn-solo-leaderboard'
-Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.29') 'index.html includes app.js?v=31.29 cache buster'
-Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.29') 'index.html includes style.css?v=31.29 cache buster'
+Assert-Test ($indexHtmlContent -match 'app\.js\?v=31\.30') 'index.html includes app.js?v=31.30 cache buster'
+Assert-Test ($indexHtmlContent -match 'style\.css\?v=31\.30') 'index.html includes style.css?v=31.30 cache buster'
 Assert-Test ($indexHtmlContent -notmatch 'Set Me') 'index.html contains no legacy Set Me text'
 Assert-Test ($indexHtmlContent -match 'Prove You Know the Game\.') 'index.html hero displays Prove You Know the Game'
 Assert-Test ($indexHtmlContent -match 'Make Your Picks') 'index.html hero button displays Make Your Picks'
@@ -871,6 +871,11 @@ $playoffsDataRaw = Get-Content -Raw 'apps/og-league/playoffs_data.js'
 Assert-Test ($playoffsDataRaw -notmatch '"afcScore":\s*0') 'playoffs_data.js contains zero blank/0 afcScore instances'
 Assert-Test ($playoffsDataRaw -notmatch '"nfcScore":\s*0') 'playoffs_data.js contains zero blank/0 nfcScore instances'
 Assert-Test ($appJsContent -match 'sb-champion-tag[\s\S]+?sb-score-number') 'app.js renders WINNER tag before score number for clean right alignment'
+Assert-Test ($appJsContent -match 'setPlayoffConsensusFilter') 'app.js defines setPlayoffConsensusFilter'
+Assert-Test ($appJsContent -match 'window\.setPlayoffConsensusFilter\s*=\s*setPlayoffConsensusFilter') 'app.js exports setPlayoffConsensusFilter to window'
+Assert-Test ($appJsContent -match 'clearPlayoffConsensusFilter') 'app.js defines clearPlayoffConsensusFilter'
+Assert-Test ($styleCssContent -match '\.consensus-chip\.is-active') 'style.css defines active highlight styling for consensus chips'
+Assert-Test ($styleCssContent -match '\.consensus-filter-status') 'style.css defines consensus filter status banner'
 
 $rawPl = [System.IO.File]::ReadAllText("$PWD/apps/og-league/playoffs_data.js")
 $idxStartPl = $rawPl.IndexOf('{')

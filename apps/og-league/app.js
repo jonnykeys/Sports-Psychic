@@ -5232,6 +5232,9 @@ function renderPlayoffsTab() {
     return rankA - rankB;
   });
 
+  // Active consensus filter
+  const activeFilter = state.playoffConsensusFilter || "";
+
   // Tally Super Bowl Winner Consensus
   const sbCounts = {};
   playerIds.forEach(id => {
@@ -5240,18 +5243,41 @@ function renderPlayoffsTab() {
   });
   const sortedSbTeams = Object.keys(sbCounts).sort((a, b) => sbCounts[b] - sbCounts[a]);
 
-  const consensusPills = sortedSbTeams.map(tm => {
+  // ALL Chip
+  const allChipHtml = `
+    <button type="button" class="consensus-chip consensus-chip-all ${!activeFilter ? 'is-active' : ''}" onclick="setPlayoffConsensusFilter('')">
+      ALL (${playerIds.length})
+    </button>
+  `;
+
+  const teamChipsHtml = sortedSbTeams.map(tm => {
     const info = getTeamInfo(tm);
     const count = sbCounts[tm];
+    const isActive = activeFilter === tm;
     return `
-      <span class="consensus-chip" style="border: 1px solid ${info.color}80; background: ${info.color}35; color: #ffffff;">
+      <button type="button" class="consensus-chip ${isActive ? 'is-active' : ''}" 
+              style="border: 1px solid ${info.color}${isActive ? 'ff' : '80'}; background: ${info.color}${isActive ? '65' : '35'};" 
+              onclick="setPlayoffConsensusFilter('${tm}')" 
+              title="Filter by ${info.name}">
         <strong style="color: #ffffff;">${tm}</strong> (${count})
-      </span>
+      </button>
     `;
   }).join("");
 
+  const consensusPills = allChipHtml + teamChipsHtml;
+
+  // Filter player IDs if consensus filter is active
+  const filteredPlayerIds = activeFilter ? playerIds.filter(id => data[id]?.superBowl?.winner === activeFilter) : playerIds;
+
+  const filterStatusHtml = activeFilter ? `
+    <div class="consensus-filter-status">
+      <span>Showing <strong>${filteredPlayerIds.length}</strong> player${filteredPlayerIds.length !== 1 ? 's' : ''} with <strong>${activeFilter}</strong> to win</span>
+      <button type="button" class="btn-clear-consensus-filter" onclick="setPlayoffConsensusFilter('')">Clear Filter &times;</button>
+    </div>
+  ` : "";
+
   // Render each player's prophecy card (Default to 'picture' to save space)
-  const cardsHtml = playerIds.map(id => {
+  const cardsHtml = filteredPlayerIds.map(id => {
     const p = data[id];
     const viewMode = (state.playoffCardViews && state.playoffCardViews[id]) || "picture";
     const afcTeam = p.superBowl?.afcTeam || "AFC";
@@ -5549,8 +5575,12 @@ function renderPlayoffsTab() {
 
     <!-- Consensus Ticker Bar -->
     <div class="playoffs-consensus-card">
-      <div class="consensus-title">Super Bowl Pick Consensus</div>
-      <div class="consensus-chips-row">${consensusPills}</div>
+      <div class="consensus-title">
+        <span>Super Bowl Pick Consensus</span>
+        <span class="consensus-filter-hint">${activeFilter ? 'Filtered' : 'Tap to filter'}</span>
+      </div>
+      <div class="consensus-chips-row ${activeFilter ? 'has-filter' : ''}">${consensusPills}</div>
+      ${filterStatusHtml}
     </div>
 
     ${rulesBannerHtml}
@@ -5560,6 +5590,22 @@ function renderPlayoffsTab() {
     </div>
   `;
 }
+
+function setPlayoffConsensusFilter(team) {
+  if (state.playoffConsensusFilter === team) {
+    state.playoffConsensusFilter = "";
+  } else {
+    state.playoffConsensusFilter = team;
+  }
+  renderPlayoffsTab();
+}
+window.setPlayoffConsensusFilter = setPlayoffConsensusFilter;
+
+function clearPlayoffConsensusFilter() {
+  state.playoffConsensusFilter = "";
+  renderPlayoffsTab();
+}
+window.clearPlayoffConsensusFilter = clearPlayoffConsensusFilter;
 
 function setPlayerPlayoffViewMode(playerId, viewMode) {
   state.playoffCardViews = state.playoffCardViews || {};
