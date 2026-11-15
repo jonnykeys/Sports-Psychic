@@ -1,7 +1,7 @@
 # Sports Psychic — Competitive Sports Forecasting Platform
 
 [![CI](https://github.com/jonnykeys/Sports-Psychic/actions/workflows/test.yml/badge.svg)](https://github.com/jonnykeys/Sports-Psychic/actions)
-[![Automated Tests](https://img.shields.io/badge/tests-6%20suites%20passing-brightgreen.svg)](tests/)
+[![Automated Tests](https://img.shields.io/badge/tests-17%20suites%20%7C%20347%20passing-brightgreen.svg)](tests/)
 [![Architecture](https://img.shields.io/badge/architecture-decoupled%20engine%20%7C%20PWA-blue.svg)](docs/ARCHITECTURE.md)
 [![Database](https://img.shields.io/badge/database-Supabase%20%7C%20PostgreSQL%20RLS-3ECF8E.svg)](database/)
 [![Live Scoreboard](https://img.shields.io/badge/live%20ingestion-ESPN%20Scoreboard%20REST%20API-CC0000.svg)](https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard)
@@ -14,7 +14,7 @@
 ## 🚀 Live Applications
 
 * **Production (OG League Live)**: [https://jonnykeys.github.io/Sports-Psychic/](https://jonnykeys.github.io/Sports-Psychic/)
-* **Next-Gen App Preview (v15+)**: [https://jonnykeys.github.io/Sports-Psychic/preview](https://jonnykeys.github.io/Sports-Psychic/preview)
+* **Next-Gen App Preview (v31+)**: [https://jonnykeys.github.io/Sports-Psychic/preview/](https://jonnykeys.github.io/Sports-Psychic/preview/)
 
 ---
 
@@ -169,7 +169,7 @@ Sports Psychic/
 │       └── teams.js          # 32-Team Directory, Colors, Logos & Abbreviation Normalizer
 ├── tests/
 │   ├── run.js                # Zero-dependency Node.js test runner (6 suites)
-│   ├── run_tests.ps1         # Native Windows PowerShell test runner (24 assertions)
+│   ├── run_tests.ps1         # Native Windows PowerShell test runner (17 suites, 347 assertions)
 │   ├── scoring.test.js       # Core scoring, multipliers & tie-breaker assertions
 │   ├── dates.test.js         # Schedule boundaries, rollover & lockout assertions
 │   ├── teams.test.js         # 32-team metadata & normalization assertions

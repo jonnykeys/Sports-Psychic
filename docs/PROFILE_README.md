@@ -35,4 +35,3 @@ An offline-resilient, real-time Progressive Web Application (PWA) for competitiv
 ### 📬 Connect With Me
 
 * **GitHub**: [@jonnykeys](https://github.com/jonnykeys)
-* **Email**: [jonnylcolbert@gmail.com](mailto:jonnylcolbert@gmail.com)

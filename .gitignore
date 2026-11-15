@@ -2,6 +2,16 @@
 node_modules/
 package-lock.json
 
+# Environment & Secret Files
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.cert
+*.p12
+*.pfx
+
 # Binary Office & Spreadsheets
 *.xlsx
 *.xls
