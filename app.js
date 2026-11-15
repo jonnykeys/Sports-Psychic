@@ -1,36 +1,12 @@
 /**
- * OG LEAGUE LIVE - Standalone View-Only Mobile Engine
- * Real-time sync with Google Sheets, mobile navigation, week switching,
+ * SPORTS PSYCHIC - Unified Engine & Multi-League Platform
+ * Real-time sync with ESPN Scoreboard & Standings API, Supabase Cloud Storage,
  * player scorecards, live standings, split matchups, and closest score bonus calculations.
  */
 
 // =========================================================
 // CONFIGURATION & CONSTANTS
 // =========================================================
-const SPREADSHEET_ID = "1BkP2oqUWAo5U8b0AItv5Y6kR8kttj3jREvmkx9Sk8B4";
-
-const WEEK_GIDS = {
-  1: "0",
-  2: "1638561232",
-  3: "1384709317",
-  4: "2071520596",
-  5: "1478203859",
-  6: "2011037307",
-  7: "1916327315",
-  8: "1228224528",
-  9: "104523996",
-  10: "1729015843",
-  11: "1716385848",
-  12: "1546765721",
-  13: "405391307",
-  14: "671043818",
-  15: "1109040338",
-  16: "62232532",
-  17: "297779354",
-  18: "657231217"
-};
-
-const NFL_STANDINGS_GID = "497949847";
 
 /**
  * Official 2026 NFL Regular Season Week Start Dates.
@@ -85,6 +61,37 @@ function getCurrentNFLWeek(d = new Date()) {
   return Math.min(18, Math.max(1, week));
 }
 
+/**
+ * Checks if every single game in a given NFL week is locked for predictions
+ * (e.g. on Monday night once Monday Night Football kicks off).
+ */
+function isWeekFullyLocked(weekNum) {
+  const w = parseInt(weekNum, 10);
+  if (isNaN(w) || w < 1 || w > 18) return true;
+  const weekKey = `Week ${w}`;
+  let games = (state && state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
+    ? state.data.weeks[weekKey].games
+    : null;
+  if (!games && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+    games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games;
+  }
+  if (!games || !Array.isArray(games) || games.length === 0) return false;
+  return games.every(g => isGameLockedForPicking(g, w));
+}
+
+/**
+ * Returns the open prediction week for the Home/Lobby view.
+ * If all games in the current NFL week are locked (e.g. after Monday Night Football),
+ * it advances to the upcoming week so visitors and guests immediately see open games.
+ */
+function getOpenPredictionWeek() {
+  const currentNFL = getCurrentNFLWeek();
+  if (currentNFL < 18 && isWeekFullyLocked(currentNFL)) {
+    return currentNFL + 1;
+  }
+  return currentNFL;
+}
+
 // 12 Players in exact spreadsheet column sequence (Jon at Col 6 / 0-indexed)
 const PLAYERS = [
   "Jon", "Alisha", "Carson", "Nok", "Mango", "Caleb",
@@ -136,6 +143,33 @@ function getPlayerAvatarHtml(playerName, size = 36) {
     return `
       <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border: ${borderWidth}px solid ${color}; box-shadow: ${shadow};">
         <img src="${avatarUrl}" alt="${playerName}" class="player-avatar-img" onerror="this.parentElement.classList.remove('has-photo'); this.remove();" />
+        <span class="player-avatar-fallback" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(9, Math.round(size * 0.42))}px;">${initial}</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="player-avatar" style="width:${size}px; height:${size}px; min-width:${size}px; background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(9, Math.round(size * 0.42))}px; border:${borderWidth}px solid ${color};">
+      ${initial}
+    </div>
+  `;
+}
+
+function getUserAvatarHtml(size = 28) {
+  if (state.myPlayer && PLAYER_AVATARS[state.myPlayer]) {
+    return getPlayerAvatarHtml(state.myPlayer, size);
+  }
+  const photo = state.userProfile?.avatar_url || (state.authUser?.user_metadata && state.authUser.user_metadata.avatar_url);
+  const displayName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser?.user_metadata && state.authUser.user_metadata.username) || (state.authUser?.email ? state.authUser.email.split("@")[0] : "?");
+  const initial = displayName ? displayName.charAt(0).toUpperCase() : "?";
+  const color = "var(--accent-blue)";
+  const borderWidth = size <= 28 ? 1.5 : 2.5;
+  const shadow = `0 1px 4px rgba(0, 0, 0, 0.4)`;
+
+  if (photo) {
+    return `
+      <div class="player-avatar has-photo" style="width:${size}px; height:${size}px; min-width:${size}px; border: ${borderWidth}px solid ${color}; box-shadow: ${shadow};">
+        <img src="${photo}" alt="${displayName}" class="player-avatar-img" onerror="this.parentElement.classList.remove('has-photo'); this.remove();" />
         <span class="player-avatar-fallback" style="background: linear-gradient(135deg, ${color} 0%, #182337 100%); font-size:${Math.max(9, Math.round(size * 0.42))}px;">${initial}</span>
       </div>
     `;
@@ -265,14 +299,108 @@ function normalizeTeamCode(code) {
   return TEAM_ALIASES[cleaned] || cleaned;
 }
 
+/**
+ * Resolves full team metadata, styling colors, and contrast text for any team code or alias.
+ */
+function getTeamInfo(code) {
+  if (!code) return { code: "", name: "", city: "", color: "#2a3b50", alt: "#2a3b50", textColor: "#ffffff" };
+  const norm = normalizeTeamCode(code);
+  const info = (typeof NFL_TEAMS !== "undefined" && (NFL_TEAMS[norm] || NFL_TEAMS[code]))
+    ? (NFL_TEAMS[norm] || NFL_TEAMS[code])
+    : { code, name: code, city: code, color: "#2a3b50", alt: "#2a3b50" };
+  const textColor = getTeamContrastColor(info.color || "#2a3b50");
+  return {
+    code: info.code || norm || code,
+    name: info.name || code,
+    city: info.city || info.name || code,
+    color: info.color || "#2a3b50",
+    alt: info.alt || info.color || "#2a3b50",
+    textColor: textColor
+  };
+}
+
+/**
+ * Calculates 360-degree color wheel hue from a hex color string.
+ */
+function getHueFromHex(hex) {
+  if (!hex || typeof hex !== "string") return 0;
+  const clean = hex.replace("#", "");
+  const bigint = parseInt(clean, 16);
+  if (isNaN(bigint)) return 0;
+  const r = ((bigint >> 16) & 255) / 255.0;
+  const g = ((bigint >> 8) & 255) / 255.0;
+  const b = (bigint & 255) / 255.0;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  if (d === 0) return 0;
+  let h = 0;
+  if (max === r) {
+    h = (g - b) / d;
+    if (g < b) h += 6;
+  } else if (max === g) {
+    h = ((b - r) / d) + 2;
+  } else {
+    h = ((r - g) / d) + 4;
+  }
+  h = Math.round(h * 60);
+  if (h >= 360) h -= 360;
+  return h;
+}
+
+/**
+ * Detects whether two team colors clash by checking if they share the same
+ * hue family on the color wheel within 28 degrees (e.g. Bills Blue vs Rams Blue = 1 deg).
+ */
+function doTeamColorsClash(hex1, hex2) {
+  if (!hex1 || !hex2) return false;
+  const h1 = getHueFromHex(hex1);
+  const h2 = getHueFromHex(hex2);
+  let diff = Math.abs(h1 - h2);
+  if (diff > 180) diff = 360 - diff;
+  return diff < 28;
+}
+
+/**
+ * Resolves dual-team colors for the Super Bowl container:
+ * If colors clash (e.g. Bills Blue vs Rams Blue), switch NFC to a vibrant alternate
+ * (e.g. Rams Sol Gold #FFA300 or 49ers Gold #B3995D).
+ * Otherwise keep both in their authentic primary colors (e.g. Ravens Purple vs Eagles Green).
+ */
+function resolveSuperBowlContainerColors(afcInfo, nfcInfo) {
+  const afcPrimary = afcInfo?.color || "#00338D";
+  const nfcPrimary = nfcInfo?.color || "#003594";
+  const isClash = doTeamColorsClash(afcPrimary, nfcPrimary);
+
+  let afcFinal = afcPrimary;
+  let nfcFinal = nfcPrimary;
+
+  if (isClash) {
+    if (nfcInfo?.alt && nfcInfo.alt !== "#000000" && nfcInfo.alt !== "#A5ACAF" && nfcInfo.alt !== "#B0B7BC") {
+      nfcFinal = nfcInfo.alt;
+    } else if (afcInfo?.alt && afcInfo.alt !== "#000000" && afcInfo.alt !== "#A5ACAF" && afcInfo.alt !== "#B0B7BC") {
+      afcFinal = afcInfo.alt;
+    } else {
+      nfcFinal = nfcInfo?.alt || nfcPrimary;
+    }
+  }
+
+  return {
+    afc: afcFinal,
+    nfc: nfcFinal,
+    isClash: isClash
+  };
+}
+
 // =========================================================
 // APPLICATION STATE
 // =========================================================
-const SAVED_USER_KEY = "og_league_my_player";
-const CACHE_KEY = "og_league_cache_v10";
+const IS_PREVIEW = typeof window !== "undefined" && window.location.pathname.includes("/preview");
+const SAVED_USER_KEY = IS_PREVIEW ? "sp_preview_my_player" : "og_league_my_player";
+const CACHE_KEY = IS_PREVIEW ? "sp_preview_cache_v2" : "og_league_cache_v10";
 let initialSavedPlayer = null;
 try {
-  const stored = localStorage.getItem(SAVED_USER_KEY);
+  const stored = localStorage.getItem(SAVED_USER_KEY) || localStorage.getItem("og_league_my_player");
   if (stored && PLAYERS.includes(stored)) {
     initialSavedPlayer = stored;
   }
@@ -280,7 +408,27 @@ try {
   console.warn("localStorage unavailable:", e);
 }
 
+// Supabase Cloud Project Configuration (Live Production Engine)
+const SUPABASE_CONFIG = {
+  url: "https://linfhswrpzoniajhzssd.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpbmZoc3dycHpvbmlhamh6c3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzMjk4NzUsImV4cCI6MjEwNjkwNTg3NX0.E8Hszna2tKhrzNItZlw9N0PWlHD8DyBsKKj8ja6hKx0"
+};
+let supabaseClient = null;
+
+function initSupabaseClient() {
+  if (typeof window !== "undefined" && window.supabase && !supabaseClient) {
+    try {
+      supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    } catch (e) {
+      console.warn("Error initializing Supabase client:", e);
+    }
+  }
+  return supabaseClient;
+}
+
 let state = {
+  appMode: "league", // "league" | "lobby"
+  activeLeague: "OG League", // "OG League" | "solo"
   currentWeek: getCurrentNFLWeek(),
   myPlayer: initialSavedPlayer,
   selectedPlayer: initialSavedPlayer || "Caleb",
@@ -296,7 +444,19 @@ let state = {
   nflStandings: null,
   collapsedMatchups: new Set(),
   playerPicksFilter: "all", // "all" | "upcoming" | "live" | "final"
-  matchupsFilter: "all"     // "all" | "upcoming" | "live" | "final"
+  matchupsFilter: "all",    // "all" | "upcoming" | "live" | "final"
+  authUser: null,           // Authenticated Supabase user object
+  userProfile: null,        // Profile record from public.profiles
+  cloudStandings: null,     // Live Standings directly from Supabase view public.league_standings
+  pickSheets: [],           // User's custom Solo Play Pick Sheets
+  activeSheetId: null,      // Active Pick Sheet selected for viewing/editing
+  createSheetFormat: "season", // Format option in create sheet modal
+  userLeagues: [],          // Custom leagues user owns or is a member of
+  activeLeagueData: null,   // Full league record if active league is custom
+  customLeagueMembers: [],  // Roster of members in active custom league
+  customLeaguePicks: {},    // Picks submitted by members in active custom league
+  myCustomLeaguePicks: {},  // Current user's picks in active custom league: { [gameId]: { winner, awayScore, homeScore, multiplier } }
+  createLeagueScoring: "classic_proximity" // Scoring option in create league modal
 };
 
 // Navigation state persistence key for sessionStorage
@@ -308,6 +468,8 @@ const NAV_STATE_KEY = "og_league_nav_state";
 function saveNavState() {
   try {
     const nav = {
+      appMode: state.appMode,
+      activeLeague: state.activeLeague,
       activeTab: state.activeTab,
       currentWeek: state.currentWeek,
       leaderboardMode: state.leaderboardMode,
@@ -318,6 +480,7 @@ function saveNavState() {
       h2hFilter: state.h2hFilter
     };
     sessionStorage.setItem(NAV_STATE_KEY, JSON.stringify(nav));
+    sessionStorage.setItem("sp_app_mode", state.appMode);
   } catch (e) {
     // sessionStorage unavailable in private mode or quota exceeded
   }
@@ -360,10 +523,44 @@ function syncUrlHash() {
  * Restores navigation snapshot from URL hash or sessionStorage.
  */
 function restoreNavState() {
-  const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
+  const validTabs = ["leaderboard", "matchups", "playoffs", "players", "nfl", "rules"];
   let restoredFromHash = false;
 
-  // 1. Try URL Hash first
+  // 0. Locked strictly to OG League view (zero lobby/solo switching)
+  state.appMode = "league";
+  state.activeLeague = "OG League";
+  state.activeLeagueData = null;
+  try {
+    sessionStorage.setItem("sp_app_mode", "league");
+    sessionStorage.removeItem("sp_active_league_id");
+  } catch (e) {}
+
+  // 1. Try URL Query Params (?tab=players&week=5&p=Jon)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("tab")) {
+      const qTab = urlParams.get("tab");
+      if (validTabs.includes(qTab)) {
+        state.activeTab = qTab;
+        restoredFromHash = true;
+      }
+    }
+    if (urlParams.has("week")) {
+      const w = parseInt(urlParams.get("week"), 10);
+      if (w >= 1 && w <= 18) state.currentWeek = w;
+    }
+    if (urlParams.has("p") && PLAYERS.includes(urlParams.get("p"))) {
+      state.selectedPlayer = urlParams.get("p");
+    }
+    if (urlParams.has("drawer") && urlParams.get("drawer") === "1") {
+      setTimeout(() => openLeagueDrawer(), 100);
+    }
+    if (urlParams.has("auth") && urlParams.get("auth") === "1") {
+      setTimeout(() => openAuthModal(), 100);
+    }
+  } catch (e) {}
+
+  // 2. Try URL Hash
   try {
     const rawHash = window.location.hash ? window.location.hash.replace(/^#/, "").trim() : "";
     if (rawHash) {
@@ -413,7 +610,11 @@ function restoreNavState() {
           state.activeTab = nav.activeTab;
         }
         if (typeof nav.currentWeek === "number" && nav.currentWeek >= 1 && nav.currentWeek <= 18) {
-          state.currentWeek = nav.currentWeek;
+          if (state.appMode === "lobby" && !restoredFromHash && isWeekFullyLocked(nav.currentWeek)) {
+            state.currentWeek = getOpenPredictionWeek();
+          } else {
+            state.currentWeek = nav.currentWeek;
+          }
         }
         if (nav.leaderboardMode === "season" || nav.leaderboardMode === "weekly") {
           state.leaderboardMode = nav.leaderboardMode;
@@ -451,6 +652,17 @@ function restoreNavState() {
       state.h2hPlayerB = (state.myPlayer && state.myPlayer !== state.h2hPlayerA)
         ? state.myPlayer
         : (PLAYERS.find(p => p !== state.h2hPlayerA) || PLAYERS[1]);
+    }
+  }
+
+  // Default tab based on appMode
+  if (state.appMode === "lobby") {
+    if (state.activeTab !== "nfl" && state.activeTab !== "rules") {
+      state.activeTab = "matchups";
+    }
+  } else {
+    if (!state.activeTab) {
+      state.activeTab = "leaderboard";
     }
   }
 }
@@ -567,6 +779,11 @@ function calculateGamePicksPoints(game) {
   const tieCount = closestPickers.length;
   const isExact = (minDiff === 0);
 
+  // League setting: check if active league has custom tie-rule. Default is true (OG League spreadsheet standard: halving ties)
+  const isSplitTies = (state.activeLeagueData && state.activeLeagueData.settings && state.activeLeagueData.settings.tie_rule === "full_ties")
+    ? false
+    : true;
+
   // 3. Award base points + closest / exact bonus points
   PLAYERS.forEach(pName => {
     const pk = game.picks[pName];
@@ -582,12 +799,12 @@ function calculateGamePicksPoints(game) {
         pk.isClosest = true;
         if (isExact) {
           pk.exact = true;
-          const bonusPool = (tieCount > 1) ? 25 : 50;
-          bonusPoints = bonusPool * mult;
+          const exactBonus = (isSplitTies && tieCount > 1) ? 25 : 50;
+          bonusPoints = exactBonus * mult;
         } else {
           pk.exact = false;
-          const bonusPool = (tieCount > 1) ? 5 : 10;
-          bonusPoints = bonusPool * mult;
+          const closestBonus = (isSplitTies && tieCount > 1) ? 5 : 10;
+          bonusPoints = closestBonus * mult;
         }
       }
 
@@ -611,8 +828,19 @@ function calculateGamePicksPoints(game) {
 function computeSeasonLeaderboard(dataObj, throughWeek = null) {
   const data = dataObj || state.data;
   const maxW = (throughWeek !== null && throughWeek !== undefined) ? throughWeek : 18;
+
+  // Build cloud standings lookup if available and viewing full season
+  const cloudMap = {};
+  if (state.cloudStandings && Array.isArray(state.cloudStandings) && (throughWeek === null || throughWeek >= 18)) {
+    state.cloudStandings.forEach(row => {
+      if (row.player_name && typeof row.total_points === "number") {
+        cloudMap[row.player_name] = row.total_points;
+      }
+    });
+  }
+
   const list = PLAYERS.map(pName => {
-    let totalPts = 0;
+    let gamesPts = 0;
     if (data && data.weeks) {
       for (let w = 1; w <= maxW; w++) {
         const week = data.weeks[`Week ${w}`];
@@ -620,12 +848,15 @@ function computeSeasonLeaderboard(dataObj, throughWeek = null) {
           week.games.forEach(g => {
             const pk = g.picks ? g.picks[pName] : null;
             if (pk && typeof pk.points === "number") {
-              totalPts += pk.points;
+              gamesPts += pk.points;
             }
           });
         }
       }
     }
+
+    // Dynamic gamesPts computed from the verified league rules is authoritative for the league view
+    const totalPts = (gamesPts > 0 || cloudMap[pName] === undefined) ? gamesPts : cloudMap[pName];
 
     return {
       name: pName,
@@ -841,13 +1072,14 @@ function getNFLTeamRecord(teamCode, targetWeek = null) {
 // INITIALIZATION
 // =========================================================
 document.addEventListener("DOMContentLoaded", () => {
-  initData();
   restoreNavState();
+  initData();
   setupNavigation();
   setupWeekStrip();
   setupRefresh();
   setupPullToRefresh();
   renderApp();
+  initSupabaseAuth();
   
   // Background live sync
   syncWeek(state.currentWeek).then(() => {
@@ -917,6 +1149,7 @@ function initData() {
     localStorage.removeItem("og_league_cache_v6");
     localStorage.removeItem("og_league_cache_v8");
     localStorage.removeItem("og_league_cache_v9");
+    localStorage.removeItem("sp_preview_cache_v1");
   } catch (e) {}
 
   const cached = localStorage.getItem(CACHE_KEY);
@@ -941,8 +1174,16 @@ function initData() {
     } catch (e) {}
   }
 
-  // Default to current NFL week based on Wednesday rollover schedule
-  state.currentWeek = getCurrentNFLWeek();
+  // Default week based on app mode:
+  // - League mode: stays on getCurrentNFLWeek() (Wednesday rollover) so members see post-MNF standings & outcomes
+  // - Lobby / Home mode: advances to getOpenPredictionWeek() as soon as last game locks so guests/visitors can make picks
+  const leagueWk = getCurrentNFLWeek();
+  const openWk = getOpenPredictionWeek();
+  if (state.appMode === "league") {
+    state.currentWeek = leagueWk;
+  } else {
+    state.currentWeek = openWk;
+  }
 
   if (state.data) {
     state.data.activeWeek = `Week ${state.currentWeek}`;
@@ -957,7 +1198,8 @@ function initData() {
 
   // Restore cached NFL standings if available
   try {
-    const cachedStandings = localStorage.getItem("og_league_nfl_standings");
+    const STANDINGS_CACHE_KEY = IS_PREVIEW ? "sp_preview_nfl_standings" : "og_league_nfl_standings";
+    const cachedStandings = localStorage.getItem(STANDINGS_CACHE_KEY);
     if (cachedStandings) {
       state.nflStandings = JSON.parse(cachedStandings);
     }
@@ -983,9 +1225,30 @@ function setupNavigation() {
 }
 
 function switchTab(tabId, smoothScroll = true) {
-  const validTabs = ["leaderboard", "matchups", "players", "nfl", "rules"];
-  if (!validTabs.includes(tabId)) tabId = "leaderboard";
+  // If rules is requested directly, open the rules modal
+  if (tabId === "rules") {
+    openLeagueRulesModal();
+    return;
+  }
+
+  const validTabs = ["leaderboard", "matchups", "playoffs", "players", "nfl"];
+  if (!validTabs.includes(tabId)) {
+    tabId = state.appMode === "lobby" ? "matchups" : "leaderboard";
+  }
+
+  // In lobby mode, clicking Standings opens the official Global Leaderboard modal
+  if (state.appMode === "lobby" && tabId === "leaderboard") {
+    openGlobalLeaderboardModal("season");
+    return;
+  }
+
+  // In lobby mode, Players tab is restricted to private league view
+  if (state.appMode === "lobby" && tabId === "players") {
+    tabId = "matchups";
+  }
+
   state.activeTab = tabId;
+  document.body.setAttribute("data-active-tab", tabId);
   closeWeekDropdown();
   
   // Update nav buttons
@@ -1003,6 +1266,11 @@ function switchTab(tabId, smoothScroll = true) {
   }
   renderTabContent();
   saveNavState();
+
+  // If opening playoffs tab from home/lobby, prompt user to select a league
+  if (state.appMode === "lobby" && tabId === "playoffs") {
+    openLeagueDrawer();
+  }
 
   // If opening NFL standings tab, ensure live records are fresh
   if (tabId === "nfl") {
@@ -1044,10 +1312,17 @@ function getWeekStatusInfo(w) {
     return { label: "Live", type: "live", isLive: true };
   }
 
+  const openWk = getOpenPredictionWeek();
+
   if (w === currentNFL) {
+    if (isWeekFullyLocked(w)) {
+      return { label: "Final", type: "final", isLive: false };
+    }
     return { label: "Current Week", type: "current", isLive: false };
   } else if (w < currentNFL) {
     return { label: "Final", type: "final", isLive: false };
+  } else if (w === openWk && openWk > currentNFL) {
+    return { label: "Open for Picks", type: "open", isLive: false };
   } else {
     return { label: getWeekDateLabel(w), type: "upcoming", isLive: false };
   }
@@ -1220,6 +1495,8 @@ function updateStripButtons() {
       badgeEl.innerHTML = `<span class="pulse-dot"></span><span id="week-badge-text">LIVE</span>`;
     } else if (status.type === "current") {
       badgeEl.innerHTML = `<span id="week-badge-text">CURRENT WEEK</span>`;
+    } else if (status.type === "open") {
+      badgeEl.innerHTML = `<span class="open-dot"></span><span id="week-badge-text">OPEN FOR PICKS</span>`;
     } else if (status.type === "final") {
       badgeEl.innerHTML = `<span id="week-badge-text">FINAL</span>`;
     } else {
@@ -1324,6 +1601,7 @@ async function triggerScoresRefresh() {
       indicator.classList.remove("is-success");
       indicator.style.transform = "";
       indicator.style.opacity = "";
+      indicator.style.visibility = "";
       isScoresRefreshing = false;
       if (refreshBtn) refreshBtn.classList.remove("spinning");
     }, 700);
@@ -1392,6 +1670,7 @@ function setupPullToRefresh() {
       isTracking = false;
       indicator.style.transform = "";
       indicator.style.opacity = "";
+      indicator.style.visibility = "";
       indicator.classList.remove("is-pulling", "is-ready");
       return;
     }
@@ -1428,6 +1707,7 @@ function setupPullToRefresh() {
     } else {
       indicator.style.transform = "";
       indicator.style.opacity = "";
+      indicator.style.visibility = "";
     }
   }, { passive: true });
 }
@@ -1485,6 +1765,113 @@ function formatEspnGameTime(event) {
     return formatQuarterStatus(event.status.type.shortDetail.replace(" - ", " • "));
   }
   return "";
+}
+
+/**
+ * Normalizes ESPN broadcast names to a clean, uppercase TV network badge (FOX, CBS, NBC, PRIME, ESPN, etc.)
+ */
+function getGameBroadcast(game) {
+  if (!game) return "";
+  let raw = (game.broadcast || "").toString().trim().toUpperCase();
+
+  // If not in game.broadcast, check dateTime hints like (TNF), (SNF), (MNF), (INTL)
+  if (!raw && game.dateTime) {
+    const dt = game.dateTime.toUpperCase();
+    if (dt.includes("(TNF)")) return "PRIME";
+    if (dt.includes("(SNF)")) return "NBC";
+    if (dt.includes("(MNF)")) return "ESPN";
+    if (dt.includes("(INTL)")) return "NFLN";
+  }
+
+  if (!raw) return "";
+
+  if (raw.includes("PRIME") || raw.includes("AMAZON")) return "PRIME";
+  if (raw.includes("FOX")) return "FOX";
+  if (raw.includes("CBS")) return "CBS";
+  if (raw.includes("NBC")) return "NBC";
+  if (raw.includes("ESPN")) return "ESPN";
+  if (raw.includes("NFL NET") || raw.includes("NFLN")) return "NFLN";
+  if (raw.includes("NETFLIX")) return "NETFLIX";
+  if (raw.includes("PEACOCK")) return "PEACOCK";
+  if (raw.includes("ABC")) return "ABC";
+
+  // First word or first 8 chars fallback
+  const firstWord = raw.split(/[\s,/]+/)[0];
+  return firstWord.length <= 8 ? firstWord : firstWord.substring(0, 8);
+}
+
+/**
+ * Formats game spread and over/under betting lines cleanly
+ */
+function getGameOdds(game) {
+  if (!game) return { spread: "", ou: "" };
+  let spread = (game.spread || "").toString().trim();
+  let ou = "";
+  if (game.overUnder !== undefined && game.overUnder !== null && game.overUnder !== "") {
+    const rawOu = game.overUnder.toString().trim();
+    ou = rawOu.toUpperCase().startsWith("O/U") ? rawOu : `O/U ${rawOu}`;
+  }
+  return { spread, ou };
+}
+
+const WIN_PROB_CACHE = new Map();
+
+/**
+ * Fetches real-time live win probability from ESPN event summary
+ */
+async function fetchLiveGameWinProbability(game, espnEventId) {
+  if (!espnEventId || !game) return null;
+  const now = Date.now();
+  const cached = WIN_PROB_CACHE.get(espnEventId);
+  if (cached && (now - cached.timestamp < 30000)) {
+    game.winProbability = cached.data;
+    return cached.data;
+  }
+
+  try {
+    const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${espnEventId}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || !Array.isArray(data.winprobability) || data.winprobability.length === 0) return null;
+
+    const latest = data.winprobability[data.winprobability.length - 1];
+    if (latest && typeof latest.homeWinPercentage === "number") {
+      let homePct = Math.round(latest.homeWinPercentage * 1000) / 10;
+      if (homePct <= 0 && game.isLive) homePct = 0.1;
+      if (homePct >= 100 && game.isLive) homePct = 99.9;
+      const awayPct = Math.round((100 - homePct) * 10) / 10;
+      const probData = {
+        homePct,
+        awayPct,
+        playId: latest.playId || "",
+        updatedAt: now
+      };
+      game.winProbability = probData;
+      WIN_PROB_CACHE.set(espnEventId, { data: probData, timestamp: now });
+      return probData;
+    }
+  } catch (e) {
+    // Non-blocking telemetry
+  }
+  return null;
+}
+
+/**
+ * Gets live win probability (ESPN real-time data with smooth game situation fallback)
+ */
+function getGameWinProbability(game, awayTeam, homeTeam) {
+  if (!game) return null;
+  if (game.winProbability && typeof game.winProbability.homePct === "number") {
+    return game.winProbability;
+  }
+  if (game.isLive && game.awayScore !== null && game.homeScore !== null) {
+    const diff = (game.homeScore || 0) - (game.awayScore || 0);
+    let homePct = Math.min(95, Math.max(5, 50 + diff * 5));
+    homePct = Math.round(homePct * 10) / 10;
+    const awayPct = Math.round((100 - homePct) * 10) / 10;
+    return { homePct, awayPct, isEstimated: true };
+  }
+  return null;
 }
 
 /**
@@ -1553,10 +1940,45 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       const stateCode = (statusType.state || "").toLowerCase(); // "pre" | "in" | "post"
       const shortDetail = statusType.shortDetail || "";
 
+      // Store official ESPN event ID
+      if (matchedEvent.id) {
+        game.espnEventId = matchedEvent.id;
+      }
+
       // Prioritize ESPN official kickoff date & time for real-time accuracy
+      if (matchedEvent.date) {
+        game.kickoffTime = matchedEvent.date;
+      }
       const espnFormattedTime = formatEspnGameTime(matchedEvent);
       if (espnFormattedTime) {
         game.dateTime = espnFormattedTime;
+      }
+
+      // Extract official TV broadcast network
+      let broadcast = "";
+      if (comp.broadcast) {
+        broadcast = comp.broadcast;
+      } else if (comp.broadcasts && comp.broadcasts[0]) {
+        const bObj = comp.broadcasts[0];
+        if (Array.isArray(bObj.names) && bObj.names.length > 0) {
+          broadcast = bObj.names.join(", ");
+        } else if (typeof bObj.names === "string") {
+          broadcast = bObj.names;
+        }
+      }
+      if (broadcast) {
+        game.broadcast = broadcast;
+      }
+
+      // Extract official DraftKings betting odds (spread and over/under)
+      if (comp.odds && comp.odds[0]) {
+        const oddsObj = comp.odds[0];
+        if (oddsObj.details) {
+          game.spread = oddsObj.details;
+        }
+        if (oddsObj.overUnder !== undefined && oddsObj.overUnder !== null) {
+          game.overUnder = oddsObj.overUnder;
+        }
       }
 
       // Parse score integers (or null if pre-game)
@@ -1624,10 +2046,31 @@ async function syncLiveNFLScores(weekNum, silent = false) {
           else game.winner = "TIE";
         }
       } else if (stateCode === "in") {
-        // Game is actively IN PROGRESS / LIVE
-        game.isFinal = false;
-        game.isLive = true;
-        game.statusDetail = formatQuarterStatus(shortDetail) || "Live";
+        // Game telemetry reports "in".
+        // Guard against premature TV broadcast telemetry before actual kickoff:
+        const koEpoch = (game.kickoffTime && !isNaN(new Date(game.kickoffTime).getTime()))
+          ? new Date(game.kickoffTime).getTime()
+          : null;
+        const hasStarted = (
+          (parsedAway !== null && parsedAway > 0) ||
+          (parsedHome !== null && parsedHome > 0) ||
+          (status.period && status.period >= 1 && status.displayClock !== "0:00" && status.displayClock !== "15:00") ||
+          (koEpoch !== null && koEpoch <= Date.now())
+        );
+
+        if (hasStarted) {
+          game.isFinal = false;
+          game.isLive = true;
+          game.statusDetail = formatQuarterStatus(shortDetail) || "Live";
+          if (matchedEvent.id) {
+            fetchLiveGameWinProbability(game, matchedEvent.id);
+          }
+        } else {
+          // Pre-game broadcast window (TV coverage live, but ball has not kicked off yet)
+          game.isFinal = false;
+          game.isLive = false;
+          game.statusDetail = "Pre-game";
+        }
         game.awayScore = parsedAway;
         game.homeScore = parsedHome;
         game.possession = possession;
@@ -1662,6 +2105,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(state.data));
       } catch (e) {}
+      updateGlobalStandingsRibbon();
     }
   } catch (err) {
     console.warn("ESPN Scoreboard sync warning (using cached/sheet data):", err);
@@ -1669,7 +2113,7 @@ async function syncLiveNFLScores(weekNum, silent = false) {
 }
 
 // =========================================================
-// GOOGLE SHEETS LIVE DATA SYNC
+// LIVE ESPN DATA & SCORING ENGINE SYNC
 // =========================================================
 async function syncWeek(weekNum, silent = false, forceNotice = false) {
   if (!weekNum || weekNum < 1 || weekNum > 18) return;
@@ -1683,17 +2127,9 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
   }
 
   state.isSyncing = true;
-  const sheetParam = encodeURIComponent(`Week ${weekNum}`);
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetParam}&t=${Date.now()}`;
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const csvText = await res.text();
-    
-    parseWeekCSV(weekNum, csvText);
-
-    // Sync real-time live NFL scores from ESPN scoreboard
+    // Sync real-time live NFL scores, clocks, and situations directly from ESPN scoreboard API
     await syncLiveNFLScores(weekNum, silent);
 
     state.lastUpdated = new Date();
@@ -1707,14 +2143,7 @@ async function syncWeek(weekNum, silent = false, forceNotice = false) {
     renderTabContent();
     updateStripButtons();
   } catch (err) {
-    console.warn("Live sync error (offline or network restricted):", err);
-    // If sheets failed, attempt ESPN sync directly so live game day updates still function
-    try {
-      await syncLiveNFLScores(weekNum, silent);
-      renderTabContent();
-      updateStripButtons();
-    } catch (e2) {}
-
+    console.warn("Live ESPN sync notice (offline or network restricted):", err);
     if (syncLabel) syncLabel.textContent = "Offline";
   } finally {
     state.isSyncing = false;
@@ -1799,6 +2228,7 @@ async function catchUpPastWeeks() {
     if (typeof updateStripButtons === "function") {
       updateStripButtons();
     }
+    updateGlobalStandingsRibbon();
   } finally {
     isCatchingUpPastWeeks = false;
   }
@@ -1819,7 +2249,7 @@ function computeTeamRecordsFromGames() {
       if (!wk || !wk.games) return;
       wk.games.forEach(g => {
         if (!g.isFinal) return;
-        const teams = (g.matchup || "").split(" @ ");
+        const teams = (g.matchup || "").split("@").map(s => s.trim());
         if (teams.length < 2) return;
         const away = normalizeTeamCode(teams[0]);
         const home = normalizeTeamCode(teams[1]);
@@ -1832,13 +2262,14 @@ function computeTeamRecordsFromGames() {
         if (records[away]) records[away].diff += (aScore - hScore);
         if (records[home]) records[home].diff += (hScore - aScore);
 
-        if (aScore === hScore || g.winner === "TIE") {
+        const normWinner = normalizeTeamCode(g.winner);
+        if (aScore === hScore || normWinner === "TIE") {
           if (records[away]) records[away].t += 1;
           if (records[home]) records[home].t += 1;
-        } else if (g.winner === away || aScore > hScore) {
+        } else if (normWinner === away || (!normWinner && aScore > hScore) || (normWinner !== home && aScore > hScore)) {
           if (records[away]) records[away].w += 1;
           if (records[home]) records[home].l += 1;
-        } else if (g.winner === home || hScore > aScore) {
+        } else if (normWinner === home || (!normWinner && hScore > aScore) || (normWinner !== away && hScore > aScore)) {
           if (records[home]) records[home].w += 1;
           if (records[away]) records[away].l += 1;
         }
@@ -1927,7 +2358,8 @@ async function syncNFLStandings(forceNotice = false) {
         };
 
         try {
-          localStorage.setItem("og_league_nfl_standings", JSON.stringify(state.nflStandings));
+          const STANDINGS_CACHE_KEY = IS_PREVIEW ? "sp_preview_nfl_standings" : "og_league_nfl_standings";
+          localStorage.setItem(STANDINGS_CACHE_KEY, JSON.stringify(state.nflStandings));
         } catch (e) {}
 
         synced = true;
@@ -1937,22 +2369,7 @@ async function syncNFLStandings(forceNotice = false) {
     console.warn("ESPN Live Standings API sync notice:", err);
   }
 
-  // 2. Secondary fallback: Google Sheet NFL Standings tab
-  if (!synced) {
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid=${NFL_STANDINGS_GID}&t=${Date.now()}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const csv = await res.text();
-        parseNFLStandingsCSV(csv);
-        synced = true;
-      }
-    } catch (e) {
-      console.warn("Google Sheet NFL Standings fallback notice:", e);
-    }
-  }
-
-  // 3. Fallback: dynamically compute from all finalized season games if team records missing
+  // 2. Offline fallback: dynamically compute from all finalized season games if team records missing
   if (!state.nflStandings || !state.nflStandings.teamRecords) {
     const computed = computeTeamRecordsFromGames();
     if (!state.nflStandings) state.nflStandings = {};
@@ -2192,8 +2609,15 @@ function parseNFLStandingsCSV(csvText) {
 // UI RENDERING - APP MASTER
 // =========================================================
 function renderApp() {
+  updateGlobalStandingsRibbon();
+  loadSoloPickSheets().catch(() => {});
+  updateAppShellForMode();
   renderHeaderProfile();
-  switchTab(state.activeTab, false);
+  if (state.appMode === "solo") {
+    loadSoloPickSheets().then(() => renderSoloView());
+  } else {
+    switchTab(state.activeTab, false);
+  }
 }
 
 function renderTabContent() {
@@ -2204,6 +2628,9 @@ function renderTabContent() {
     case "matchups":
       renderMatchups();
       break;
+    case "playoffs":
+      renderPlayoffsTab();
+      break;
     case "players":
       renderPlayers();
       break;
@@ -2211,7 +2638,7 @@ function renderTabContent() {
       renderNFLStandings();
       break;
     case "rules":
-      // Static rules in HTML
+      openLeagueRulesModal();
       break;
   }
 }
@@ -2374,6 +2801,10 @@ function getWeeklyRankMovements(weekNum = state.currentWeek) {
 }
 
 function renderLeaderboard() {
+  if (state.activeLeagueData) {
+    renderCustomLeagueLeaderboard();
+    return;
+  }
   const podiumEl = document.getElementById("podium-container");
   const listEl = document.getElementById("leaderboard-list");
   const sectionTitleEl = document.getElementById("leaderboard-section-title");
@@ -2677,16 +3108,264 @@ function getByeTeamsForWeek(weekNum) {
   return uniqueCodes.map(code => NFL_TEAMS[code] || { code, name: code, color: '#38bdf8' });
 }
 
+function renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo) {
+  const userSheets = Array.isArray(state.pickSheets) ? state.pickSheets : [];
+  const hasSheets = userSheets.length > 0;
+  const awayNorm = normalizeTeamCode(awayTeam);
+  const homeNorm = normalizeTeamCode(homeTeam);
+  const awayColor = awayInfo.color || "#06b6d4";
+  const homeColor = homeInfo.color || "#3b82f6";
+
+  if (!hasSheets) {
+    return `
+      <div class="lobby-no-picks-card">
+        <div class="lobby-no-picks-content">
+          <div class="lobby-no-picks-icon-wrap">
+            <span class="lobby-no-picks-icon">🔮</span>
+          </div>
+          <div class="lobby-no-picks-text-block">
+            <div class="lobby-no-picks-title">No Predictions Yet</div>
+            <div class="lobby-no-picks-desc">Forecast winners, point totals & your 3X Lock of the Week in Solo Play!</div>
+          </div>
+        </div>
+        <button type="button" class="btn-lobby-predict-cta" onclick="enterSoloPlay()">
+          <span>+ Predict in Solo Play</span>
+        </button>
+      </div>
+    `;
+  }
+
+  // User has sheets! Group picks by team
+  const awaySheetPicks = [];
+  const homeSheetPicks = [];
+  const unpickedSheets = [];
+
+  userSheets.forEach(sheet => {
+    const pk = sheet.picks && sheet.picks[game.id];
+    if (pk && pk.winner) {
+      const normWinner = normalizeTeamCode(pk.winner);
+      const hasAwayScore = (pk.awayScore !== null && pk.awayScore !== undefined && !isNaN(pk.awayScore));
+      const hasHomeScore = (pk.homeScore !== null && pk.homeScore !== undefined && !isNaN(pk.homeScore));
+      const scoreStr = (hasAwayScore && hasHomeScore) ? `${pk.awayScore} - ${pk.homeScore}` : "";
+
+      const sheetPickData = {
+        sheetId: sheet.id,
+        sheetName: sheet.name || "Master Pick Sheet",
+        winner: pk.winner,
+        scoreDisplay: scoreStr,
+        multiplier: Boolean(pk.multiplier)
+      };
+
+      if (normWinner === awayNorm) {
+        awaySheetPicks.push(sheetPickData);
+      } else if (normWinner === homeNorm) {
+        homeSheetPicks.push(sheetPickData);
+      }
+    } else {
+      unpickedSheets.push(sheet);
+    }
+  });
+
+  const totalMyPicks = awaySheetPicks.length + homeSheetPicks.length;
+
+  if (totalMyPicks === 0) {
+    return `
+      <div class="lobby-no-picks-card">
+        <div class="lobby-no-picks-content">
+          <div class="lobby-no-picks-icon-wrap">
+            <span class="lobby-no-picks-icon">🔮</span>
+          </div>
+          <div class="lobby-no-picks-text-block">
+            <div class="lobby-no-picks-title">No Predictions Logged</div>
+            <div class="lobby-no-picks-desc">
+              You haven't predicted a winner for this game yet.
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-lobby-predict-cta" onclick="enterSoloPlay()">
+          <span>+ Predict in Solo Play</span>
+        </button>
+      </div>
+    `;
+  }
+
+  const myAwayPct = Math.round((awaySheetPicks.length / totalMyPicks) * 100);
+  const myHomePct = 100 - myAwayPct;
+
+  const renderSheetChip = (sp) => {
+    const safeName = (sp.sheetName || "Sheet").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `
+      <div class="player-pick-chip is-sheet-pick ${sp.multiplier ? "has-multiplier" : ""}"
+        onclick="openPickSheet('${sp.sheetId}')" role="button" tabindex="0"
+        title="Open & edit ${safeName}">
+        <div class="chip-row-top">
+          <span class="sheet-chip-icon">📋</span>
+          <span class="chip-name" style="font-size:0.75rem; font-weight:800; color:#ffffff;">${safeName}</span>
+          ${sp.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+        </div>
+        ${sp.scoreDisplay ? `
+          <div class="chip-row-bottom">
+            <span class="chip-predicted-score">${sp.scoreDisplay}</span>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  };
+
+  const targetSheetId = userSheets[0].id;
+
+  return `
+    <!-- Mini Consensus Bar for My Sheets -->
+    <div class="matchup-consensus-container my-sheets-consensus" aria-label="My sheets consensus: ${awayTeam} ${myAwayPct}%, ${homeTeam} ${myHomePct}%">
+      <div class="consensus-header-row">
+        <div class="consensus-side away">
+          <span class="consensus-dot" style="background-color: ${awayColor};"></span>
+          <span class="consensus-team-code">${awayTeam}</span>
+          <span class="consensus-pct" style="color: ${awayColor};">${myAwayPct}%</span>
+          <span class="consensus-count">(${awaySheetPicks.length})</span>
+        </div>
+
+        <span class="consensus-badge my-sheets-tag">My Pick Sheets</span>
+
+        <div class="consensus-side home">
+          <span class="consensus-dot" style="background-color: ${homeColor};"></span>
+          <span class="consensus-team-code">${homeTeam}</span>
+          <span class="consensus-pct" style="color: ${homeColor};">${myHomePct}%</span>
+          <span class="consensus-count">(${homeSheetPicks.length})</span>
+        </div>
+      </div>
+
+      <div class="consensus-bar-track">
+        <div class="consensus-bar-fill away" style="width: ${myAwayPct}%; background-color: ${awayColor};"></div>
+        <div class="consensus-bar-fill home" style="width: ${myHomePct}%; background-color: ${homeColor};"></div>
+      </div>
+    </div>
+
+    <!-- Dual Column Split Picks for My Sheets -->
+    <div class="matchup-split-picks my-sheets-split">
+      <!-- Left Side: Away Team Picks -->
+      <div class="picks-column away-picks">
+        <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
+          <div class="column-team-label">
+            <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
+            <span>${awayTeam} Picks</span>
+          </div>
+          <span class="column-count-badge">${awaySheetPicks.length}</span>
+        </div>
+        <div class="picks-list">
+          ${awaySheetPicks.length > 0 ? awaySheetPicks.map(renderSheetChip).join("") : `<div class="no-picks-muted">No sheet picks</div>`}
+        </div>
+      </div>
+
+      <!-- Right Side: Home Team Picks -->
+      <div class="picks-column home-picks">
+        <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
+          <span class="column-count-badge">${homeSheetPicks.length}</span>
+          <div class="column-team-label">
+            <span>${homeTeam} Picks</span>
+            <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+          </div>
+        </div>
+        <div class="picks-list">
+          ${homeSheetPicks.length > 0 ? homeSheetPicks.map(renderSheetChip).join("") : `<div class="no-picks-muted">No sheet picks</div>`}
+        </div>
+      </div>
+    </div>
+
+    <div class="my-sheets-matchup-footer">
+      ${unpickedSheets.length > 0 ? `
+        <div class="unpicked-footer" style="margin-top:0; padding:0; background:none; border:none;">
+          <span class="unpicked-label">Unpicked (${unpickedSheets.length}):</span>
+          <span class="unpicked-names">${unpickedSheets.map(s => (s.name || "Sheet").replace(/</g, "&lt;").replace(/>/g, "&gt;")).join(", ")}</span>
+        </div>
+      ` : `<span></span>`}
+      <button type="button" class="btn-lobby-edit-sheet" onclick="openPickSheet('${targetSheetId}')">
+        <span>✏️ Edit in Solo Play &rarr;</span>
+      </button>
+    </div>
+  `;
+}
+
+// =========================================================
+// STABLE MATCHUP PARTITIONING & DIVIDERS (Option A)
+// Pushes completed games to bottom while strictly preserving
+// relative chronological order; restores full order once all final.
+// =========================================================
+function getPartitionedMatchupGames(gamesList) {
+  if (!Array.isArray(gamesList) || gamesList.length === 0) return [];
+  const active = gamesList.filter(g => !g.isFinal);
+  const completed = gamesList.filter(g => Boolean(g.isFinal));
+  return [...active, ...completed];
+}
+
+function renderConcludedDivider(finalCount) {
+  return `
+    <div class="matchups-concluded-divider" role="separator" aria-label="Concluded Matchups (${finalCount})">
+      <span class="divider-line"></span>
+      <span class="divider-pill">
+        <span>CONCLUDED MATCHUPS (${finalCount})</span>
+      </span>
+      <span class="divider-line"></span>
+    </div>
+  `;
+}
+
 function renderMatchups() {
   const container = document.getElementById("matchups-list");
   const filterBar = document.getElementById("matchups-filter-bar");
   const byeStripEl = document.getElementById("matchups-bye-strip");
   const bannerTitle = document.getElementById("matchup-banner-title");
   const bannerStat = document.getElementById("matchup-banner-stat");
+  const contextBannerEl = document.getElementById("lobby-week-context-banner");
   if (!container) return;
 
   const weekKey = `Week ${state.currentWeek}`;
   bannerTitle.textContent = `${weekKey} Matchups`;
+
+  // Update contextual post-MNF bridge banner for Home / Lobby visitors
+  const currentNFL = getCurrentNFLWeek();
+  const openWk = getOpenPredictionWeek();
+
+  if (contextBannerEl) {
+    if (state.appMode === "lobby" && currentNFL < 18 && isWeekFullyLocked(currentNFL)) {
+      contextBannerEl.style.display = "block";
+      if (state.currentWeek === openWk) {
+        // Viewing upcoming open week
+        contextBannerEl.className = "lobby-week-context-banner is-open-preview";
+        contextBannerEl.innerHTML = `
+          <div class="context-banner-content">
+            <div class="context-banner-text">
+              <span class="context-banner-pill">⚡ Week ${currentNFL} Concluded</span>
+              <span class="context-banner-msg">Week ${currentNFL} is in the books! Make your <strong>Week ${openWk} predictions</strong> below.</span>
+            </div>
+            <button type="button" class="btn-context-banner-action" onclick="selectWeek(${currentNFL})" title="View final scores and standings from Week ${currentNFL}">
+              <span>View Week ${currentNFL} Results</span>
+              <span class="banner-action-arrow">&rarr;</span>
+            </button>
+          </div>
+        `;
+      } else if (state.currentWeek === currentNFL) {
+        // Viewing concluded week in review mode
+        contextBannerEl.className = "lobby-week-context-banner is-review-mode";
+        contextBannerEl.innerHTML = `
+          <div class="context-banner-content">
+            <div class="context-banner-text">
+              <span class="context-banner-pill pill-locked">🔒 Week ${currentNFL} Final</span>
+              <span class="context-banner-msg">All Week ${currentNFL} games are concluded. Week ${openWk} is now open for predictions!</span>
+            </div>
+            <button type="button" class="btn-context-banner-action btn-action-forward" onclick="selectWeek(${openWk})" title="Jump to open Week ${openWk} games">
+              <span>Predict Week ${openWk} Now</span>
+              <span class="banner-action-arrow">&rarr;</span>
+            </button>
+          </div>
+        `;
+      } else {
+        contextBannerEl.style.display = "none";
+      }
+    } else {
+      contextBannerEl.style.display = "none";
+    }
+  }
 
   const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
   const games = weekData && weekData.games ? weekData.games : [];
@@ -2711,6 +3390,7 @@ function renderMatchups() {
   games.forEach(g => calculateGamePicksPoints(g));
 
   const finalGamesList = games.filter(g => Boolean(g.isFinal));
+  const activeGamesList = games.filter(g => !g.isFinal);
   const liveGamesList = games.filter(g => Boolean(g.isLive || (!g.isFinal && g.awayScore !== null && g.homeScore !== null)));
   const upcomingGamesList = games.filter(g => !g.isFinal && !(g.isLive || (g.awayScore !== null && g.homeScore !== null)));
 
@@ -2718,6 +3398,7 @@ function renderMatchups() {
   const finalsCount = finalGamesList.length;
   const liveCount = liveGamesList.length;
   const upcomingCount = upcomingGamesList.length;
+  const activeCount = activeGamesList.length;
 
   bannerStat.innerHTML = `${totalGames}&nbsp;Games • ${finalsCount}&nbsp;Final${liveCount > 0 ? ` • <span class="summary-live-tag" style="color:#f87171; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><span class="live-pulse-dot"></span>${liveCount}&nbsp;Live</span>` : ""}`;
 
@@ -2734,7 +3415,6 @@ function renderMatchups() {
 
       byeStripEl.innerHTML = `
         <div class="bye-strip-left">
-          <span class="bye-strip-icon">☕</span>
           <span class="bye-strip-label">BYE:</span>
         </div>
         <div class="bye-strip-chips">
@@ -2757,7 +3437,13 @@ function renderMatchups() {
     filteredGames = liveGamesList;
   } else if (currentFilter === "final") {
     filteredGames = finalGamesList;
+  } else {
+    // "all": stable partition - active games first (chronological), completed games at bottom (chronological)
+    filteredGames = getPartitionedMatchupGames(games);
   }
+
+  // Option A: Subtle divider between active and concluded games when viewing "all"
+  const showDivider = (currentFilter === "all" && activeCount > 0 && finalsCount > 0);
 
   const filterChipsHtml = `
     <div class="filter-pills-row" role="group" aria-label="Matchup status filters">
@@ -2795,6 +3481,31 @@ function renderMatchups() {
     return;
   }
 
+  // In Lobby mode, render the active week's NFL games directly using the modern Option 2 cards!
+  if (state.appMode === "lobby") {
+    const sheet = getOrCreateMasterPickSheet();
+    const mode = state.soloCampaignMode || "season";
+    const activePicks = getActiveSoloPicks(sheet, mode);
+    const isSeason = (mode === "season");
+    const isSeasonLocked = Boolean(sheet.is_season_locked);
+    const selectedWk = state.currentWeek || getCurrentNFLWeek() || 4;
+
+    container.innerHTML = `
+      <div class="sheet-games-grid lobby-games-grid">
+        ${filteredGames.map((game, idx) => {
+          const dividerHtml = (showDivider && idx === activeCount)
+            ? renderConcludedDivider(finalsCount)
+            : "";
+          const pick = activePicks[game.id] || {};
+          return dividerHtml + renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx);
+        }).join("")}
+      </div>
+    `;
+    updateToggleAllBtn();
+    updateGuestSaveBanner();
+    return;
+  }
+
   container.innerHTML = filteredGames.map((game, idx) => {
     const parts = (game.matchup || "").split("@").map(s => s.trim());
     const awayTeam = parts[0] || "AWAY";
@@ -2826,7 +3537,7 @@ function renderMatchups() {
         liveText += ` • ${game.downDistance}`;
       }
       if (game.isRedZone) {
-        liveText += ` • <span class="redzone-tag">🔴 RZ</span>`;
+        liveText += ` • <span class="redzone-tag">RZ</span>`;
       }
       badgeText = `<span class="live-pulse-dot"></span> ${liveText}`;
       badgeClass = "live";
@@ -2860,10 +3571,10 @@ function renderMatchups() {
       if (isFinal) {
         if (pick.exact) {
           chipClass += " exact";
-          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">🔮 +${pick.points}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-exact" title="Exact Score (+${pick.bonusPoints} PTS)">+${pick.points}</span>`;
         } else if (pick.isClosest) {
           chipClass += " closest";
-          ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">🎯 +${pick.points}</span>`;
+          ptsBadge = `<span class="chip-pts-badge pts-closest" title="Closest Score (+${pick.bonusPoints} PTS)">+${pick.points}</span>`;
         } else if (pick.points > 0) {
           chipClass += " correct";
           ptsBadge = `<span class="chip-pts-badge pts-win">+${pick.points}</span>`;
@@ -2929,7 +3640,7 @@ function renderMatchups() {
             <span class="chip-player-name">${p.name}</span>
             <div class="chip-badges-group">
               ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
-              ${p.multiplier ? `<span class="chip-mult-tag">⭐ 3X</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">3X</span>` : ""}
             </div>
           </div>
           <div class="chip-row-bottom">
@@ -2940,21 +3651,51 @@ function renderMatchups() {
       </div>
     `;
 
-    const isCollapsed = state.collapsedMatchups && state.collapsedMatchups.has(game.id);
+    const isCustomLeague = (state.appMode === "league" && Boolean(state.activeLeagueData));
+    const isOGLeague = (state.appMode === "league" && (state.activeLeague === "OG League" || !state.activeLeagueData));
+    const isLeagueMode = isCustomLeague || isOGLeague;
+    const isCollapsed = isLeagueMode && state.collapsedMatchups && state.collapsedMatchups.has(game.id);
+
+    const dividerHtml = (showDivider && idx === activeCount)
+      ? renderConcludedDivider(finalsCount)
+      : "";
+
+    const broadcast = getGameBroadcast(game);
+    const odds = getGameOdds(game);
+    const broadcastBadge = broadcast ? `<span class="game-network-pill">${broadcast}</span>` : "";
+    const spreadBadge = odds.spread ? `<span class="game-odds-pill">${odds.spread}</span>` : "";
+    const ouBadge = odds.ou ? `<span class="game-ou-pill">${odds.ou}</span>` : "";
+
+    const oddsStripHtml = (odds.spread || odds.ou) ? `
+      <div class="matchup-odds-strip">
+        <div class="game-odds-subbar">
+          <span class="odds-subbar-label">LINE:</span>
+          ${spreadBadge}
+          ${ouBadge}
+        </div>
+      </div>
+    ` : "";
 
     return `
+      ${dividerHtml}
       <article class="matchup-card ${isCollapsed ? "collapsed" : ""} ${isLive ? "is-live" : ""}" id="${game.id}">
-        <div class="matchup-card-header" onclick="toggleMatchupCollapse('${game.id}', event)">
-          <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
+        <div class="matchup-card-header" ${isLeagueMode ? `onclick="toggleMatchupCollapse('${game.id}', event)"` : ""}>
+          <div class="matchup-header-info">
+            <span class="date-time">${game.dateTime || `Game ${idx + 1}`}</span>
+            ${broadcastBadge}
+          </div>
           <div class="matchup-header-actions">
             <span class="matchup-badge ${badgeClass}">${badgeText}</span>
+            ${isLeagueMode ? `
             <button type="button" class="matchup-collapse-btn ${isCollapsed ? "collapsed" : ""}" aria-label="${isCollapsed ? "Expand picks" : "Collapse picks"}" title="${isCollapsed ? "Expand picks" : "Collapse picks"}">
               <svg class="collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
-            </button>
+            </button>` : ""}
           </div>
         </div>
+
+        ${oddsStripHtml}
 
         <div class="matchup-teams-display">
           <!-- Away Team (Left) -->
@@ -2963,7 +3704,7 @@ function renderMatchups() {
             <div class="team-details">
               <div class="team-code">
                 <span>${awayTeam}</span>
-                ${isLive && game.possession === 'away' ? '<span class="possession-football" title="Possession: ' + awayTeam + '">🏈</span>' : ''}
+                ${isLive && game.possession === 'away' ? '<span class="possession-dot" title="Possession: ' + awayTeam + '"></span>' : ''}
               </div>
               <div class="team-name-sub">${awayInfo.city || awayInfo.name || ""}</div>
               <div class="team-record-sub">${awayRecord.text}</div>
@@ -2981,7 +3722,7 @@ function renderMatchups() {
             <div class="team-badge" style="background-color: ${homeInfo.color}; color: ${homeTextColor};">${homeTeam}</div>
             <div class="team-details">
               <div class="team-code">
-                ${isLive && game.possession === 'home' ? '<span class="possession-football" title="Possession: ' + homeTeam + '">🏈</span>' : ''}
+                ${isLive && game.possession === 'home' ? '<span class="possession-dot" title="Possession: ' + homeTeam + '"></span> ' : ''}
                 <span>${homeTeam}</span>
               </div>
               <div class="team-name-sub">${homeInfo.city || homeInfo.name || ""}</div>
@@ -2991,77 +3732,106 @@ function renderMatchups() {
           </div>
         </div>
 
-        <!-- League Pick Consensus Bar -->
-        ${totalPicks > 0 ? `
-          <div class="matchup-consensus-container" aria-label="League pick consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
-            <div class="consensus-header-row">
-              <div class="consensus-side away">
-                <span class="consensus-dot" style="background-color: ${awayColor};"></span>
-                <span class="consensus-team-code">${awayTeam}</span>
-                <span class="consensus-pct" style="color: ${awayColor};">${awayPct}%</span>
-                <span class="consensus-count">(${awayPicks.length})</span>
-              </div>
-
-              ${isUnanimous ? `<span class="consensus-badge unanimous">🔥 Unanimous</span>` :
-                isDeadHeat ? `<span class="consensus-badge split">⚡ 50/50 Split</span>` : ""}
-
-              <div class="consensus-side home">
-                <span class="consensus-dot" style="background-color: ${homeColor};"></span>
-                <span class="consensus-team-code">${homeTeam}</span>
-                <span class="consensus-pct" style="color: ${homeColor};">${homePct}%</span>
-                <span class="consensus-count">(${homePicks.length})</span>
+        ${isLive ? (() => {
+          const winProb = getGameWinProbability(game, awayTeam, homeTeam);
+          if (!winProb) return "";
+          return `
+            <div class="matchup-live-win-prob-wrapper">
+              <div class="live-win-prob-container">
+                <div class="live-win-prob-labels">
+                  <span class="prob-away-label" style="color: ${awayColor}">${awayTeam} ${winProb.awayPct}%</span>
+                  <span class="prob-title">LIVE WIN PROBABILITY</span>
+                  <span class="prob-home-label" style="color: ${homeColor}">${winProb.homePct}% ${homeTeam}</span>
+                </div>
+                <div class="live-win-prob-track">
+                  <div class="prob-fill-away" style="width: ${winProb.awayPct}%; background-color: ${awayColor};"></div>
+                  <div class="prob-fill-home" style="width: ${winProb.homePct}%; background-color: ${homeColor};"></div>
+                </div>
               </div>
             </div>
+          `;
+        })() : ""}
 
-            <div class="consensus-bar-track">
-              <div class="consensus-bar-fill away" style="width: ${awayPct}%; background-color: ${awayColor};"></div>
-              <div class="consensus-bar-fill home" style="width: ${homePct}%; background-color: ${homeColor};"></div>
-            </div>
-          </div>
-        ` : ""}
+        ${isCustomLeague
+          ? renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
+          : (isOGLeague
+              ? `
+          <!-- League Pick Consensus Bar -->
+          ${totalPicks > 0 ? `
+            <div class="matchup-consensus-container" aria-label="League pick consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
+              <div class="consensus-header-row">
+                <div class="consensus-side away">
+                  <span class="consensus-dot" style="background-color: ${awayColor};"></span>
+                  <span class="consensus-team-code">${awayTeam}</span>
+                  <span class="consensus-pct" style="color: ${awayColor};">${awayPct}%</span>
+                  <span class="consensus-count">(${awayPicks.length})</span>
+                </div>
 
-        <!-- Split Picks Breakdown (Away on Left, Home on Right) -->
-        <div class="matchup-split-picks">
-          <!-- Left Side: Away Team Picks -->
-          <div class="picks-column away-picks">
-            <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
-              <div class="column-team-label">
-                <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
-                <span>${awayTeam} Picks</span>
+                ${isUnanimous ? `<span class="consensus-badge unanimous">Unanimous</span>` :
+                  isDeadHeat ? `<span class="consensus-badge split">50/50 Split</span>` : ""}
+
+                <div class="consensus-side home">
+                  <span class="consensus-dot" style="background-color: ${homeColor};"></span>
+                  <span class="consensus-team-code">${homeTeam}</span>
+                  <span class="consensus-pct" style="color: ${homeColor};">${homePct}%</span>
+                  <span class="consensus-count">(${homePicks.length})</span>
+                </div>
               </div>
-              <span class="column-count-badge">${awayPicks.length}</span>
-            </div>
-            <div class="picks-list">
-              ${awayPicks.length > 0 ? awayPicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
-            </div>
-          </div>
 
-          <!-- Right Side: Home Team Picks -->
-          <div class="picks-column home-picks">
-            <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
-              <span class="column-count-badge">${homePicks.length}</span>
-              <div class="column-team-label">
-                <span>${homeTeam} Picks</span>
-                <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+              <div class="consensus-bar-track">
+                <div class="consensus-bar-fill away" style="width: ${awayPct}%; background-color: ${awayColor};"></div>
+                <div class="consensus-bar-fill home" style="width: ${homePct}%; background-color: ${homeColor};"></div>
               </div>
             </div>
-            <div class="picks-list">
-              ${homePicks.length > 0 ? homePicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+          ` : ""}
+
+          <!-- Split Picks Breakdown (Away on Left, Home on Right) -->
+          <div class="matchup-split-picks">
+            <!-- Left Side: Away Team Picks -->
+            <div class="picks-column away-picks">
+              <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
+                <div class="column-team-label">
+                  <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
+                  <span>${awayTeam} Picks</span>
+                </div>
+                <span class="column-count-badge">${awayPicks.length}</span>
+              </div>
+              <div class="picks-list">
+                ${awayPicks.length > 0 ? awayPicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+              </div>
+            </div>
+
+            <!-- Right Side: Home Team Picks -->
+            <div class="picks-column home-picks">
+              <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
+                <span class="column-count-badge">${homePicks.length}</span>
+                <div class="column-team-label">
+                  <span>${homeTeam} Picks</span>
+                  <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+                </div>
+              </div>
+              <div class="picks-list">
+                ${homePicks.length > 0 ? homePicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+              </div>
             </div>
           </div>
-        </div>
 
-        ${unpicked.length > 0 ? `
-          <div class="unpicked-footer">
-            <span class="unpicked-label">No Pick (${unpicked.length}):</span>
-            <span class="unpicked-names">${unpicked.map(u => u.name).join(", ")}</span>
-          </div>
-        ` : ""}
+          ${unpicked.length > 0 ? `
+            <div class="unpicked-footer">
+              <span class="unpicked-label">No Pick (${unpicked.length}):</span>
+              <span class="unpicked-names">${unpicked.map(u => u.name).join(", ")}</span>
+            </div>
+          ` : ""}
+        `
+              : renderLobbyMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo)
+            )
+        }
       </article>
     `;
   }).join("");
 
   updateToggleAllBtn();
+  updateGuestSaveBanner();
 }
 
 // =========================================================
@@ -3081,7 +3851,7 @@ function getMatchupsTargetGames(games) {
   } else if (currentFilter === "final") {
     return games.filter(g => Boolean(g.isFinal));
   }
-  return games;
+  return getPartitionedMatchupGames(games);
 }
 
 function toggleMatchupCollapse(gameId, event) {
@@ -3171,6 +3941,10 @@ function toggleAllMatchups() {
 function updateToggleAllBtn() {
   const btn = document.getElementById("toggle-all-matchups-btn");
   if (!btn) return;
+  if (state.appMode === "lobby") {
+    btn.style.display = "none";
+    return;
+  }
   const weekKey = `Week ${state.currentWeek}`;
   const weekData = state.data && state.data.weeks ? state.data.weeks[weekKey] : null;
   const games = weekData && weekData.games ? weekData.games : [];
@@ -3315,10 +4089,11 @@ function renderPlayers() {
         <span class="action-btn-icon">⚔️</span>
         <span>Compare Players</span>
       </button>
-      <button type="button" class="btn-hero-action btn-hero-profile ${isMyProfile ? "is-active" : ""}" onclick="toggleMyProfile('${state.selectedPlayer}')" title="${isMyProfile ? 'You are remembered as this player' : 'Remember me as this player'}">
-        <span class="action-btn-icon">${isMyProfile ? "★" : "☆"}</span>
-        <span>${isMyProfile ? "Active Profile" : "Set as Me"}</span>
-      </button>
+      ${isMyProfile ? `
+      <div class="badge-my-roster-tag" title="This is your official authenticated roster profile">
+        <span>⭐ Your Roster Profile</span>
+      </div>
+      ` : ""}
     </div>
 
     <div class="player-stats-row">
@@ -3487,7 +4262,7 @@ function renderPlayers() {
             const possAway = g.possession === 'away';
             const possHome = g.possession === 'home';
             const scoreDisplay = g.awayScore !== null
-              ? `${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${g.awayScore} - ${g.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}`
+              ? `${possAway ? '<span class="possession-dot" title="Possession"></span> ' : ''}${g.awayScore} - ${g.homeScore}${possHome ? ' <span class="possession-dot" title="Possession"></span>' : ''}`
               : '';
 
             outcomeHtml = `
@@ -4041,7 +4816,7 @@ function renderH2H() {
         const possHome = game.possession === 'home';
         centerScoreHtml = `
           <span class="h2h-game-actual-score" style="color:#f87171;">
-            ${possAway ? '<span class="possession-football-sm" title="Possession">🏈</span> ' : ''}${game.awayScore} - ${game.homeScore}${possHome ? ' <span class="possession-football-sm" title="Possession">🏈</span>' : ''}
+            ${possAway ? '<span class="possession-dot" title="Possession"></span> ' : ''}${game.awayScore} - ${game.homeScore}${possHome ? ' <span class="possession-dot" title="Possession"></span>' : ''}
           </span>
           <span class="h2h-live-tag"><span class="live-pulse-dot"></span> ${liveDetail}</span>
         `;
@@ -4301,6 +5076,566 @@ function renderNFLStandings() {
 }
 
 // =========================================================
+// TAB 5: POSTSEASON & SUPER BOWL PLAYOFFS
+// =========================================================
+
+function enterLeagueViewFromPlayoffs(leagueId = "OG League") {
+  if (leagueId === "OG League" || leagueId === "OG2026") {
+    state.activeLeagueData = null;
+    state.appMode = "league";
+    state.activeLeague = "OG League";
+    try {
+      sessionStorage.setItem("sp_app_mode", "league");
+      sessionStorage.removeItem("sp_active_league_id");
+    } catch (e) {}
+  } else {
+    const lObj = (state.userLeagues || []).find(l => l.id === leagueId || l.join_code === leagueId || l.name === leagueId);
+    state.activeLeagueData = lObj || null;
+    state.appMode = "league";
+    state.activeLeague = lObj ? lObj.name : leagueId;
+    try {
+      sessionStorage.setItem("sp_app_mode", "league");
+      if (lObj) sessionStorage.setItem("sp_active_league_id", lObj.id);
+    } catch (e) {}
+  }
+  updateAppShellForMode();
+  switchTab("playoffs");
+}
+window.enterLeagueViewFromPlayoffs = enterLeagueViewFromPlayoffs;
+
+function renderPlayoffsLeaguePrompt(container) {
+  const customLeagues = (state.userLeagues || []).filter(l => 
+    l.name !== "OG League" && 
+    l.join_code !== "OG2026" && 
+    l.id !== "e0000000-0000-0000-0000-000000000001"
+  );
+
+  const customLeaguesHtml = customLeagues.map(l => `
+    <div class="prompt-league-card" onclick="enterLeagueViewFromPlayoffs('${l.id}')">
+      <div class="plc-left">
+        <div class="plc-icon">🏆</div>
+        <div>
+          <div class="plc-name">${l.name}</div>
+          <div class="plc-meta"><span class="plc-code-tag">🔑 ${l.join_code}</span> • Custom League</div>
+        </div>
+      </div>
+      <span class="plc-arrow">&rarr;</span>
+    </div>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="playoff-league-prompt-box">
+      <div class="prompt-trophy-circle">
+        <svg class="prompt-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+          <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+          <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
+          <path d="M12 17v4" />
+          <path d="M8 21h8" />
+        </svg>
+      </div>
+      <h2 class="prompt-title">Select a League</h2>
+      <p class="prompt-desc">
+        Playoff tournament brackets and Super Bowl prophecies are specific to your private leagues. Choose a league below to inspect member brackets, seedings, and championship picks:
+      </p>
+
+      <div class="prompt-leagues-stack">
+        <!-- 1-Tap Entry to OG League -->
+        <div class="prompt-league-card prompt-card-og" onclick="enterLeagueViewFromPlayoffs('OG League')">
+          <div class="plc-left">
+            <div class="plc-icon og-gold">🏆</div>
+            <div>
+              <div class="plc-name">OG League</div>
+              <div class="plc-meta">12 Members • Preseason Tournament Brackets Set</div>
+            </div>
+          </div>
+          <span class="plc-arrow">View Brackets &rarr;</span>
+        </div>
+
+        ${customLeaguesHtml}
+
+        <button type="button" class="btn-prompt-open-drawer" onclick="openLeagueDrawer()">
+          Browse All Leagues / Join with Code &rarr;
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCustomLeaguePlayoffs(container) {
+  const leagueName = (state.activeLeagueData && state.activeLeagueData.name) || "Custom League";
+  container.innerHTML = `
+    <div class="custom-playoffs-notice-card">
+      <div class="cpn-header">
+        <span class="cpn-tag">POSTSEASON PROPHECIES</span>
+        <h3 class="cpn-title">${leagueName}</h3>
+      </div>
+      <p class="cpn-desc">
+        Postseason tournament bracket picks for <strong>${leagueName}</strong> will officially open for member predictions once the 14 NFL playoff seeds lock in Week 18.
+      </p>
+      <div class="cpn-preview-box">
+        <span class="cpn-sub">Want to see how postseason prophecies work?</span>
+        <button type="button" class="btn-preview-og-brackets" onclick="enterLeagueViewFromPlayoffs('OG League')">
+          🏆 Preview OG League Playoff Brackets &rarr;
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderPlayoffsTab() {
+  const container = document.getElementById("playoffs-container");
+  if (!container) return;
+
+  const isLeagueMode = (state.appMode === "league");
+
+  // 1. If accessed from Home/Lobby or Solo mode, prompt user to select a league
+  if (!isLeagueMode) {
+    renderPlayoffsLeaguePrompt(container);
+    return;
+  }
+
+  // 2. If in a custom league, show custom league status
+  if (state.activeLeagueData) {
+    renderCustomLeaguePlayoffs(container);
+    return;
+  }
+
+  // 3. In OG League: load verified preseason prophecies
+  const data = window.OG_LEAGUE_PLAYOFFS_DATA || {};
+  let playerIds = Object.keys(data);
+  if (playerIds.length === 0) {
+    container.innerHTML = `<div class="empty-state-card" style="padding:24px; text-align:center; color:var(--text-muted);">Playoff predictions loading...</div>`;
+    return;
+  }
+
+  // Sort players by active League Standings Rank (1st place down to 12th place)
+  const standings = (typeof getSeasonLeaderboard === "function") ? getSeasonLeaderboard(state.currentWeek) : [];
+  const rankMap = {};
+  standings.forEach((entry, idx) => {
+    const norm = (entry.name || "").toLowerCase().trim();
+    rankMap[norm] = {
+      rankIndex: idx,
+      rankDisplay: entry.rankDisplay || String(idx + 1),
+      points: entry.points || 0,
+      name: entry.name
+    };
+    if (norm === "jon") rankMap["jonny"] = rankMap[norm];
+    if (norm === "jonny") rankMap["jon"] = rankMap[norm];
+  });
+
+  playerIds.sort((a, b) => {
+    const nameA = ((data[a] && data[a].name) || a).toLowerCase().trim();
+    const nameB = ((data[b] && data[b].name) || b).toLowerCase().trim();
+    const rankA = (rankMap[nameA] !== undefined) ? rankMap[nameA].rankIndex : (rankMap[a.toLowerCase()] !== undefined ? rankMap[a.toLowerCase()].rankIndex : 999);
+    const rankB = (rankMap[nameB] !== undefined) ? rankMap[nameB].rankIndex : (rankMap[b.toLowerCase()] !== undefined ? rankMap[b.toLowerCase()].rankIndex : 999);
+    return rankA - rankB;
+  });
+
+  // Active consensus filter
+  const activeFilter = state.playoffConsensusFilter || "";
+
+  // Tally Super Bowl Winner Consensus
+  const sbCounts = {};
+  playerIds.forEach(id => {
+    const w = data[id].superBowl?.winner;
+    if (w) sbCounts[w] = (sbCounts[w] || 0) + 1;
+  });
+  const sortedSbTeams = Object.keys(sbCounts).sort((a, b) => sbCounts[b] - sbCounts[a]);
+
+  // ALL Chip
+  const allChipHtml = `
+    <button type="button" class="consensus-chip consensus-chip-all ${!activeFilter ? 'is-active' : ''}" onclick="setPlayoffConsensusFilter('')">
+      ALL (${playerIds.length})
+    </button>
+  `;
+
+  const teamChipsHtml = sortedSbTeams.map(tm => {
+    const info = getTeamInfo(tm);
+    const count = sbCounts[tm];
+    const isActive = activeFilter === tm;
+    return `
+      <button type="button" class="consensus-chip ${isActive ? 'is-active' : ''}" 
+              style="border: 1px solid ${info.color}${isActive ? 'ff' : '80'}; background: ${info.color}${isActive ? '65' : '35'};" 
+              onclick="setPlayoffConsensusFilter('${tm}')" 
+              title="Filter by ${info.name}">
+        <strong style="color: #ffffff;">${tm}</strong> (${count})
+      </button>
+    `;
+  }).join("");
+
+  const consensusPills = allChipHtml + teamChipsHtml;
+
+  // Filter player IDs if consensus filter is active
+  const filteredPlayerIds = activeFilter ? playerIds.filter(id => data[id]?.superBowl?.winner === activeFilter) : playerIds;
+
+  const filterStatusHtml = activeFilter ? `
+    <div class="consensus-filter-status">
+      <span>Showing <strong>${filteredPlayerIds.length}</strong> player${filteredPlayerIds.length !== 1 ? 's' : ''} with <strong>${activeFilter}</strong> to win</span>
+      <button type="button" class="btn-clear-consensus-filter" onclick="setPlayoffConsensusFilter('')">Clear Filter &times;</button>
+    </div>
+  ` : "";
+
+  // Render each player's prophecy card (Default to 'picture' to save space)
+  const cardsHtml = filteredPlayerIds.map(id => {
+    const p = data[id];
+    const viewMode = (state.playoffCardViews && state.playoffCardViews[id]) || "picture";
+    const afcTeam = p.superBowl?.afcTeam || "AFC";
+    const nfcTeam = p.superBowl?.nfcTeam || "NFC";
+    const afcInfo = getTeamInfo(afcTeam);
+    const nfcInfo = getTeamInfo(nfcTeam);
+    const sbColors = resolveSuperBowlContainerColors(afcInfo, nfcInfo);
+    const winner = p.superBowl?.winner || "";
+    let sbAfcScore = Number(p.superBowl?.afcScore || 0);
+    let sbNfcScore = Number(p.superBowl?.nfcScore || 0);
+    if (sbAfcScore === 0 && sbNfcScore === 0) {
+      if (winner === afcTeam) {
+        sbAfcScore = 20;
+        sbNfcScore = 17;
+      } else {
+        sbAfcScore = 17;
+        sbNfcScore = 20;
+      }
+    } else {
+      // Ensure the declared winner has the higher score; swap if inverted
+      if (winner === afcTeam && sbAfcScore < sbNfcScore) {
+        const temp = sbAfcScore;
+        sbAfcScore = sbNfcScore;
+        sbNfcScore = temp;
+      } else if (winner === nfcTeam && sbNfcScore < sbAfcScore) {
+        const temp = sbAfcScore;
+        sbAfcScore = sbNfcScore;
+        sbNfcScore = temp;
+      }
+    }
+    const sbMvp = p.superBowl?.sbMvp || "TBD";
+    const regMvp = p.regularSeasonMvp || "TBD";
+    const playerKey = (p.name || id).toLowerCase().trim();
+    const rankInfo = rankMap[playerKey] || rankMap[id.toLowerCase()] || { rankDisplay: "-", points: 0 };
+    const isFirstPlace = rankInfo.rankDisplay === "1" || rankInfo.rankIndex === 0;
+
+    // Playoff Picture (Seeds) View
+    const afcSeedsHtml = (p.afc?.seeds || []).map((s, idx) => `
+      <span class="seed-item"><span class="seed-tag seed-tag-afc">${idx + 1}</span><strong>${s}</strong></span>
+    `).join(" ");
+    const nfcSeedsHtml = (p.nfc?.seeds || []).map((s, idx) => `
+      <span class="seed-item"><span class="seed-tag seed-tag-nfc">${idx + 1}</span><strong>${s}</strong></span>
+    `).join(" ");
+
+    // Tournament Bracket View
+    const afcWc = p.afc?.wildCard || [];
+    const nfcWc = p.nfc?.wildCard || [];
+    const afcDiv = p.afc?.divisional || [];
+    const nfcDiv = p.nfc?.divisional || [];
+    const afcChamp = p.afc?.championship || {};
+    const nfcChamp = p.nfc?.championship || {};
+
+    const renderMatchupNode = (m, confClass, seedTagClass) => {
+      if (!m) return "";
+      const isAwayWin = m.winner === m.awayTeam;
+      const isHomeWin = m.winner === m.homeTeam;
+      const awaySc = (m.awayScore !== undefined && m.awayScore !== null) ? m.awayScore : '';
+      const homeSc = (m.homeScore !== undefined && m.homeScore !== null) ? m.homeScore : '';
+      return `
+        <div class="bracket-matchup-box ${confClass}">
+          <div class="bracket-team-slot ${isAwayWin ? 'is-winner' : 'is-loser'}">
+            <span class="bracket-team-name-wrap"><span class="seed-tag ${seedTagClass}">${m.awaySeed || ''}</span>${m.awayTeam}</span>
+            <span class="bracket-score-pod">
+              ${isAwayWin ? '<span class="winner-check">&#10003;</span>' : ''}
+              ${awaySc !== '' ? `<span class="bracket-team-score">${awaySc}</span>` : ''}
+            </span>
+          </div>
+          <div class="bracket-team-slot ${isHomeWin ? 'is-winner' : 'is-loser'}">
+            <span class="bracket-team-name-wrap"><span class="seed-tag ${seedTagClass}">${m.homeSeed || ''}</span>${m.homeTeam}${m.homeSeed === 1 ? ' <span class="bye-label">(BYE)</span>' : ''}</span>
+            <span class="bracket-score-pod">
+              ${isHomeWin ? '<span class="winner-check">&#10003;</span>' : ''}
+              ${homeSc !== '' ? `<span class="bracket-team-score">${homeSc}</span>` : ''}
+            </span>
+          </div>
+        </div>
+      `;
+    };
+
+    const sbShowcaseBoxHtml = `
+      <div class="superbowl-showcase-box" style="background: radial-gradient(circle at top left, ${sbColors.afc}85 0%, transparent 65%), radial-gradient(circle at bottom right, ${sbColors.nfc}85 0%, transparent 65%), #0b1222;">
+        <div class="sb-header-row">
+          <div class="sb-title-wrap">
+            <svg class="sb-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+              <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+              <path d="M4 3h16v6a8 8 0 0 1-16 0V3z" />
+              <path d="M12 17v4" />
+              <path d="M8 21h8" />
+            </svg>
+            <span class="sb-title-text">SUPER BOWL LXI</span>
+          </div>
+          <span class="sb-sub-text">Championship Matchup</span>
+        </div>
+
+        <div class="sb-matchup-container">
+          <div class="sb-team-row ${winner === afcTeam ? 'is-winner' : 'is-loser'}">
+            <div class="sb-team-identity">
+              <span class="sb-team-stripe" style="background:${sbColors.afc};"></span>
+              <span class="seed-tag seed-tag-afc">AFC</span>
+              <span class="sb-team-fullname">${afcInfo.name.toUpperCase()}</span>
+            </div>
+            <div class="sb-score-pod">
+              ${winner === afcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion"><svg class="crown-mini-svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg></span>' : ''}
+              <span class="sb-score-number">${sbAfcScore}</span>
+            </div>
+          </div>
+
+          <div class="sb-team-row ${winner === nfcTeam ? 'is-winner' : 'is-loser'}">
+            <div class="sb-team-identity">
+              <span class="sb-team-stripe" style="background:${sbColors.nfc};"></span>
+              <span class="seed-tag seed-tag-nfc">NFC</span>
+              <span class="sb-team-fullname">${nfcInfo.name.toUpperCase()}</span>
+            </div>
+            <div class="sb-score-pod">
+              ${winner === nfcTeam ? '<span class="sb-champion-tag" title="Super Bowl Champion"><svg class="crown-mini-svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg></span>' : ''}
+              <span class="sb-score-number">${sbNfcScore}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sb-footer-row">
+          <span class="sb-mvp-text">Super Bowl MVP: <strong class="text-sb-mvp">${sbMvp}</strong></span>
+        </div>
+      </div>
+    `;
+
+    const bracketHtml = `
+      <div class="prophecy-bracket-view">
+        <!-- Wild Card Round -->
+        <div class="bracket-round-block">
+          <div class="bracket-round-header">
+            <span>Wild Card Round</span>
+            <div class="bracket-conf-indicator">
+              <span class="text-afc-red">3 AFC</span> &bull; <span class="text-nfc-blue">3 NFC</span>
+            </div>
+          </div>
+          <div class="bracket-grid-2col">
+            ${renderMatchupNode(afcWc[0], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcWc[0], "is-nfc", "seed-tag-nfc")}
+            ${renderMatchupNode(afcWc[1], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcWc[1], "is-nfc", "seed-tag-nfc")}
+            ${renderMatchupNode(afcWc[2], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcWc[2], "is-nfc", "seed-tag-nfc")}
+          </div>
+        </div>
+
+        <!-- Divisional Round -->
+        <div class="bracket-round-block">
+          <div class="bracket-round-header">
+            <span>Divisional Round</span>
+          </div>
+          <div class="bracket-grid-2col">
+            ${renderMatchupNode(afcDiv[0], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcDiv[0], "is-nfc", "seed-tag-nfc")}
+            ${renderMatchupNode(afcDiv[1], "is-afc", "seed-tag-afc")}
+            ${renderMatchupNode(nfcDiv[1], "is-nfc", "seed-tag-nfc")}
+          </div>
+        </div>
+
+        <!-- Conference Championships -->
+        <div class="bracket-round-block">
+          <div class="bracket-round-header">
+            <span>Conference Championships</span>
+          </div>
+          <div class="bracket-grid-2col">
+            <div>
+              <span class="conf-title-tag text-afc-red">● AFC Championship</span>
+              <div class="bracket-matchup-box is-afc conf-title-box">
+                <div class="bracket-team-slot ${afcChamp.winner === afcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-afc">${afcChamp.awaySeed || ''}</span>${afcChamp.awayTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${afcChamp.winner === afcChamp.awayTeam ? '<span class="champ-pill-compact champ-pill-afc">CHAMP &#10003;</span>' : ''}
+                    ${afcChamp.awayScore !== undefined && afcChamp.awayScore !== null ? `<span class="bracket-team-score">${afcChamp.awayScore}</span>` : ''}
+                  </span>
+                </div>
+                <div class="bracket-team-slot ${afcChamp.winner === afcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-afc">${afcChamp.homeSeed || ''}</span>${afcChamp.homeTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${afcChamp.winner === afcChamp.homeTeam ? '<span class="champ-pill-compact champ-pill-afc">CHAMP &#10003;</span>' : ''}
+                    ${afcChamp.homeScore !== undefined && afcChamp.homeScore !== null ? `<span class="bracket-team-score">${afcChamp.homeScore}</span>` : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="conf-title-tag text-nfc-blue">● NFC Championship</span>
+              <div class="bracket-matchup-box is-nfc conf-title-box">
+                <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-nfc">${nfcChamp.awaySeed || ''}</span>${nfcChamp.awayTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${nfcChamp.winner === nfcChamp.awayTeam ? '<span class="champ-pill-compact champ-pill-nfc">CHAMP &#10003;</span>' : ''}
+                    ${nfcChamp.awayScore !== undefined && nfcChamp.awayScore !== null ? `<span class="bracket-team-score">${nfcChamp.awayScore}</span>` : ''}
+                  </span>
+                </div>
+                <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
+                  <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-nfc">${nfcChamp.homeSeed || ''}</span>${nfcChamp.homeTeam}</span>
+                  <span class="bracket-score-pod">
+                    ${nfcChamp.winner === nfcChamp.homeTeam ? '<span class="champ-pill-compact champ-pill-nfc">CHAMP &#10003;</span>' : ''}
+                    ${nfcChamp.homeScore !== undefined && nfcChamp.homeScore !== null ? `<span class="bracket-team-score">${nfcChamp.homeScore}</span>` : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Super Bowl LXI Finale Box -->
+        ${sbShowcaseBoxHtml}
+      </div>
+    `;
+
+    const pictureHtml = `
+      <div class="playoff-picture-box">
+        <div class="seeds-row afc-seeds-row">
+          <div class="conf-seeds-label text-afc-red">● AFC SEEDS:</div>
+          <div class="conf-seeds-list">${afcSeedsHtml}</div>
+        </div>
+        <div class="seeds-row nfc-seeds-row">
+          <div class="conf-seeds-label text-nfc-blue">● NFC SEEDS:</div>
+          <div class="conf-seeds-list">${nfcSeedsHtml}</div>
+        </div>
+      </div>
+    `;
+
+    return `
+      <div class="prophecy-card ${isFirstPlace ? 'is-first-place' : ''}" id="prophecy-card-${id}">
+        <div class="prophecy-card-header">
+          <div class="prophecy-user-col">
+            ${getPlayerAvatarHtml(p.name, 36)}
+            <div>
+              <div class="prophecy-user-name-row">
+                <span class="prophecy-user-name">${p.name}</span>
+                <span class="prophecy-rank-chip">#${rankInfo.rankDisplay} • ${rankInfo.points} PTS</span>
+                ${state.myPlayer === p.name ? '<span class="prophecy-you-chip">YOU</span>' : ''}
+              </div>
+              <div class="prophecy-mvp-sub">Reg Season MVP: <strong class="text-mvp-gold">${regMvp}</strong></div>
+            </div>
+          </div>
+          <span class="badge-champion-crown"><svg class="crown-mini-svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="vertical-align: -1px; margin-right: 4px;"><path d="M2 19h20v2H2zM2 5l5 7 5-7 5 7 5-7v12H2z"/></svg>${winner}</span>
+        </div>
+
+        <!-- Championship Matchup Showcase Box (Universal Top Feature) -->
+        ${sbShowcaseBoxHtml}
+
+        <!-- View Selector Buttons (Default to Playoff Picture) -->
+        <div class="prophecy-view-selector">
+          <button type="button" class="prophecy-view-btn ${viewMode === 'picture' ? 'active' : ''}" onclick="setPlayerPlayoffViewMode('${id}', 'picture')">
+            Playoff Picture
+          </button>
+          <button type="button" class="prophecy-view-btn ${viewMode === 'bracket' ? 'active' : ''}" onclick="setPlayerPlayoffViewMode('${id}', 'bracket')">
+            Tournament Bracket
+          </button>
+        </div>
+
+        <!-- Content Area -->
+        ${viewMode === 'bracket' ? bracketHtml : pictureHtml}
+      </div>
+    `;
+  }).join("");
+
+  // Playoff Scoring Value Card
+  const rulesBannerHtml = `
+    <div class="playoff-points-guide-card">
+      <div class="points-guide-header">
+        <span class="points-guide-title">🏆 Postseason Points Value</span>
+        <span class="points-guide-sub">Awarded at Super Bowl</span>
+      </div>
+      <div class="points-guide-grid">
+        <div class="point-pill-item">
+          <span>Super Bowl Winner</span>
+          <strong>+50 PTS</strong>
+        </div>
+        <div class="point-pill-item">
+          <span>Both SB Teams (2)</span>
+          <strong>+60 PTS</strong>
+        </div>
+        <div class="point-pill-item">
+          <span>Super Bowl MVP</span>
+          <strong>+50 PTS</strong>
+        </div>
+        <div class="point-pill-item">
+          <span>Reg Season MVP</span>
+          <strong>+50 PTS</strong>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = `
+    <div class="playoffs-header-wrap">
+      <div class="playoffs-title-eyebrow">Preseason Prophecies</div>
+      <h2 class="playoffs-title-main">Postseason &amp; Super Bowl</h2>
+      <p class="playoffs-title-sub">Locked before Week 1 kickoff &bull; Up to +400 PTS on the line</p>
+    </div>
+
+    <!-- Consensus Ticker Bar -->
+    <div class="playoffs-consensus-card">
+      <div class="consensus-title">
+        <span>Super Bowl Pick Consensus</span>
+        <span class="consensus-filter-hint">${activeFilter ? 'Filtered' : 'Tap to filter'}</span>
+      </div>
+      <div class="consensus-chips-row ${activeFilter ? 'has-filter' : ''}">${consensusPills}</div>
+      ${filterStatusHtml}
+    </div>
+
+    ${rulesBannerHtml}
+
+    <div class="playoffs-cards-list">
+      ${cardsHtml}
+    </div>
+  `;
+}
+
+function setPlayoffConsensusFilter(team) {
+  if (state.playoffConsensusFilter === team) {
+    state.playoffConsensusFilter = "";
+  } else {
+    state.playoffConsensusFilter = team;
+  }
+  renderPlayoffsTab();
+}
+window.setPlayoffConsensusFilter = setPlayoffConsensusFilter;
+
+function clearPlayoffConsensusFilter() {
+  state.playoffConsensusFilter = "";
+  renderPlayoffsTab();
+}
+window.clearPlayoffConsensusFilter = clearPlayoffConsensusFilter;
+
+function setPlayerPlayoffViewMode(playerId, viewMode) {
+  state.playoffCardViews = state.playoffCardViews || {};
+  state.playoffCardViews[playerId] = viewMode;
+  renderPlayoffsTab();
+}
+window.setPlayerPlayoffViewMode = setPlayerPlayoffViewMode;
+window.renderPlayoffsTab = renderPlayoffsTab;
+
+function openLeagueRulesModal() {
+  const modal = document.getElementById("rules-modal");
+  if (modal) {
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+}
+function closeLeagueRulesModal(e) {
+  if (e && e.target && e.target.id !== "rules-modal" && !e.target.classList.contains("profile-modal-close") && !e.target.classList.contains("btn-modal-done")) {
+    return;
+  }
+  const modal = document.getElementById("rules-modal");
+  if (modal) {
+    modal.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+}
+window.openLeagueRulesModal = openLeagueRulesModal;
+window.closeLeagueRulesModal = closeLeagueRulesModal;
+
+// =========================================================
 // TOAST NOTIFICATION UTILITY
 // =========================================================
 let toastTimeout = null;
@@ -4317,8 +5652,17 @@ function showToast(msg) {
 }
 
 // =========================================================
-// PERSONALIZATION & "REMEMBER ME" ENGINE
+// AUTHENTICATED USER PROFILE & HEADER ENGINE
 // =========================================================
+
+function isUserInOGLeague() {
+  if (!state.authUser) return false;
+  if (state.myPlayer && PLAYERS.includes(state.myPlayer)) return true;
+  if (state.userProfile && state.userProfile.full_name && PLAYERS.includes(state.userProfile.full_name)) return true;
+  if (state.userProfile && state.userProfile.username && PLAYERS.includes(state.userProfile.username)) return true;
+  return false;
+}
+
 function renderHeaderProfile() {
   const btn = document.getElementById("btn-header-profile");
   if (!btn) return;
@@ -4335,6 +5679,7 @@ function renderHeaderProfile() {
       </div>
     `;
     btn.title = `Remembered as ${state.myPlayer} (Tap to change)`;
+    btn.style.display = "inline-flex";
   } else {
     btn.className = "header-profile-btn not-set";
     btn.innerHTML = `
@@ -4342,47 +5687,251 @@ function renderHeaderProfile() {
       <span class="header-profile-text">Set Me</span>
     `;
     btn.title = "Personalize: Choose your profile on this device";
+    btn.style.display = "inline-flex";
   }
 }
 
-function setMyPlayer(playerName) {
-  if (playerName && PLAYERS.includes(playerName)) {
-    state.myPlayer = playerName;
-    state.selectedPlayer = playerName;
+function getFavoriteTeam() {
+  const code = (state.userProfile && state.userProfile.favorite_team) || localStorage.getItem("sp_fav_team") || "KC";
+  return NFL_TEAMS[code] || NFL_TEAMS["KC"];
+}
+
+/**
+ * Calculates a team's actual NFL Win-Loss-Tie record for the current season.
+ * Prioritizes official live synced ESPN standings, falling back to all finalized games in state.data.
+ */
+function getNFLTeamCurrentRecord(teamCode) {
+  const norm = normalizeTeamCode(teamCode);
+  if (!norm) return { wins: 0, losses: 0, ties: 0, text: "0-0", label: "0-0 Record" };
+
+  // 1. Live or cached official ESPN NFL standings
+  if (state.nflStandings && state.nflStandings.teamRecords && state.nflStandings.teamRecords[norm]) {
+    const rec = state.nflStandings.teamRecords[norm];
+    const wins = rec.w || 0;
+    const losses = rec.l || 0;
+    const ties = rec.t || 0;
+    const text = ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+    return { wins, losses, ties, text, label: `${text} Record` };
+  }
+
+  // 2. Computed from all completed season games across all weeks
+  const localRec = getNFLTeamRecord(norm);
+  return {
+    wins: localRec.wins,
+    losses: localRec.losses,
+    ties: localRec.ties,
+    text: localRec.text,
+    label: `${localRec.text} Record`
+  };
+}
+
+async function setFavoriteTeam(teamCode) {
+  const norm = normalizeTeamCode(teamCode);
+  if (!norm || !NFL_TEAMS[norm]) return;
+
+  if (!state.userProfile) state.userProfile = {};
+  state.userProfile.favorite_team = norm;
+
+  try {
+    localStorage.setItem("sp_fav_team", norm);
+  } catch (e) {}
+
+  if (supabaseClient && state.authUser) {
     try {
-      localStorage.setItem(SAVED_USER_KEY, playerName);
-    } catch (e) {
-      console.warn("Could not save to localStorage:", e);
+      await supabaseClient
+        .from("profiles")
+        .update({ favorite_team: norm })
+        .eq("id", state.authUser.id);
+    } catch (err) {
+      console.warn("Could not save favorite team to Supabase:", err);
     }
-    showToast(`⭐ Remembered as ${playerName}! Your picks are highlighted.`);
-  } else {
-    state.myPlayer = null;
+  }
+
+  showToast(`⭐ Favorite team set to ${NFL_TEAMS[norm].name}!`);
+  closeTeamPicker();
+  renderAccountProfileModal();
+}
+
+function openTeamPicker() {
+  const modal = document.getElementById("team-picker-modal");
+  if (!modal) return;
+  renderTeamPickerGrid();
+  modal.classList.add("open");
+  const searchInput = document.getElementById("team-picker-search");
+  if (searchInput) {
+    searchInput.value = "";
+    setTimeout(() => searchInput.focus(), 150);
+  }
+}
+
+function closeTeamPicker(event) {
+  if (event && event.target && event.target.id !== "team-picker-modal" && !event.target.classList.contains("profile-modal-close") && !event.target.classList.contains("btn-modal-done")) {
+    return;
+  }
+  const modal = document.getElementById("team-picker-modal");
+  if (modal) modal.classList.remove("open");
+}
+
+function renderTeamPickerGrid(filterQuery = "") {
+  const grid = document.getElementById("team-picker-grid");
+  if (!grid) return;
+
+  const currentFav = getFavoriteTeam().code;
+  const q = (filterQuery || "").trim().toLowerCase();
+
+  const sortedTeams = CANONICAL_NFL_TEAMS.map(code => NFL_TEAMS[code]).filter(t => {
+    if (!q) return true;
+    return t.code.toLowerCase().includes(q) ||
+           t.name.toLowerCase().includes(q) ||
+           t.city.toLowerCase().includes(q) ||
+           t.conf.toLowerCase().includes(q) ||
+           t.div.toLowerCase().includes(q);
+  }).sort((a, b) => a.name.localeCompare(b.name));
+
+  grid.innerHTML = sortedTeams.map(t => {
+    const isSelected = (t.code === currentFav);
+    const textColor = getTeamContrastColor(t.color);
+    const rec = getNFLTeamCurrentRecord(t.code);
+    return `
+      <div class="team-picker-item ${isSelected ? "selected" : ""}" onclick="setFavoriteTeam('${t.code}')">
+        <div class="team-picker-chip" style="background: ${t.color}; color: ${textColor};">
+          ${t.code}
+        </div>
+        <div class="team-picker-details">
+          <div class="team-picker-name">${t.name}</div>
+          <div class="team-picker-meta">${rec.text} Record • ${t.conf} ${t.div}</div>
+        </div>
+        ${isSelected ? `<span class="team-picker-check">✓</span>` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+function filterTeamPickerList(query) {
+  renderTeamPickerGrid(query);
+}
+
+function renderAccountProfileModal() {
+  const accountCard = document.getElementById("profile-account-card");
+  if (!accountCard) return;
+
+  if (!state.authUser) {
+    accountCard.innerHTML = `
+      <div class="account-profile-hero">
+        <div class="account-avatar-large">
+          <div class="player-avatar" style="width:64px; height:64px; font-size:26px;">👤</div>
+        </div>
+        <div class="account-name-lg">Browsing as Guest</div>
+        <div class="account-email-sub">Sign in or create an account to customize your profile.</div>
+      </div>
+      <div style="margin-top:16px; text-align:center;">
+        <button type="button" class="btn-hero-primary" onclick="closeProfileModal(); openAuthModal();">
+          <span>🔮 Sign In / Join Free</span>
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const email = state.authUser.email || "";
+  const displayName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser?.user_metadata && state.authUser.user_metadata.username) || email.split("@")[0];
+  const favTeam = getFavoriteTeam();
+  const favTeamRec = getNFLTeamCurrentRecord(favTeam.code);
+
+  let memberSinceFormatted = "October 2026";
+  const rawDate = state.userProfile?.created_at || state.authUser?.created_at;
+  if (rawDate) {
     try {
-      localStorage.removeItem(SAVED_USER_KEY);
-    } catch (e) {
-      console.warn("Could not remove from localStorage:", e);
-    }
-    showToast("👤 Profile cleared (Browsing as Guest)");
+      const d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        memberSinceFormatted = d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        });
+      }
+    } catch (e) {}
   }
 
-  closeProfileModal();
-  renderApp();
+  accountCard.innerHTML = `
+    <div class="account-profile-hero">
+      <div class="account-avatar-large">
+        ${getUserAvatarHtml(68)}
+      </div>
+      <div class="account-name-lg">${displayName}</div>
+      <div class="account-email-sub">${email}</div>
+    </div>
+
+    <div class="account-details-list">
+      <!-- 1. Username row -->
+      <div class="account-detail-row">
+        <div class="detail-label-col">
+          <span class="detail-icon">👤</span>
+          <span class="detail-title">Username</span>
+        </div>
+        <div class="detail-val-col">
+          <span class="detail-val-text">${displayName}</span>
+        </div>
+      </div>
+
+      <!-- 2. Favorite Team card -->
+      <div class="account-detail-row fav-team-card-row">
+        <div class="fav-team-row-top">
+          <div class="detail-label-col">
+            <span class="detail-icon">🏈</span>
+            <span class="detail-title">Favorite Team</span>
+          </div>
+          <button type="button" class="btn-change-team" onclick="openTeamPicker()">
+            <span>Change Team</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+        <div class="fav-team-badge-full" onclick="openTeamPicker()" style="border-left: 4px solid ${favTeam.color};" title="Tap to choose from all 32 NFL teams">
+          <span class="fav-team-chip-lg" style="background: ${favTeam.color}; color: ${getTeamContrastColor(favTeam.color)};">${favTeam.code}</span>
+          <div class="fav-team-text-block">
+            <span class="fav-team-name-lg">${favTeam.name}</span>
+            <span class="fav-team-conf-sub">${favTeamRec.text} Record</span>
+          </div>
+          <span class="fav-team-edit-icon">✏️</span>
+        </div>
+      </div>
+
+      <!-- 3. Member Since row -->
+      <div class="account-detail-row">
+        <div class="detail-label-col">
+          <span class="detail-icon">📅</span>
+          <span class="detail-title">Member Since</span>
+        </div>
+        <div class="detail-val-col">
+          <span class="detail-val-text">${memberSinceFormatted}</span>
+        </div>
+      </div>
+
+      <!-- 4. League Scoring Rules row -->
+      <div class="account-detail-row league-rules-entry-row" style="cursor:pointer;" onclick="closeProfileModal(); openLeagueRulesModal();">
+        <div class="detail-label-col">
+          <span class="detail-icon">📋</span>
+          <div class="rules-row-titles">
+            <span class="detail-title">League Scoring Rules</span>
+            <span class="detail-sub-caption" style="display:block; font-size:0.7rem; color:var(--text-muted);">Classic Proximity (OG Rules)</span>
+          </div>
+        </div>
+        <div class="detail-val-col">
+          <button type="button" class="btn-change-team" style="pointer-events:none;">
+            <span>View Rules</span>
+            <span class="btn-arrow">&rarr;</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
-function toggleMyProfile(playerName) {
-  if (state.myPlayer === playerName) {
-    openProfileModal();
-  } else {
-    setMyPlayer(playerName);
-  }
-}
-
-function openProfileModal() {
-  const modal = document.getElementById("profile-modal");
+function renderProfileModalGrid() {
   const grid = document.getElementById("profile-modal-grid");
-  if (!modal || !grid) return;
+  if (!grid) return;
 
-  const lb = getSeasonLeaderboard();
+  const lb = (typeof getSeasonLeaderboard === "function") ? getSeasonLeaderboard() : [];
 
   grid.innerHTML = PLAYERS.map(pName => {
     const isCurrent = Boolean(state.myPlayer && state.myPlayer === pName);
@@ -4411,7 +5960,49 @@ function openProfileModal() {
   if (clearBtn) {
     clearBtn.style.display = state.myPlayer ? "inline-block" : "none";
   }
+}
 
+function setMyPlayer(playerName) {
+  if (playerName && PLAYERS.includes(playerName)) {
+    state.myPlayer = playerName;
+    state.selectedPlayer = playerName;
+    try {
+      localStorage.setItem(SAVED_USER_KEY, playerName);
+      localStorage.setItem("og_league_my_player", playerName);
+      if (typeof ogFavTeams !== "undefined" && ogFavTeams[playerName]) {
+        localStorage.setItem("sp_fav_team", ogFavTeams[playerName]);
+      }
+    } catch (e) {
+      console.warn("Could not save to localStorage:", e);
+    }
+    showToast(`⭐ Remembered as ${playerName}! Your picks are highlighted.`);
+  } else {
+    state.myPlayer = null;
+    try {
+      localStorage.removeItem(SAVED_USER_KEY);
+      localStorage.removeItem("og_league_my_player");
+    } catch (e) {
+      console.warn("Could not remove from localStorage:", e);
+    }
+    showToast("👤 Profile cleared (Browsing as Guest)");
+  }
+
+  closeProfileModal();
+  renderApp();
+}
+
+function toggleMyProfile(playerName) {
+  if (state.myPlayer === playerName) {
+    openProfileModal();
+  } else {
+    setMyPlayer(playerName);
+  }
+}
+
+function openProfileModal() {
+  const modal = document.getElementById("profile-modal");
+  if (!modal) return;
+  renderProfileModalGrid();
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
 }
@@ -4425,11 +6016,34 @@ function closeProfileModal(event) {
   document.body.style.overflow = "";
 }
 
-// Close modals on ESC key
+// Close modals on ESC key & handle Enter on auth modal
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeProfileModal();
+    closeLeagueRulesModal();
     closeH2HPicker();
+    closeAuthModal();
+    closeCreateSheetModal();
+  }
+  if (e.key === "Enter") {
+    const authModal = document.getElementById("auth-modal");
+    if (authModal && authModal.classList.contains("active")) {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.id === "auth-username-input" || activeEl.id === "auth-email-input" || activeEl.id === "auth-password-input")) {
+        e.preventDefault();
+        handleAuthSubmit();
+        return;
+      }
+    }
+    const createSheetModal = document.getElementById("create-sheet-modal");
+    if (createSheetModal && createSheetModal.classList.contains("active")) {
+      const activeEl = document.activeElement;
+      if (activeEl && activeEl.id === "sheet-name-input") {
+        e.preventDefault();
+        handleCreateSheetSubmit();
+        return;
+      }
+    }
   }
 });
 
@@ -4442,8 +6056,6 @@ window.toggleMatchupCollapse = toggleMatchupCollapse;
 window.toggleAllMatchups = toggleAllMatchups;
 window.openProfileModal = openProfileModal;
 window.closeProfileModal = closeProfileModal;
-window.setMyPlayer = setMyPlayer;
-window.toggleMyProfile = toggleMyProfile;
 window.setPlayerViewMode = setPlayerViewMode;
 window.startH2HComparison = startH2HComparison;
 window.openH2HPicker = openH2HPicker;
@@ -4457,3 +6069,5177 @@ window.addEventListener("hashchange", () => {
   restoreNavState();
   switchTab(state.activeTab, false);
 });
+
+// =========================================================
+// UNIFIED SPORTS PSYCHIC MERGED ENGINE
+// League Switcher, Multi-League State & Psychic Forecaster
+// =========================================================
+
+state.activeLeague = "OG League"; // "OG League" | "solo"
+
+function renderLeagueDrawerContent() {
+  const container = document.getElementById("drawer-leagues-list");
+  if (!container) return;
+
+  const activeIsHome = (state.appMode === "lobby");
+  const activeIsOG = (state.activeLeague === "OG League") && (state.appMode === "league") && !state.activeLeagueData;
+  const activeIsSolo = (state.activeLeague === "solo" || state.activeLeague === "Solo Psychic") && (state.appMode === "solo");
+
+  // Check if user has OG League access (either historic member or member in Supabase)
+  const ogLeagueRecord = (state.userLeagues || []).find(l => 
+    l.name === "OG League" || 
+    l.join_code === "OG2026" || 
+    l.id === "e0000000-0000-0000-0000-000000000001"
+  );
+  const hasOG = isUserInOGLeague() || Boolean(ogLeagueRecord);
+  const isOGCommish = Boolean(ogLeagueRecord && (ogLeagueRecord.role === "commissioner" || (state.authUser && ogLeagueRecord.commissioner_id === state.authUser.id)));
+
+  let html = "";
+
+  // 1. Home Option
+  html += `
+    <div id="drawer-card-home" class="league-option-card ${activeIsHome ? "active" : ""}" onclick="closeLeagueDrawer(); exitToLobby();">
+      <div class="league-card-left">
+        <div class="league-icon-box" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);">🏠</div>
+        <div>
+          <div class="league-title-row">
+            <span class="league-name">Home</span>
+            ${activeIsHome ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+          </div>
+          <div class="league-meta-row">Game Matchups, NFL Scores & Ways to Play</div>
+        </div>
+      </div>
+      ${activeIsHome ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Go &rarr;</span>`}
+    </div>
+  `;
+
+  // 2. ONE Unified OG League Option
+  if (hasOG) {
+    html += `
+      <div id="drawer-card-og" class="league-option-card ${activeIsOG ? "active" : ""}" onclick="selectLeague('OG League')">
+        <div class="league-card-left">
+          <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">🏆</div>
+          <div>
+            <div class="league-title-row">
+              <span class="league-name">OG League</span>
+              ${isOGCommish ? `<span class="league-role-tag commissioner">COMMISH</span>` : ""}
+              ${activeIsOG ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+            </div>
+            <div class="league-meta-row">
+              <span class="league-join-code-tag">🔑 OG2026</span> • 12 Members • 2026 NFL Season
+            </div>
+          </div>
+        </div>
+        ${activeIsOG ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+      </div>
+    `;
+  }
+
+  // 3. User's Custom Leagues (Excluding OG League!)
+  const customLeaguesOnly = (state.userLeagues || []).filter(l => 
+    l.name !== "OG League" && 
+    l.join_code !== "OG2026" && 
+    l.id !== "e0000000-0000-0000-0000-000000000001"
+  );
+
+  if (state.authUser && customLeaguesOnly.length > 0) {
+    customLeaguesOnly.forEach(l => {
+      const isCurrentActive = Boolean(state.activeLeagueData && state.activeLeagueData.id === l.id && state.appMode === "league");
+      const isCommish = l.role === "commissioner" || (state.authUser && l.commissioner_id === state.authUser.id);
+      const formatLabel = l.scoring_format === "winner_only" ? "Winner Only" : "Classic Proximity";
+
+      html += `
+        <div id="drawer-card-league-${l.id}" class="league-option-card ${isCurrentActive ? "active" : ""}" onclick="selectLeague('${l.id}')">
+          <div class="league-card-left">
+            <div class="league-icon-box" style="background: rgba(245, 184, 0, 0.15); border-color: rgba(245, 184, 0, 0.4);">🏆</div>
+            <div>
+              <div class="league-title-row">
+                <span class="league-name">${l.name}</span>
+                <span class="league-role-tag ${isCommish ? "commissioner" : "member"}">${isCommish ? "COMMISH" : "MEMBER"}</span>
+                ${isCurrentActive ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+              </div>
+              <div class="league-meta-row">
+                <span class="league-join-code-tag">🔑 ${l.join_code}</span> • ${formatLabel}
+              </div>
+            </div>
+          </div>
+          ${isCurrentActive ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+        </div>
+      `;
+    });
+  }
+
+  // 4. Solo Psychic Play (Available to all users)
+  html += `
+    <div id="drawer-card-solo" class="league-option-card ${activeIsSolo ? "active" : ""}" onclick="enterSoloPlay()">
+      <div class="league-card-left">
+        <div class="league-icon-box icon-solo">🔮</div>
+        <div>
+          <div class="league-title-row">
+            <span class="league-name">Solo Psychic Play</span>
+            ${activeIsSolo ? `<span class="league-status-tag">ACTIVE</span>` : ""}
+          </div>
+          <div class="league-meta-row">Personal Full-Season Forecasting & Accuracies</div>
+        </div>
+      </div>
+      ${activeIsSolo ? `<span class="league-check-icon">✓</span>` : `<span class="league-switch-arrow">Enter &rarr;</span>`}
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function openLeagueDrawer() {
+  const drawer = document.getElementById("league-drawer");
+  const btn = document.getElementById("btn-league-switcher");
+  if (!drawer) return;
+  renderLeagueDrawerContent();
+  drawer.classList.add("open");
+  if (btn) btn.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeLeagueDrawer(event) {
+  if (event && event.target && event.target.id !== "league-drawer" && !event.target.classList.contains("drawer-handle")) {
+    return;
+  }
+  const drawer = document.getElementById("league-drawer");
+  const btn = document.getElementById("btn-league-switcher");
+  if (drawer) drawer.classList.remove("open");
+  if (btn) btn.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+/**
+ * Dynamically binds the Global Standings Social Proof Strip in the Lobby Hero
+ * to ensure it always accurately reflects the live Week leader and point total.
+ */
+function updateGlobalStandingsRibbon() {
+  const leadNameEl = document.getElementById("hero-global-lead-name");
+  const leadPtsEl = document.getElementById("hero-global-lead-pts");
+  if (!leadNameEl && !leadPtsEl) return;
+
+  let leaderName = "Dishman";
+  let leaderPts = 1000;
+
+  let board = (state.data && Array.isArray(state.data.leaderboard) && state.data.leaderboard.length > 0)
+    ? state.data.leaderboard
+    : null;
+  if (!board && typeof computeSeasonLeaderboard === "function" && state.data) {
+    board = computeSeasonLeaderboard(state.data);
+  }
+  if (!board && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && Array.isArray(OG_LEAGUE_INITIAL_DATA.leaderboard)) {
+    board = OG_LEAGUE_INITIAL_DATA.leaderboard;
+  }
+
+  if (board && board.length > 0) {
+    leaderName = board[0].name || board[0].username || "Dishman";
+    leaderPts = board[0].points || board[0].total_points || 1000;
+  }
+
+  if (leadNameEl) leadNameEl.textContent = leaderName;
+  if (leadPtsEl) leadPtsEl.textContent = `${Number(leaderPts).toLocaleString()} PTS`;
+}
+
+function renderLobbyHero() {
+  updateGlobalStandingsRibbon();
+
+  const guestBlock = document.getElementById("hero-guest-block");
+  const authBlock = document.getElementById("hero-auth-block");
+  const heroName = document.getElementById("hero-user-name");
+  const weekNumEl = document.getElementById("hero-week-num");
+  const progressCountEl = document.getElementById("hero-picks-progress-count");
+  const progressBarEl = document.getElementById("hero-picks-progress-bar");
+  const seasonPtsEl = document.getElementById("hero-season-pts");
+  const seasonRankEl = document.getElementById("hero-season-rank");
+  const lockStatusEl = document.getElementById("hero-3x-status");
+  const myLeagueTitle = document.getElementById("hub-my-league-title");
+  const myLeagueSub = document.getElementById("hub-my-league-sub");
+
+  if (!state.authUser) {
+    if (guestBlock) guestBlock.style.display = "block";
+    if (authBlock) authBlock.style.display = "none";
+    return;
+  }
+
+  if (guestBlock) guestBlock.style.display = "none";
+  if (authBlock) authBlock.style.display = "block";
+
+  const firstName = state.myPlayer || (state.userProfile && state.userProfile.username) || (state.userProfile && state.userProfile.full_name ? state.userProfile.full_name.split(" ")[0] : null) || (state.authUser.user_metadata && state.authUser.user_metadata.username) || (state.authUser.email ? state.authUser.email.split("@")[0] : "Psychic");
+  if (heroName) heroName.textContent = firstName;
+
+  // Active week & pick progress calculation
+  const currentWk = state.currentWeek || getCurrentNFLWeek() || 8;
+  if (weekNumEl) weekNumEl.textContent = currentWk;
+
+  const weekKey = `Week ${currentWk}`;
+  let weekGames = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
+    ? state.data.weeks[weekKey].games
+    : [];
+  if (weekGames.length === 0 && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+    weekGames = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
+  }
+
+  const sheet = getOrCreateMasterPickSheet();
+  const mode = state.soloCampaignMode || "season";
+  const activePicks = getActiveSoloPicks(sheet, mode);
+  const totalCount = weekGames.length || 14;
+  let completedCount = 0;
+  let has3xLock = false;
+
+  weekGames.forEach(g => {
+    const pk = activePicks[g.id];
+    if (pk) {
+      if (isSoloPickComplete(g.id, pk)) {
+        completedCount++;
+      }
+      if (pk.multiplier) {
+        has3xLock = true;
+      }
+    }
+  });
+
+  const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  if (progressCountEl) progressCountEl.textContent = `${completedCount} of ${totalCount} Complete`;
+  if (progressBarEl) progressBarEl.style.width = `${progressPct}%`;
+
+  // Season Stats Snapshot
+  calculateSheetStats(sheet);
+  const isSeasonLocked = Boolean(sheet.is_season_locked);
+  const seasonPts = isSeasonLocked ? (sheet.season_total_points || 0) : 0;
+  if (seasonPtsEl) {
+    seasonPtsEl.textContent = isSeasonLocked ? `${seasonPts} PTS` : "0 PTS (Draft)";
+  }
+
+  if (lockStatusEl) {
+    lockStatusEl.textContent = has3xLock ? "⭐ Active" : "⚠️ Needed";
+    lockStatusEl.style.color = has3xLock ? "#ffd700" : "#f87171";
+  }
+
+  if (seasonRankEl) {
+    if (isSeasonLocked) {
+      let r = 1;
+      const board = (state.data && state.data.leaderboard) || [];
+      for (const entry of board) {
+        if ((entry.points || 0) > seasonPts) {
+          r++;
+        }
+      }
+      seasonRankEl.textContent = `#${r}`;
+    } else {
+      seasonRankEl.textContent = "Draft";
+    }
+  }
+
+  // Primary League Shortcut
+  if (myLeagueTitle && myLeagueSub) {
+    const leagues = state.userLeagues || [];
+    if (isUserInOGLeague()) {
+      myLeagueTitle.textContent = "OG League";
+      myLeagueSub.textContent = "12 Members • View League →";
+    } else if (leagues.length > 0) {
+      const topLeague = leagues[0];
+      myLeagueTitle.textContent = topLeague.name || "Custom League";
+      myLeagueSub.textContent = `${topLeague.members_count || 1} Members • View League →`;
+    } else {
+      myLeagueTitle.textContent = "My Leagues";
+      myLeagueSub.textContent = "+ Create or Join a League →";
+    }
+  }
+}
+
+function handleHubLeagueClick() {
+  openLeagueDrawer();
+}
+
+function handleHubSoloClick() {
+  enterSoloPlay();
+}
+
+function updateGuestSaveBanner() {
+  const banner = document.getElementById("guest-floating-save-bar");
+  if (!banner) return;
+
+  // Only show for unauthenticated users in lobby or solo mode
+  if (state.authUser || state.appMode === "league") {
+    banner.style.display = "none";
+    return;
+  }
+
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) {
+    banner.style.display = "none";
+    return;
+  }
+
+  const allPickKeys = new Set();
+  const checkPickObj = (obj) => {
+    if (!obj || typeof obj !== "object") return;
+    Object.keys(obj).forEach(k => {
+      const p = obj[k];
+      if (!p) return;
+      const hasWinner = Boolean(p.winner);
+      const hasScore = (p.awayScore !== undefined && p.awayScore !== null && p.awayScore !== "") ||
+                       (p.homeScore !== undefined && p.homeScore !== null && p.homeScore !== "");
+      if (hasWinner || hasScore) {
+        allPickKeys.add(k);
+      }
+    });
+  };
+  checkPickObj(sheet.picks);
+  checkPickObj(sheet.season_picks);
+  checkPickObj(sheet.weekly_picks);
+
+  const pickCount = allPickKeys.size;
+  if (pickCount >= 1) {
+    const countEl = document.getElementById("guest-save-count");
+    if (countEl) countEl.textContent = pickCount;
+    const nounEl = document.getElementById("guest-save-noun");
+    if (nounEl) nounEl.textContent = pickCount === 1 ? "Pick" : "Picks";
+    banner.style.display = "flex";
+  } else {
+    banner.style.display = "none";
+  }
+}
+
+function updateAppShellForMode() {
+  const isLobby = state.appMode === "lobby";
+  const isSolo = state.appMode === "solo";
+  const isLeague = state.appMode === "league";
+  const isAuth = Boolean(state.authUser);
+
+  document.body.classList.toggle("is-lobby-mode", isLobby);
+  document.body.classList.toggle("is-solo-mode", isSolo);
+  document.body.classList.toggle("is-league-mode", isLeague);
+  document.body.classList.toggle("is-authenticated", isAuth);
+  document.body.classList.toggle("is-guest", !isAuth);
+
+  const brandTitle = document.getElementById("header-brand-title");
+  const brandSub = document.getElementById("header-brand-sub");
+  const activePill = document.getElementById("header-active-league-pill");
+
+  if (isLobby) {
+    if (brandTitle) brandTitle.textContent = "Sports Psychic";
+    if (brandSub) brandSub.textContent = "Know the Game";
+    if (activePill) {
+      activePill.textContent = "Home";
+    }
+  } else if (isSolo) {
+    if (brandTitle) brandTitle.textContent = "Solo Psychic";
+    if (brandSub) brandSub.textContent = "SPORTS PSYCHIC";
+    if (activePill) {
+      activePill.textContent = "Solo Play";
+    }
+  } else {
+    if (state.activeLeagueData) {
+      if (brandTitle) brandTitle.textContent = state.activeLeagueData.name;
+      if (brandSub) {
+        brandSub.innerHTML = `<span class="cl-code-copy-pill" onclick="event.stopPropagation(); copyLeagueCode('${state.activeLeagueData.join_code}')" title="Click to copy invite code">🔑 ${state.activeLeagueData.join_code}</span>`;
+      }
+      if (activePill) {
+        activePill.textContent = state.activeLeagueData.name;
+      }
+    } else {
+      const isOG = (state.activeLeague === "OG League");
+      if (brandTitle) brandTitle.textContent = isOG ? "OG League" : (state.activeLeague || "League");
+      if (brandSub) {
+        brandSub.textContent = "Official Season Tracker";
+      }
+      if (activePill) {
+        activePill.textContent = isOG ? "OG League" : (state.activeLeague || "League");
+      }
+    }
+  }
+
+  renderHeaderProfile();
+  renderLobbyHero();
+  updateGuestSaveBanner();
+}
+
+function selectLeague(leagueId) {
+  closeLeagueDrawer();
+  if (leagueId === "home" || leagueId === "lobby") {
+    exitToLobby();
+    return;
+  }
+  if (leagueId === "solo") {
+    enterSoloPlay();
+    return;
+  }
+  if (leagueId === "OG League" || leagueId === "OG2026" || leagueId === "e0000000-0000-0000-0000-000000000001") {
+    state.activeLeagueData = null;
+    enterLeagueView("OG League");
+    return;
+  }
+  enterCustomLeague(leagueId);
+}
+
+function enterLeagueView(leagueId = "OG League") {
+  if (leagueId !== "OG League" && leagueId !== "OG2026" && leagueId !== "e0000000-0000-0000-0000-000000000001") {
+    enterCustomLeague(leagueId);
+    return;
+  }
+
+  // OG League is 100% open and view-only for all friends & family (zero sign-in required)
+  state.activeLeagueData = null;
+  state.appMode = "league";
+  state.activeLeague = "OG League";
+  try {
+    sessionStorage.setItem("sp_app_mode", "league");
+    sessionStorage.removeItem("sp_active_league_id");
+  } catch (e) {}
+
+  // In League mode, anchor to current NFL league week (Wednesday rollover) to review standings and results
+  const leagueWk = getCurrentNFLWeek();
+  if (state.currentWeek !== leagueWk) {
+    state.currentWeek = leagueWk;
+    if (state.data) state.data.activeWeek = `Week ${leagueWk}`;
+    updateStripButtons();
+  }
+
+  closeLeagueDrawer();
+  updateAppShellForMode();
+  switchTab("leaderboard");
+}
+
+async function enterCustomLeague(leagueId) {
+  if (leagueId === "OG League" || leagueId === "OG2026" || leagueId === "e0000000-0000-0000-0000-000000000001") {
+    enterLeagueView("OG League");
+    return;
+  }
+
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account to enter leagues.");
+    openAuthModal("Sign in or create an account to access leagues");
+    return;
+  }
+
+  initSupabaseClient();
+  let leagueObj = null;
+
+  if (Array.isArray(state.userLeagues)) {
+    leagueObj = state.userLeagues.find(l => l.id === leagueId || l.join_code === leagueId || l.name === leagueId);
+  }
+
+  if (!leagueObj && supabaseClient) {
+    try {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leagueId);
+      const query = supabaseClient.from("leagues").select("*");
+      const { data } = isUuid ? await query.eq("id", leagueId).maybeSingle() : await query.eq("join_code", leagueId).maybeSingle();
+      if (data) leagueObj = data;
+    } catch (e) {
+      console.warn("Failed fetching league:", e);
+    }
+  }
+
+  if (!leagueObj) {
+    showToast("⚠️ Could not load league details.");
+    return;
+  }
+
+  if (leagueObj.name === "OG League" || leagueObj.join_code === "OG2026" || leagueObj.id === "e0000000-0000-0000-0000-000000000001") {
+    enterLeagueView("OG League");
+    return;
+  }
+
+  // Ensure user is in league_members
+  if (supabaseClient && state.authUser) {
+    try {
+      const { data: mem } = await supabaseClient
+        .from("league_members")
+        .select("role")
+        .eq("league_id", leagueObj.id)
+        .eq("user_id", state.authUser.id)
+        .maybeSingle();
+
+      if (!mem) {
+        await supabaseClient
+          .from("league_members")
+          .insert({
+            league_id: leagueObj.id,
+            user_id: state.authUser.id,
+            role: "member"
+          });
+        await loadUserLeagues();
+      }
+    } catch (err) {
+      console.warn("Error verifying league membership:", err);
+    }
+  }
+
+  state.activeLeagueData = leagueObj;
+  state.activeLeague = leagueObj.name;
+  state.appMode = "league";
+  try {
+    sessionStorage.setItem("sp_app_mode", "league");
+    sessionStorage.setItem("sp_active_league_id", leagueObj.id);
+  } catch (e) {}
+
+  // In League mode, anchor to current NFL league week (Wednesday rollover) to review standings and results
+  const leagueWk = getCurrentNFLWeek();
+  if (state.currentWeek !== leagueWk) {
+    state.currentWeek = leagueWk;
+    if (state.data) state.data.activeWeek = `Week ${leagueWk}`;
+    updateStripButtons();
+  }
+
+  closeLeagueDrawer();
+  updateAppShellForMode();
+  await loadCustomLeagueData(leagueObj.id);
+  switchTab("matchups");
+  showToast(`🏆 Welcome to ${leagueObj.name}!`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function enterSoloPlay() {
+  state.appMode = "solo";
+  state.activeLeague = "solo";
+  state.activeSheetId = null;
+  try {
+    sessionStorage.setItem("sp_app_mode", "solo");
+  } catch (e) {}
+
+  closeLeagueDrawer();
+  updateAppShellForMode();
+  await loadSoloPickSheets();
+  renderSoloView();
+  showToast("🔮 Entered Solo Psychic");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function exitToLobby() {
+  state.appMode = "lobby";
+  state.activeLeagueData = null;
+  state.activeSheetId = null;
+  try {
+    sessionStorage.setItem("sp_app_mode", "lobby");
+    sessionStorage.removeItem("sp_active_league_id");
+  } catch (e) {}
+
+  // In Lobby mode, advance to open prediction week if current NFL week is locked
+  const openWk = getOpenPredictionWeek();
+  if (state.currentWeek !== openWk) {
+    state.currentWeek = openWk;
+    if (state.data) state.data.activeWeek = `Week ${openWk}`;
+    updateStripButtons();
+    syncWeek(openWk, true);
+  }
+
+  updateAppShellForMode();
+  switchTab("matchups");
+  showToast("🏠 Returned to Home Lobby");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function handleBrandClick() {
+  if (state.appMode === "solo") {
+    state.activeSheetId = null;
+    renderSoloView();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (state.appMode === "league") {
+    switchTab("leaderboard");
+  } else {
+    switchTab("matchups");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+// =========================================================
+// SOLO PSYCHIC PLAY & PICK SHEETS ENGINE
+// =========================================================
+
+async function loadSoloPickSheets() {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  let localSheets = [];
+  try {
+    const raw = localStorage.getItem(`sp_solo_sheets_${userId}`);
+    if (raw) localSheets = JSON.parse(raw);
+  } catch (e) {}
+
+  if (supabaseClient && state.authUser) {
+    try {
+      const { data, error } = await supabaseClient
+        .from("pick_sheets")
+        .select("*")
+        .eq("user_id", state.authUser.id)
+        .order("created_at", { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const map = new Map();
+        data.forEach(s => map.set(s.id, s));
+        localSheets.forEach(s => {
+          if (!map.has(s.id)) map.set(s.id, s);
+        });
+        state.pickSheets = Array.from(map.values());
+        try {
+          localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
+        } catch (e) {}
+        return;
+      }
+    } catch (err) {
+      console.warn("Notice: pick_sheets query falling back to local storage:", err);
+    }
+  }
+
+  state.pickSheets = localSheets;
+}
+
+async function saveSoloPickSheet(sheet) {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  if (!Array.isArray(state.pickSheets)) state.pickSheets = [];
+
+  const existingIdx = state.pickSheets.findIndex(s => s.id === sheet.id);
+  if (existingIdx >= 0) {
+    state.pickSheets[existingIdx] = sheet;
+  } else {
+    state.pickSheets.unshift(sheet);
+  }
+
+  try {
+    localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
+  } catch (e) {}
+
+  if (supabaseClient && state.authUser && sheet.user_id === state.authUser.id) {
+    try {
+      const payload = {
+        id: sheet.id,
+        user_id: state.authUser.id,
+        name: sheet.name || "Master Pick Sheet",
+        submission_label: sheet.submission_label || "Solo Prophecy",
+        format: sheet.format || "season",
+        season_year: sheet.season_year || 2026,
+        active_week: sheet.active_week || getCurrentNFLWeek(),
+        is_locked: Boolean(sheet.is_season_locked || sheet.is_locked),
+        is_season_locked: Boolean(sheet.is_season_locked),
+        season_locked_at: sheet.season_locked_at || null,
+        season_picks: sheet.season_picks || {},
+        weekly_picks: sheet.weekly_picks || {},
+        total_picks: sheet.total_picks || 0,
+        total_points: sheet.total_points || 0,
+        accuracy_rate: (sheet.accuracy_rate !== undefined && sheet.accuracy_rate !== null) ? sheet.accuracy_rate : null,
+        picks: sheet.picks || {},
+        updated_at: new Date().toISOString()
+      };
+      await supabaseClient.from("pick_sheets").upsert(payload, { onConflict: "id" });
+    } catch (e) {
+      console.warn("Notice: Supabase pick_sheets upsert notice:", e);
+    }
+  }
+}
+
+/**
+ * Parses kickoff string into Date object.
+ * Supports "Thu 10/1 8:15 PM", "Mon 11/2 • 7:15 PM", "Mon 11/2 @ 7:15pm (MNF)", ISO dates, etc.
+ * Anchors times to US Central Time (America/Chicago) unless explicit timezone is provided,
+ * ensuring kickoff lock timing is identical across all user devices worldwide.
+ */
+function parseGameKickoff(dateTimeStr) {
+  if (!dateTimeStr || typeof dateTimeStr !== "string") return null;
+
+  // Direct ISO 8601 parsing (e.g. ESPN "2026-11-03T01:15Z")
+  const parsedDirect = new Date(dateTimeStr);
+  if (!isNaN(parsedDirect.getTime()) && parsedDirect.getFullYear() >= 2026) {
+    return parsedDirect;
+  }
+
+  // Regex matching "Mon 11/2 @ 7:15pm (MNF)", "Mon 11/2 • 7:15 PM", "11/2 - 7:15 PM EST", "Sun 11/1 12:00pm", etc.
+  const m = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})(?:[^\d\n:]+)(\d{1,2}):(\d{2})\s*(AM|PM)?(?:\s*([A-Z]{2,4}))?/i);
+  if (m) {
+    const month = parseInt(m[1], 10);
+    const day = parseInt(m[2], 10);
+    let hours = parseInt(m[3], 10);
+    const minutes = parseInt(m[4], 10);
+    const ampm = (m[5] || "").toUpperCase();
+    const tz = (m[6] || "").toUpperCase();
+
+    if (ampm === "PM" && hours < 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+    const year = (month <= 2) ? 2027 : 2026;
+
+    // Explicit or US Central Time (America/Chicago) offset:
+    // In 2026, Daylight Saving Time ends Sunday Nov 1, 2026 at 2:00 AM (CDT -> CST).
+    let offsetStr = "-06:00"; // Default CST
+    if (tz === "EST") offsetStr = "-05:00";
+    else if (tz === "EDT") offsetStr = "-04:00";
+    else if (tz === "PST") offsetStr = "-08:00";
+    else if (tz === "PDT") offsetStr = "-07:00";
+    else if (tz === "MST") offsetStr = "-07:00";
+    else if (tz === "MDT") offsetStr = "-06:00";
+    else {
+      // US Central Time: CDT (-05:00) before Nov 1, 2026 02:00 AM; CST (-06:00) thereafter
+      if (year === 2026 && (month < 11 || (month === 11 && day === 1 && hours < 2))) {
+        offsetStr = "-05:00"; // CDT
+      } else {
+        offsetStr = "-06:00"; // CST
+      }
+    }
+
+    const isoStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00${offsetStr}`;
+    const d = new Date(isoStr);
+    if (!isNaN(d.getTime())) return d;
+    return new Date(year, month - 1, day, hours, minutes, 0);
+  }
+
+  // Fallback for date-only formats: default to Sunday 12:00 PM Central (noon kickoff slate)
+  const dateOnlyMatch = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})/);
+  if (dateOnlyMatch) {
+    const month = parseInt(dateOnlyMatch[1], 10);
+    const day = parseInt(dateOnlyMatch[2], 10);
+    const year = (month <= 2) ? 2027 : 2026;
+    const offsetStr = (year === 2026 && (month < 11 || (month === 11 && day === 1 && 12 < 2))) ? "-05:00" : "-06:00";
+    const isoStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T12:00:00${offsetStr}`;
+    const d = new Date(isoStr);
+    if (!isNaN(d.getTime())) return d;
+    return new Date(year, month - 1, day, 12, 0, 0);
+  }
+
+  return null;
+}
+
+/**
+ * Determines if an NFL game is locked for user predictions:
+ * 1. Final games are always locked.
+ * 2. Games with recorded scores (>0) are locked.
+ * 3. Games in past NFL weeks (prior to current NFL week) are 100% locked.
+ * 4. Games whose official kickoff date/time has passed are locked.
+ * 5. Pre-kickoff safeguard: If ESPN broadcast is live (state="in") but official kickoff
+ *    has not arrived yet and scores are 0-0/null, keep picks open until official kickoff!
+ */
+function isGameLockedForPicking(game, weekNum = null) {
+  if (!game) return true;
+  if (game.isFinal) return true;
+  if (game.awayScore !== null && game.homeScore !== null && (game.awayScore > 0 || game.homeScore > 0)) {
+    return true;
+  }
+  const currWk = getCurrentNFLWeek();
+  let w = weekNum;
+  if (!w && game.id) {
+    const m = game.id.match(/Week\s*(\d+)/i);
+    if (m) w = parseInt(m[1], 10);
+  }
+  if (w && w < currWk) return true;
+
+  // Resolve kickoff timestamp: prefer exact game.kickoffTime, fallback to parsed game.dateTime
+  let koTime = null;
+  if (game.kickoffTime) {
+    const d = new Date(game.kickoffTime);
+    if (!isNaN(d.getTime())) koTime = d.getTime();
+  }
+  if (koTime === null && game.dateTime) {
+    const ko = parseGameKickoff(game.dateTime);
+    if (ko && !isNaN(ko.getTime())) koTime = ko.getTime();
+  }
+
+  const now = Date.now();
+
+  // If game is flagged live:
+  // But if scheduled kickoff has NOT arrived yet and score is 0-0/null, ESPN is in pre-game TV broadcast;
+  // keep picks open until official kickoff time!
+  if (game.isLive) {
+    const hasScore = (game.awayScore > 0 || game.homeScore > 0);
+    if (!hasScore && koTime !== null && koTime > now) {
+      return false; // Still before kickoff!
+    }
+    return true;
+  }
+
+  // Lock if official kickoff time has passed
+  if (koTime !== null && koTime <= now) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Returns human-readable lock badge text and styling for a game.
+ */
+function getGameLockStatus(game, weekNum = null) {
+  const locked = isGameLockedForPicking(game, weekNum);
+  if (!locked) {
+    return {
+      isLocked: false,
+      badgeText: "",
+      badgeClass: "badge-open",
+      detail: "Make your predictions before kickoff"
+    };
+  }
+  if (game && game.isFinal) {
+    return {
+      isLocked: true,
+      badgeText: "FINAL",
+      badgeClass: "badge-final",
+      detail: "Game is final"
+    };
+  }
+  if (game && game.isLive) {
+    return {
+      isLocked: true,
+      badgeText: "LIVE",
+      badgeClass: "badge-live",
+      detail: "Game in progress"
+    };
+  }
+  return {
+    isLocked: true,
+    badgeText: "LOCKED",
+    badgeClass: "badge-started",
+    detail: "Kickoff has passed"
+  };
+}
+
+/**
+ * Finds game object by ID across state.data and initial schedule.
+ */
+function findGameById(gameId) {
+  if (!gameId) return null;
+  if (state.data && state.data.weeks) {
+    for (const wKey in state.data.weeks) {
+      const wk = state.data.weeks[wKey];
+      if (wk && Array.isArray(wk.games)) {
+        const found = wk.games.find(g => g.id === gameId);
+        if (found) return found;
+      }
+    }
+  }
+  if (typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks) {
+    for (const wKey in OG_LEAGUE_INITIAL_DATA.weeks) {
+      const wk = OG_LEAGUE_INITIAL_DATA.weeks[wKey];
+      if (wk && Array.isArray(wk.games)) {
+        const found = wk.games.find(g => g.id === gameId);
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Helper to determine if a solo pick is fully made (has a winning team with a winning score).
+ */
+function isSoloPickComplete(gameId, pick) {
+  if (!pick || !pick.winner) return false;
+  const pAway = (pick.awayScore !== null && pick.awayScore !== undefined && pick.awayScore !== "" && !isNaN(pick.awayScore))
+    ? parseInt(pick.awayScore, 10)
+    : null;
+  const pHome = (pick.homeScore !== null && pick.homeScore !== undefined && pick.homeScore !== "" && !isNaN(pick.homeScore))
+    ? parseInt(pick.homeScore, 10)
+    : null;
+
+  if (pAway === null || pHome === null || pAway === pHome) return false;
+
+  const game = findGameById(gameId);
+  if (!game || !game.matchup) {
+    return pAway !== pHome;
+  }
+  const parts = game.matchup.split("@").map(s => s.trim().toUpperCase());
+  const awayTeam = parts[0] || "";
+  const homeTeam = parts[1] || "";
+
+  const pickWinnerNorm = normalizeTeamCode(pick.winner);
+  const awayNorm = normalizeTeamCode(awayTeam);
+  const homeNorm = normalizeTeamCode(homeTeam);
+
+  if (pickWinnerNorm === awayNorm) {
+    return pAway > pHome;
+  }
+  if (pickWinnerNorm === homeNorm) {
+    return pHome > pAway;
+  }
+  return false;
+}
+
+/**
+ * Calculates the absolute minimum score difference across ALL participants in the global leaderboard
+ * for a specific game, considering only predictions that chose the winning team.
+ */
+function getGlobalMinDiffForGame(gameId, actualWinnerNorm, awayScore, homeScore) {
+  let minDiff = Infinity;
+  const game = findGameById(gameId);
+  if (!game) return Infinity;
+
+  // 1. Check all 12 OG League baseline predictions for this game
+  const ogPicks = game.picks || {};
+  for (const pName in ogPicks) {
+    const pk = ogPicks[pName];
+    if (pk && pk.winner && normalizeTeamCode(pk.winner) === actualWinnerNorm) {
+      const oA = parseInt(pk.awayScore, 10);
+      const oH = parseInt(pk.homeScore, 10);
+      if (!isNaN(oA) && !isNaN(oH)) {
+        const d = Math.abs(oA - awayScore) + Math.abs(oH - homeScore);
+        if (d < minDiff) minDiff = d;
+      }
+    }
+  }
+
+  // 2. Check any custom league / global submissions for this game
+  if (state.customLeaguePicks && Array.isArray(state.customLeaguePicks[gameId])) {
+    state.customLeaguePicks[gameId].forEach(cp => {
+      if (cp && cp.picked_winner && normalizeTeamCode(cp.picked_winner) === actualWinnerNorm) {
+        const oA = parseInt(cp.predicted_away, 10);
+        const oH = parseInt(cp.predicted_home, 10);
+        if (!isNaN(oA) && !isNaN(oH)) {
+          const d = Math.abs(oA - awayScore) + Math.abs(oH - homeScore);
+          if (d < minDiff) minDiff = d;
+        }
+      }
+    });
+  }
+
+  return minDiff;
+}
+
+/**
+ * Computes live points, pick totals, and accuracy rate for a solo sheet.
+ * A pick is only counted in total_picks if it has a winning team with a winning score.
+ */
+function evaluatePicksDict(picks) {
+  if (!picks || typeof picks !== "object") {
+    return { totalPicks: 0, totalPoints: 0, accuracyRate: null };
+  }
+  let totalPicks = 0;
+  let correctWinners = 0;
+  let evaluatedGames = 0;
+  let totalPoints = 0;
+
+  for (const [gameId, pick] of Object.entries(picks)) {
+    if (!pick || typeof pick !== "object") continue;
+    if (!isSoloPickComplete(gameId, pick)) continue;
+    totalPicks++;
+
+    const game = findGameById(gameId);
+    if (!game || !game.isFinal || !game.winner) continue;
+
+    evaluatedGames++;
+    const pickWinnerNorm = normalizeTeamCode(pick.winner);
+    const actualWinnerNorm = normalizeTeamCode(game.winner);
+    const isWinnerCorrect = (pickWinnerNorm === actualWinnerNorm);
+
+    if (isWinnerCorrect) {
+      correctWinners++;
+      const mult = pick.multiplier ? 3 : 1;
+      let pts = 10 * mult;
+
+      const pAway = parseInt(pick.awayScore, 10);
+      const pHome = parseInt(pick.homeScore, 10);
+      if (game.awayScore !== null && game.homeScore !== null) {
+        if (pAway === game.awayScore && pHome === game.homeScore) {
+          // Exact score jackpot: 10 base + 50 exact bonus = 60 pts (* mult)
+          pts += (50 * mult);
+          pick.isExact = true;
+          pick.isClosest = true;
+          pick.diff = 0;
+        } else {
+          // Approach A: Global Closest check across everybody in the global leaderboard
+          const userDiff = Math.abs(pAway - game.awayScore) + Math.abs(pHome - game.homeScore);
+          pick.diff = userDiff;
+
+          const globalMinDiff = getGlobalMinDiffForGame(gameId, actualWinnerNorm, game.awayScore, game.homeScore);
+
+          // Additional CLOSEST points (+10 PTS, or +30 PTS with 3X Lock) are strictly awarded
+          // ONLY if the player's prediction difference matches the closest out of everybody in the global leaderboard
+          if (userDiff <= globalMinDiff || globalMinDiff === Infinity) {
+            pts += (10 * mult);
+            pick.isClosest = true;
+          } else {
+            pick.isClosest = false;
+          }
+          pick.isExact = false;
+        }
+      }
+      pick.points = pts;
+      totalPoints += pts;
+    } else {
+      pick.points = 0;
+      pick.isExact = false;
+      pick.isClosest = false;
+    }
+  }
+
+  const accuracyRate = evaluatedGames > 0 ? Math.round((correctWinners / evaluatedGames) * 100) : null;
+  return { totalPicks, totalPoints, accuracyRate };
+}
+
+/**
+ * Computes live points, pick totals, and accuracy rate for a solo sheet.
+ * Evaluates Season Prophecy and Weekly Vision independently so each format retains its own separate standings.
+ */
+function calculateSheetStats(sheet) {
+  if (!sheet) return { total_picks: 0, total_points: 0, accuracy_rate: null };
+
+  const isSeasonLocked = Boolean(sheet.is_season_locked || sheet.is_locked);
+
+  // 1. Evaluate Season Prophecy picks
+  // In Season Prophecy mode, picks CANNOT gain points until submitted and locked!
+  const seasonPicks = sheet.season_picks || {};
+  const seasonStats = evaluatePicksDict(seasonPicks);
+  sheet.season_total_picks = seasonStats.totalPicks;
+  if (isSeasonLocked) {
+    sheet.season_total_points = seasonStats.totalPoints;
+    sheet.season_accuracy_rate = seasonStats.accuracyRate;
+  } else {
+    sheet.season_total_points = 0;
+    sheet.season_accuracy_rate = null;
+    // Clear point awards on individual picks while Season Prophecy is in unlocked draft state
+    for (const p of Object.values(seasonPicks)) {
+      if (p && typeof p === "object") {
+        p.points = 0;
+        p.isExact = false;
+        p.isClosest = false;
+      }
+    }
+  }
+
+  // 2. Evaluate Weekly Vision picks
+  // In Weekly Vision, players can submit picks up until each game's kickoff and gain points as games finish.
+  const weeklyPicks = sheet.weekly_picks || {};
+  const weeklyStats = evaluatePicksDict(weeklyPicks);
+  sheet.weekly_total_picks = weeklyStats.totalPicks;
+  sheet.weekly_total_points = weeklyStats.totalPoints;
+  sheet.weekly_accuracy_rate = weeklyStats.accuracyRate;
+
+  // 3. Mirror active mode onto primary sheet fields for backward compatibility
+  const mode = state.soloCampaignMode || "season";
+  if (mode === "weekly") {
+    sheet.total_picks = sheet.weekly_total_picks;
+    sheet.total_points = sheet.weekly_total_points;
+    sheet.accuracy_rate = sheet.weekly_accuracy_rate;
+    sheet.picks = sheet.weekly_picks;
+  } else {
+    sheet.total_picks = sheet.season_total_picks;
+    sheet.total_points = sheet.season_total_points;
+    sheet.accuracy_rate = sheet.season_accuracy_rate;
+    sheet.picks = sheet.season_picks;
+  }
+
+  return {
+    total_picks: sheet.total_picks,
+    total_points: sheet.total_points,
+    accuracy_rate: sheet.accuracy_rate,
+    season_total_picks: sheet.season_total_picks,
+    season_total_points: sheet.season_total_points,
+    season_accuracy_rate: sheet.season_accuracy_rate,
+    weekly_total_picks: sheet.weekly_total_picks,
+    weekly_total_points: sheet.weekly_total_points,
+    weekly_accuracy_rate: sheet.weekly_accuracy_rate
+  };
+}
+
+/**
+ * Returns the isolated picks dictionary for the active Solo campaign mode.
+ * Guarantees Season Prophecy and Weekly Vision picks never collide or overwrite each other.
+ */
+function getActiveSoloPicks(sheet, mode = null) {
+  if (!sheet) return {};
+  const currentMode = mode || state.soloCampaignMode || "season";
+  if (currentMode === "weekly") {
+    if (!sheet.weekly_picks) sheet.weekly_picks = {};
+    return sheet.weekly_picks;
+  } else {
+    if (!sheet.season_picks) {
+      sheet.season_picks = (sheet.picks && Object.keys(sheet.picks).length > 0)
+        ? JSON.parse(JSON.stringify(sheet.picks))
+        : {};
+    }
+    return sheet.season_picks;
+  }
+}
+
+function updateSheetEditorStats(sheet) {
+  const subtitleEl = document.getElementById("sheet-editor-stats-subtitle");
+  if (subtitleEl && sheet) {
+    subtitleEl.textContent = `${sheet.total_picks || 0} Picks Made • ${sheet.total_points || 0} Solo Points`;
+  }
+}
+
+// =========================================================
+// SOLO PSYCHIC MASTER PICK SHEET CONTROLLER
+// =========================================================
+
+let _soloSaveTimer = null;
+function debouncedSaveSoloPickSheet(sheet) {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  try {
+    localStorage.setItem(`sp_solo_sheets_${userId}`, JSON.stringify(state.pickSheets));
+  } catch (e) {}
+
+  clearTimeout(_soloSaveTimer);
+  _soloSaveTimer = setTimeout(async () => {
+    if (supabaseClient && state.authUser && sheet.user_id === state.authUser.id) {
+      try {
+        await supabaseClient.from("pick_sheets").upsert(sheet, { onConflict: "id" });
+      } catch (e) {
+        console.warn("Supabase pick_sheets upsert notice:", e);
+      }
+    }
+  }, 400);
+}
+
+/**
+ * Extracts full 18-week (272 games) picks for any OG League player from the baseline dataset.
+ */
+function extractOgLeaguePicksForPlayer(playerName) {
+  const result = {};
+  if (!playerName || typeof OG_LEAGUE_INITIAL_DATA === "undefined" || !OG_LEAGUE_INITIAL_DATA.weeks) {
+    return result;
+  }
+  for (const weekKey in OG_LEAGUE_INITIAL_DATA.weeks) {
+    const weekData = OG_LEAGUE_INITIAL_DATA.weeks[weekKey];
+    if (!weekData || !Array.isArray(weekData.games)) continue;
+    for (const game of weekData.games) {
+      if (game && game.id && game.picks && game.picks[playerName]) {
+        const p = game.picks[playerName];
+        if (p.winner || (p.awayScore !== null && p.awayScore !== undefined)) {
+          result[game.id] = {
+            winner: p.winner || "",
+            awayScore: (p.awayScore !== null && p.awayScore !== undefined) ? parseInt(p.awayScore, 10) : 0,
+            homeScore: (p.homeScore !== null && p.homeScore !== undefined) ? parseInt(p.homeScore, 10) : 0,
+            multiplier: Boolean(p.multiplier)
+          };
+        }
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Evaluates weekly picks for any OG League player for a given week number.
+ */
+function evaluateWeeklyOgPicks(playerName, weekNumber) {
+  const weekKey = `Week ${weekNumber}`;
+  let weekData = (state.data && state.data.weeks && state.data.weeks[weekKey])
+    ? state.data.weeks[weekKey]
+    : null;
+  if (!weekData && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks) {
+    weekData = OG_LEAGUE_INITIAL_DATA.weeks[weekKey];
+  }
+  if (!weekData || !Array.isArray(weekData.games)) {
+    return { totalPicks: 0, totalPoints: 0, accuracyRate: null };
+  }
+  const picksObj = {};
+  for (const g of weekData.games) {
+    if (g.picks && g.picks[playerName]) {
+      picksObj[g.id] = {
+        winner: g.picks[playerName].winner || "",
+        awayScore: (g.picks[playerName].awayScore !== null && g.picks[playerName].awayScore !== undefined) ? parseInt(g.picks[playerName].awayScore, 10) : 0,
+        homeScore: (g.picks[playerName].homeScore !== null && g.picks[playerName].homeScore !== undefined) ? parseInt(g.picks[playerName].homeScore, 10) : 0,
+        multiplier: Boolean(g.picks[playerName].multiplier)
+      };
+    }
+  }
+  return evaluatePicksDict(picksObj);
+}
+
+/**
+ * Synchronizes a player's OG League picks into their Solo Season Prophecy sheet.
+ */
+function syncOgLeaguePicksToSoloProphecy(playerName, force = false) {
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return false;
+  const targetPlayer = playerName || state.myPlayer || "Jon";
+  if (typeof PLAYERS !== "undefined" && !PLAYERS.includes(targetPlayer)) return false;
+
+  const existingPicksCount = Object.keys(sheet.season_picks || {}).length;
+  if (force || existingPicksCount < 10) {
+    const ogPicks = extractOgLeaguePicksForPlayer(targetPlayer);
+    if (Object.keys(ogPicks).length > 0) {
+      sheet.season_picks = ogPicks;
+      sheet.submission_label = "Solo Prophecy";
+      calculateSheetStats(sheet);
+      debouncedSaveSoloPickSheet(sheet);
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Retrieves the user's single Master Pick Sheet, or initializes one if none exists.
+ * Manages separate Season Prophecy and Weekly Vision pick collections.
+ */
+function getOrCreateMasterPickSheet() {
+  const userId = state.authUser ? state.authUser.id : "guest";
+  if (!Array.isArray(state.pickSheets)) state.pickSheets = [];
+
+  let master = state.pickSheets.find(s => s.id === `master_${userId}` || s.is_master);
+  if (!master) {
+    if (state.pickSheets.length > 0) {
+      master = state.pickSheets[0];
+      master.id = `master_${userId}`;
+      master.is_master = true;
+      master.name = "Master Pick Sheet";
+      master.submission_label = "Solo Prophecy";
+      master.is_season_locked = false;
+      master.is_locked = false;
+      master.season_locked_at = null;
+      if (!master.season_picks) {
+        master.season_picks = {};
+      }
+      if (!master.weekly_picks) {
+        master.weekly_picks = {};
+      }
+    } else {
+      master = {
+        id: `master_${userId}`,
+        user_id: userId,
+        name: "Master Pick Sheet",
+        submission_label: "Solo Prophecy",
+        format: "season",
+        season_year: 2026,
+        active_week: state.currentWeek || 5,
+        is_master: true,
+        is_season_locked: false,
+        season_locked_at: null,
+        season_picks: {},
+        weekly_picks: {},
+        picks: {},
+        season_total_picks: 0,
+        season_total_points: 0,
+        season_accuracy_rate: null,
+        weekly_total_picks: 0,
+        weekly_total_points: 0,
+        weekly_accuracy_rate: null,
+        total_picks: 0,
+        total_points: 0,
+        accuracy_rate: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      state.pickSheets.unshift(master);
+    }
+    saveSoloPickSheet(master);
+  } else {
+    // Ensure both separate dictionaries exist on existing master sheet
+    if (!master.season_picks) {
+      master.season_picks = {};
+    }
+    if (!master.weekly_picks) {
+      master.weekly_picks = {};
+    }
+    if (!master.submission_label) {
+      master.submission_label = "Solo Prophecy";
+    }
+    // One-time reset ensuring Jon's accidental lock is cleared
+    if (typeof localStorage !== "undefined" && !localStorage.getItem("sports_psychic_jon_unlocked_v19")) {
+      try {
+        localStorage.setItem("sports_psychic_jon_unlocked_v19", "true");
+      } catch (e) {}
+      if (master.is_season_locked) {
+        master.is_season_locked = false;
+        master.is_locked = false;
+        master.season_locked_at = null;
+        master.season_picks = {};
+        calculateSheetStats(master);
+        debouncedSaveSoloPickSheet(master);
+      }
+    }
+  }
+  return master;
+}
+
+/**
+ * Switches Solo campaign mode between 'season' (Full 18-week slate) and 'weekly' (Current week sprint).
+ */
+function setSoloCampaignMode(mode) {
+  state.soloCampaignMode = mode;
+  if (!state.selectedSheetWeek) {
+    state.selectedSheetWeek = getCurrentNFLWeek();
+  }
+  const sheet = getOrCreateMasterPickSheet();
+  calculateSheetStats(sheet);
+  renderSoloView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  showToast(mode === "weekly" ? "⚡ Switched to Weekly Vision" : "🔮 Switched to Season Prophecy");
+}
+
+function openSeasonLockModal() {
+  if (!state.authUser) {
+    state.postAuthAction = "lock_season";
+    showToast("🔒 Create an account or sign in to submit to the Global Leaderboard.");
+    openAuthModal("Create an account or sign in to submit your predictions to the official Global Leaderboard!", "signup");
+    return;
+  }
+  const modal = document.getElementById("season-lock-modal");
+  if (modal) {
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeSeasonLockModal(event) {
+  if (event && event.target && !event.target.classList.contains("auth-modal-backdrop")) {
+    return;
+  }
+  const modal = document.getElementById("season-lock-modal");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+  }
+  document.body.style.overflow = "";
+}
+
+async function confirmSeasonLockSubmit() {
+  if (!state.authUser) {
+    state.postAuthAction = "lock_season";
+    showToast("🔒 Create an account or sign in to submit to the Global Leaderboard.");
+    openAuthModal("Create an account or sign in to submit your predictions to the official Global Leaderboard!", "signup");
+    return;
+  }
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+
+  sheet.is_season_locked = true;
+  sheet.season_locked_at = new Date().toISOString();
+  if (!sheet.season_picks || Object.keys(sheet.season_picks).length === 0) {
+    sheet.season_picks = JSON.parse(JSON.stringify(sheet.picks || {}));
+  }
+  sheet.submission_label = "Solo Prophecy";
+
+  calculateSheetStats(sheet);
+  await saveSoloPickSheet(sheet);
+
+  closeSeasonLockModal();
+  renderSoloView();
+  showToast("🏆 Season Prophecy Locked! Registered into Global Championship.");
+  setTimeout(() => openGlobalLeaderboardModal("season"), 400);
+}
+
+function selectSoloSheetWeek(weekNum) {
+  const w = parseInt(weekNum, 10);
+  if (isNaN(w) || w < 1 || w > 18) return;
+  state.selectedSheetWeek = w;
+  const sheet = getOrCreateMasterPickSheet();
+  if (sheet) {
+    sheet.active_week = w;
+    debouncedSaveSoloPickSheet(sheet);
+  }
+  renderSoloView();
+  showToast(`📅 Switched to Week ${w}`);
+
+  setTimeout(() => {
+    const activePill = document.querySelector(`.sheet-week-pill[data-week="${w}"]`);
+    if (activePill) {
+      activePill.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }, 40);
+
+  const weekKey = `Week ${w}`;
+  if (!state.data || !state.data.weeks || !state.data.weeks[weekKey] || !state.data.weeks[weekKey].games || state.data.weeks[weekKey].games.length === 0) {
+    syncWeek(w, true).then(() => {
+      renderSoloView();
+    });
+  }
+}
+
+function stepSoloWeek(delta) {
+  const currentWk = state.selectedSheetWeek || getCurrentNFLWeek();
+  let target = currentWk + delta;
+  if (target < 1) target = 1;
+  if (target > 18) target = 18;
+  selectSoloSheetWeek(target);
+}
+
+function jumpToSoloCurrentWeek() {
+  selectSoloSheetWeek(getCurrentNFLWeek());
+}
+
+function updateSoloCardWinnerUI(gameId, winnerTeam) {
+  const card = document.getElementById(`sheet-card-${gameId}`);
+  if (!card) return;
+  const btnAway = card.querySelector(".btn-pick-away");
+  const btnHome = card.querySelector(".btn-pick-home");
+  const tileAway = card.querySelector(".away-tile");
+  const tileHome = card.querySelector(".home-tile");
+  const awayTeam = btnAway?.dataset.team;
+  const homeTeam = btnHome?.dataset.team;
+
+  const isAway = Boolean(winnerTeam && awayTeam && (winnerTeam === awayTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(awayTeam)));
+  const isHome = Boolean(winnerTeam && homeTeam && (winnerTeam === homeTeam || normalizeTeamCode(winnerTeam) === normalizeTeamCode(homeTeam)));
+
+  if (btnAway) {
+    btnAway.classList.toggle("selected", isAway);
+    const badge = btnAway.querySelector(".tile-check-badge span") || btnAway.querySelector("span");
+    if (badge) badge.textContent = isAway ? "✓" : "";
+  }
+  if (tileAway) {
+    tileAway.classList.toggle("selected", isAway);
+  }
+
+  if (btnHome) {
+    btnHome.classList.toggle("selected", isHome);
+    const badge = btnHome.querySelector(".tile-check-badge span") || btnHome.querySelector("span");
+    if (badge) badge.textContent = isHome ? "✓" : "";
+  }
+  if (tileHome) {
+    tileHome.classList.toggle("selected", isHome);
+  }
+
+  // Update Card Complete State & Pill
+  const sheet = getOrCreateMasterPickSheet();
+  const activePicks = getActiveSoloPicks(sheet);
+  const pick = activePicks?.[gameId];
+  const isComplete = Boolean(pick && isSoloPickComplete(gameId, pick));
+  card.classList.toggle("is-pick-complete", isComplete);
+  card.classList.toggle("is-pick-incomplete", !isComplete);
+
+  const isSeason = (state.soloCampaignMode !== "weekly");
+  const isSeasonLocked = Boolean(sheet?.is_season_locked || sheet?.is_locked);
+  const pickSetText = (isSeason && !isSeasonLocked) ? "Pick Set (Draft)" : "PICK SET";
+
+  const statusLeft = card.querySelector(".game-status-left");
+  let statusPill = card.querySelector(".pick-status-pill");
+  if (isComplete) {
+    if (!statusPill && statusLeft) {
+      statusPill = document.createElement("span");
+      statusPill.className = "pick-status-pill complete";
+      statusPill.textContent = pickSetText;
+      statusLeft.appendChild(statusPill);
+    } else if (statusPill) {
+      statusPill.className = "pick-status-pill complete";
+      statusPill.textContent = pickSetText;
+      statusPill.style.display = "";
+    }
+  } else if (statusPill && !card.classList.contains("is-final-game") && !card.classList.contains("is-live-game")) {
+    statusPill.remove();
+  }
+}
+
+function updateSoloStatsHeader(sheet) {
+  if (!sheet) return;
+  const isSeason = (state.soloCampaignMode !== "weekly");
+  const isSeasonLocked = Boolean(sheet.is_season_locked || sheet.is_locked);
+  const modePicks = isSeason ? (sheet.season_total_picks || 0) : (sheet.weekly_total_picks || 0);
+  const modePts = isSeason 
+    ? (isSeasonLocked ? (sheet.season_total_points || 0) : 0) 
+    : (sheet.weekly_total_points || 0);
+
+  const subtitleEl = document.getElementById("solo-sheet-stats-subtitle");
+  if (subtitleEl) {
+    const ptsText = (isSeason && !isSeasonLocked) ? "0 Solo Points (Draft)" : `${modePts} Solo Points`;
+    subtitleEl.textContent = `${modePicks} Picks Made • ${ptsText}`;
+  }
+  const picksEl = document.getElementById("solo-stat-picks-count");
+  if (picksEl) {
+    picksEl.textContent = modePicks;
+  }
+  const ptsEl = document.getElementById("solo-stat-pts-count");
+  if (ptsEl) {
+    ptsEl.textContent = modePts;
+  }
+  updateSoloWeekProgressUI();
+  if (state.appMode === "lobby") {
+    renderLobbyHero();
+  }
+}
+
+function updateSoloWeekProgressUI() {
+  const progressPanel = document.getElementById("solo-week-progress-panel");
+  if (!progressPanel) return;
+
+  const currentWk = state.selectedSheetWeek || getCurrentNFLWeek();
+  const weekKey = `Week ${currentWk}`;
+  let games = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
+    ? state.data.weeks[weekKey].games
+    : [];
+  if (games.length === 0 && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+    games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
+  }
+
+  const sheet = getOrCreateMasterPickSheet();
+  const picks = getActiveSoloPicks(sheet);
+
+  let completedCount = 0;
+  const totalCount = games.length;
+  games.forEach(g => {
+    if (picks[g.id] && isSoloPickComplete(g.id, picks[g.id])) {
+      completedCount++;
+    }
+  });
+
+  const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const isFinished = (totalCount > 0 && completedCount === totalCount);
+
+  const countText = progressPanel.querySelector(".progress-count-text");
+  if (countText) {
+    countText.innerHTML = `<strong>${completedCount}</strong> of <strong>${totalCount}</strong> Picks Complete`;
+  }
+  const badge = progressPanel.querySelector(".solo-week-progress-badge");
+  if (badge) {
+    badge.className = `solo-week-progress-badge ${isFinished ? "is-finished" : ""}`;
+    badge.textContent = isFinished ? "✨ Week Complete!" : `${pct}%`;
+  }
+  const fill = progressPanel.querySelector(".solo-week-progress-fill");
+  if (fill) {
+    fill.className = `solo-week-progress-fill ${isFinished ? "is-finished" : ""}`;
+    fill.style.width = `${pct}%`;
+  }
+}
+
+function scrollToLobbyGames() {
+  const target = document.getElementById("tab-matchups") || document.getElementById("matchups-list");
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx) {
+  const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+  const awayTeam = parts[0] || "AWAY";
+  const homeTeam = parts[1] || "HOME";
+
+  const awayInfo = getTeamInfo(awayTeam);
+  const homeInfo = getTeamInfo(homeTeam);
+  const awayRec = getNFLTeamRecord(awayTeam, selectedWk);
+  const homeRec = getNFLTeamRecord(homeTeam, selectedWk);
+
+  const isFinal = Boolean(game.isFinal);
+  const lockStatus = getGameLockStatus(game, selectedWk);
+  const isGameLocked = isSeason && isSeasonLocked ? true : lockStatus.isLocked;
+  const isLive = Boolean(game.isLive || (!isFinal && game.awayScore !== null && game.homeScore !== null && (game.awayScore > 0 || game.homeScore > 0)));
+
+  const pickWinner = (pick?.winner || "").toUpperCase().trim();
+  const awaySelected = (pickWinner === awayTeam || (pickWinner && normalizeTeamCode(pickWinner) === normalizeTeamCode(awayTeam)));
+  const homeSelected = (pickWinner === homeTeam || (pickWinner && normalizeTeamCode(pickWinner) === normalizeTeamCode(homeTeam)));
+
+  const pickAwayScore = (pick?.awayScore !== undefined && pick?.awayScore !== null) ? pick.awayScore : "";
+  const pickHomeScore = (pick?.homeScore !== undefined && pick?.homeScore !== null) ? pick.homeScore : "";
+  const isMultiplier = Boolean(pick?.multiplier);
+
+  const isComplete = isSoloPickComplete(game.id, pick || {});
+  const cardClass = `${isFinal ? "is-final-game" : ""} ${isGameLocked ? "is-locked-game" : "is-open-game"} ${isLive ? "is-live-game" : ""} ${isComplete ? "is-pick-complete" : "is-pick-incomplete"} ${isMultiplier ? "has-multiplier-3x" : ""}`;
+
+  // TV Broadcast & Betting Lines
+  const broadcast = getGameBroadcast(game);
+  const odds = getGameOdds(game);
+  const broadcastBadge = broadcast ? `<span class="game-network-pill">${broadcast}</span>` : "";
+  const spreadBadge = odds.spread ? `<span class="game-odds-pill">${odds.spread}</span>` : "";
+  const ouBadge = odds.ou ? `<span class="game-ou-pill">${odds.ou}</span>` : "";
+
+  // 3X Lock button label (Clean, no emoji)
+  const lockBtnText = isMultiplier 
+    ? (isGameLocked ? "3X LOCKED" : "3X ACTIVE") 
+    : (isGameLocked ? "3X LOCKED" : "3X LOCK");
+
+  // Format header left and right based on 4-stage lifecycle:
+  let headerLeftHtml = "";
+  let headerRightHtml = "";
+  let oddsRowHtml = "";
+
+  if (isFinal) {
+    // STAGE 4: FINAL
+    let ptsBadgeHtml = "";
+    if (pick?.points > 0) {
+      const is3xPts = Boolean(pick.multiplier);
+      ptsBadgeHtml = `<span class="pick-status-pill final-pts-pill ${is3xPts ? "pts-3x" : "pts-win"}">+${pick.points} PTS${is3xPts ? " 3X" : ""}</span>`;
+    } else if (isComplete) {
+      ptsBadgeHtml = `<span class="pick-status-pill final-pts-pill wrong">0 PTS</span>`;
+    }
+
+    let winnerSummary = "";
+    if (game.winner) {
+      const winScore = Math.max(game.awayScore || 0, game.homeScore || 0);
+      const loseScore = Math.min(game.awayScore || 0, game.homeScore || 0);
+      winnerSummary = `<span class="game-final-winner-text">${game.winner} Won ${winScore}-${loseScore}</span>`;
+    }
+
+    headerLeftHtml = `
+      <span class="game-lock-badge badge-final">FINAL</span>
+      ${ptsBadgeHtml}
+      ${winnerSummary}
+    `;
+    headerRightHtml = `
+      <span class="game-final-verified">Points Verified</span>
+    `;
+  } else if (isLive) {
+    // STAGE 3: LIVE
+    const quarterClock = formatQuarterStatus(game.statusDetail) || "LIVE";
+    headerLeftHtml = `
+      <span class="game-lock-badge badge-live"><span class="live-pulse-dot"></span> LIVE • ${quarterClock}</span>
+      ${broadcastBadge}
+      ${odds.spread ? `<span class="game-closing-spread">Closing: ${odds.spread}</span>` : ""}
+    `;
+    headerRightHtml = `
+      <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}" disabled title="Game is locked — in progress">
+        <span>${lockBtnText}</span>
+      </button>
+    `;
+  } else {
+    // STAGE 1 & 2: PRE-KICKOFF (OPEN or LOCKED KICKOFF PASSED)
+    const formattedTime = game.dateTime || `Game ${idx + 1}`;
+    const pickSetText = (isSeason && !isSeasonLocked) ? "Pick Set (Draft)" : "PICK SET";
+    const pickSetPill = isComplete ? `<span class="pick-status-pill complete">${pickSetText}</span>` : "";
+
+    // Dedicated Odds Sub-Bar (Option 1: Modern Sportsbook Sub-Bar)
+    if (odds.spread || odds.ou) {
+      oddsRowHtml = `
+        <div class="game-odds-subbar">
+          <span class="odds-subbar-label">LINE:</span>
+          ${spreadBadge}
+          ${ouBadge}
+        </div>
+      `;
+    }
+
+    headerLeftHtml = `
+      <span class="game-kickoff-time">${formattedTime}</span>
+      ${broadcastBadge}
+    `;
+
+    headerRightHtml = `
+      ${pickSetPill}
+      <button type="button" class="btn-card-lock-3x ${isMultiplier ? "active" : ""}"
+        ${isGameLocked ? "disabled" : ""}
+        onclick="toggleSoloPickMultiplier('${game.id}', ${selectedWk}, ${isGameLocked})"
+        title="${isGameLocked ? "Game is locked" : "Toggle 3X Lock of the Week"}">
+        <span>${lockBtnText}</span>
+      </button>
+    `;
+  }
+
+  // Live in-game telemetry bar or final score strip
+  let liveOrFinalTelemetryHtml = "";
+  if (isLive) {
+    const quarterClock = formatQuarterStatus(game.statusDetail) || "LIVE";
+    const winProb = getGameWinProbability(game, awayTeam, homeTeam);
+
+    let winProbHtml = "";
+    if (winProb) {
+      const awayColor = (awayInfo.color && awayInfo.color !== '#000000') ? awayInfo.color : '#3b82f6';
+      const homeColor = (homeInfo.color && homeInfo.color !== '#000000') ? homeInfo.color : '#ef4444';
+
+      winProbHtml = `
+        <div class="live-win-prob-container">
+          <div class="live-win-prob-labels">
+            <span class="prob-away-label" style="color: ${awayColor}">${awayTeam} ${winProb.awayPct}%</span>
+            <span class="prob-title">LIVE WIN PROBABILITY</span>
+            <span class="prob-home-label" style="color: ${homeColor}">${winProb.homePct}% ${homeTeam}</span>
+          </div>
+          <div class="live-win-prob-track">
+            <div class="prob-fill-away" style="width: ${winProb.awayPct}%; background-color: ${awayColor};"></div>
+            <div class="prob-fill-home" style="width: ${winProb.homePct}%; background-color: ${homeColor};"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    liveOrFinalTelemetryHtml = `
+      <div class="game-live-telemetry-bar">
+        <div class="live-telemetry-left">
+          <div class="live-telemetry-status">
+            <span class="live-pulse-dot"></span>
+            <span class="live-quarter-clock">${quarterClock}</span>
+            ${game.isRedZone ? '<span class="live-redzone-badge">RED ZONE</span>' : ''}
+          </div>
+          ${game.downDistance ? `<div class="live-down-distance">${game.downDistance}</div>` : ''}
+        </div>
+        <div class="live-telemetry-right">
+          <div class="live-score-display">
+            <span class="live-score-team">${awayTeam}</span>
+            <span class="live-score-nums">${game.awayScore} - ${game.homeScore}</span>
+            <span class="live-score-team">${homeTeam}</span>
+          </div>
+        </div>
+        ${winProbHtml}
+      </div>
+    `;
+  } else if (isFinal || (game.awayScore !== null && game.homeScore !== null)) {
+    liveOrFinalTelemetryHtml = `
+      <div class="game-actual-score-bar is-final">
+        <span>Final Score</span>
+        <span class="actual-score-val">${awayTeam} ${game.awayScore} - ${game.homeScore} ${homeTeam}</span>
+      </div>
+    `;
+  }
+
+  let lockedNoticeHtml = "";
+  if (isGameLocked && !pickWinner && !isLive && !isFinal) {
+    lockedNoticeHtml = `
+      <div class="game-locked-notice">
+        Kickoff passed. No pick was submitted prior to game start.
+      </div>
+    `;
+  }
+
+  const awayPossession = Boolean(isLive && game.possession === 'away');
+  const homePossession = Boolean(isLive && game.possession === 'home');
+
+  return `
+    <div class="sheet-game-card ${cardClass}" id="sheet-card-${game.id}">
+      <!-- Card Header: Kickoff, TV Network, and 3X Lock Toggle -->
+      <div class="game-card-top-status">
+        <div class="game-status-left">
+          ${headerLeftHtml}
+        </div>
+        <div class="game-status-right">
+          ${headerRightHtml}
+        </div>
+      </div>
+
+      <!-- Dedicated Odds Sub-Bar (Option 1) -->
+      ${oddsRowHtml}
+
+      ${liveOrFinalTelemetryHtml}
+
+      <!-- Athletic Team Cards Grid: Away (Left) vs Home (Right) -->
+      <div class="game-matchup-header-row athletic-tiles-grid">
+        <!-- Away Team Card -->
+        <div class="team-athletic-tile away-tile ${awaySelected ? "selected" : ""} ${awayPossession ? "has-possession" : ""}" id="tile-away-${game.id}">
+          <!-- Colored Team Header Banner -->
+          <button type="button" class="btn-pick-winner btn-pick-away ${awaySelected ? "selected" : ""}"
+            data-team="${awayTeam}"
+            style="background-color: ${awayInfo.color}; color: ${awayInfo.textColor};"
+            ${isGameLocked ? "disabled" : ""}
+            onclick="setSoloPickWinner('${game.id}', '${awayTeam}', ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : `Pick ${awayTeam} to win`}">
+            <div class="tile-header-content">
+              <span class="tile-team-code">
+                ${awayTeam}
+                ${awayPossession ? '<span class="possession-dot" title="Possession: ' + awayTeam + '"></span>' : ''}
+              </span>
+              <span class="tile-team-rec">${awayRec.text}</span>
+            </div>
+            <div class="tile-check-badge" title="Selected Winner">
+              <span>${awaySelected ? "✓" : ""}</span>
+            </div>
+          </button>
+
+          <!-- Card Interior: Steppers & Presets -->
+          <div class="tile-card-body">
+            <div class="tile-score-stepper game-scores-row">
+              <button type="button" class="btn-score-circle btn-score-minus" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', -1, ${isGameLocked})" title="Decrease ${awayTeam} score by 1" aria-label="Decrease ${awayTeam} score">
+                <span>−</span>
+              </button>
+              <input type="number" min="0" max="99" class="score-input tile-score-val" id="score-away-${game.id}"
+                value="${pickAwayScore !== undefined && pickAwayScore !== null ? pickAwayScore : ""}"
+                ${isGameLocked ? "disabled" : ""} placeholder="—"
+                onchange="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
+                oninput="handleSoloScoreInput('${game.id}', 'away', this.value, ${isGameLocked})"
+                aria-label="${awayTeam} Predicted Score" />
+              <button type="button" class="btn-score-circle btn-score-plus" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 1, ${isGameLocked})" title="Increase ${awayTeam} score by 1" aria-label="Increase ${awayTeam} score">
+                <span>+</span>
+              </button>
+            </div>
+
+            <!-- Football Scoring Nudges (+3 FG / +7 TD) -->
+            <div class="tile-presets-row tile-football-nudges-row">
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 3, ${isGameLocked})" title="Add Field Goal (+3 to ${awayTeam})">
+                +3 FG
+              </button>
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'away', 7, ${isGameLocked})" title="Add Touchdown (+7 to ${awayTeam})">
+                +7 TD
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Home Team Card -->
+        <div class="team-athletic-tile home-tile ${homeSelected ? "selected" : ""} ${homePossession ? "has-possession" : ""}" id="tile-home-${game.id}">
+          <!-- Colored Team Header Banner -->
+          <button type="button" class="btn-pick-winner btn-pick-home ${homeSelected ? "selected" : ""}"
+            data-team="${homeTeam}"
+            style="background-color: ${homeInfo.color}; color: ${homeInfo.textColor};"
+            ${isGameLocked ? "disabled" : ""}
+            onclick="setSoloPickWinner('${game.id}', '${homeTeam}', ${isGameLocked})"
+            title="${isGameLocked ? "Game is locked" : `Pick ${homeTeam} to win`}">
+            <div class="tile-header-content">
+              <span class="tile-team-code">
+                ${homePossession ? '<span class="possession-dot" title="Possession: ' + homeTeam + '"></span> ' : ''}
+                ${homeTeam}
+              </span>
+              <span class="tile-team-rec">${homeRec.text}</span>
+            </div>
+            <div class="tile-check-badge" title="Selected Winner">
+              <span>${homeSelected ? "✓" : ""}</span>
+            </div>
+          </button>
+
+          <!-- Card Interior: Steppers & Presets -->
+          <div class="tile-card-body">
+            <div class="tile-score-stepper game-scores-row">
+              <button type="button" class="btn-score-circle btn-score-minus" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', -1, ${isGameLocked})" title="Decrease ${homeTeam} score by 1" aria-label="Decrease ${homeTeam} score">
+                <span>−</span>
+              </button>
+              <input type="number" min="0" max="99" class="score-input tile-score-val" id="score-home-${game.id}"
+                value="${pickHomeScore !== undefined && pickHomeScore !== null ? pickHomeScore : ""}"
+                ${isGameLocked ? "disabled" : ""} placeholder="—"
+                onchange="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
+                oninput="handleSoloScoreInput('${game.id}', 'home', this.value, ${isGameLocked})"
+                aria-label="${homeTeam} Predicted Score" />
+              <button type="button" class="btn-score-circle btn-score-plus" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 1, ${isGameLocked})" title="Increase ${homeTeam} score by 1" aria-label="Increase ${homeTeam} score">
+                <span>+</span>
+              </button>
+            </div>
+
+            <!-- Football Scoring Nudges (+3 FG / +7 TD) -->
+            <div class="tile-presets-row tile-football-nudges-row">
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 3, ${isGameLocked})" title="Add Field Goal (+3 to ${homeTeam})">
+                +3 FG
+              </button>
+              <button type="button" class="btn-score-preset btn-football-nudge" ${isGameLocked ? "disabled" : ""}
+                onclick="stepSoloPickScore('${game.id}', 'home', 7, ${isGameLocked})" title="Add Touchdown (+7 to ${homeTeam})">
+                +7 TD
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      ${lockedNoticeHtml}
+    </div>
+  `;
+}
+
+function renderSoloView() {
+  const container = document.getElementById("solo-sheet-container");
+  if (!container) return;
+
+  const sheet = getOrCreateMasterPickSheet();
+  state.activeSheetId = sheet.id;
+
+  const mode = state.soloCampaignMode || "season";
+  state.soloCampaignMode = mode;
+
+  const btnSeason = document.getElementById("btn-campaign-season");
+  const btnWeekly = document.getElementById("btn-campaign-weekly");
+  if (btnSeason) btnSeason.classList.toggle("active", mode === "season");
+  if (btnWeekly) btnWeekly.classList.toggle("active", mode === "weekly");
+
+  const currentNFLWk = getCurrentNFLWeek();
+  const selectedWk = state.selectedSheetWeek || currentNFLWk;
+  state.selectedSheetWeek = selectedWk;
+
+  const isSeason = (mode === "season");
+  const isSeasonLocked = Boolean(sheet.is_season_locked);
+  const activePicks = getActiveSoloPicks(sheet, mode);
+
+  calculateSheetStats(sheet);
+
+  // 1. Consolidated Control Header
+  let lockedDateFormatted = "Official Entry";
+  if (sheet.season_locked_at) {
+    try {
+      lockedDateFormatted = new Date(sheet.season_locked_at).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"
+      });
+    } catch (e) {}
+  }
+
+  const currentModePicks = isSeason ? (sheet.season_total_picks || 0) : (sheet.weekly_total_picks || 0);
+  const currentModePts = isSeason 
+    ? (isSeasonLocked ? (sheet.season_total_points || 0) : 0) 
+    : (sheet.weekly_total_points || 0);
+
+  const headerHtml = `
+    <div class="solo-control-header">
+      <div class="solo-control-main-row">
+        <div class="solo-control-left">
+          <div class="solo-mode-title-row">
+            <h2 class="solo-sheet-title">Master Pick Sheet</h2>
+            <span class="solo-format-pill ${isSeason ? "pill-season" : "pill-weekly"}">${isSeason ? "🔮 Season Prophecy" : "⚡ Weekly Vision"}</span>
+          </div>
+          <div class="solo-control-stats">
+            <span><strong id="solo-stat-picks-count">${currentModePicks}</strong> Picks Made</span>
+            <span class="solo-stat-dot">•</span>
+            <span><strong id="solo-stat-pts-count">${currentModePts}</strong> ${isSeason && !isSeasonLocked ? "Solo Points (Draft)" : "Solo Points"}</span>
+          </div>
+        </div>
+        <div class="solo-control-right">
+          <button type="button" class="btn-solo-leaderboard" onclick="openGlobalLeaderboardModal('${mode}')" title="View the official Global Community Leaderboard">
+            <span>🏆 Leaderboard</span>
+          </button>
+          ${state.authUser ? `
+            <div class="solo-sync-badge synced" title="Synced to your cloud account">
+              <span class="sync-check">✓</span>
+              <span class="solo-sync-text">Cloud Synced</span>
+            </div>
+          ` : `
+            <button type="button" class="solo-sync-badge guest" onclick="openAuthModal('Sign in to sync your Solo Master sheet to the cloud across devices!', 'signin')" title="Saved locally on this device. Click to sign in and back up to cloud.">
+              <span>💾</span>
+              <span class="solo-sync-text">Saved Locally (Sync)</span>
+            </button>
+          `}
+          ${isSeason ? (isSeasonLocked ? `
+            <span class="solo-lock-status-badge locked" title="Season locked for Global Championship">
+              🔒 Official Entry
+            </span>
+          ` : `
+            <button type="button" class="btn-lock-season-compact" onclick="openSeasonLockModal()" title="Lock in Season Prophecy to enter Global Leaderboard">
+              <span>🔒 Lock Season</span>
+            </button>
+          `) : `
+            <span class="solo-lock-status-badge weekly" title="Weekly Vision: picks lock individually at each game's kickoff">
+              ⚡ Weekly Sprint
+            </span>
+          `}
+        </div>
+      </div>
+      ${isSeason && isSeasonLocked ? `
+        <div class="solo-locked-info-bar">
+          <span>🔒 <strong>Season Prophecy Locked</strong> (${lockedDateFormatted}) — Permanent entry registered for the Global Season Championship.</span>
+        </div>
+      ` : ""}
+    </div>
+  `;
+
+  // 2. Week Stepper Row
+  let weekSelectorHtml = "";
+  if (isSeason) {
+    const pills = [];
+    for (let w = 1; w <= 18; w++) {
+      const isActive = (w === selectedWk);
+      const isPast = (w < currentNFLWk);
+      const label = isPast ? `🔒 Wk ${w}` : `Wk ${w}`;
+      pills.push(`
+        <button type="button" class="sheet-week-pill ${isActive ? "active" : ""} ${isPast ? "locked" : ""}"
+          data-week="${w}"
+          onclick="selectSoloSheetWeek(${w})" title="${isPast ? `Week ${w} (Concluded)` : `Week ${w}`}">
+          <span>${label}</span>
+        </button>
+      `);
+    }
+    weekSelectorHtml = `
+      <div class="solo-week-stepper-row">
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(-1)" ${selectedWk <= 1 ? "disabled" : ""} aria-label="Previous Week" title="Previous Week">
+          ‹
+        </button>
+        <div class="sheet-week-strip" id="solo-sheet-week-strip">
+          ${pills.join("")}
+        </div>
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(1)" ${selectedWk >= 18 ? "disabled" : ""} aria-label="Next Week" title="Next Week">
+          ›
+        </button>
+      </div>
+    `;
+  } else {
+    weekSelectorHtml = `
+      <div class="solo-week-stepper-row solo-weekly-stepper">
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(-1)" ${selectedWk <= 1 ? "disabled" : ""} aria-label="Previous Week" title="Previous Week">
+          ‹
+        </button>
+        <div class="solo-weekly-title-wrap">
+          <span class="solo-weekly-title">Week ${selectedWk} Slate</span>
+          <span class="solo-weekly-status-badge ${selectedWk === currentNFLWk ? "is-current" : (selectedWk < currentNFLWk ? "is-past" : "is-upcoming")}">
+            ${selectedWk === currentNFLWk ? "⚡ Current Week" : (selectedWk < currentNFLWk ? "🔒 Concluded" : "🗓️ Upcoming")}
+          </span>
+        </div>
+        <button type="button" class="solo-week-arrow-btn" onclick="stepSoloWeek(1)" ${selectedWk >= 18 ? "disabled" : ""} aria-label="Next Week" title="Next Week">
+          ›
+        </button>
+        ${selectedWk !== currentNFLWk ? `
+          <button type="button" class="btn-jump-current-week-pill" onclick="jumpToSoloCurrentWeek()" title="Jump to active NFL week (Week ${currentNFLWk})">
+            ⚡ Week ${currentNFLWk}
+          </button>
+        ` : ""}
+      </div>
+    `;
+  }
+
+  // 3. Matchup Data & Weekly Completion Progress
+  const weekKey = `Week ${selectedWk}`;
+  let games = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games)
+    ? state.data.weeks[weekKey].games
+    : [];
+
+  if (games.length === 0 && typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+    games = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
+  }
+
+  const weekGamesCount = games.length;
+  let weekCompletedCount = 0;
+  games.forEach(g => {
+    if (activePicks[g.id] && isSoloPickComplete(g.id, activePicks[g.id])) {
+      weekCompletedCount++;
+    }
+  });
+  const weekPct = weekGamesCount > 0 ? Math.round((weekCompletedCount / weekGamesCount) * 100) : 0;
+  const isWeekFullyPicked = (weekGamesCount > 0 && weekCompletedCount === weekGamesCount);
+
+  const weekProgressHtml = `
+    <div class="solo-week-progress-panel" id="solo-week-progress-panel">
+      <div class="solo-week-progress-meta">
+        <div class="solo-week-progress-label">
+          <span class="progress-week-tag">Week ${selectedWk} Slate</span>
+          <span class="progress-count-text">
+            <strong>${weekCompletedCount}</strong> of <strong>${weekGamesCount}</strong> Picks Complete
+          </span>
+        </div>
+        <div class="solo-week-progress-badge ${isWeekFullyPicked ? "is-finished" : ""}">
+          ${isWeekFullyPicked ? "✨ Week Complete!" : `${weekPct}%`}
+        </div>
+      </div>
+      <div class="solo-week-progress-track">
+        <div class="solo-week-progress-fill ${isWeekFullyPicked ? "is-finished" : ""}" style="width: ${weekPct}%;"></div>
+      </div>
+    </div>
+  `;
+
+  // 4. Build Compact 2-Tier Matchup Cards
+  const gamesHtml = games.map((game, idx) => {
+    const pick = activePicks[game.id] || {};
+    return renderOption2Card(game, pick, selectedWk, isSeason, isSeasonLocked, idx);
+  }).join("");
+
+  container.innerHTML = `
+    <div class="sheet-editor-container">
+      ${headerHtml}
+      ${weekSelectorHtml}
+      ${weekProgressHtml}
+      <div class="sheet-games-grid">
+        ${gamesHtml}
+      </div>
+    </div>
+  `;
+  updateGuestSaveBanner();
+}
+
+async function setSoloPickWinner(arg1, arg2, arg3, arg4) {
+  let gameId, winnerTeam, isLocked;
+  if (typeof arg3 === "boolean" || arg4 === undefined) {
+    gameId = arg1;
+    winnerTeam = arg2;
+    isLocked = Boolean(arg3);
+  } else {
+    gameId = arg2;
+    winnerTeam = arg3;
+    isLocked = Boolean(arg4);
+  }
+
+  if (isLocked) {
+    showToast("🔒 Picks are locked for this game");
+    return;
+  }
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
+
+  const currentPick = activePicks[gameId];
+  const isCurrentlySelected = Boolean(currentPick.winner && 
+    (currentPick.winner === winnerTeam || normalizeTeamCode(currentPick.winner) === normalizeTeamCode(winnerTeam)));
+
+  if (isCurrentlySelected) {
+    // Clicking already selected winner deselects it
+    delete activePicks[gameId].winner;
+  } else {
+    // Select new winner
+    activePicks[gameId].winner = winnerTeam;
+
+    // If no scores exist yet, initialize smart football defaults (24 for winner, 17 for opponent)
+    if (!hasAwayScore && !hasHomeScore) {
+      const game = findGameById(gameId);
+      const parts = (game?.matchup || "").split("@").map(s => s.trim().toUpperCase());
+      const awayTeam = parts[0] || "";
+      const homeTeam = parts[1] || "";
+
+      const winnerNorm = normalizeTeamCode(winnerTeam);
+      const awayNorm = normalizeTeamCode(awayTeam);
+
+      if (winnerNorm === awayNorm) {
+        activePicks[gameId].awayScore = 24;
+        activePicks[gameId].homeScore = 17;
+      } else {
+        activePicks[gameId].awayScore = 17;
+        activePicks[gameId].homeScore = 24;
+      }
+      calculateSheetStats(sheet);
+      debouncedSaveSoloPickSheet(sheet);
+      if (state.appMode === "lobby") {
+        renderMatchups();
+        renderLobbyHero();
+      } else {
+        renderSoloView();
+      }
+      return;
+    } else if (hasAwayScore && hasHomeScore) {
+      const aSc = parseInt(currentPick.awayScore, 10);
+      const hSc = parseInt(currentPick.homeScore, 10);
+
+      if (aSc !== hSc) {
+        const game = findGameById(gameId);
+        const parts = (game?.matchup || "").split("@").map(s => s.trim().toUpperCase());
+        const awayTeam = parts[0] || "";
+        const homeTeam = parts[1] || "";
+
+        const winnerNorm = normalizeTeamCode(winnerTeam);
+        const awayNorm = normalizeTeamCode(awayTeam);
+        const homeNorm = normalizeTeamCode(homeTeam);
+
+        // If user picked Away to win, Away score must be the higher score
+        if (winnerNorm === awayNorm && aSc < hSc) {
+          activePicks[gameId].awayScore = hSc;
+          activePicks[gameId].homeScore = aSc;
+        }
+        // If user picked Home to win, Home score must be the higher score
+        else if (winnerNorm === homeNorm && hSc < aSc) {
+          activePicks[gameId].homeScore = aSc;
+          activePicks[gameId].awayScore = hSc;
+        }
+
+        // Update DOM inputs immediately so user sees the flipped scores in real time
+        const awayInput = document.getElementById(`score-away-${gameId}`);
+        const homeInput = document.getElementById(`score-home-${gameId}`);
+        if (awayInput) awayInput.value = activePicks[gameId].awayScore;
+        if (homeInput) homeInput.value = activePicks[gameId].homeScore;
+      }
+    }
+  }
+
+  calculateSheetStats(sheet);
+  debouncedSaveSoloPickSheet(sheet);
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
+}
+
+async function stepSoloPickScore(arg1, arg2, arg3, arg4, arg5) {
+  let gameId, teamSide, delta, isLocked;
+  if (typeof arg3 === "number") {
+    gameId = arg1;
+    teamSide = arg2;
+    delta = arg3;
+    isLocked = Boolean(arg4);
+  } else {
+    gameId = arg2;
+    teamSide = arg3;
+    delta = arg4;
+    isLocked = Boolean(arg5);
+  }
+
+  if (isLocked) {
+    showToast("🔒 Scores are locked for this game");
+    return;
+  }
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
+
+  const key = (teamSide === "away") ? "awayScore" : "homeScore";
+  let cur = activePicks[gameId][key];
+  if (cur === undefined || cur === null || isNaN(cur) || cur === "") {
+    cur = delta > 0 ? delta : 0;
+  } else {
+    cur = parseInt(cur, 10) + delta;
+  }
+  cur = Math.max(0, Math.min(99, cur));
+  activePicks[gameId][key] = cur;
+
+  // Auto-pick winner if scores are unequal, or clear if tied
+  const awaySc = activePicks[gameId].awayScore;
+  const homeSc = activePicks[gameId].homeScore;
+  const game = findGameById(gameId);
+  if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
+      homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
+    const aVal = parseInt(awaySc, 10);
+    const hVal = parseInt(homeSc, 10);
+    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+    const awayTeam = parts[0] || "";
+    const homeTeam = parts[1] || "";
+    if (aVal > hVal) {
+      activePicks[gameId].winner = awayTeam;
+    } else if (hVal > aVal) {
+      activePicks[gameId].winner = homeTeam;
+    } else {
+      delete activePicks[gameId].winner;
+    }
+  }
+
+  calculateSheetStats(sheet);
+  debouncedSaveSoloPickSheet(sheet);
+
+  // Directly update input value and winner UI in DOM for immediate response
+  const inputEl = document.getElementById(`score-${teamSide}-${gameId}`);
+  if (inputEl) inputEl.value = cur;
+
+  const tileEl = document.getElementById(`tile-${teamSide}-${gameId}`);
+  if (tileEl) {
+    tileEl.querySelectorAll(".btn-score-preset").forEach(btn => {
+      const btnVal = parseInt(btn.textContent.trim(), 10);
+      btn.classList.toggle("active", btnVal === cur);
+    });
+  }
+
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
+}
+
+async function setSoloPickExactScore(arg1, arg2, arg3, arg4) {
+  let gameId, teamSide, score, isLocked;
+  if (typeof arg3 === "number") {
+    gameId = arg1;
+    teamSide = arg2;
+    score = arg3;
+    isLocked = Boolean(arg4);
+  } else {
+    gameId = arg2;
+    teamSide = arg3;
+    score = arg4;
+    isLocked = Boolean(arguments[4]);
+  }
+
+  if (isLocked) {
+    showToast("🔒 Scores are locked for this game");
+    return;
+  }
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
+
+  const key = (teamSide === "away") ? "awayScore" : "homeScore";
+  activePicks[gameId][key] = Math.max(0, Math.min(99, score));
+
+  // Auto-pick winner if scores are unequal, or clear if tied
+  const awaySc = activePicks[gameId].awayScore;
+  const homeSc = activePicks[gameId].homeScore;
+  const game = findGameById(gameId);
+  if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
+      homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
+    const aVal = parseInt(awaySc, 10);
+    const hVal = parseInt(homeSc, 10);
+    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+    const awayTeam = parts[0] || "";
+    const homeTeam = parts[1] || "";
+    if (aVal > hVal) {
+      activePicks[gameId].winner = awayTeam;
+    } else if (hVal > aVal) {
+      activePicks[gameId].winner = homeTeam;
+    } else {
+      delete activePicks[gameId].winner;
+    }
+  }
+
+  calculateSheetStats(sheet);
+  debouncedSaveSoloPickSheet(sheet);
+
+  // Directly update input value and UI in DOM
+  const inputEl = document.getElementById(`score-${teamSide}-${gameId}`);
+  if (inputEl) inputEl.value = score;
+
+  const tileEl = document.getElementById(`tile-${teamSide}-${gameId}`);
+  if (tileEl) {
+    tileEl.querySelectorAll(".btn-score-preset").forEach(btn => {
+      const btnVal = parseInt(btn.textContent.trim(), 10);
+      btn.classList.toggle("active", btnVal === score);
+    });
+  }
+
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
+}
+
+async function handleSoloScoreInput(arg1, arg2, arg3, arg4, arg5) {
+  let gameId, teamSide, valStr, isLocked;
+  if (typeof arg4 === "boolean" || arg5 === undefined) {
+    gameId = arg1;
+    teamSide = arg2;
+    valStr = arg3;
+    isLocked = Boolean(arg4);
+  } else {
+    gameId = arg2;
+    teamSide = arg3;
+    valStr = arg4;
+    isLocked = Boolean(arg5);
+  }
+
+  if (isLocked) return;
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
+
+  const key = (teamSide === "away") ? "awayScore" : "homeScore";
+  const cleaned = (valStr || "").trim();
+  if (cleaned === "" || isNaN(cleaned)) {
+    activePicks[gameId][key] = null;
+  } else {
+    activePicks[gameId][key] = Math.max(0, Math.min(99, parseInt(cleaned, 10)));
+  }
+
+  // Auto-pick winner if scores are unequal, or clear if tied
+  const awaySc = activePicks[gameId].awayScore;
+  const homeSc = activePicks[gameId].homeScore;
+  const game = findGameById(gameId);
+  if (game && awaySc !== undefined && awaySc !== null && awaySc !== "" && !isNaN(awaySc) &&
+      homeSc !== undefined && homeSc !== null && homeSc !== "" && !isNaN(homeSc)) {
+    const aVal = parseInt(awaySc, 10);
+    const hVal = parseInt(homeSc, 10);
+    const parts = (game.matchup || "").split("@").map(s => s.trim().toUpperCase());
+    const awayTeam = parts[0] || "";
+    const homeTeam = parts[1] || "";
+    if (aVal > hVal) {
+      activePicks[gameId].winner = awayTeam;
+    } else if (hVal > aVal) {
+      activePicks[gameId].winner = homeTeam;
+    } else {
+      delete activePicks[gameId].winner;
+    }
+  }
+
+  calculateSheetStats(sheet);
+  debouncedSaveSoloPickSheet(sheet);
+
+  const tileEl = document.getElementById(`tile-${teamSide}-${gameId}`);
+  if (tileEl) {
+    tileEl.querySelectorAll(".btn-score-preset").forEach(btn => {
+      const btnVal = parseInt(btn.textContent.trim(), 10);
+      btn.classList.toggle("active", btnVal === activePicks[gameId][key]);
+    });
+  }
+
+  updateSoloCardWinnerUI(gameId, activePicks[gameId]?.winner);
+  updateSoloStatsHeader(sheet);
+  updateGuestSaveBanner();
+}
+
+async function toggleSoloPickMultiplier(arg1, arg2, arg3, arg4) {
+  let gameId, weekNum, isLocked;
+  if (typeof arg3 === "boolean" || arg4 === undefined) {
+    gameId = arg1;
+    weekNum = arg2;
+    isLocked = Boolean(arg3);
+  } else {
+    gameId = arg2;
+    weekNum = arg3;
+    isLocked = Boolean(arg4);
+  }
+
+  if (isLocked) {
+    showToast("🔒 3X multiplier is locked for this game");
+    return;
+  }
+  const sheet = getOrCreateMasterPickSheet();
+  if (!sheet) return;
+  const activePicks = getActiveSoloPicks(sheet);
+  if (!activePicks[gameId]) activePicks[gameId] = {};
+
+  const currentlyActive = Boolean(activePicks[gameId].multiplier);
+  if (currentlyActive) {
+    activePicks[gameId].multiplier = false;
+    showToast("Removed 3X Lock of the Week");
+  } else {
+    // Clear 3X multiplier on all other games in this same week within the active format
+    const weekKey = `Week ${weekNum}`;
+    let weekGames = [];
+    if (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) {
+      weekGames = state.data.weeks[weekKey].games;
+    } else if (typeof OG_LEAGUE_INITIAL_DATA !== "undefined" && OG_LEAGUE_INITIAL_DATA.weeks && OG_LEAGUE_INITIAL_DATA.weeks[weekKey]) {
+      weekGames = OG_LEAGUE_INITIAL_DATA.weeks[weekKey].games || [];
+    }
+    const weekGameIds = new Set(weekGames.map(g => g.id));
+    const weekPrefix = `Week ${weekNum}_`;
+
+    for (const [k, p] of Object.entries(activePicks)) {
+      if ((weekGameIds.has(k) || k.startsWith(weekPrefix)) && p && p.multiplier) {
+        p.multiplier = false;
+      }
+    }
+    activePicks[gameId].multiplier = true;
+    showToast("⭐ Set as 3X Lock of the Week!");
+  }
+
+  calculateSheetStats(sheet);
+  debouncedSaveSoloPickSheet(sheet);
+  if (state.appMode === "lobby") {
+    renderMatchups();
+    renderLobbyHero();
+  } else {
+    renderSoloView();
+  }
+}
+
+// Backwards-compatible stubs for legacy calls
+function openCreateSheetModal() {
+  enterSoloPlay();
+}
+function closeCreateSheetModal() {}
+function selectSheetFormat() {}
+function handleCreateSheetSubmit() {}
+function openPickSheet() {
+  enterSoloPlay();
+}
+function closePickSheetEditor() {
+  exitToLobby();
+}
+function renderSoloSheetEditor() {
+  renderSoloView();
+}
+function deleteSoloSheet() {}
+
+// =========================================================
+// SUPABASE AUTHENTICATION & CLOUD SYNC ENGINE
+// =========================================================
+
+async function initSupabaseAuth() {
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    // 1. Check existing session
+    const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
+    if (!sessionErr && sessionData && sessionData.session && sessionData.session.user) {
+      await handleUserSession(sessionData.session.user);
+    } else {
+      // In OG League view, unauthenticated visitors view the OG League directly without signing in
+      state.appMode = "league";
+      state.activeLeague = "OG League";
+    }
+
+    // 2. Subscribe to auth lifecycle changes
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      if (session && session.user) {
+        await handleUserSession(session.user);
+      } else if (event === "SIGNED_OUT") {
+        state.authUser = null;
+        state.userProfile = null;
+        state.appMode = "league";
+        state.activeLeague = "OG League";
+        updateAppShellForMode();
+        renderHeaderProfile();
+      }
+    });
+
+    // 3. Sync live cloud standings view
+    await syncLeagueStandingsFromCloud();
+  } catch (e) {
+    console.warn("Supabase Auth initialization warning:", e);
+  }
+}
+
+async function handleUserSession(user) {
+  if (!user) return;
+  state.authUser = user;
+
+  try {
+    // 1. Fetch user profile from public.profiles
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile) {
+      state.userProfile = profile;
+    }
+
+    // 2. Resolve league member identity
+    const userEmail = (user.email || "").toLowerCase().trim();
+    let claimedPlayer = null;
+
+    if (profile && profile.full_name && PLAYERS.includes(profile.full_name)) {
+      claimedPlayer = profile.full_name;
+    } else if (profile && profile.username && PLAYERS.includes(profile.username)) {
+      claimedPlayer = profile.username;
+    }
+
+    if (!claimedPlayer && userEmail && supabaseClient) {
+      try {
+        const { data: invite } = await supabaseClient
+          .from("league_roster_invites")
+          .select("player_name")
+          .ilike("invited_email", userEmail)
+          .maybeSingle();
+
+        if (invite && invite.player_name && PLAYERS.includes(invite.player_name)) {
+          claimedPlayer = invite.player_name;
+        }
+      } catch (e) {}
+    }
+
+    if (claimedPlayer) {
+      state.myPlayer = claimedPlayer;
+      state.selectedPlayer = claimedPlayer;
+      try {
+        localStorage.setItem(SAVED_USER_KEY, claimedPlayer);
+      } catch (e) {}
+
+      if (!state.userProfile) {
+        state.userProfile = {
+          id: user.id,
+          username: claimedPlayer,
+          full_name: claimedPlayer,
+          email: user.email
+        };
+      } else if (!state.userProfile.username) {
+        state.userProfile.username = claimedPlayer;
+      }
+
+      if (supabaseClient && (!profile || !profile.username)) {
+        try {
+          await supabaseClient
+            .from("profiles")
+            .upsert({
+              id: user.id,
+              username: claimedPlayer,
+              full_name: claimedPlayer,
+              favorite_team: getFavoriteTeam().code || "KC"
+            }, { onConflict: "id" });
+        } catch (e) {}
+      }
+    } else {
+      if (state.userProfile && !state.userProfile.username && user.user_metadata && user.user_metadata.username) {
+        state.userProfile.username = user.user_metadata.username;
+      }
+    }
+  } catch (err) {
+    console.warn("User session handling error:", err);
+  }
+
+  // Adopt guest solo picks if user just signed up / signed in
+  try {
+    const guestRaw = localStorage.getItem("sp_solo_sheets_guest");
+    if (guestRaw) {
+      const guestSheets = JSON.parse(guestRaw);
+      if (Array.isArray(guestSheets) && guestSheets.length > 0) {
+        const guestMaster = guestSheets.find(s => s.is_master || s.id === "master_guest");
+        const hasGuestPicks = guestMaster && Boolean(
+          (guestMaster.picks && Object.keys(guestMaster.picks).length > 0) ||
+          (guestMaster.weekly_picks && Object.keys(guestMaster.weekly_picks).length > 0) ||
+          (guestMaster.season_picks && Object.keys(guestMaster.season_picks).length > 0)
+        );
+        if (guestMaster && hasGuestPicks) {
+          await loadSoloPickSheets();
+          const userMaster = getOrCreateMasterPickSheet();
+          userMaster.picks = Object.assign({}, userMaster.picks || {}, guestMaster.picks || {});
+          userMaster.weekly_picks = Object.assign({}, userMaster.weekly_picks || {}, guestMaster.weekly_picks || {});
+          userMaster.season_picks = Object.assign({}, userMaster.season_picks || {}, guestMaster.season_picks || {});
+          if (guestMaster.is_season_locked) {
+            userMaster.is_season_locked = true;
+            userMaster.season_locked_at = guestMaster.season_locked_at;
+          }
+          calculateSheetStats(userMaster);
+          await saveSoloPickSheet(userMaster);
+          localStorage.removeItem("sp_solo_sheets_guest");
+          showToast("🔮 Welcome! Your guest picks have been saved to your account.");
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Notice: guest sheet adoption notice:", err);
+  }
+
+  await loadSoloPickSheets();
+  await loadUserLeagues();
+  updateAppShellForMode();
+  renderHeaderProfile();
+  syncLeagueStandingsFromCloud();
+
+  if (state.pendingJoinLeague) {
+    const pending = state.pendingJoinLeague;
+    state.pendingJoinLeague = null;
+    if (pending.name === "OG League" || pending.join_code === "OG2026") {
+      enterLeagueView("OG League");
+    } else {
+      await enterCustomLeague(pending.id || pending.join_code || pending.name);
+    }
+  } else if (state.postAuthAction === "lock_season") {
+    state.postAuthAction = null;
+    await enterSoloPlay();
+    setTimeout(() => {
+      openSeasonLockModal();
+    }, 250);
+  } else if (state.postAuthAction === "solo") {
+    state.postAuthAction = null;
+    enterSoloPlay();
+  }
+}
+
+async function syncLeagueStandingsFromCloud() {
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("league_standings")
+      .select("*");
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      state.cloudStandings = data;
+      if (state.activeTab === "leaderboard") {
+        renderLeaderboard();
+      }
+    }
+  } catch (e) {
+    console.warn("Cloud standings fetch warning:", e);
+  }
+}
+
+function setAuthAlert(message, type = "error") {
+  const alertEl = document.getElementById("auth-alert");
+  if (!alertEl) return;
+  alertEl.className = `auth-alert-box ${type}`;
+  alertEl.innerHTML = message;
+  alertEl.style.display = "block";
+}
+
+state.authMode = "signin"; // "signin" | "signup"
+
+function setAuthMode(mode = "signin") {
+  state.authMode = mode;
+  const tabSignIn = document.getElementById("tab-auth-signin");
+  const tabSignUp = document.getElementById("tab-auth-signup");
+  const usernameRow = document.getElementById("auth-username-row");
+  const modalTitle = document.getElementById("auth-modal-title");
+  const modalDesc = document.getElementById("auth-modal-desc");
+  const submitBtn = document.getElementById("btn-auth-submit");
+  const magicRow = document.getElementById("auth-magic-row");
+  const switchText = document.getElementById("auth-switch-text");
+  const switchBtn = document.getElementById("btn-auth-switch-mode");
+  const alertEl = document.getElementById("auth-alert");
+
+  if (alertEl) {
+    alertEl.style.display = "none";
+    alertEl.textContent = "";
+  }
+
+  const isSignUp = (mode === "signup");
+
+  if (tabSignIn) tabSignIn.classList.toggle("active", !isSignUp);
+  if (tabSignUp) tabSignUp.classList.toggle("active", isSignUp);
+
+  if (usernameRow) {
+    usernameRow.style.display = isSignUp ? "flex" : "none";
+  }
+
+  if (modalTitle) {
+    modalTitle.textContent = isSignUp ? "Create Your Account" : "Welcome Back";
+  }
+
+  if (modalDesc) {
+    modalDesc.textContent = isSignUp
+      ? "Choose a unique username to start predicting NFL games and joining leagues."
+      : "Sign in to make your predictions, claim your league picks, and play with friends.";
+  }
+
+  if (submitBtn) {
+    submitBtn.textContent = isSignUp ? "Create Account" : "Sign In";
+  }
+
+  if (magicRow) {
+    magicRow.style.display = isSignUp ? "none" : "block";
+  }
+
+  if (switchText) {
+    switchText.textContent = isSignUp ? "Already have an account?" : "Don't have an account?";
+  }
+
+  if (switchBtn) {
+    switchBtn.innerHTML = isSignUp ? "Sign in here &rarr;" : "Create one here &rarr;";
+  }
+
+  if (isSignUp) {
+    const usernameInput = document.getElementById("auth-username-input");
+    if (usernameInput) setTimeout(() => usernameInput.focus(), 120);
+  } else {
+    const emailInput = document.getElementById("auth-email-input");
+    if (emailInput) setTimeout(() => emailInput.focus(), 120);
+  }
+}
+
+function toggleAuthMode() {
+  setAuthMode(state.authMode === "signup" ? "signin" : "signup");
+}
+
+function handleAuthSubmit() {
+  if (state.authMode === "signup") {
+    handleEmailSignUp();
+  } else {
+    handleEmailSignIn();
+  }
+}
+
+let usernameCheckTimeout = null;
+function handleUsernameInput(val) {
+  const statusIcon = document.getElementById("username-status-icon");
+  const feedback = document.getElementById("username-validation-msg");
+  const count = document.getElementById("username-char-count");
+  const clean = (val || "").trim();
+
+  if (count) {
+    count.textContent = `${clean.length}/20 chars`;
+    count.style.color = (clean.length >= 3 && clean.length <= 20) ? "var(--accent-blue)" : "var(--text-dim)";
+  }
+
+  if (!statusIcon || !feedback) return;
+
+  if (!clean) {
+    statusIcon.textContent = "";
+    feedback.className = "auth-field-feedback";
+    feedback.textContent = "";
+    return;
+  }
+
+  if (clean.length < 3) {
+    statusIcon.textContent = "⚠️";
+    feedback.className = "auth-field-feedback warn";
+    feedback.textContent = "Must be at least 3 characters";
+    return;
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+    statusIcon.textContent = "❌";
+    feedback.className = "auth-field-feedback error";
+    feedback.textContent = "Letters, numbers, and underscores only (no spaces)";
+    return;
+  }
+
+  // Pre-check against OG League reserved names (case-insensitive)
+  const ogMatch = PLAYERS.find(p => p.toLowerCase() === clean.toLowerCase());
+  if (ogMatch) {
+    statusIcon.textContent = "❌";
+    feedback.className = "auth-field-feedback error";
+    feedback.textContent = `❌ Username '${clean}' is already taken`;
+    return;
+  }
+
+  statusIcon.textContent = "⏳";
+  feedback.className = "auth-field-feedback";
+  feedback.textContent = "Checking availability...";
+
+  if (usernameCheckTimeout) clearTimeout(usernameCheckTimeout);
+  usernameCheckTimeout = setTimeout(async () => {
+    const emailInput = document.getElementById("auth-email-input");
+    const email = emailInput ? emailInput.value : "";
+    const check = await validateUsernameAvailability(clean, email);
+
+    const currentInput = document.getElementById("auth-username-input");
+    if (currentInput && currentInput.value.trim().toLowerCase() !== clean.toLowerCase()) return;
+
+    if (check.valid) {
+      statusIcon.textContent = "✓";
+      feedback.className = "auth-field-feedback success";
+      feedback.textContent = `✓ @${clean} is available!`;
+    } else {
+      statusIcon.textContent = "❌";
+      feedback.className = "auth-field-feedback error";
+      feedback.textContent = `❌ ${check.error}`;
+    }
+  }, 280);
+}
+
+async function validateUsernameAvailability(rawUsername, email = "") {
+  const clean = (rawUsername || "").trim();
+
+  if (!clean) {
+    return { valid: false, error: "Please enter a username.", cleanUsername: "" };
+  }
+
+  if (clean.length < 3) {
+    return { valid: false, error: "Username must be at least 3 characters long.", cleanUsername: clean };
+  }
+
+  if (clean.length > 20) {
+    return { valid: false, error: "Username cannot exceed 20 characters.", cleanUsername: clean };
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+    return { valid: false, error: "Username can only contain letters, numbers, and underscores (no spaces).", cleanUsername: clean };
+  }
+
+  const lowerClean = clean.toLowerCase();
+
+  // Rule: OG League members' current names are reserved as their usernames moving forward
+  const ogMatch = PLAYERS.find(p => p.toLowerCase() === lowerClean);
+  if (ogMatch) {
+    const cleanEmail = (email || "").toLowerCase().trim();
+    let isAllowedOGMember = false;
+
+    if (cleanEmail && supabaseClient) {
+      try {
+        const { data: invite } = await supabaseClient
+          .from("league_roster_invites")
+          .select("player_name")
+          .ilike("invited_email", cleanEmail)
+          .ilike("player_name", ogMatch)
+          .maybeSingle();
+        if (invite) isAllowedOGMember = true;
+      } catch (e) {}
+    }
+
+    if (!isAllowedOGMember) {
+      return {
+        valid: false,
+        error: `Username '${clean}' is already taken. Please choose another username.`,
+        cleanUsername: clean
+      };
+    }
+  }
+
+  // Database Uniqueness Check against Supabase public.profiles
+  if (supabaseClient) {
+    try {
+      const { data: existing, error } = await supabaseClient
+        .from("profiles")
+        .select("id, username")
+        .ilike("username", clean)
+        .maybeSingle();
+
+      if (!error && existing) {
+        if (state.authUser && existing.id === state.authUser.id) {
+          return { valid: true, cleanUsername: clean };
+        }
+        return {
+          valid: false,
+          error: `Username '${clean}' is already taken. Please choose another username.`,
+          cleanUsername: clean
+        };
+      }
+    } catch (err) {
+      console.warn("Username database uniqueness query notice:", err);
+    }
+  }
+
+  return { valid: true, cleanUsername: clean };
+}
+
+function openAuthModal(contextMsg = "", defaultMode = null) {
+  const modal = document.getElementById("auth-modal");
+  if (!modal) return;
+
+  const alertEl = document.getElementById("auth-alert");
+  if (alertEl) {
+    alertEl.style.display = "none";
+    alertEl.textContent = "";
+  }
+
+  let mode = defaultMode;
+  if (!mode) {
+    const lower = (contextMsg || "").toLowerCase();
+    if (lower.includes("create") || lower.includes("sign up") || lower.includes("join") || lower.includes("get started")) {
+      mode = "signup";
+    } else {
+      mode = "signin";
+    }
+  }
+
+  setAuthMode(mode);
+
+  const desc = document.getElementById("auth-modal-desc");
+  if (desc && contextMsg && !["sign in", "create account", "get started free"].includes(contextMsg.toLowerCase())) {
+    desc.textContent = contextMsg;
+  }
+
+  const usernameInput = document.getElementById("auth-username-input");
+  const emailInput = document.getElementById("auth-email-input");
+  const passInput = document.getElementById("auth-password-input");
+
+  if (usernameInput) usernameInput.value = "";
+  if (emailInput && !emailInput.value && state.authUser) {
+    emailInput.value = state.authUser.email || "";
+  }
+  if (passInput) passInput.value = "";
+
+  const statusIcon = document.getElementById("username-status-icon");
+  const feedback = document.getElementById("username-validation-msg");
+  if (statusIcon) statusIcon.textContent = "";
+  if (feedback) { feedback.className = "auth-field-feedback"; feedback.textContent = ""; }
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeAuthModal(event) {
+  if (event && event.target && event.target.id !== "auth-modal" && !event.target.classList.contains("profile-modal-close") && !event.target.classList.contains("btn-auth-cancel")) {
+    return;
+  }
+  const modal = document.getElementById("auth-modal");
+  if (modal) modal.classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+async function handleEmailSignIn() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
+    return;
+  }
+
+  const emailInput = document.getElementById("auth-email-input");
+  const passInput = document.getElementById("auth-password-input");
+  const email = (emailInput && emailInput.value || "").trim().toLowerCase();
+  const password = (passInput && passInput.value || "").trim();
+
+  if (!email || !email.includes("@")) {
+    setAuthAlert("Please enter a valid email address.", "error");
+    if (emailInput) emailInput.focus();
+    return;
+  }
+  if (!password) {
+    setAuthAlert("Please enter your account password.", "error");
+    if (passInput) passInput.focus();
+    return;
+  }
+
+  const btn = document.getElementById("btn-auth-submit");
+  const origText = btn ? btn.textContent : "Sign In";
+  if (btn) { btn.disabled = true; btn.textContent = "Signing In..."; }
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      setAuthAlert(error.message, "error");
+      return;
+    }
+    closeAuthModal();
+    showToast("🔮 Welcome back! Signed in successfully.");
+    if (data && data.user) {
+      await handleUserSession(data.user);
+    }
+    renderApp();
+  } catch (err) {
+    setAuthAlert(err.message || "Failed to sign in. Please try again.", "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
+async function handleEmailSignUp() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
+    return;
+  }
+
+  const usernameInput = document.getElementById("auth-username-input");
+  const emailInput = document.getElementById("auth-email-input");
+  const passInput = document.getElementById("auth-password-input");
+
+  const rawUsername = (usernameInput && usernameInput.value || "").trim();
+  const email = (emailInput && emailInput.value || "").trim().toLowerCase();
+  const password = (passInput && passInput.value || "").trim();
+
+  // 1. Validate Username
+  const usernameCheck = await validateUsernameAvailability(rawUsername, email);
+  if (!usernameCheck.valid) {
+    setAuthAlert(usernameCheck.error, "error");
+    if (usernameInput) usernameInput.focus();
+    return;
+  }
+
+  // 2. Validate Email
+  if (!email || !email.includes("@")) {
+    setAuthAlert("Please enter a valid email address.", "error");
+    if (emailInput) emailInput.focus();
+    return;
+  }
+
+  // 3. Validate Password
+  if (!password || password.length < 6) {
+    setAuthAlert("Password must be at least 6 characters.", "error");
+    if (passInput) passInput.focus();
+    return;
+  }
+
+  const cleanUsername = usernameCheck.cleanUsername;
+
+  const btn = document.getElementById("btn-auth-submit");
+  const origText = btn ? btn.textContent : "Create Account";
+  if (btn) { btn.disabled = true; btn.textContent = "Creating Account..."; }
+
+  try {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          username: cleanUsername,
+          full_name: cleanUsername
+        }
+      }
+    });
+
+    // Detect if user account already exists:
+    // 1. Error message indicates existing registration
+    // 2. Or Supabase returns a user with empty identities array (email enumeration prevention)
+    const isAlreadyRegistered = (
+      (error && /already\s+(registered|exists|in use)/i.test(error.message || "")) ||
+      (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0)
+    );
+
+    if (isAlreadyRegistered) {
+      setAuthMode("signin");
+      const emailInput = document.getElementById("auth-email-input");
+      const passInput = document.getElementById("auth-password-input");
+      if (emailInput) emailInput.value = email;
+      if (passInput) {
+        passInput.value = "";
+        setTimeout(() => passInput.focus(), 150);
+      }
+      setAuthAlert("⚠️ <strong>Account Already Exists</strong><br>An account is already registered with this email. We've switched you to Sign In — enter your password to continue.", "warning");
+      showToast("Account already exists. Please sign in.");
+      return;
+    }
+
+    if (error) {
+      setAuthAlert(error.message, "error");
+      return;
+    }
+
+    try {
+      localStorage.setItem("sp_user_name", cleanUsername);
+    } catch (e) {}
+
+    if (data && data.user) {
+      try {
+        await supabaseClient.from("profiles").upsert({
+          id: data.user.id,
+          username: cleanUsername,
+          full_name: cleanUsername,
+          favorite_team: getFavoriteTeam().code || "KC"
+        }, { onConflict: "id" });
+      } catch (upsertErr) {
+        console.warn("Profile upsert notice:", upsertErr);
+      }
+    }
+
+    if (data && data.session) {
+      closeAuthModal();
+      showToast(`🔮 Welcome, @${cleanUsername}! Account created.`);
+      if (data.user) {
+        await handleUserSession(data.user);
+      }
+      renderApp();
+    } else {
+      setAuthAlert(`✨ Account created for @${cleanUsername}! Please check your email to confirm your account, then sign in.`, "success");
+      showToast("✨ Confirmation email sent! Please check your inbox.");
+    }
+  } catch (err) {
+    setAuthAlert(err.message || "Failed to create account.", "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
+async function handleMagicLinkSignIn() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
+    return;
+  }
+
+  const emailInput = document.getElementById("auth-email-input");
+  const email = (emailInput && emailInput.value || "").trim();
+
+  if (!email || !email.includes("@")) {
+    setAuthAlert("Please enter your email address to receive a Magic Link.", "error");
+    return;
+  }
+
+  try {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { data, error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+
+    if (error) {
+      setAuthAlert(error.message, "error");
+      return;
+    }
+
+    setAuthAlert("📬 Magic Link sent! Check your inbox to sign in instantly without a password.", "success");
+    showToast("📬 Magic Link sent to your email!");
+  } catch (err) {
+    setAuthAlert(err.message || "Failed to send magic link.", "error");
+  }
+}
+
+async function handleGoogleSignIn() {
+  initSupabaseClient();
+  if (!supabaseClient) {
+    showToast("⚠️ Supabase connection unavailable");
+    return;
+  }
+
+  try {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: redirectUrl
+      }
+    });
+
+    if (error) {
+      setAuthAlert(error.message, "error");
+    }
+  } catch (err) {
+    setAuthAlert(err.message || "Google sign in failed.", "error");
+  }
+}
+
+async function handleSignOut() {
+  initSupabaseClient();
+  if (supabaseClient) {
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (e) {
+      console.warn("Sign out warning:", e);
+    }
+  }
+
+  state.authUser = null;
+  state.userProfile = null;
+  closeProfileModal();
+  updateAppShellForMode();
+  renderHeaderProfile();
+  showToast("👋 Signed out of Sports Psychic.");
+  renderApp();
+}
+
+function toggleLobbyInviteInput() {
+  const drawer = document.getElementById("lobby-quick-invite-drawer");
+  const btn = document.querySelector(".btn-toggle-invite-input");
+  if (!drawer) return;
+  const isHidden = drawer.style.display === "none" || !drawer.style.display;
+  drawer.style.display = isHidden ? "block" : "none";
+  if (btn) btn.setAttribute("aria-expanded", isHidden ? "true" : "false");
+  if (isHidden) {
+    const input = document.getElementById("lobby-quick-code-input");
+    if (input) input.focus();
+  }
+}
+
+function handleLobbyCodeInput(val) {
+  const input = document.getElementById("lobby-quick-code-input");
+  const btn = document.getElementById("btn-lobby-join-league") || document.querySelector(".btn-invite-submit");
+  const feedback = document.getElementById("lobby-code-feedback");
+
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+    feedback.className = "lobby-code-feedback";
+  }
+  if (input) {
+    input.classList.remove("input-error");
+  }
+
+  const clean = (val || "").trim().toUpperCase();
+  const hasSix = clean.length === 6;
+
+  if (btn) {
+    if (hasSix) {
+      btn.removeAttribute("disabled");
+      btn.classList.remove("disabled");
+      btn.setAttribute("aria-disabled", "false");
+    } else {
+      btn.setAttribute("disabled", "true");
+      btn.classList.add("disabled");
+      btn.setAttribute("aria-disabled", "true");
+    }
+  }
+}
+
+async function handleQuickInviteSubmit() {
+  const input = document.getElementById("lobby-quick-code-input");
+  const btn = document.getElementById("btn-lobby-join-league") || document.querySelector(".btn-invite-submit");
+  const feedback = document.getElementById("lobby-code-feedback");
+  const code = (input && input.value) ? input.value.trim().toUpperCase() : "";
+
+  // Requirement: Button should not be accessible until 6 digits are typed
+  if (!code || code.length !== 6) {
+    if (btn) {
+      btn.setAttribute("disabled", "true");
+      btn.classList.add("disabled");
+      btn.setAttribute("aria-disabled", "true");
+    }
+    return;
+  }
+
+  // Loading state
+  if (btn) {
+    btn.setAttribute("disabled", "true");
+    btn.classList.add("disabled");
+    btn.innerHTML = `<span>Checking...</span>`;
+  }
+
+  try {
+    let matchedLeague = null;
+
+    // 1. Check built-in OG League code
+    if (code === "OG2026") {
+      matchedLeague = {
+        name: "OG League",
+        join_code: "OG2026"
+      };
+    }
+
+    // 2. Query Supabase for league matching this join code
+    initSupabaseClient();
+    if (!matchedLeague && supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from("leagues")
+          .select("id, name, join_code, scoring_format, season_year")
+          .eq("join_code", code)
+          .maybeSingle();
+
+        if (data && !error && data.name) {
+          matchedLeague = data;
+        }
+      } catch (err) {
+        console.warn("Error looking up league code:", err);
+      }
+    }
+
+    // If there is no league that matches the code entered
+    if (!matchedLeague) {
+      // Notification toast
+      showToast(`⚠️ League code "${code}" does not exist.`);
+
+      // Inline notification below the search bar
+      if (feedback) {
+        feedback.innerHTML = `<span>⚠️ League code "<strong>${code}</strong>" does not exist. Please check your 6-digit code and try again.</span>`;
+        feedback.className = "lobby-code-feedback error";
+        feedback.style.display = "flex";
+      }
+
+      // Input visual highlight with shake animation
+      if (input) {
+        input.classList.remove("input-error");
+        void input.offsetWidth;
+        input.classList.add("input-error");
+        input.focus();
+      }
+
+      return;
+    }
+
+    // League found! Clear feedback
+    if (feedback) {
+      feedback.textContent = "";
+      feedback.style.display = "none";
+    }
+    if (input) {
+      input.classList.remove("input-error");
+    }
+
+    // Require sign-in to join league
+    if (!state.authUser) {
+      state.pendingJoinLeague = matchedLeague;
+      showToast(`🔮 Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
+      openAuthModal(`Sign in to join ${matchedLeague.name}`);
+      return;
+    }
+
+    // Authenticated user joins league
+    if (matchedLeague.name === "OG League" || matchedLeague.join_code === "OG2026") {
+      state.activeLeagueData = null;
+      enterLeagueView("OG League");
+      if (!state.myPlayer) {
+        setTimeout(() => {
+          showToast("👋 Welcome to OG League! Select your name to claim your picks:");
+          openProfileModal();
+        }, 500);
+      } else {
+        showToast("🏆 Welcome to OG League!");
+      }
+    } else {
+      if (supabaseClient && state.authUser) {
+        try {
+          const { data: existingMem } = await supabaseClient
+            .from("league_members")
+            .select("id")
+            .eq("league_id", matchedLeague.id)
+            .eq("user_id", state.authUser.id)
+            .maybeSingle();
+
+          if (!existingMem) {
+            await supabaseClient
+              .from("league_members")
+              .insert({
+                league_id: matchedLeague.id,
+                user_id: state.authUser.id,
+                role: "member"
+              });
+            await loadUserLeagues();
+          }
+        } catch (err) {
+          console.warn("Error registering league membership:", err);
+        }
+      }
+      showToast(`🏆 Welcome to ${matchedLeague.name}!`);
+      await enterCustomLeague(matchedLeague.id);
+    }
+
+    if (input) {
+      input.value = "";
+      handleLobbyCodeInput("");
+    }
+  } finally {
+    if (btn) {
+      btn.innerHTML = `<span>Join League</span>`;
+      const cur = (input && input.value) ? input.value.trim() : "";
+      if (cur.length === 6) {
+        btn.removeAttribute("disabled");
+        btn.classList.remove("disabled");
+        btn.setAttribute("aria-disabled", "false");
+      } else {
+        btn.setAttribute("disabled", "true");
+        btn.classList.add("disabled");
+        btn.setAttribute("aria-disabled", "true");
+      }
+    }
+  }
+}
+
+async function processLeagueCode(code) {
+  const cleanCode = (code || "").trim().toUpperCase();
+  if (!cleanCode) return;
+
+  if (cleanCode.length !== 6) {
+    showToast("⚠️ League codes must be 6 characters.");
+    return;
+  }
+
+  let matchedLeague = null;
+  if (cleanCode === "OG2026") {
+    matchedLeague = { id: "e0000000-0000-0000-0000-000000000001", name: "OG League", join_code: "OG2026" };
+  }
+
+  initSupabaseClient();
+  if (!matchedLeague && supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from("leagues")
+        .select("id, name, join_code, scoring_format, season_year, commissioner_id")
+        .eq("join_code", cleanCode)
+        .maybeSingle();
+
+      if (data && !error && data.name) {
+        matchedLeague = data;
+      }
+    } catch (e) {
+      console.warn("League lookup error:", e);
+    }
+  }
+
+  if (!matchedLeague) {
+    showToast(`⚠️ League code "${cleanCode}" does not exist.`);
+    return;
+  }
+
+  if (!state.authUser) {
+    state.pendingJoinLeague = matchedLeague;
+    showToast(`🔮 Found "${matchedLeague.name}"! Please sign in or create an account to join.`);
+    openAuthModal(`Sign in to join ${matchedLeague.name}`);
+    return;
+  }
+
+  if (matchedLeague.name === "OG League" || matchedLeague.join_code === "OG2026") {
+    state.activeLeagueData = null;
+    enterLeagueView("OG League");
+    if (!state.myPlayer) {
+      setTimeout(() => {
+        showToast("👋 Welcome to OG League! Select your name to claim your picks:");
+        openProfileModal();
+      }, 500);
+    } else {
+      showToast("🏆 Welcome to OG League!");
+    }
+  } else {
+    if (supabaseClient && state.authUser) {
+      try {
+        const { data: existingMem } = await supabaseClient
+          .from("league_members")
+          .select("id")
+          .eq("league_id", matchedLeague.id)
+          .eq("user_id", state.authUser.id)
+          .maybeSingle();
+
+        if (!existingMem) {
+          await supabaseClient
+            .from("league_members")
+            .insert({
+              league_id: matchedLeague.id,
+              user_id: state.authUser.id,
+              role: "member"
+            });
+          await loadUserLeagues();
+        }
+      } catch (err) {
+        console.warn("Error registering league membership:", err);
+      }
+    }
+    showToast(`🏆 Welcome to ${matchedLeague.name}!`);
+    await enterCustomLeague(matchedLeague.id);
+  }
+}
+
+function copyLeagueCode(code) {
+  if (!code) return;
+  if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showToast(`📋 Copied league code "${code}" to clipboard!`);
+    }).catch(() => {
+      prompt("League Invite Code (Ctrl+C to copy):", code);
+    });
+  } else {
+    prompt("League Invite Code (Ctrl+C to copy):", code);
+  }
+}
+
+function generateNewLeagueCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let rand = "SP";
+  for (let i = 0; i < 4; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  const input = document.getElementById("league-code-input");
+  if (input) {
+    input.value = rand;
+  }
+  const feedback = document.getElementById("league-code-feedback");
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+  }
+  return rand;
+}
+
+function selectLeagueScoring(format) {
+  state.createLeagueScoring = format;
+  const prox = document.getElementById("league-scoring-proximity");
+  const win = document.getElementById("league-scoring-winner");
+  if (prox) prox.classList.toggle("active", format === "classic_proximity");
+  if (win) win.classList.toggle("active", format === "winner_only");
+}
+
+function selectLeagueTieRule(rule) {
+  state.createLeagueTieRule = rule;
+  const split = document.getElementById("league-tie-split");
+  const full = document.getElementById("league-tie-full");
+  if (split) split.classList.toggle("active", rule === "split_ties");
+  if (full) full.classList.toggle("active", rule === "full_ties");
+}
+
+function openCreateLeagueModal() {
+  closeLeagueDrawer();
+  closeAuthModal();
+
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account to create a league.");
+    openAuthModal("Sign in to create your own custom league");
+    return;
+  }
+
+  const modal = document.getElementById("create-league-modal");
+  const nameInput = document.getElementById("league-name-input");
+  const feedback = document.getElementById("league-code-feedback");
+
+  if (nameInput) nameInput.value = "";
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+  }
+
+  generateNewLeagueCode();
+  selectLeagueScoring("classic_proximity");
+  selectLeagueTieRule("split_ties");
+
+  if (modal) {
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  if (nameInput) {
+    setTimeout(() => nameInput.focus(), 100);
+  }
+}
+
+function closeCreateLeagueModal(event) {
+  if (event && event.target && event.target.id !== "create-league-modal") {
+    return;
+  }
+  const modal = document.getElementById("create-league-modal");
+  if (modal) {
+    modal.classList.remove("open");
+  }
+  document.body.style.overflow = "";
+}
+
+async function handleCreateLeagueSubmit() {
+  if (!state.authUser) {
+    closeCreateLeagueModal();
+    openAuthModal("Sign in or create an account to create your custom league");
+    return;
+  }
+
+  const nameInput = document.getElementById("league-name-input");
+  const codeInput = document.getElementById("league-code-input");
+  const feedback = document.getElementById("league-code-feedback");
+  const btn = document.getElementById("btn-submit-create-league");
+
+  const leagueName = (nameInput?.value || "").trim();
+  const joinCode = (codeInput?.value || "").trim().toUpperCase();
+  const scoringFormat = state.createLeagueScoring || "classic_proximity";
+
+  if (!leagueName || leagueName.length < 3) {
+    if (feedback) {
+      feedback.textContent = "Please enter a league name (at least 3 characters).";
+      feedback.className = "auth-field-feedback error";
+      feedback.style.display = "block";
+    }
+    if (nameInput) nameInput.focus();
+    return;
+  }
+
+  if (!joinCode || joinCode.length !== 6 || !/^[A-Z0-9]{6}$/.test(joinCode)) {
+    if (feedback) {
+      feedback.textContent = "6-digit code must be 6 letters or numbers (e.g. SP2026).";
+      feedback.className = "auth-field-feedback error";
+      feedback.style.display = "block";
+    }
+    if (codeInput) codeInput.focus();
+    return;
+  }
+
+  if (feedback) {
+    feedback.textContent = "";
+    feedback.style.display = "none";
+  }
+
+  const origBtnText = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>Creating League...</span>`;
+  }
+
+  try {
+    initSupabaseClient();
+    if (!supabaseClient) throw new Error("Supabase connection unavailable.");
+
+    // Check if code is already taken
+    const { data: existing } = await supabaseClient
+      .from("leagues")
+      .select("id")
+      .eq("join_code", joinCode)
+      .maybeSingle();
+
+    if (existing) {
+      if (feedback) {
+        feedback.textContent = `Code "${joinCode}" is already taken. Try randomizing another code!`;
+        feedback.className = "auth-field-feedback error";
+        feedback.style.display = "block";
+      }
+      return;
+    }
+
+    // Insert new league
+    const { data: newLeague, error: leagueErr } = await supabaseClient
+      .from("leagues")
+      .insert({
+        name: leagueName,
+        join_code: joinCode,
+        commissioner_id: state.authUser.id,
+        scoring_format: scoringFormat,
+        season_year: 2026,
+        is_public: false,
+        lock_type: "rolling_kickoff",
+        require_scores: scoringFormat !== "winner_only"
+      })
+      .select()
+      .single();
+
+    if (leagueErr || !newLeague) {
+      throw new Error(leagueErr?.message || "Failed to create league.");
+    }
+
+    // Insert commissioner membership
+    await supabaseClient
+      .from("league_members")
+      .insert({
+        league_id: newLeague.id,
+        user_id: state.authUser.id,
+        role: "commissioner"
+      });
+
+    // Refresh user leagues
+    await loadUserLeagues();
+
+    closeCreateLeagueModal();
+    showToast(`🏆 League "${newLeague.name}" created! Join code: ${newLeague.join_code}`);
+
+    // Immediately enter the newly created league!
+    await enterCustomLeague(newLeague.id);
+
+  } catch (err) {
+    console.error("League creation error:", err);
+    if (feedback) {
+      feedback.textContent = err.message || "Failed to create league. Please try again.";
+      feedback.className = "auth-field-feedback error";
+      feedback.style.display = "block";
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
+    }
+  }
+}
+
+function openJoinLeagueModal() {
+  closeLeagueDrawer();
+  closeAuthModal();
+
+  if (!state.authUser) {
+    showToast("🔮 Please sign in or create an account to join a league.");
+    openAuthModal("Sign in to join a league with your invite code");
+    return;
+  }
+
+  const code = prompt("Enter 6-character League Invite Code (e.g. SP2026):");
+  if (code && code.trim()) {
+    processLeagueCode(code.trim());
+  }
+}
+
+// ---------------------------------------------------------
+// CUSTOM LEAGUE DATA & IN-LEAGUE PICKS ENGINE (OPTION A)
+// ---------------------------------------------------------
+
+async function loadUserLeagues() {
+  if (!state.authUser) {
+    state.userLeagues = [];
+    return;
+  }
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("league_members")
+      .select("league_id, role, joined_at, leagues:league_id(id, name, join_code, scoring_format, season_year, commissioner_id)")
+      .eq("user_id", state.authUser.id);
+
+    if (!error && Array.isArray(data)) {
+      state.userLeagues = data
+        .filter(row => row.leagues && row.leagues.name)
+        .map(row => ({
+          id: row.leagues.id,
+          name: row.leagues.name,
+          join_code: row.leagues.join_code,
+          scoring_format: row.leagues.scoring_format || "classic_proximity",
+          season_year: row.leagues.season_year || 2026,
+          commissioner_id: row.leagues.commissioner_id,
+          role: row.role || "member",
+          joined_at: row.joined_at
+        }));
+
+      try {
+        localStorage.setItem(`sp_user_leagues_${state.authUser.id}`, JSON.stringify(state.userLeagues));
+      } catch (e) {}
+    } else {
+      try {
+        const cached = localStorage.getItem(`sp_user_leagues_${state.authUser.id}`);
+        if (cached) state.userLeagues = JSON.parse(cached);
+      } catch (e) {}
+    }
+  } catch (e) {
+    try {
+      const cached = localStorage.getItem(`sp_user_leagues_${state.authUser.id}`);
+      if (cached) state.userLeagues = JSON.parse(cached);
+    } catch (err) {}
+  }
+
+  renderLobbyHero();
+}
+
+async function loadCustomLeagueData(leagueId) {
+  initSupabaseClient();
+  if (!supabaseClient) return;
+
+  try {
+    // 1. Fetch roster members with profiles
+    const { data: members, error: memErr } = await supabaseClient
+      .from("league_members")
+      .select("id, league_id, user_id, role, total_points, season_correct, season_closest, season_exact, joined_at, profiles:user_id(id, username, full_name, avatar_url, favorite_team)")
+      .eq("league_id", leagueId);
+
+    if (!memErr && Array.isArray(members)) {
+      state.customLeagueMembers = members.map(m => {
+        const prof = m.profiles || {};
+        const displayName = prof.full_name || prof.username || (m.role === "commissioner" ? "Commissioner" : "Member");
+        return {
+          id: m.id,
+          userId: m.user_id,
+          role: m.role || "member",
+          username: prof.username || displayName,
+          fullName: prof.full_name || displayName,
+          displayName: displayName,
+          avatarUrl: prof.avatar_url || "",
+          favoriteTeam: prof.favorite_team || "",
+          totalPoints: m.total_points || 0,
+          seasonCorrect: m.season_correct || 0,
+          seasonClosest: m.season_closest || 0,
+          seasonExact: m.season_exact || 0,
+          joinedAt: m.joined_at
+        };
+      });
+    }
+
+    // 2. Fetch all picks for this custom league
+    const { data: picks, error: picksErr } = await supabaseClient
+      .from("picks")
+      .select("*")
+      .eq("league_id", leagueId);
+
+    if (!picksErr && Array.isArray(picks)) {
+      const picksByGame = {};
+      const myPicks = {};
+
+      picks.forEach(p => {
+        if (!picksByGame[p.game_id]) {
+          picksByGame[p.game_id] = [];
+        }
+        picksByGame[p.game_id].push(p);
+
+        if (state.authUser && p.user_id === state.authUser.id) {
+          myPicks[p.game_id] = {
+            winner: p.picked_winner,
+            awayScore: p.predicted_away,
+            homeScore: p.predicted_home,
+            multiplier: Boolean(p.is_multiplier),
+            points: p.points_earned,
+            bonusPoints: p.bonus_points,
+            isClosest: p.is_closest,
+            isExact: p.is_exact
+          };
+        }
+      });
+
+      state.customLeaguePicks = picksByGame;
+      state.myCustomLeaguePicks = myPicks;
+    }
+
+    if (state.activeTab === "matchups") {
+      renderMatchups();
+    } else if (state.activeTab === "leaderboard") {
+      renderLeaderboard();
+    }
+  } catch (err) {
+    console.warn("Error loading custom league data:", err);
+  }
+}
+
+async function setCustomLeaguePick(gameId, winnerTeam) {
+  if (!state.activeLeagueData || !state.authUser) return;
+  const game = findGameById(gameId);
+  if (!game || isGameLockedForPicking(game, state.currentWeek)) {
+    showToast("🔒 Picks are locked for this game (kickoff passed).");
+    return;
+  }
+
+  const cur = state.myCustomLeaguePicks[gameId] || {
+    awayScore: 24,
+    homeScore: 21,
+    multiplier: false
+  };
+
+  cur.winner = winnerTeam;
+  state.myCustomLeaguePicks[gameId] = cur;
+
+  updateCustomPickBarUI(gameId);
+  saveCustomLeaguePickToCloud(gameId);
+}
+
+async function stepCustomLeagueScore(gameId, side, delta) {
+  if (!state.activeLeagueData || !state.authUser) return;
+  const game = findGameById(gameId);
+  if (!game || isGameLockedForPicking(game, state.currentWeek)) {
+    showToast("🔒 Picks are locked for this game.");
+    return;
+  }
+
+  const cur = state.myCustomLeaguePicks[gameId] || {
+    winner: null,
+    awayScore: 24,
+    homeScore: 21,
+    multiplier: false
+  };
+
+  if (side === "away") {
+    cur.awayScore = Math.max(0, Math.min(99, (Number(cur.awayScore) || 0) + delta));
+  } else {
+    cur.homeScore = Math.max(0, Math.min(99, (Number(cur.homeScore) || 0) + delta));
+  }
+
+  const parts = (game.matchup || "").split("@").map(s => s.trim());
+  const awayTeam = parts[0] || "AWAY";
+  const homeTeam = parts[1] || "HOME";
+  if (!cur.winner) {
+    if (cur.awayScore > cur.homeScore) cur.winner = awayTeam;
+    else if (cur.homeScore > cur.awayScore) cur.winner = homeTeam;
+  }
+
+  state.myCustomLeaguePicks[gameId] = cur;
+  updateCustomPickBarUI(gameId);
+  saveCustomLeaguePickToCloud(gameId);
+}
+
+async function toggleCustomLeagueMultiplier(gameId, weekNum = state.currentWeek) {
+  if (!state.activeLeagueData || !state.authUser) return;
+  const game = findGameById(gameId);
+  if (!game || isGameLockedForPicking(game, weekNum)) {
+    showToast("🔒 Multiplier locked: kickoff has passed.");
+    return;
+  }
+
+  const cur = state.myCustomLeaguePicks[gameId] || {
+    winner: null,
+    awayScore: 24,
+    homeScore: 21,
+    multiplier: false
+  };
+
+  const willBeActive = !cur.multiplier;
+
+  if (willBeActive) {
+    const weekKey = `Week ${weekNum}`;
+    const weekGames = (state.data && state.data.weeks && state.data.weeks[weekKey] && state.data.weeks[weekKey].games) || [];
+    weekGames.forEach(g => {
+      if (g.id !== gameId && state.myCustomLeaguePicks[g.id] && state.myCustomLeaguePicks[g.id].multiplier) {
+        state.myCustomLeaguePicks[g.id].multiplier = false;
+        updateCustomPickBarUI(g.id);
+        saveCustomLeaguePickToCloud(g.id);
+      }
+    });
+    cur.multiplier = true;
+    showToast("⭐ 3X Lock of the Week activated!");
+  } else {
+    cur.multiplier = false;
+    showToast("⭐ 3X Lock removed.");
+  }
+
+  state.myCustomLeaguePicks[gameId] = cur;
+  updateCustomPickBarUI(gameId);
+  saveCustomLeaguePickToCloud(gameId);
+}
+
+const customPickSaveTimers = new Map();
+
+function saveCustomLeaguePickToCloud(gameId) {
+  if (!state.activeLeagueData || !state.authUser || !supabaseClient) return;
+
+  if (customPickSaveTimers.has(gameId)) {
+    clearTimeout(customPickSaveTimers.get(gameId));
+  }
+
+  const timer = setTimeout(async () => {
+    customPickSaveTimers.delete(gameId);
+    const pick = state.myCustomLeaguePicks[gameId];
+    if (!pick || !pick.winner) return;
+
+    const playerName = state.myPlayer ||
+      (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) ||
+      (state.authUser.user_metadata && state.authUser.user_metadata.username) ||
+      (state.authUser.email ? state.authUser.email.split("@")[0] : "Psychic");
+
+    try {
+      const awaySc = (pick.awayScore !== null && pick.awayScore !== undefined) ? Number(pick.awayScore) : 0;
+      const homeSc = (pick.homeScore !== null && pick.homeScore !== undefined) ? Number(pick.homeScore) : 0;
+
+      const { error } = await supabaseClient
+        .from("picks")
+        .upsert({
+          league_id: state.activeLeagueData.id,
+          user_id: state.authUser.id,
+          player_name: playerName,
+          game_id: gameId,
+          week_num: state.currentWeek,
+          picked_winner: pick.winner,
+          predicted_away: awaySc,
+          predicted_home: homeSc,
+          is_multiplier: Boolean(pick.multiplier),
+          updated_at: new Date().toISOString()
+        }, { onConflict: "league_id, player_name, game_id" });
+
+      if (error) {
+        console.warn("Error saving custom pick to Supabase:", error);
+      } else {
+        if (!state.customLeaguePicks[gameId]) {
+          state.customLeaguePicks[gameId] = [];
+        }
+        const existingIdx = state.customLeaguePicks[gameId].findIndex(p => p.user_id === state.authUser.id);
+        const record = {
+          league_id: state.activeLeagueData.id,
+          user_id: state.authUser.id,
+          player_name: playerName,
+          game_id: gameId,
+          week_num: state.currentWeek,
+          picked_winner: pick.winner,
+          predicted_away: awaySc,
+          predicted_home: homeSc,
+          is_multiplier: Boolean(pick.multiplier),
+          points_earned: pick.points || 0,
+          bonus_points: pick.bonusPoints || 0,
+          is_closest: Boolean(pick.isClosest),
+          is_exact: Boolean(pick.isExact)
+        };
+        if (existingIdx >= 0) {
+          state.customLeaguePicks[gameId][existingIdx] = record;
+        } else {
+          state.customLeaguePicks[gameId].push(record);
+        }
+      }
+    } catch (e) {
+      console.warn("Exception saving custom pick:", e);
+    }
+  }, 400);
+
+  customPickSaveTimers.set(gameId, timer);
+}
+
+function updateCustomPickBarUI(gameId) {
+  const bar = document.getElementById(`cl-pick-bar-${gameId}`);
+  if (!bar) {
+    renderMatchups();
+    return;
+  }
+  const game = findGameById(gameId);
+  if (!game) return;
+  const parts = (game.matchup || "").split("@").map(s => s.trim());
+  const awayTeam = parts[0] || "AWAY";
+  const homeTeam = parts[1] || "HOME";
+
+  const awayInfo = NFL_TEAMS[awayTeam] || NFL_TEAMS[normalizeTeamCode(awayTeam)] || { color: '#2a3b50' };
+  const homeInfo = NFL_TEAMS[homeTeam] || NFL_TEAMS[normalizeTeamCode(homeTeam)] || { color: '#2a3b50' };
+
+  const temp = document.createElement("div");
+  temp.innerHTML = renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo);
+  const newBar = temp.querySelector(`#cl-pick-bar-${gameId}`);
+  if (newBar) {
+    bar.innerHTML = newBar.innerHTML;
+    bar.className = newBar.className;
+  }
+}
+
+function renderCustomLeagueMatchupSection(game, awayTeam, homeTeam, awayInfo, homeInfo) {
+  const lockStatus = getGameLockStatus(game, state.currentWeek);
+  const isLocked = lockStatus.isLocked;
+  const isWinnerOnly = state.activeLeagueData && state.activeLeagueData.scoring_format === "winner_only";
+
+  const myPick = state.myCustomLeaguePicks[game.id] || {};
+  const selectedWinner = (myPick.winner || "").toUpperCase().trim();
+  const awaySelected = (selectedWinner === awayTeam);
+  const homeSelected = (selectedWinner === homeTeam);
+  const awayScore = (myPick.awayScore !== undefined && myPick.awayScore !== null) ? myPick.awayScore : 24;
+  const homeScore = (myPick.homeScore !== undefined && myPick.homeScore !== null) ? myPick.homeScore : 21;
+  const isMultiplier = Boolean(myPick.multiplier);
+
+  const allGamePicks = state.customLeaguePicks[game.id] || [];
+  const totalSubmitted = allGamePicks.length;
+  const totalMembers = (state.customLeagueMembers && state.customLeagueMembers.length) || 1;
+
+  let memberPicksHtml = "";
+  if (isLocked) {
+    const awayPicks = [];
+    const homePicks = [];
+
+    allGamePicks.forEach(p => {
+      const pName = p.player_name || "Member";
+      const isMe = Boolean(state.authUser && p.user_id === state.authUser.id);
+      const pickWin = (p.picked_winner || "").toUpperCase().trim();
+      const scoreDisplay = (!isWinnerOnly && p.predicted_away !== null && p.predicted_home !== null)
+        ? `${p.predicted_away}-${p.predicted_home}`
+        : "";
+
+      let chipClass = isMe ? "is-me" : "";
+      let ptsBadge = "";
+
+      if (game.isFinal) {
+        if (p.is_exact) {
+          chipClass += " exact";
+          ptsBadge = `<span class="chip-pts-badge pts-exact">+${p.points_earned || 50}</span>`;
+        } else if (p.is_closest) {
+          chipClass += " closest";
+          ptsBadge = `<span class="chip-pts-badge pts-closest">+${p.points_earned || 20}</span>`;
+        } else if ((p.points_earned || 0) > 0) {
+          chipClass += " correct";
+          ptsBadge = `<span class="chip-pts-badge pts-win">+${p.points_earned}</span>`;
+        } else {
+          chipClass += " wrong";
+          ptsBadge = `<span class="chip-pts-badge pts-zero">0</span>`;
+        }
+      }
+
+      const pData = {
+        name: pName,
+        isMe,
+        multiplier: p.is_multiplier,
+        scoreDisplay,
+        chipClass: chipClass.trim(),
+        ptsBadge
+      };
+
+      if (pickWin === awayTeam) awayPicks.push(pData);
+      else if (pickWin === homeTeam) homePicks.push(pData);
+    });
+
+    const totalPicks = awayPicks.length + homePicks.length;
+    let awayPct = 50;
+    let homePct = 50;
+    if (totalPicks > 0) {
+      awayPct = Math.round((awayPicks.length / totalPicks) * 100);
+      homePct = 100 - awayPct;
+    }
+
+    const renderChip = (p) => `
+      <div class="split-pick-chip ${p.chipClass}" title="${p.name}'s prediction">
+        <div class="chip-avatar-col">
+          ${getUserAvatarHtml(26)}
+        </div>
+        <div class="chip-body">
+          <div class="chip-row-top">
+            <span class="chip-player-name">${p.name}</span>
+            <div class="chip-badges-group">
+              ${p.isMe ? `<span class="chip-you-badge">YOU</span>` : ""}
+              ${p.multiplier ? `<span class="chip-mult-tag">3X</span>` : ""}
+            </div>
+          </div>
+          <div class="chip-row-bottom">
+            <span class="chip-predicted-score">${p.scoreDisplay}</span>
+            ${p.ptsBadge}
+          </div>
+        </div>
+      </div>
+    `;
+
+    memberPicksHtml = `
+      ${totalPicks > 0 ? `
+        <div class="matchup-consensus-container" aria-label="Consensus: ${awayTeam} ${awayPct}%, ${homeTeam} ${homePct}%">
+          <div class="consensus-header-row">
+            <div class="consensus-side away">
+              <span class="consensus-dot" style="background-color: ${awayInfo.color};"></span>
+              <span class="consensus-team-code">${awayTeam}</span>
+              <span class="consensus-pct" style="color: ${awayInfo.color};">${awayPct}%</span>
+              <span class="consensus-count">(${awayPicks.length})</span>
+            </div>
+            <div class="consensus-side home">
+              <span class="consensus-dot" style="background-color: ${homeInfo.color};"></span>
+              <span class="consensus-team-code">${homeTeam}</span>
+              <span class="consensus-pct" style="color: ${homeInfo.color};">${homePct}%</span>
+              <span class="consensus-count">(${homePicks.length})</span>
+            </div>
+          </div>
+          <div class="consensus-bar-track">
+            <div class="consensus-bar-fill away" style="width: ${awayPct}%; background-color: ${awayInfo.color};"></div>
+            <div class="consensus-bar-fill home" style="width: ${homePct}%; background-color: ${homeInfo.color};"></div>
+          </div>
+        </div>
+      ` : ""}
+
+      <div class="matchup-split-picks">
+        <div class="picks-column away-picks">
+          <div class="picks-column-header away" style="border-left: 3px solid ${awayInfo.color};">
+            <div class="column-team-label">
+              <span class="column-swatch" style="background-color: ${awayInfo.color};"></span>
+              <span>${awayTeam} Picks</span>
+            </div>
+            <span class="column-count-badge">${awayPicks.length}</span>
+          </div>
+          <div class="picks-list">
+            ${awayPicks.length > 0 ? awayPicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+          </div>
+        </div>
+
+        <div class="picks-column home-picks">
+          <div class="picks-column-header home" style="border-right: 3px solid ${homeInfo.color};">
+            <span class="column-count-badge">${homePicks.length}</span>
+            <div class="column-team-label">
+              <span>${homeTeam} Picks</span>
+              <span class="column-swatch" style="background-color: ${homeInfo.color};"></span>
+            </div>
+          </div>
+          <div class="picks-list">
+            ${homePicks.length > 0 ? homePicks.map(renderChip).join("") : `<div class="no-picks-muted">No picks</div>`}
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    memberPicksHtml = `
+      <div class="cl-pending-privacy-box">
+        <span>🔒</span>
+        <span>Member predictions reveal at kickoff. <strong>${totalSubmitted} of ${totalMembers}</strong> members locked in.</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="custom-league-pick-bar ${isLocked ? "is-locked" : ""}" id="cl-pick-bar-${game.id}">
+      <div class="cl-pick-header">
+        <div class="cl-pick-title">Your League Prediction</div>
+        <span class="${isLocked ? "cl-locked-tag" : "cl-open-tag"}">${isLocked ? "LOCKED" : "OPEN"}</span>
+      </div>
+
+      <div class="cl-team-pick-btns">
+        <button type="button" class="btn-cl-pick-team ${awaySelected ? "selected" : ""}"
+          ${isLocked ? "disabled" : ""}
+          onclick="setCustomLeaguePick('${game.id}', '${awayTeam}')">
+          <span>${awaySelected ? "✓ " : ""}${awayTeam}</span>
+        </button>
+        <span class="cl-pick-vs">VS</span>
+        <button type="button" class="btn-cl-pick-team ${homeSelected ? "selected" : ""}"
+          ${isLocked ? "disabled" : ""}
+          onclick="setCustomLeaguePick('${game.id}', '${homeTeam}')">
+          <span>${homeSelected ? "✓ " : ""}${homeTeam}</span>
+        </button>
+      </div>
+
+      ${!isWinnerOnly ? `
+        <div class="cl-score-stepper-row">
+          <div class="cl-score-box">
+            <span class="cl-score-lbl">${awayTeam}</span>
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'away', -1)">-</button>
+            <span class="cl-score-val" id="cl-score-away-${game.id}">${awayScore}</span>
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'away', 1)">+</button>
+          </div>
+          <span class="cl-score-divider">-</span>
+          <div class="cl-score-box">
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'home', -1)">-</button>
+            <span class="cl-score-val" id="cl-score-home-${game.id}">${homeScore}</span>
+            <button type="button" class="btn-cl-step" ${isLocked ? "disabled" : ""} onclick="stepCustomLeagueScore('${game.id}', 'home', 1)">+</button>
+            <span class="cl-score-lbl">${homeTeam}</span>
+          </div>
+        </div>
+      ` : ""}
+
+      <button type="button" class="btn-cl-multiplier ${isMultiplier ? "active" : ""}"
+        ${isLocked ? "disabled" : ""}
+        onclick="toggleCustomLeagueMultiplier('${game.id}', ${state.currentWeek})">
+        <span>${isMultiplier ? "3X LOCK ACTIVE" : "Select as 3X Lock"}</span>
+      </button>
+    </div>
+
+    ${memberPicksHtml}
+  `;
+}
+
+function renderCustomLeagueLeaderboard() {
+  const podiumEl = document.getElementById("podium-container");
+  const listEl = document.getElementById("leaderboard-list");
+  const sectionTitleEl = document.getElementById("leaderboard-section-title");
+  const labelWeeklyBtn = document.getElementById("label-toggle-weekly");
+  const btnSeason = document.getElementById("btn-toggle-season");
+  const btnWeekly = document.getElementById("btn-toggle-weekly");
+  if (!podiumEl || !listEl) return;
+
+  const isWeekly = state.leaderboardMode === "weekly";
+  if (btnSeason) btnSeason.classList.toggle("active", !isWeekly);
+  if (btnWeekly) btnWeekly.classList.toggle("active", isWeekly);
+  if (labelWeeklyBtn) labelWeeklyBtn.textContent = `Week ${state.currentWeek} Standings`;
+  if (sectionTitleEl) {
+    sectionTitleEl.textContent = isWeekly
+      ? `${state.activeLeagueData.name} • Week ${state.currentWeek}`
+      : `${state.activeLeagueData.name} • Season Standings`;
+  }
+
+  const members = state.customLeagueMembers || [];
+  const memberScores = members.map(m => {
+    let pts = 0;
+    let wins = 0;
+    let losses = 0;
+    let weekPts = 0;
+
+    const weeksToScan = isWeekly ? [`Week ${state.currentWeek}`] : Object.keys(state.data?.weeks || {});
+
+    weeksToScan.forEach(wkKey => {
+      const gList = state.data?.weeks?.[wkKey]?.games || [];
+      gList.forEach(g => {
+        const gamePicks = state.customLeaguePicks[g.id] || [];
+        const mPick = gamePicks.find(p => p.user_id === m.userId);
+        if (mPick && g.isFinal && g.winner) {
+          const isCorrect = (mPick.picked_winner === g.winner);
+          if (isCorrect) wins++; else losses++;
+          const mult = mPick.is_multiplier ? 3 : 1;
+          let earned = (mPick.points_earned || (isCorrect ? 10 * mult : 0));
+          pts += earned;
+          if (wkKey === `Week ${state.currentWeek}`) {
+            weekPts += earned;
+          }
+        }
+      });
+    });
+
+    const isMe = Boolean(state.authUser && m.userId === state.authUser.id);
+
+    return {
+      id: m.id,
+      userId: m.userId,
+      name: m.displayName,
+      role: m.role,
+      isMe,
+      points: pts,
+      weekPts,
+      rec: {
+        wins,
+        losses,
+        label: `${wins}-${losses} W-L`
+      }
+    };
+  });
+
+  memberScores.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    const aTot = a.rec.wins + a.rec.losses;
+    const bTot = b.rec.wins + b.rec.losses;
+    const aWinRate = aTot > 0 ? (a.rec.wins / aTot) : 0;
+    const bWinRate = bTot > 0 ? (b.rec.wins / bTot) : 0;
+    return bWinRate - aWinRate;
+  });
+
+  let currentCustomRank = 1;
+  for (let i = 0; i < memberScores.length; i++) {
+    if (i > 0) {
+      const prev = memberScores[i - 1];
+      const curr = memberScores[i];
+      const prevTot = prev.rec.wins + prev.rec.losses;
+      const currTot = curr.rec.wins + curr.rec.losses;
+      const prevWinRate = prevTot > 0 ? (prev.rec.wins / prevTot) : 0;
+      const currWinRate = currTot > 0 ? (curr.rec.wins / currTot) : 0;
+      const isExactTie = (curr.points === prev.points && currWinRate === prevWinRate);
+      if (!isExactTie) {
+        currentCustomRank = i + 1;
+      }
+    }
+    memberScores[i].numericRank = currentCustomRank;
+  }
+
+  const customRankCounts = {};
+  memberScores.forEach(m => {
+    customRankCounts[m.numericRank] = (customRankCounts[m.numericRank] || 0) + 1;
+  });
+  memberScores.forEach(m => {
+    const isTied = customRankCounts[m.numericRank] > 1;
+    m.rankDisplay = isTied ? `T-${m.numericRank}` : `${m.numericRank}`;
+    m.rank = m.numericRank;
+  });
+
+  const rank1 = memberScores[0] || { name: "No Members Yet", points: 0, rankDisplay: "1", rec: { label: "0-0" } };
+  const rank2 = memberScores[1] || { name: "-", points: 0, rankDisplay: "2", rec: { label: "0-0" } };
+  const rank3 = memberScores[2] || { name: "-", points: 0, rankDisplay: "3", rec: { label: "0-0" } };
+
+  podiumEl.innerHTML = `
+    <!-- 2nd Place Pedestal -->
+    <div class="podium-card rank-2 ${rank2.isMe ? "is-my-rank" : ""}">
+      <div class="podium-pedestal-header">
+        <div class="podium-avatar-frame frame-silver">
+          ${getUserAvatarHtml(44)}
+          <div class="podium-rank-badge badge-silver">2</div>
+        </div>
+      </div>
+      <div class="podium-body">
+        <div class="podium-name">${rank2.name}${rank2.isMe ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points-wrap rank-2-pts">
+          <span class="podium-pts-val">${rank2.points}</span>
+          <span class="podium-pts-lbl">PTS</span>
+        </div>
+        <div class="podium-footer-row">
+          <div class="podium-record-pill">${rank2.rec.label}</div>
+        </div>
+      </div>
+      <div class="podium-base-pedestal base-silver">
+        <span class="pedestal-rank-num">2ND</span>
+      </div>
+    </div>
+
+    <!-- 1st Place Pedestal -->
+    <div class="podium-card rank-1 ${rank1.isMe ? "is-my-rank" : ""}">
+      <div class="podium-pedestal-header">
+        <div class="podium-avatar-frame frame-gold">
+          ${getUserAvatarHtml(56)}
+          <div class="podium-rank-badge badge-gold">1</div>
+        </div>
+      </div>
+      <div class="podium-body">
+        <div class="podium-name">${rank1.name}${rank1.isMe ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points-wrap rank-1-pts">
+          <span class="podium-pts-val">${rank1.points}</span>
+          <span class="podium-pts-lbl">PTS</span>
+        </div>
+        <div class="podium-footer-row">
+          <div class="podium-record-pill">${rank1.rec.label}</div>
+        </div>
+      </div>
+      <div class="podium-base-pedestal base-gold">
+        <span class="pedestal-rank-num">1ST</span>
+      </div>
+    </div>
+
+    <!-- 3rd Place Pedestal -->
+    <div class="podium-card rank-3 ${rank3.isMe ? "is-my-rank" : ""}">
+      <div class="podium-pedestal-header">
+        <div class="podium-avatar-frame frame-bronze">
+          ${getUserAvatarHtml(42)}
+          <div class="podium-rank-badge badge-bronze">3</div>
+        </div>
+      </div>
+      <div class="podium-body">
+        <div class="podium-name">${rank3.name}${rank3.isMe ? ` <span class="podium-you-pill">YOU</span>` : ""}</div>
+        <div class="podium-points-wrap rank-3-pts">
+          <span class="podium-pts-val">${rank3.points}</span>
+          <span class="podium-pts-lbl">PTS</span>
+        </div>
+        <div class="podium-footer-row">
+          <div class="podium-record-pill">${rank3.rec.label}</div>
+        </div>
+      </div>
+      <div class="podium-base-pedestal base-bronze">
+        <span class="pedestal-rank-num">3RD</span>
+      </div>
+    </div>
+  `;
+
+  listEl.innerHTML = memberScores.map(m => {
+    let rankBadgeClass = "";
+    if (m.numericRank === 1) rankBadgeClass = "top1";
+    else if (m.numericRank === 2) rankBadgeClass = "top2";
+    else if (m.numericRank === 3) rankBadgeClass = "top3";
+
+    return `
+      <div class="leaderboard-row ${m.isMe ? "is-my-row" : ""}">
+        <div class="leader-left">
+          <div class="rank-badge ${rankBadgeClass}">${m.rankDisplay}</div>
+          <div class="leader-avatar-wrap">
+            ${getUserAvatarHtml(38)}
+          </div>
+          <div class="leader-name-col">
+            <div class="leader-name-row">
+              <span class="leader-player-name">${m.name}</span>
+              ${m.isMe ? `<span class="you-badge">YOU</span>` : ""}
+              ${m.role === "commissioner" ? `<span class="league-role-tag commissioner">COMMISH</span>` : ""}
+            </div>
+            <div class="leader-rec-sub">${m.rec.label}</div>
+          </div>
+        </div>
+        <div class="leader-right">
+          <div class="leader-points-wrap pts-season">
+            <span class="leader-pts-val">${m.points}</span>
+            <span class="leader-pts-lbl">PTS</span>
+          </div>
+          ${!isWeekly ? `<div class="leader-sub-pill pill-emerald">+${m.weekPts} Wk ${state.currentWeek}</div>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// =========================================================
+// GLOBAL COMMUNITY LEADERBOARD ENGINE
+// =========================================================
+
+function openGlobalLeaderboardModal(tab = null) {
+  if (tab) state.globalLeaderboardTab = tab;
+  if (!state.globalLeaderboardTab) state.globalLeaderboardTab = state.soloCampaignMode || "season";
+
+  const modal = document.getElementById("global-leaderboard-modal");
+  if (!modal) return;
+
+  const btnSeason = document.getElementById("tab-lb-season");
+  const btnWeekly = document.getElementById("tab-lb-weekly");
+  if (btnSeason) btnSeason.classList.toggle("active", state.globalLeaderboardTab === "season");
+  if (btnWeekly) btnWeekly.classList.toggle("active", state.globalLeaderboardTab === "weekly");
+
+  modal.classList.add("active");
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+
+  loadAndRenderGlobalLeaderboard();
+}
+
+function closeGlobalLeaderboardModal(event) {
+  if (event && event.target && !event.target.classList.contains("auth-modal-backdrop") && !event.target.classList.contains("profile-modal-close")) {
+    return;
+  }
+  const modal = document.getElementById("global-leaderboard-modal");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+  }
+  document.body.style.overflow = "";
+}
+
+function switchGlobalLeaderboardTab(tab) {
+  state.globalLeaderboardTab = tab;
+  const btnSeason = document.getElementById("tab-lb-season");
+  const btnWeekly = document.getElementById("tab-lb-weekly");
+  if (btnSeason) btnSeason.classList.toggle("active", tab === "season");
+  if (btnWeekly) btnWeekly.classList.toggle("active", tab === "weekly");
+
+  loadAndRenderGlobalLeaderboard();
+}
+
+async function loadAndRenderGlobalLeaderboard() {
+  const container = document.getElementById("global-lb-content");
+  const footer = document.getElementById("global-lb-user-footer");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="global-lb-loading">
+      <div class="lb-spinner"></div>
+      <span>Consulting the Oracle & Syncing Global Standings...</span>
+    </div>
+  `;
+
+  const format = state.globalLeaderboardTab || "season";
+  let entries = [];
+
+  initSupabaseClient();
+  if (supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from("global_leaderboard")
+        .select("*")
+        .eq("format", format)
+        .order("rank", { ascending: true });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        entries = data;
+      }
+    } catch (e) {
+      console.warn("Notice: Cloud leaderboard query notice:", e);
+    }
+  }
+
+  // Check current local master sheet
+  const sheet = getOrCreateMasterPickSheet();
+  calculateSheetStats(sheet);
+  const currentUserId = state.authUser ? state.authUser.id : "guest";
+  const myName = state.myPlayer || (state.userProfile && (state.userProfile.username || state.userProfile.full_name)) || (state.authUser?.email ? state.authUser.email.split("@")[0] : "You");
+  const isSheetLocked = Boolean(sheet && (sheet.is_season_locked || sheet.is_locked));
+
+  const formatPoints = (format === "weekly") ? (sheet.weekly_total_points || 0) : (sheet.season_total_points || 0);
+  const formatPicks = (format === "weekly") ? (sheet.weekly_total_picks || 0) : (sheet.season_total_picks || 0);
+  const formatAccuracy = (format === "weekly") ? sheet.weekly_accuracy_rate : sheet.season_accuracy_rate;
+  const isEligibleForBoard = (format === "weekly") ? (formatPicks > 0) : isSheetLocked;
+
+  // If local user sheet has entry, ensure it appears in the entries
+  const existingIdx = entries.findIndex(e => (state.authUser && e.user_id === state.authUser.id) || e.sheet_id === sheet?.id);
+  if (existingIdx >= 0) {
+    if (format === "season" && !isSheetLocked) {
+      entries.splice(existingIdx, 1);
+    } else {
+      entries[existingIdx].isCurrentUser = true;
+      entries[existingIdx].submission_label = entries[existingIdx].submission_label || (format === "weekly" ? "Solo Vision" : "Solo Prophecy");
+      if (formatPoints > entries[existingIdx].total_points) {
+        entries[existingIdx].total_points = formatPoints;
+        entries[existingIdx].total_picks = formatPicks;
+        entries[existingIdx].accuracy_rate = formatAccuracy;
+      }
+    }
+  } else if (isEligibleForBoard && sheet) {
+    entries.push({
+      sheet_id: sheet.id,
+      user_id: currentUserId,
+      format: format,
+      total_picks: formatPicks,
+      total_points: formatPoints,
+      accuracy_rate: formatAccuracy,
+      username: myName,
+      full_name: myName,
+      avatar_url: null,
+      favorite_team: getFavoriteTeam()?.code || "BUF",
+      submission_label: format === "weekly" ? "Solo Vision" : "Solo Prophecy",
+      isCurrentUser: true
+    });
+  }
+
+  // Populate the 12 OG League member prophecies with their full 272 picks (season) or weekly picks (weekly)
+  const ogFavTeams = {
+    "Jon": "KC", "Alisha": "KC", "Carson": "KC", "Nok": "KC",
+    "Mango": "KC", "Caleb": "KC", "Ross": "DAL", "Dishman": "KC",
+    "Ethan": "CIN", "Brett": "JAX", "Wells": "IND", "Rob": "MIA"
+  };
+
+  const activeNFLWeek = state.currentWeek || getCurrentNFLWeek() || 8;
+
+  if (typeof PLAYERS !== "undefined" && Array.isArray(PLAYERS)) {
+    PLAYERS.forEach(playerName => {
+      let stats;
+      let label;
+      if (format === "weekly") {
+        stats = evaluateWeeklyOgPicks(playerName, activeNFLWeek);
+        label = "OG League Vision";
+      } else {
+        const picks = extractOgLeaguePicksForPlayer(playerName);
+        stats = evaluatePicksDict(picks);
+        label = "OG League Prophecy";
+      }
+
+      const sheetId = `og_${playerName.toLowerCase()}_${format}`;
+      const found = entries.find(e => e.sheet_id === sheetId || (e.username === playerName && e.submission_label === label));
+      const isMyOGPlayer = Boolean(state.myPlayer && state.myPlayer === playerName);
+      if (!found) {
+        entries.push({
+          sheet_id: sheetId,
+          user_id: `og_${playerName.toLowerCase()}`,
+          format: format,
+          total_picks: stats.totalPicks,
+          total_points: stats.totalPoints,
+          accuracy_rate: stats.accuracyRate,
+          username: playerName,
+          full_name: playerName,
+          avatar_url: (typeof PLAYER_AVATARS !== "undefined" && PLAYER_AVATARS[playerName]) ? PLAYER_AVATARS[playerName] : null,
+          favorite_team: ogFavTeams[playerName] || "NFL",
+          submission_label: label,
+          isOgLeague: true,
+          isCurrentUser: Boolean(isMyOGPlayer && !isSheetLocked)
+        });
+      } else {
+        found.submission_label = found.submission_label || label;
+        found.avatar_url = found.avatar_url || (typeof PLAYER_AVATARS !== "undefined" && PLAYER_AVATARS[playerName]) || null;
+        found.favorite_team = found.favorite_team || ogFavTeams[playerName] || "NFL";
+        if (isMyOGPlayer && !isSheetLocked) {
+          found.isCurrentUser = true;
+        }
+      }
+    });
+  }
+
+  // Re-sort and rank: points DESC, accuracy DESC, picks DESC
+  entries.sort((a, b) => {
+    if ((b.total_points || 0) !== (a.total_points || 0)) return (b.total_points || 0) - (a.total_points || 0);
+    if ((b.accuracy_rate || 0) !== (a.accuracy_rate || 0)) return (b.accuracy_rate || 0) - (a.accuracy_rate || 0);
+    return (b.total_picks || 0) - (a.total_picks || 0);
+  });
+
+  entries.forEach((e, idx) => {
+    e.rank = idx + 1;
+  });
+
+  if (format === "season" && entries.length > 0) {
+    updateGlobalStandingsRibbon();
+  }
+
+  // Render Table
+  let userEntry = entries.find(e => e.isCurrentUser);
+
+  const rowsHtml = entries.map(entry => {
+    const isMe = Boolean(entry.isCurrentUser);
+    const rankNum = entry.rank;
+    let rankBadge = `#${rankNum}`;
+    let rowTierClass = "";
+    if (rankNum === 1) { rankBadge = "🥇 1"; rowTierClass = "lb-tier-gold"; }
+    else if (rankNum === 2) { rankBadge = "🥈 2"; rowTierClass = "lb-tier-silver"; }
+    else if (rankNum === 3) { rankBadge = "🥉 3"; rowTierClass = "lb-tier-bronze"; }
+
+    const teamInfo = getTeamInfo(entry.favorite_team || "NFL");
+    const avatarHtml = entry.avatar_url
+      ? `<div class="lb-avatar-wrap"><img src="${entry.avatar_url}" alt="${entry.username}" class="lb-avatar-img" onerror="this.remove();" /></div>`
+      : `<div class="lb-avatar-wrap" style="background:${teamInfo.color}; color:${teamInfo.textColor};">${entry.username.charAt(0).toUpperCase()}</div>`;
+
+    return `
+      <tr class="global-lb-row ${rowTierClass} ${isMe ? "is-user-row" : ""}">
+        <td class="col-rank">${rankBadge}</td>
+        <td class="col-player">
+          <div class="lb-player-cell">
+            ${avatarHtml}
+            <div class="lb-name-group">
+              <div class="lb-name-top">
+                <span class="lb-player-name">${entry.username}${isMe ? ' <span class="lb-you-tag">YOU</span>' : ""}</span>
+                <span class="lb-team-chip" style="background-color:${teamInfo.color}; color:${teamInfo.textColor};">${entry.favorite_team || "NFL"}</span>
+              </div>
+              <span class="lb-sub-label">${entry.submission_label || (format === "weekly" ? "Solo Vision" : "Solo Prophecy")}</span>
+            </div>
+          </div>
+        </td>
+        <td class="col-picks">${entry.total_picks || 0}</td>
+        <td class="col-acc">${entry.accuracy_rate !== null && entry.accuracy_rate !== undefined ? `${entry.accuracy_rate}%` : "—"}</td>
+        <td class="col-pts">
+          <div class="col-pts-wrap">
+            <span><strong>${entry.total_points || 0}</strong> <span class="pts-unit">PTS</span></span>
+            <button type="button" class="btn-lb-breakdown" onclick="event.stopPropagation(); openScoringBreakdownModal('${entry.username}', 'global')" title="View ${entry.username}'s scoring breakdown">📊</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  container.innerHTML = `
+    <div class="global-lb-rules-ribbon">
+      <span class="rules-ribbon-tag">GLOBAL RULES</span>
+      <span class="rules-ribbon-desc">Full Closest (+10 PTS) • Full Exact (+50 PTS) • 3X Lock Active</span>
+    </div>
+    <table class="global-lb-table">
+      <thead>
+        <tr>
+          <th class="col-rank">Rank</th>
+          <th class="col-player">Forecaster</th>
+          <th class="col-picks">Picks</th>
+          <th class="col-acc">Accuracy</th>
+          <th class="col-pts">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rowsHtml}
+      </tbody>
+    </table>
+  `;
+
+  // Render Pinned Footer
+  if (footer) {
+    if (userEntry) {
+      footer.innerHTML = `
+        <div class="lb-footer-content is-registered">
+          <div class="lb-footer-left">
+            <span class="lb-footer-badge">${userEntry.submission_label || "Official Entry"}</span>
+            <span class="lb-footer-rank">Rank <strong>#${userEntry.rank}</strong> of ${entries.length}</span>
+            <span class="lb-footer-dot">•</span>
+            <span class="lb-footer-stat"><strong>${userEntry.total_points || 0}</strong> PTS</span>
+            <span class="lb-footer-dot">•</span>
+            <span class="lb-footer-stat">${userEntry.accuracy_rate !== null && userEntry.accuracy_rate !== undefined ? `${userEntry.accuracy_rate}%` : "—"} Acc</span>
+            <span class="lb-footer-dot">•</span>
+            <span class="lb-footer-stat">${userEntry.total_picks || 0} Picks</span>
+          </div>
+          <div class="lb-footer-right">
+            <button type="button" class="btn-lb-close-view" onclick="closeGlobalLeaderboardModal()">Back to Picks</button>
+          </div>
+        </div>
+      `;
+    } else {
+      const isWeeklyTab = (format === "weekly");
+      footer.innerHTML = `
+        <div class="lb-footer-content is-unregistered">
+          <div class="lb-footer-left">
+            <span class="lb-footer-alert-icon">⚡</span>
+            <div class="lb-footer-text">
+              <strong>${isWeeklyTab ? "Make Weekly Picks" : "Not Yet Registered"}</strong>
+              <span>${isWeeklyTab ? "Predict this week's winners and scores in Weekly Vision to enter the Weekly Leaderboard." : "Lock in your Season Prophecy to enter the Official Global Championship."}</span>
+            </div>
+          </div>
+          <div class="lb-footer-right">
+            ${isWeeklyTab ? `
+              <button type="button" class="btn-lb-lock-action" onclick="closeGlobalLeaderboardModal(); setSoloCampaignMode('weekly');">
+                Make Weekly Picks →
+              </button>
+            ` : `
+              <button type="button" class="btn-lb-lock-action" onclick="closeGlobalLeaderboardModal(); openSeasonLockModal();">
+                Lock Season Prophecy →
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+/**
+ * Interactive Scoring Breakdown Engine
+ * Allows players to inspect their exact point calculations across all games and weeks,
+ * and view side-by-side math between League Scoring (with tie-halving) and Global Scoring (full points + 3X).
+ */
+function openScoringBreakdownModal(playerName, initialMode = "global") {
+  const targetPlayer = playerName || state.selectedPlayer || (state.myPlayer || "Jon");
+  state.breakdownPlayer = targetPlayer;
+  state.breakdownMode = initialMode || "global";
+
+  const modal = document.getElementById("score-breakdown-modal");
+  if (!modal) return;
+
+  renderScoringBreakdownContent();
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeScoringBreakdownModal(event) {
+  if (event && event.target && event.target.id !== "score-breakdown-modal") return;
+  const modal = document.getElementById("score-breakdown-modal");
+  if (modal) modal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function setBreakdownScoringMode(mode) {
+  state.breakdownMode = mode;
+  renderScoringBreakdownContent();
+}
+
+function renderScoringBreakdownContent() {
+  const container = document.getElementById("score-breakdown-content");
+  if (!container) return;
+
+  const playerName = state.breakdownPlayer || "Jon";
+  const mode = state.breakdownMode || "league";
+  const isMe = Boolean(state.myPlayer && state.myPlayer === playerName);
+  const teamInfo = getTeamInfo(state.userProfile?.favorite_team || (state.data?.favoriteTeams && state.data.favoriteTeams[playerName]) || "NFL");
+
+  // Compile detailed game-by-game audit
+  let totalGamesFinal = 0;
+  let totalWins = 0;
+  let totalClosestSolo = 0;
+  let totalClosestTied = 0;
+  let totalExactSolo = 0;
+  let totalExactTied = 0;
+  let locksActivated = 0;
+  let locksWon = 0;
+  let leagueTotalPoints = 0;
+  let globalTotalPoints = 0;
+
+  const weeklyBreakdown = [];
+  const maxW = 8; // Current season milestone through Week 8 TNF
+
+  for (let w = 1; w <= maxW; w++) {
+    const wKey = `Week ${w}`;
+    const week = state.data?.weeks ? state.data.weeks[wKey] : null;
+    if (!week || !week.games) continue;
+
+    let weekLeaguePts = 0;
+    let weekGlobalPts = 0;
+    const gameAudits = [];
+
+    week.games.forEach(g => {
+      const parts = (g.matchup || "").split("@").map(s => s.trim().toUpperCase());
+      if (parts.length !== 2) return;
+      const awayTeam = parts[0];
+      const homeTeam = parts[1];
+
+      const awayScore = (g.awayScore !== null && g.awayScore !== "" && !isNaN(g.awayScore)) ? Number(g.awayScore) : null;
+      const homeScore = (g.homeScore !== null && g.homeScore !== "" && !isNaN(g.homeScore)) ? Number(g.homeScore) : null;
+      let winner = (g.winner || "").toUpperCase().trim();
+      if (!winner && awayScore !== null && homeScore !== null) {
+        if (awayScore > homeScore) winner = awayTeam;
+        else if (homeScore > awayScore) winner = homeTeam;
+        else winner = "TIE";
+      }
+
+      const isFinal = (awayScore !== null && homeScore !== null && winner && !g.isLive);
+      if (!isFinal) return;
+
+      totalGamesFinal++;
+
+      const pk = g.picks ? g.picks[playerName] : null;
+      if (!pk || !pk.winner) {
+        gameAudits.push({
+          gameId: g.id || `${wKey}_${awayTeam}_${homeTeam}`,
+          matchup: g.matchup,
+          finalScore: `${awayTeam} ${awayScore}, ${homeTeam} ${homeScore}`,
+          winner: winner,
+          pickWinner: null,
+          pickScore: null,
+          hasMultiplier: false,
+          isWinnerCorrect: false,
+          diff: null,
+          isClosest: false,
+          isExact: false,
+          tieStatus: "No Pick",
+          leaguePts: 0,
+          globalPts: 0
+        });
+        return;
+      }
+
+      const pickWinnerNorm = normalizeTeamCode(pk.winner);
+      const actualWinnerNorm = normalizeTeamCode(winner);
+      const isWinnerCorrect = (pk.winner.toUpperCase().trim() === winner || pickWinnerNorm === actualWinnerNorm);
+      const mult = pk.multiplier ? 3 : 1;
+      if (pk.multiplier) locksActivated++;
+
+      const pAway = (pk.awayScore !== null && pk.awayScore !== "" && !isNaN(pk.awayScore)) ? Number(pk.awayScore) : null;
+      const pHome = (pk.homeScore !== null && pk.homeScore !== "" && !isNaN(pk.homeScore)) ? Number(pk.homeScore) : null;
+
+      let diff = null;
+      if (pAway !== null && pHome !== null) {
+        diff = Math.abs(pAway - awayScore) + Math.abs(pHome - homeScore);
+      }
+
+      // League Closest calculation among OG League members
+      const winningPickers = [];
+      PLAYERS.forEach(otherPlayer => {
+        const opk = g.picks ? g.picks[otherPlayer] : null;
+        if (!opk || !opk.winner) return;
+        const opkW = normalizeTeamCode(opk.winner);
+        if (opk.winner.toUpperCase().trim() === winner || opkW === actualWinnerNorm) {
+          const oA = (opk.awayScore !== null && opk.awayScore !== "" && !isNaN(opk.awayScore)) ? Number(opk.awayScore) : null;
+          const oH = (opk.homeScore !== null && opk.homeScore !== "" && !isNaN(opk.homeScore)) ? Number(opk.homeScore) : null;
+          if (oA !== null && oH !== null) {
+            const d = Math.abs(oA - awayScore) + Math.abs(oH - homeScore);
+            winningPickers.push({ name: otherPlayer, diff: d });
+          }
+        }
+      });
+
+      let minDiff = Infinity;
+      winningPickers.forEach(wp => {
+        if (wp.diff < minDiff) minDiff = wp.diff;
+      });
+
+      const closestPickers = winningPickers.filter(wp => wp.diff === minDiff).map(wp => wp.name);
+      const isLeagueClosest = (isWinnerCorrect && diff !== null && diff === minDiff);
+      const isLeagueExact = (isLeagueClosest && minDiff === 0);
+      const isLeagueTied = (isLeagueClosest && closestPickers.length > 1);
+      const tiedWithNames = closestPickers.filter(n => n !== playerName);
+
+      // Global Closest calculation
+      const gameId = g.id || `${wKey}_${awayTeam}_${homeTeam}`;
+      const globalMinDiff = getGlobalMinDiffForGame(gameId, actualWinnerNorm, awayScore, homeScore);
+      const isGlobalClosest = isWinnerCorrect && diff !== null && (diff <= globalMinDiff || globalMinDiff === Infinity);
+      const isGlobalExact = isGlobalClosest && diff === 0;
+
+      // Points calculation
+      let gameLeaguePts = 0;
+      let gameGlobalPts = 0;
+
+      if (isWinnerCorrect) {
+        totalWins++;
+        if (pk.multiplier) locksWon++;
+
+        // League rules (tie halving: +5 closest tie, +25 exact tie)
+        const leagueWinBase = 10 * mult;
+        let leagueBonus = 0;
+        if (isLeagueClosest) {
+          if (isLeagueExact) {
+            leagueBonus = (isLeagueTied ? 25 : 50) * mult;
+            if (isLeagueTied) totalExactTied++; else totalExactSolo++;
+          } else {
+            leagueBonus = (isLeagueTied ? 5 : 10) * mult;
+            if (isLeagueTied) totalClosestTied++; else totalClosestSolo++;
+          }
+        }
+        gameLeaguePts = leagueWinBase + leagueBonus;
+
+        // Global rules (full points: +10 closest, +50 exact, 3X active)
+        const globalWinBase = 10 * mult;
+        let globalBonus = 0;
+        if (isGlobalClosest) {
+          if (isGlobalExact) {
+            globalBonus = 50 * mult;
+          } else {
+            globalBonus = 10 * mult;
+          }
+        }
+        gameGlobalPts = globalWinBase + globalBonus;
+      }
+
+      weekLeaguePts += gameLeaguePts;
+      weekGlobalPts += gameGlobalPts;
+      leagueTotalPoints += gameLeaguePts;
+      globalTotalPoints += gameGlobalPts;
+
+      let tieStatus = "Winner Only";
+      if (isLeagueClosest) {
+        if (isLeagueExact) {
+          tieStatus = isLeagueTied ? `Exact Jackpot (Tied with ${tiedWithNames.join(', ')})` : "Exact Jackpot (Sole Winner)";
+        } else {
+          tieStatus = isLeagueTied ? `Closest Score (Tied with ${tiedWithNames.join(', ')})` : "Sole Closest Score";
+        }
+      } else if (!isWinnerCorrect) {
+        tieStatus = "Incorrect Winner";
+      }
+
+      gameAudits.push({
+        gameId,
+        matchup: g.matchup,
+        finalScore: `${awayTeam} ${awayScore}, ${homeTeam} ${homeScore}`,
+        winner: winner,
+        pickWinner: pk.winner,
+        pickScore: `${pk.awayScore}–${pk.homeScore}`,
+        hasMultiplier: Boolean(pk.multiplier),
+        isWinnerCorrect,
+        diff,
+        isClosest: isLeagueClosest,
+        isExact: isLeagueExact,
+        isTied: isLeagueTied,
+        tiedWith: tiedWithNames,
+        tieStatus,
+        leaguePts: gameLeaguePts,
+        globalPts: gameGlobalPts
+      });
+    });
+
+    weeklyBreakdown.push({
+      weekKey,
+      weekNum: w,
+      leaguePts: weekLeaguePts,
+      globalPts: weekGlobalPts,
+      games: gameAudits
+    });
+  }
+
+  const deltaPoints = Math.abs(globalTotalPoints - leagueTotalPoints);
+
+  container.innerHTML = `
+    <!-- Modal Header -->
+    <div class="score-breakdown-header">
+      <div class="breakdown-player-identity">
+        <div class="breakdown-avatar-frame">
+          ${getPlayerAvatarHtml(playerName, 48)}
+        </div>
+        <div class="breakdown-name-group">
+          <div class="breakdown-title-row">
+            <h3 class="breakdown-player-name">${playerName}</h3>
+            ${isMe ? '<span class="breakdown-you-pill">YOU</span>' : ""}
+          </div>
+          <div class="breakdown-sub-status">
+            <span>Verified 2026 Season Audit (Weeks 1–8)</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="profile-modal-close" onclick="closeScoringBreakdownModal()" aria-label="Close">&times;</button>
+    </div>
+
+    <!-- Dual Mode Switcher -->
+    <div class="breakdown-mode-tabs" role="tablist">
+      <button type="button" class="breakdown-tab ${mode === 'league' ? 'active' : ''}" onclick="setBreakdownScoringMode('league')">
+        <span class="tab-icon">⚖️</span>
+        <span class="tab-label">League Scoring</span>
+        <span class="tab-badge badge-league">${leagueTotalPoints} PTS</span>
+      </button>
+      <button type="button" class="breakdown-tab ${mode === 'global' ? 'active' : ''}" onclick="setBreakdownScoringMode('global')">
+        <span class="tab-icon">🌐</span>
+        <span class="tab-label">Global Leaderboard</span>
+        <span class="tab-badge badge-global">${globalTotalPoints} PTS</span>
+      </button>
+    </div>
+
+    <!-- Active Rule Explanation Banner -->
+    ${mode === "league" ? `
+      <div class="breakdown-rule-banner rule-league">
+        <div class="rule-banner-left">
+          <span class="rule-banner-icon">⚖️</span>
+          <div class="rule-banner-text">
+            <strong>OG League Scoring: Split Ties Active</strong>
+            <p>10 PTS per win • Closest score is <strong>split to +5 PTS each</strong> when tied (+15 on 3X Lock) • Exact score splits to +25 PTS (+75 on 3X Lock). Matches your official Excel spreadsheet.</p>
+          </div>
+        </div>
+        <div class="rule-banner-delta">
+          <span class="delta-label">Global Diff</span>
+          <span class="delta-val">-${deltaPoints} PTS</span>
+        </div>
+      </div>
+    ` : `
+      <div class="breakdown-rule-banner rule-global">
+        <div class="rule-banner-left">
+          <span class="rule-banner-icon">🌐</span>
+          <div class="rule-banner-text">
+            <strong>Global Leaderboard Scoring: Full Points • 3X Active</strong>
+            <p>10 PTS per win • <strong>Full +10 PTS</strong> for closest score without tie dilution (+30 on 3X Lock) • <strong>Full +50 PTS</strong> for exact jackpot (+150 on 3X Lock). 3X Multiplier fully active.</p>
+          </div>
+        </div>
+        <div class="rule-banner-delta">
+          <span class="delta-label">League Diff</span>
+          <span class="delta-val">+${deltaPoints} PTS</span>
+        </div>
+      </div>
+    `}
+
+    <!-- 4-Stat Metric Summary Cards -->
+    <div class="breakdown-stats-grid">
+      <div class="bstat-card bstat-wins">
+        <div class="bstat-icon">🏆</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${totalWins} <span class="bstat-sub">/ ${totalGamesFinal}</span></div>
+          <div class="bstat-label">Straight Up Wins</div>
+          <div class="bstat-pts">${totalWins * 10} Base PTS</div>
+        </div>
+      </div>
+
+      <div class="bstat-card bstat-closest">
+        <div class="bstat-icon">🎯</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${totalClosestSolo + totalClosestTied} <span class="bstat-sub">Closest</span></div>
+          <div class="bstat-label">${mode === 'league' ? `${totalClosestSolo} Solo • ${totalClosestTied} Tied (+5)` : 'Full +10 Each'}</div>
+          <div class="bstat-pts">${mode === 'league' ? (totalClosestSolo * 10 + totalClosestTied * 5) : (totalClosestSolo + totalClosestTied) * 10} Bonus PTS</div>
+        </div>
+      </div>
+
+      <div class="bstat-card bstat-locks">
+        <div class="bstat-icon">⭐</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${locksWon} <span class="bstat-sub">/ ${locksActivated}</span></div>
+          <div class="bstat-label">3X Locks Hit</div>
+          <div class="bstat-pts">Tripled Points Active</div>
+        </div>
+      </div>
+
+      <div class="bstat-card bstat-exact">
+        <div class="bstat-icon">💎</div>
+        <div class="bstat-body">
+          <div class="bstat-val">${totalExactSolo + totalExactTied} <span class="bstat-sub">Exact</span></div>
+          <div class="bstat-label">Perfect Scores</div>
+          <div class="bstat-pts">${totalExactSolo * 50 + totalExactTied * 25} Jackpot PTS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week-by-Week Accordion List -->
+    <div class="breakdown-weeks-container">
+      <div class="breakdown-section-header">
+        <h4>Week-by-Week Game Audit</h4>
+        <span class="breakdown-subtitle">Click any game to inspect pick details and bonuses</span>
+      </div>
+
+      ${weeklyBreakdown.map(wb => `
+        <div class="breakdown-week-group">
+          <div class="breakdown-week-bar">
+            <span class="week-bar-title">${wb.weekKey}</span>
+            <div class="week-bar-badges">
+              <span class="week-bar-games">${wb.games.length} Games</span>
+              <span class="week-bar-pts ${mode === 'league' ? 'pts-league' : 'pts-global'}">
+                ${mode === 'league' ? wb.leaguePts : wb.globalPts} PTS
+              </span>
+            </div>
+          </div>
+
+          <div class="breakdown-games-list">
+            ${wb.games.map(g => {
+              const pts = (mode === 'league') ? g.leaguePts : g.globalPts;
+              let statusPillClass = "pill-neutral";
+              if (g.isExact) statusPillClass = "pill-purple";
+              else if (g.isClosest) statusPillClass = "pill-blue";
+              else if (g.isWinnerCorrect) statusPillClass = "pill-green";
+              else statusPillClass = "pill-wrong";
+
+              return `
+                <div class="breakdown-game-card ${g.hasMultiplier ? 'has-lock-border' : ''}">
+                  <div class="bg-game-top">
+                    <span class="bg-matchup-text">${g.matchup}</span>
+                    <span class="bg-final-score">${g.finalScore}</span>
+                  </div>
+                  <div class="bg-game-mid">
+                    <div class="bg-pick-info">
+                      <span class="bg-pick-label">Pick:</span>
+                      <strong class="bg-pick-team">${g.pickWinner || '—'} ${g.pickScore || ''}</strong>
+                      ${g.diff !== null ? `<span class="bg-diff-tag">Diff ${g.diff}</span>` : ''}
+                      ${g.hasMultiplier ? '<span class="bg-lock-tag">3X LOCK</span>' : ''}
+                    </div>
+                    <div class="bg-points-badge ${pts > 0 ? 'earned' : 'zero'}">
+                      +${pts} PTS
+                    </div>
+                  </div>
+                  <div class="bg-game-bot">
+                    <span class="bg-status-pill ${statusPillClass}">${g.tieStatus}</span>
+                    ${(mode === 'league' && g.isTied) ? '<span class="bg-tie-note">Halved tie bonus applied</span>' : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// Global window bindings for inline HTML handlers
+window.openScoringBreakdownModal = openScoringBreakdownModal;
+window.closeScoringBreakdownModal = closeScoringBreakdownModal;
+window.setBreakdownScoringMode = setBreakdownScoringMode;
+window.selectLeagueTieRule = selectLeagueTieRule;
+window.openLeagueDrawer = openLeagueDrawer;
+window.closeLeagueDrawer = closeLeagueDrawer;
+window.selectLeague = selectLeague;
+window.enterLeagueView = enterLeagueView;
+window.enterCustomLeague = enterCustomLeague;
+window.exitToLobby = exitToLobby;
+window.handleBrandClick = handleBrandClick;
+window.updateAppShellForMode = updateAppShellForMode;
+window.openAuthModal = openAuthModal;
+window.closeAuthModal = closeAuthModal;
+window.handleEmailSignIn = handleEmailSignIn;
+window.handleEmailSignUp = handleEmailSignUp;
+window.handleMagicLinkSignIn = handleMagicLinkSignIn;
+window.handleGoogleSignIn = handleGoogleSignIn;
+window.handleSignOut = handleSignOut;
+window.processLeagueCode = processLeagueCode;
+window.copyLeagueCode = copyLeagueCode;
+window.handleQuickInviteSubmit = handleQuickInviteSubmit;
+window.handleLobbyCodeInput = handleLobbyCodeInput;
+window.openCreateLeagueModal = openCreateLeagueModal;
+window.closeCreateLeagueModal = closeCreateLeagueModal;
+window.generateNewLeagueCode = generateNewLeagueCode;
+window.selectLeagueScoring = selectLeagueScoring;
+window.handleCreateLeagueSubmit = handleCreateLeagueSubmit;
+window.openJoinLeagueModal = openJoinLeagueModal;
+window.syncLeagueStandingsFromCloud = syncLeagueStandingsFromCloud;
+window.renderLeagueDrawerContent = renderLeagueDrawerContent;
+window.renderLobbyHero = renderLobbyHero;
+window.handleHubLeagueClick = handleHubLeagueClick;
+window.handleHubSoloClick = handleHubSoloClick;
+window.renderAccountProfileModal = renderAccountProfileModal;
+window.isUserInOGLeague = isUserInOGLeague;
+window.getUserAvatarHtml = getUserAvatarHtml;
+window.openTeamPicker = openTeamPicker;
+window.closeTeamPicker = closeTeamPicker;
+window.setFavoriteTeam = setFavoriteTeam;
+window.renderTeamPickerGrid = renderTeamPickerGrid;
+window.filterTeamPickerList = filterTeamPickerList;
+window.getFavoriteTeam = getFavoriteTeam;
+window.getNFLTeamCurrentRecord = getNFLTeamCurrentRecord;
+window.setAuthMode = setAuthMode;
+window.toggleAuthMode = toggleAuthMode;
+window.handleAuthSubmit = handleAuthSubmit;
+window.handleUsernameInput = handleUsernameInput;
+window.validateUsernameAvailability = validateUsernameAvailability;
+window.enterSoloPlay = enterSoloPlay;
+window.renderSoloView = renderSoloView;
+window.loadSoloPickSheets = loadSoloPickSheets;
+window.saveSoloPickSheet = saveSoloPickSheet;
+window.openCreateSheetModal = openCreateSheetModal;
+window.closeCreateSheetModal = closeCreateSheetModal;
+window.selectSheetFormat = selectSheetFormat;
+window.handleCreateSheetSubmit = handleCreateSheetSubmit;
+window.openPickSheet = openPickSheet;
+window.closePickSheetEditor = closePickSheetEditor;
+window.selectSoloSheetWeek = selectSoloSheetWeek;
+window.stepSoloWeek = stepSoloWeek;
+window.jumpToSoloCurrentWeek = jumpToSoloCurrentWeek;
+window.renderSoloSheetEditor = renderSoloSheetEditor;
+window.setSoloPickWinner = setSoloPickWinner;
+window.stepSoloPickScore = stepSoloPickScore;
+window.handleSoloScoreInput = handleSoloScoreInput;
+window.setSoloPickExactScore = setSoloPickExactScore;
+window.toggleSoloPickMultiplier = toggleSoloPickMultiplier;
+window.isGameLockedForPicking = isGameLockedForPicking;
+window.getGameLockStatus = getGameLockStatus;
+window.isSoloPickComplete = isSoloPickComplete;
+window.updateSoloWeekProgressUI = updateSoloWeekProgressUI;
+window.deleteSoloSheet = deleteSoloSheet;
+window.loadUserLeagues = loadUserLeagues;
+window.loadCustomLeagueData = loadCustomLeagueData;
+window.setCustomLeaguePick = setCustomLeaguePick;
+window.stepCustomLeagueScore = stepCustomLeagueScore;
+window.toggleCustomLeagueMultiplier = toggleCustomLeagueMultiplier;
+window.saveCustomLeaguePickToCloud = saveCustomLeaguePickToCloud;
+window.updateCustomPickBarUI = updateCustomPickBarUI;
+window.setSoloCampaignMode = setSoloCampaignMode;
+window.openSeasonLockModal = openSeasonLockModal;
+window.closeSeasonLockModal = closeSeasonLockModal;
+window.confirmSeasonLockSubmit = confirmSeasonLockSubmit;
+window.getOrCreateMasterPickSheet = getOrCreateMasterPickSheet;
+window.renderCustomLeagueLeaderboard = renderCustomLeagueLeaderboard;
+window.openGlobalLeaderboardModal = openGlobalLeaderboardModal;
+window.closeGlobalLeaderboardModal = closeGlobalLeaderboardModal;
+window.switchGlobalLeaderboardTab = switchGlobalLeaderboardTab;
+window.loadAndRenderGlobalLeaderboard = loadAndRenderGlobalLeaderboard;
+window.getActiveSoloPicks = getActiveSoloPicks;
+window.extractOgLeaguePicksForPlayer = extractOgLeaguePicksForPlayer;
+window.evaluateWeeklyOgPicks = evaluateWeeklyOgPicks;
+window.syncOgLeaguePicksToSoloProphecy = syncOgLeaguePicksToSoloProphecy;
+window.renderOption2Card = renderOption2Card;
+window.scrollToLobbyGames = scrollToLobbyGames;
+window.updateGuestSaveBanner = updateGuestSaveBanner;
+window.toggleLobbyInviteInput = toggleLobbyInviteInput;
+window.updateGlobalStandingsRibbon = updateGlobalStandingsRibbon;
+window.getGlobalMinDiffForGame = getGlobalMinDiffForGame;
+window.isWeekFullyLocked = isWeekFullyLocked;
+window.getOpenPredictionWeek = getOpenPredictionWeek;
+window.getPartitionedMatchupGames = getPartitionedMatchupGames;
+window.renderConcludedDivider = renderConcludedDivider;
+window.getGameBroadcast = getGameBroadcast;
+window.getGameOdds = getGameOdds;
+window.fetchLiveGameWinProbability = fetchLiveGameWinProbability;
+window.getGameWinProbability = getGameWinProbability;
