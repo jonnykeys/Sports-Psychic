@@ -5423,14 +5423,14 @@ function renderPlayoffsTab() {
                 <div class="bracket-team-slot ${afcChamp.winner === afcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
                   <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-afc">${afcChamp.awaySeed || ''}</span>${afcChamp.awayTeam}</span>
                   <span class="bracket-score-pod">
-                    ${afcChamp.winner === afcChamp.awayTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : ''}
+                    ${afcChamp.winner === afcChamp.awayTeam ? '<span class="champ-pill-compact champ-pill-afc">CHAMP &#10003;</span>' : ''}
                     ${afcChamp.awayScore !== undefined && afcChamp.awayScore !== null ? `<span class="bracket-team-score">${afcChamp.awayScore}</span>` : ''}
                   </span>
                 </div>
                 <div class="bracket-team-slot ${afcChamp.winner === afcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
                   <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-afc">${afcChamp.homeSeed || ''}</span>${afcChamp.homeTeam}</span>
                   <span class="bracket-score-pod">
-                    ${afcChamp.winner === afcChamp.homeTeam ? '<span class="champ-check text-afc-red">AFC CHAMP &#10003;</span>' : ''}
+                    ${afcChamp.winner === afcChamp.homeTeam ? '<span class="champ-pill-compact champ-pill-afc">CHAMP &#10003;</span>' : ''}
                     ${afcChamp.homeScore !== undefined && afcChamp.homeScore !== null ? `<span class="bracket-team-score">${afcChamp.homeScore}</span>` : ''}
                   </span>
                 </div>
@@ -5442,14 +5442,14 @@ function renderPlayoffsTab() {
                 <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.awayTeam ? 'is-winner' : 'is-loser'}">
                   <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-nfc">${nfcChamp.awaySeed || ''}</span>${nfcChamp.awayTeam}</span>
                   <span class="bracket-score-pod">
-                    ${nfcChamp.winner === nfcChamp.awayTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : ''}
+                    ${nfcChamp.winner === nfcChamp.awayTeam ? '<span class="champ-pill-compact champ-pill-nfc">CHAMP &#10003;</span>' : ''}
                     ${nfcChamp.awayScore !== undefined && nfcChamp.awayScore !== null ? `<span class="bracket-team-score">${nfcChamp.awayScore}</span>` : ''}
                   </span>
                 </div>
                 <div class="bracket-team-slot ${nfcChamp.winner === nfcChamp.homeTeam ? 'is-winner' : 'is-loser'}">
                   <span class="bracket-team-name-wrap"><span class="seed-tag seed-tag-nfc">${nfcChamp.homeSeed || ''}</span>${nfcChamp.homeTeam}</span>
                   <span class="bracket-score-pod">
-                    ${nfcChamp.winner === nfcChamp.homeTeam ? '<span class="champ-check text-nfc-blue">NFC CHAMP &#10003;</span>' : ''}
+                    ${nfcChamp.winner === nfcChamp.homeTeam ? '<span class="champ-pill-compact champ-pill-nfc">CHAMP &#10003;</span>' : ''}
                     ${nfcChamp.homeScore !== undefined && nfcChamp.homeScore !== null ? `<span class="bracket-team-score">${nfcChamp.homeScore}</span>` : ''}
                   </span>
                 </div>

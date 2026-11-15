@@ -11698,6 +11698,32 @@ body.is-league-mode .bottom-nav [data-tab="nfl"] {
   font-weight: 900;
 }
 
+.champ-pill-compact {
+  font-size: 0.54rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.1;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.champ-pill-afc {
+  background: rgba(227, 24, 55, 0.22);
+  color: #ff8595;
+  border: 1px solid rgba(227, 24, 55, 0.45);
+}
+
+.champ-pill-nfc {
+  background: rgba(0, 118, 182, 0.22);
+  color: #6ed3ff;
+  border: 1px solid rgba(0, 118, 182, 0.45);
+}
+
 /* Super Bowl LXI Finale Box (Concept 1: Dual-Corner Radial Glow + Frosted Core) */
 .superbowl-showcase-box {
   border: 1.5px solid rgba(255, 255, 255, 0.18);
