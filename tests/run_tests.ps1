@@ -1,4 +1,4 @@
-﻿# Windows PowerShell Test Suite Runner for Sports Psychic
+# Windows PowerShell Test Suite Runner for Sports Psychic
 Write-Host ''
 Write-Host '========================================================' -ForegroundColor Cyan
 Write-Host ' 🔮 SPORTS PSYCHIC AUTOMATED TEST SUITE (16 SUITES)' -ForegroundColor Cyan
